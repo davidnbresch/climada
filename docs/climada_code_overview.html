@@ -1,0 +1,3403 @@
+<body>
+<H1><FONT COLOR="FF0000">MATLAB routines</FONT></FONT></H1>
+<P>
+Use Find in page ... from the Edit Menu to search for any text in all help-files
+This page has been automatically created by compile_function_header_doc<P>
+Ask <A HREF="mailto:david.n.bresch@alumni.ethz.ch">David N. Bresch</A> if you want to add your own code.<P>
+<P>To save an editable copy of a program, press the right mouse button on the view source-Link and select Save Link as... form the pop-up menu <P>
+<P>
+<P><STRONG>Last modified: </STRONG>16-Mar-2013 19:59:23<P>
+
+<HR>
+
+<A NAME="ROUTINELIST">
+<UL>
+<LI><A HREF="#climada_EDS_DFC">climada_EDS_DFC</A>
+<LI><A HREF="#climada_EDS_DFC_hist">climada_EDS_DFC_hist</A>
+<LI><A HREF="#climada_EDS_DFC_multiple">climada_EDS_DFC_multiple</A>
+<LI><A HREF="#climada_EDS_DFC_report">climada_EDS_DFC_report</A>
+<LI><A HREF="#climada_EDS_calc">climada_EDS_calc</A>
+<LI><A HREF="#climada_EDS_load">climada_EDS_load</A>
+<LI><A HREF="#climada_EDS_save">climada_EDS_save</A>
+<LI><A HREF="#climada_EDS_stats">climada_EDS_stats</A>
+<LI><A HREF="#climada_NPV">climada_NPV</A>
+<LI><A HREF="#climada_adaptation_cost_curve">climada_adaptation_cost_curve</A>
+<LI><A HREF="#climada_adaptation_event_view">climada_adaptation_event_view</A>
+<LI><A HREF="#climada_arrow">climada_arrow</A>
+<LI><A HREF="#climada_assets_encode">climada_assets_encode</A>
+<LI><A HREF="#climada_batch_run">climada_batch_run</A>
+<LI><A HREF="#climada_centroids_read">climada_centroids_read</A>
+<LI><A HREF="#climada_centroids_read_transpose">climada_centroids_read_transpose</A>
+<LI><A HREF="#climada_circle_plot">climada_circle_plot</A>
+<LI><A HREF="#climada_code_optimizer">climada_code_optimizer</A>
+<LI><A HREF="#climada_color_plot">climada_color_plot</A>
+<LI><A HREF="#climada_damage_exceedence">climada_damage_exceedence</A>
+<LI><A HREF="#climada_demo">climada_demo</A>
+<LI><A HREF="#climada_distribution_lon_lat">climada_distribution_lon_lat</A>
+<LI><A HREF="#climada_distribution_v0_vi">climada_distribution_v0_vi</A>
+<LI><A HREF="#climada_ellipse">climada_ellipse</A>
+<LI><A HREF="#climada_entity_load">climada_entity_load</A>
+<LI><A HREF="#climada_entity_read">climada_entity_read</A>
+<LI><A HREF="#climada_entity_save">climada_entity_save</A>
+<LI><A HREF="#climada_excel_hazard_set">climada_excel_hazard_set</A>
+<LI><A HREF="#climada_figuresize">climada_figuresize</A>
+<LI><A HREF="#climada_geo_distance">climada_geo_distance</A>
+<LI><A HREF="#climada_gridded_VALUE">climada_gridded_VALUE</A>
+<LI><A HREF="#climada_hazard2hazard">climada_hazard2hazard</A>
+<LI><A HREF="#climada_hazard_clim_scen">climada_hazard_clim_scen</A>
+<LI><A HREF="#climada_hazard_stats">climada_hazard_stats</A>
+<LI><A HREF="#climada_init_vars">climada_init_vars</A>
+<LI><A HREF="#climada_measures_encode">climada_measures_encode</A>
+<LI><A HREF="#climada_measures_impact">climada_measures_impact</A>
+<LI><A HREF="#climada_measures_read">climada_measures_read</A>
+<LI><A HREF="#climada_nonspheric_distance_m">climada_nonspheric_distance_m</A>
+<LI><A HREF="#climada_play_adapt_cost_curve">climada_play_adapt_cost_curve</A>
+<LI><A HREF="#climada_play_gui">climada_play_gui</A>
+<LI><A HREF="#climada_play_parameter_table">climada_play_parameter_table</A>
+<LI><A HREF="#climada_play_parameter_table_App">climada_play_parameter_table_App</A>
+<LI><A HREF="#climada_play_parameter_table_full">climada_play_parameter_table_full</A>
+<LI><A HREF="#climada_play_waterfall_graph">climada_play_waterfall_graph</A>
+<LI><A HREF="#climada_plot_ACE">climada_plot_ACE</A>
+<LI><A HREF="#climada_plot_IFC_return">climada_plot_IFC_return</A>
+<LI><A HREF="#climada_plot_probabilistic_wind_speed_map">climada_plot_probabilistic_wind_speed_map</A>
+<LI><A HREF="#climada_plot_tc_track_season">climada_plot_tc_track_season</A>
+<LI><A HREF="#climada_plot_tc_track_stormcategory">climada_plot_tc_track_stormcategory</A>
+<LI><A HREF="#climada_plot_world_borders">climada_plot_world_borders</A>
+<LI><A HREF="#climada_processed2assets">climada_processed2assets</A>
+<LI><A HREF="#climada_sparse_interp">climada_sparse_interp</A>
+<LI><A HREF="#climada_tc_add_timestep">climada_tc_add_timestep</A>
+<LI><A HREF="#climada_tc_equal_timestep">climada_tc_equal_timestep</A>
+<LI><A HREF="#climada_tc_hazard_clim_scen">climada_tc_hazard_clim_scen</A>
+<LI><A HREF="#climada_tc_hazard_set">climada_tc_hazard_set</A>
+<LI><A HREF="#climada_tc_hazard_set_exercise">climada_tc_hazard_set_exercise</A>
+<LI><A HREF="#climada_tc_hazard_set_ori">climada_tc_hazard_set_ori</A>
+<LI><A HREF="#climada_tc_interp">climada_tc_interp</A>
+<LI><A HREF="#climada_tc_overview_table">climada_tc_overview_table</A>
+<LI><A HREF="#climada_tc_random_walk">climada_tc_random_walk</A>
+<LI><A HREF="#climada_tc_random_walk_position_windspeed">climada_tc_random_walk_position_windspeed</A>
+<LI><A HREF="#climada_tc_read_unisys_database">climada_tc_read_unisys_database</A>
+<LI><A HREF="#climada_tc_read_unisys_track">climada_tc_read_unisys_track</A>
+<LI><A HREF="#climada_tc_season">climada_tc_season</A>
+<LI><A HREF="#climada_tc_stormcategory">climada_tc_stormcategory</A>
+<LI><A HREF="#climada_tc_windfield">climada_tc_windfield</A>
+<LI><A HREF="#climada_tc_windfield_animation">climada_tc_windfield_animation</A>
+<LI><A HREF="#climada_tc_windfield_exercise">climada_tc_windfield_exercise</A>
+<LI><A HREF="#climada_tc_windfield_ori">climada_tc_windfield_ori</A>
+<LI><A HREF="#climada_tc_windfield_timestep">climada_tc_windfield_timestep</A>
+<LI><A HREF="#climada_template">climada_template</A>
+<LI><A HREF="#climada_waterfall_graph">climada_waterfall_graph</A>
+<LI><A HREF="#climada_waterfall_graph_animation">climada_waterfall_graph_animation</A>
+<LI><A HREF="#climada_xlsread">climada_xlsread</A>
+<LI><A HREF="#compile_function_header_doc">compile_function_header_doc</A>
+<LI><A HREF="#gauss_distribution">gauss_distribution</A>
+<LI><A HREF="#hist2d">hist2d</A>
+<LI><A HREF="#mygaussfit">mygaussfit</A>
+<LI><A HREF="#parseArgs">parseArgs</A>
+<LI><A HREF="#plot_normal">plot_normal</A>
+<LI><A HREF="#subaxis">subaxis</A>
+</UL><P>
+ 
+<HR>
+ 
+<H1>Routine Descriptions</H1>
+<PRE>
+
+
+<A NAME="climada_EDS_DFC">
+<H2>climada_EDS_DFC</H2></A>
+<font color="blue">function fig = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag) </font>
+ climada
+ NAME:
+   climada_EDS_DFC
+ PURPOSE:
+   plot occurrence Damage exceedence Frequency Curve (DFC)
+ CALLING SEQUENCE:
+   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag)
+ EXAMPLE:
+   climada_EDS_DFC(climada_EDS_calc(climada_entity_read))
+ INPUTS:
+   EDS: either an event damage set, as e.g. returned by climada_EDS_calc or
+       a file containing such a structure
+       SPECIAL: we also accept a structure which contains an EDS, like
+       measures_impact.EDS
+       if EDS has the field annotation_name, the legend will show this
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   EDS_comparison: likeEDS see above), plotted (fine lines) for comparison
+       not prompted for, if not given,unless set to 'ASK'
+   Percentage_Of_Value_Flag: if =1, scale vertical axis with Value, such
+       that damage as percentage of value is shown, instead of damage amount,
+       default=0 (damage amount shown). Very useful to compare DFCs of
+       different portfolios to see relative differences in risk
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100108
+ David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
+ Lea Mueller, 20120816, comparison title of all comparisons, changed markersize
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_DFC.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_DFC_hist">
+<H2>climada_EDS_DFC_hist</H2></A>
+<font color="blue">function climada_EDS_DFC_hist(EDS,EDS_comparison,Percentage_Of_Value_Flag) </font>
+ climada
+ NAME:
+   climada_EDS_DFC
+ PURPOSE:
+   plot occurrence Damage exceedence Frequency Curve (DFC)
+ CALLING SEQUENCE:
+   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag)
+ EXAMPLE:
+   climada_EDS_DFC(climada_EDS_calc(climada_entity_read))
+ INPUTS:
+   EDS: either an event damage set, as e.g. returned by climada_EDS_calc or
+       a file containing such a structure
+       SPECIAL: we also accept a structure which contains an EDS, like
+       measures_impact.EDS
+       if EDS has the field annotation_name, the legend will show this
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   EDS_comparison: likeEDS see above), plotted (fine lines) for comparison
+       not prompted for, if not given,unless set to 'ASK'
+   Percentage_Of_Value_Flag: if =1, scale vertical axis with Value, such
+       that damage as percentage of value is shown, instead of damage amount,
+       default=0 (damage amount shown). Very useful to compare DFCs of
+       different portfolios to see relative differences in risk
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100108
+ David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_DFC_hist.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_DFC_multiple">
+<H2>climada_EDS_DFC_multiple</H2></A>
+<font color="blue">function EDS = climada_EDS_DFC_multiple(EDS1, EDS2, EDS3, check_printplot) </font>
+ climada
+ NAME:
+   climada_EDS_DFC_multiple
+ PURPOSE:
+   plot occurrence Damage exceedence Frequency Curve (DFC) of one or
+   multiple event damage sets (EDS), prompted if not given. 
+ CALLING SEQUENCE:
+   climada_EDS_DFC_multiple(EDS, EDS2, EDS3, check_printplot)
+ EXAMPLE:
+   climada_EDS_DFC_multiple
+   climada_EDS_DFC_multiple(climada_EDS_calc(climada_entity_read))
+ INPUTS:
+   EDS: either an event damage set, as e.g. returned by climada_EDS_calc or
+       a file containing such a structure
+       EDS.hazard.comment describes the hazard and EDS.assets.filename
+       describes the entity and both are displayed in the legend
+       &ampgt promted for if not given, multiple EDS can be selected in the GUI
+       by pressing and holding down the shift-key.
+ OPTIONAL INPUT PARAMETERS:
+ check_printplot: if set to 1 printed, otherwise prompted for
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100108
+ Lea Mueller, 20110720
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_DFC_multiple.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_DFC_report">
+<H2>climada_EDS_DFC_report</H2></A>
+<font color="blue">function res = climada_EDS_DFC_report(EDS,Percentage_Of_Value_Flag,report_style) </font>
+ climada
+ NAME:
+   climada_EDS_DFC_report
+ PURPOSE:
+   plot occurrence Damage exceedence Frequency Curve (DFC)
+ CALLING SEQUENCE:
+   res=climada_EDS_DFC_report(EDS,Percentage_Of_Value_Flag,report_style)
+ EXAMPLE:
+   res=climada_EDS_DFC_report(climada_EDS_calc(climada_entity_read))
+ INPUTS:
+   EDS: either an event damage set, as e.g. returned by climada_EDS_calc or
+       a file containing such a structure
+       SPECIAL: we also accept a structure which contains an EDS, like
+       measures_impact.EDS
+       if EDS has the field annotation_name, the legend will show this
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   Percentage_Of_Value_Flag: if =1, scale vertical axis with Value, such
+       that damage as percentage of value is shown, instead of damage amount,
+       default=0 (damage amount shown). Very useful to compare DFCs of
+       different portfolios to see relative differences in risk
+   report_style: 'lean' for only the damages at predefined return periods
+       'std' (default): the damages at return periods.
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100108
+ David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_DFC_report.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_calc">
+<H2>climada_EDS_calc</H2></A>
+<font color="blue">function EDS=climada_EDS_calc(entity,hazard,annotation_name) </font>
+ climada calculate event damage set
+ NAME:
+   climada_EDS_calc
+ PURPOSE:
+   given an encoded entity (portfolio) and a hazard event set, calculate
+   the event damage set (EDS)
+
+   Note that the waitbar consumes quite some time, so switch it off by
+   using the climada_code_optimizer, which removes all slowing code...
+ CALLING SEQUENCE:
+   EDS=climada_EDS_calc(entity,hazard,annotation_name)
+ EXAMPLE:
+   EDS=climada_EDS_calc(climada_assets_encode(climada_assets_read))
+ INPUTS:
+   entity: a read and encoded assets file, see climada_assets_encode(climada_assets_read)
+       &ampgt promted for if not given
+   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   annotation_name: a free text that will appear e.g. on plots for
+       annotation, default=''
+ OUTPUTS:
+   EDS, the event damage set with:
+       reference_year: the year the damages are references to
+       event_ID(event_i): the unique ID for each event_i
+       damage(event_i): the damage amount for event_i
+       Value: the sum of allValues used in the calculation (to e.g. express
+           damages in percentage of total Value)
+       frequency(event_i): the per occurrence event frequency for each event_i
+       orig_event_flag(event_i): whether an original event (=1) or a
+           probabilistic one (=0)
+       comment: a free comment, contains time for calculation
+       hazard: itself a structure, with:
+           filename: the filename of the hazard event set
+           comment: a free comment
+       assets.filename: the filename of the assets
+       damagefunctions.filename: the filename of the damagefunctions
+       annotation_name: a kind of default title (sometimes empty)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091228
+ David N. Bresch, david.bresch@gmail.com, 20130316, EDS-&ampgtEDS...
+View <A HREF=code/climada_EDS_calc.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_load">
+<H2>climada_EDS_load</H2></A>
+<font color="blue">function EDS_out=climada_EDS_load(EDS_file) </font>
+ climada
+ NAME:
+   climada_EDS_load
+ PURPOSE:
+   load a previously saved EDS (just to avoid typing long paths and
+   filenames in the cmd window)
+ CALLING SEQUENCE:
+   EDS_out=climada_EDS_load(EDS_file)
+ EXAMPLE:
+   EDS_out=climada_EDS_load(EDS_file)
+ INPUTS:
+   EDS_file: the filename with path of a previously saved EDS, see
+       climada_EDS_save
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   EDS_out: a struct, see e.g. climada_EDS_calc for details
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091230
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_load.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_save">
+<H2>climada_EDS_save</H2></A>
+<font color="blue">function climada_EDS_save(EDS,EDS_save_file,EDS_default) </font>
+ climada
+ NAME:
+   climada_EDS_save
+ PURPOSE:
+   save an EDS to a .mat file (just to avoid typing long paths and
+   filenames in the cmd window)
+ CALLING SEQUENCE:
+   climada_EDS_save(EDS,EDS_save_file)
+ EXAMPLE:
+   climada_EDS_save(EDS,EDS_save_file)
+ INPUTS:
+   EDS: the event damage set (EDS), see e.g. climada_EDS_calc
+   EDS_save_file: the filename to save the EDS in
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   EDS saved to a .mat file
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091230
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_save.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_EDS_stats">
+<H2>climada_EDS_stats</H2></A>
+<font color="blue">function EDS = climada_EDS_stats(EDS, EDS_save_file, return_period, check_plot) </font>
+ calculating return periods with their corresponding EL
+ NAME:
+   climada_EDS_stats
+ PURPOSE:
+   calculating return periods with their corresponding event damage from the EDS
+   file
+ CALLING SEQUENCE:
+   EDS_stats = climada_EDS_stats(EDS, EDS_save_file, return_period)
+ EXAMPLE:
+   EDS_stat=climada_EDS_stats(EDS,EDS_stat.mat,50)
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   EDS: Event damage set, see climada_EDS_calc(entity, hazard)
+       &ampgt promted for if not given
+   EDS_save_file: the name of the EDS return periods file
+       &ampgt promted for if not given
+   return_period: user defined return periods
+       &ampgt calculates predefined return periods if not given
+   check_plot: whether we show a check plot (=1) or not (=0), default=0
+ OUTPUTS:
+   EDS, the event damage set with:
+       reference_year   : the year the damages are references to
+       event_ID(event_i): the unique ID for each event_i
+       damage(event_i)    : the damage amount for event_i
+       Value            : the sum of allValues used in the calculation (to e.g. express
+                          damages in percentage of total Value)
+       frequency(event_i)      : the per occurrence event frequency for each event_i
+       orig_event_flag(event_i): whether an original event (=1) or a
+                                 probabilistic one (=0)
+       hazard           : itself a structure, with:
+                          .filename: the filename of the hazard event set
+                          .comment : a free comment
+       comment          : a free comment, contains time for calculation
+       assets.filename  : the filename of the assets
+       damagefunctions.filename: the filename of the damagefunctions
+       annotation_name  : a kind of default title (sometimes empty)
+       .AEL             : annual expected damage for the event set 
+       .damage_sort       : downward sorted damages
+       .damage_ori_sort   : downward sorted damages for original events 
+       .R               : corresponding return periods for damage_sort 
+       .R_ori           : corresponding return periods for damage_sort_orig
+       .R_fit           : specified return periods
+       .damage_fit        : damages for specified return periods
+       .damage_fit_ori    : damages for specified return periods
+ 
+ MODIFICATION HISTORY:
+ Reto Stockmann, 20120813  
+ Lea Mueller, 20120816
+ David N. Bresch, david.bresch@gmail.com, 20130316, ELS-&ampgtEDS...
+View <A HREF=code/climada_EDS_stats.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_NPV">
+<H2>climada_NPV</H2></A>
+<font color="blue">function NPV=climada_NPV(values,discount_rates) </font>
+ climada NPV
+ NAME:
+   climada_NPV
+ PURPOSE:
+   calculate net present value (NPV) of a temporal (yearly) series of
+   values (e.g. costs)
+ CALLING SEQUENCE:
+   NPV=climada_NPV(values,discount_rates)
+ EXAMPLE:
+   NPV=climada_NPV([10 10 10],[0.02 0.02 0.02])
+ INPUTS:
+   values: the vector with values (any currency)
+       value(1) corresponds to todays's value, value(end) to the
+       futuremost value.
+   discount_rates: the vector with discount rates (decimal)
+       if not give, a zero discount rate is used
+       if only a single number is given, this is used as the discount rate
+       for all years
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   NPV: the net present value of values after application of the discount rates
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100221
+View <A HREF=code/climada_NPV.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_adaptation_cost_curve">
+<H2>climada_adaptation_cost_curve</H2></A>
+<font color="blue">function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(measures_impact, measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers) </font>
+ climada measures impact climate adaptation cost curve
+ NAME:
+   climada_adaptation_cost_curve
+ PURPOSE:
+   plot adaptation cost curve
+   see also: climada_adaptation_event_view
+
+   NOTE: The mode with output arguments insurance_benefit and
+   insurance_cost is only used when called from
+   climada_play_adapt_cost_curve, no relevance for lecture
+ CALLING SEQUENCE:
+   climada_adaptation_cost_curve(measures_impact,measures_impact_comparison)
+ EXAMPLE:
+   climada_adaptation_cost_curve(climada_measures_impact(climada_entity_read)) % from scratch
+   climada_adaptation_cost_curve(climada_measures_impact,climada_measures_impact) % one needs to really understand what's going on
+ INPUTS:
+   measures_impact: either a struct containing the impacts of measures or a measures_impact file (.mat with a struct)
+       see climada_measures_impact
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   measures_impact_comparison: same as measures_impact, but for comparison
+       (will be shown in overlay). Not prompted for, so please specify in
+       call, or enter 'ASK' in climada_adaptation_cost_curve('','ASK')
+   x_text_control: controls the horizontal distribution of the text labels
+       (divider of the length of the x-axis, default=20)
+   y_text_control: controls the vertical distribution of the text labels
+       (divider of the length of the y-axis, default=50)
+   scaled_AED: scaled annual expected damage (only used by Lea Mueller),
+       default=0 (inactive)
+   nice_numbers: used in the special mode for the climada_play_gui, where
+       this code is called from climada_play_adapt_cost_curve, 
+       default=0 (inactive)
+ OUTPUTS:
+   insurance_benefit and insurance_cost: only used when called from
+       climada_play_adapt_cost_curve, see there (in essence to write
+       insurance cost on the GUI)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091228
+ David N. Bresch, david.bresch@gmail.com, 20091230 major revision, appreance similar to ECA graphs
+ David N. Bresch, david.bresch@gmail.com, 20130316 EDS-&ampgtEDS
+ David N. Bresch, david.bresch@gmail.com, 20130316 compatibility for both direct call as well as via climada_play_gui
+View <A HREF=code/climada_adaptation_cost_curve.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_adaptation_event_view">
+<H2>climada_adaptation_event_view</H2></A>
+<font color="blue">function AEV = climada_adaptation_event_view(measures_impact,comparison_return_periods) </font>
+ climada measures impact climate adaptation loss frequency effect
+ NAME:
+   climada_adaptation_event_view
+ PURPOSE:
+   show the effect of measures for events of different return periods
+   see also: climada_adaptation_cost_curve
+ CALLING SEQUENCE:
+   climada_adaptation_event_view(measures_impact,comparison_return_periods)
+ EXAMPLE:
+   climada_adaptation_event_view(climada_measures_impact(climada_entity_read)) % from scratch
+ INPUTS:
+   measures_impact: either a struct containing the impacts of measures or a measures_impact file (.mat with a struct)
+       see climada_measures_impact
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   comparison_return_periods: the list of return periods to show the
+       comparison for, default is [10 25 100]
+ OUTPUTS:
+   graph, and AEV, a stucture which holds the data of the graph:
+       loss(measure_i,return_period_i): the loss for measure_i at return_period_i
+           loss(end,return_period_i) holds the loss with no measures
+       return_period(return_period_i): the list of return periods
+       frequency(return_period_i): the list of frequencies
+       effect(measure_i,return_period_i): the effect of measure_i at return_period_i
+       total_effect(return_period_i): the total effect of all measures at return_period_i
+       cumulated(return_period_i): for each return period, a struct,with
+           effect(measure_i): the cumulated effect up to measure i
+           NOTE: measures ordered as in adaptation cost curve
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100109
+View <A HREF=code/climada_adaptation_event_view.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_arrow">
+<H2>climada_arrow</H2></A>
+<font color="blue">function [h,yy,zz] = climada_arrow(varargin) </font>
+ ARROW  Draw a line with an arrowhead.
+
+  ARROW(Start,Stop) draws a line with an arrow from Start to Stop (points
+        should be vectors of length 2 or 3, or matrices with 2 or 3
+        columns), and returns the graphics handle of the arrow(s).
+
+        A copy of arrow, just to fix the following 'bug':
+        Undefined function 'arrow' for input arguments of type 'double'
+        The present version does read double...
+
+  ARROW uses the mouse (click-drag) to create an arrow.
+
+  ARROW DEMO &amp ARROW DEMO2 show 3-D &amp 2-D demos of the capabilities of ARROW.
+
+  ARROW may be called with a normal argument list or a property-based list.
+        ARROW(Start,Stop,Length,BaseAngle,TipAngle,Width,Page,CrossDir) is
+        the full normal argument list, where all but the Start and Stop
+        points are optional.  If you need to specify a later argument (e.g.,
+        Page) but want default values of earlier ones (e.g., TipAngle),
+        pass an empty matrix for the earlier ones (e.g., TipAngle=[]).
+
+  ARROW('Property1',PropVal1,'Property2',PropVal2,...) creates arrows with the
+        given properties, using default values for any unspecified or given as
+        'default' or NaN.  Some properties used for line and patch objects are
+        used in a modified fashion, others are passed directly to LINE, PATCH,
+        or SET.  For a detailed properties explanation, call ARROW PROPERTIES.
+
+        Start         The starting points.                     B
+        Stop          The end points.                         /|\           ^
+        Length        Length of the arrowhead in pixels.     /|||\          |
+        BaseAngle     Base angle in degrees (ADE).          //|||\\        L|
+        TipAngle      Tip angle in degrees (ABC).          ///|||\\\       e|
+        Width         Width of the base in pixels.        ////|||\\\\      n|
+        Page          Use hardcopy proportions.          /////|D|\\\\\     g|
+        CrossDir      Vector || to arrowhead plane.     ////  |||  \\\\    t|
+        NormalDir     Vector out of arrowhead plane.   ///    |||    \\\   h|
+        Ends          Which end has an arrowhead.     //&amplt-----&ampgt||      \\   |
+        ObjectHandles Vector of handles to update.   /   base |||        \  V
+                                                    E    angle||&amplt--------&ampgtC
+  ARROW(H,'Prop1',PropVal1,...), where H is a                 |||tipangle
+        vector of handles to previously-created arrows        |||
+        and/or line objects, will update the previously-      |||
+        created arrows according to the current view       --&ampgt|A|&amplt-- width
+        and any specified properties, and will convert
+        two-point line objects to corresponding arrows.  ARROW(H) will update
+        the arrows if the current view has changed.  Root, figure, or axes
+        handles included in H are replaced by all descendant Arrow objects.
+
+  A property list can follow any specified normal argument list, e.g.,
+  ARROW([1 2 3],[0 0 0],36,'BaseAngle',60) creates an arrow from (1,2,3) to
+  the origin, with an arrowhead of length 36 pixels and 60-degree base angle.
+
+  The basic arguments or properties can generally be vectorized to create
+  multiple arrows with the same call.  This is done by passing a property
+  with one row per arrow, or, if all arrows are to have the same property
+  value, just one row may be specified.
+
+  You may want to execute AXIS(AXIS) before calling ARROW so it doesn't change
+  the axes on you; ARROW determines the sizes of arrow components BEFORE the
+  arrow is plotted, so if ARROW changes axis limits, arrows may be malformed.
+
+  This version of ARROW uses features of MATLAB 6.x and is incompatible with
+  earlier MATLAB versions (ARROW for MATLAB 4.2c is available separately);
+  some problems with perspective plots still exist.
+ Copyright (c)1995-2009, Dr. Erik A. Johnson &ampltJohnsonE@usc.edu&ampgt, 5/20/2009
+ http://www.usc.edu/civil_eng/johnsone/
+View <A HREF=code/climada_arrow.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_assets_encode">
+<H2>climada_assets_encode</H2></A>
+<font color="blue">function [assets hazard] = climada_assets_encode(assets,hazard) </font>
+ climada assets encode
+ NAME:
+   climada_assets_encode
+ PURPOSE:
+   encode an entity (an already read assets file)
+   eoncoding means: map read data points to calculation centroids of
+   hazard event set
+
+   normally called from: climada_entity_read
+ CALLING SEQUENCE:
+   assets=climada_assets_encode(assets,hazard)
+ EXAMPLE:
+   assets=climada_assets_encode(assets,hazard)
+ INPUTS:
+   assets: a read assets structure, see climada_entity_read
+   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   the encoded assets, means locations mapped to calculation centroids
+   new field assets.centroid_index added
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091227
+ David N. Bresch, david.bresch@gmail.com, 20100107 revised, changed from entity.assets to assets
+View <A HREF=code/climada_assets_encode.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_batch_run">
+<H2>climada_batch_run</H2></A>
+<font color="blue">function climada_batch_run(param1,param2) </font>
+ climada
+ NAME:
+   climada_template
+ PURPOSE:
+   
+ CALLING SEQUENCE:
+   climada_template(param1,param2);
+ EXAMPLE:
+   climada_template(param1,param2);
+ INPUTS:
+   param1: 
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   param2: as an example
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100511 (onboard flight to Barbados)
+View <A HREF=code/climada_batch_run.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_centroids_read">
+<H2>climada_centroids_read</H2></A>
+<font color="blue">function centroids = climada_centroids_read(centroids_filename, centroids_save_file, visualize, markersize) </font>
+ climada measures read import
+ NAME:
+   climada_centroids_read
+ PURPOSE:
+   read the Excel file with the list of measures
+ CALLING SEQUENCE:
+   centroids = climada_centroids_read(centroids_filename)
+ EXAMPLE:
+   centroids = climada_centroids_read
+   centroids = climada_centroids_read('','',1) % to plot
+ INPUTS:
+   centroids_filename: the filename of the Excel file with the centroids
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   centroids_save_file: filename for saving of centroids in
+       ...\climada\system\... (default is Excel filename with ext .mat)
+       'NO_SAVE' to suppress saving centroids
+   visualize: whether we plot the centroids on a map (=1) or not (=0, default)
+   markersize: define markersize for centroids visualisation, default = 4
+ OUTPUTS:
+   centroids: a structure, with 
+       Longitude  (1,:): the longitudes   
+       Latitude   (1,:): the latitudes   
+       centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091229
+ Lea Mueller, 20110718
+ David N. Bresch, david.bresch@gmail.com, 20120505, circle_plot
+View <A HREF=code/climada_centroids_read.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_centroids_read_transpose">
+<H2>climada_centroids_read_transpose</H2></A>
+<font color="blue">function centroids = climada_centroids_read(centroids_filename, centroids_save_file, visualize, markersize) </font>
+ climada measures read import
+ NAME:
+   climada_centroids_read
+ PURPOSE:
+   read the Excel file with the list of measures
+ CALLING SEQUENCE:
+   centroids = climada_centroids_read(centroids_filename)
+ EXAMPLE:
+   centroids = climada_centroids_read
+   centroids = climada_centroids_read('','',1) % to plot
+ INPUTS:
+   centroids_filename: the filename of the Excel file with the centroids
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   centroids_save_file: filename for saving of centroids in
+       ...\climada\system\... (default is Excel filename with ext .mat)
+       'NO_SAVE' to suppress saving centroids
+   visualize: whether we plot the centroids on a map (=1) or not (=0, default)
+   markersize: define markersize for centroids visualisation, default = 4
+ OUTPUTS:
+   centroids: a structure, with 
+       Longitude  (1,:): the longitudes   
+       Latitude   (1,:): the latitudes   
+       centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091229
+ Lea Mueller, 20110718
+ David N. Bresch, david.bresch@gmail.com, 20120505, circle_plot
+View <A HREF=code/climada_centroids_read_transpose.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_circle_plot">
+<H2>climada_circle_plot</H2></A>
+<font color="blue">function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,marker_size,marker_format,overlay_plot,axis_range,max_value); </font>
+ climada catos event loss hazard probabilistic stochastic
+ NAME:
+   climada_circle_plot
+ PURPOSE:
+   plot circles with diameters scaled by values
+   in the range min(values)..max(values)
+   the routine does not open a new figure if one exists
+
+   see climada_circle_plot_legend for a legend to this plot
+
+   %% precedes a switched off option, not a comment
+
+ CALLING SEQUENCE:
+   climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,marker_size,marker_format,overlay_plot,axis_range,max_value);
+ EXAMPLE:
+   climada_circle_plot('Test',lon,lat,values,10)
+ INPUTS:
+   title_str: plot title
+   lon,lat,values: arrays of same size
+ OPTIONAL INPUT PARAMETERS:
+   circle_diam: max diameter of the circles
+   circle_format: like 'or' for red circles
+   marker_size: size of markers denoting centers
+   marker_format: like '+b'
+   overlay_plot: if set to 1, only do an overlay, no country borders...
+   axis: if set [min(lon) max(lon) min(lat) max(lat)], otherwise
+   determined in the function
+   max_value: if set, use this value to scale circle diameters
+ OUTPUTS:
+   figure
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120430
+View <A HREF=code/climada_circle_plot.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_code_optimizer">
+<H2>climada_code_optimizer</H2></A>
+<font color="blue">function climada_code_optimizer(code_file) </font>
+ climada
+ NAME:
+   climada_code_optimizer
+ PURPOSE:
+   optimize climada code by removing waitbars etc. Very simple mechanisms,
+   just any line which comprises the tag % CLIMADA_OPT is removed
+   so the optimization is fully controlled by the programmer
+ CALLING SEQUENCE:
+   climada_code_optimizer(code_file)
+ EXAMPLE:
+   climada_code_optimizer
+ INPUTS:
+   code_file: the code file to be optimized
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   the optimized, code, _OPT added at the end (prior to the suffix)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091228
+View <A HREF=code/climada_code_optimizer.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_color_plot">
+<H2>climada_color_plot</H2></A>
+<font color="blue">function climada_color_plot(values,... </font>
+                           lon,...
+                           lat,...
+                           figure_name,...
+                           title_str,...
+                           plot_method,...
+                           interp_method,...
+                           npoints,...
+                           plot_centroids,...
+                           caxis_range,...
+                           stencil_ext)
+ color plot
+ NAME:
+   climada_color_plot
+ PURPOSE:
+   helper function to make nice color plot
+   does only show values in the vicinity of the hazard zone centroids
+
+   for speed up, if one gives the npoints negative, the mask is stored
+
+   %% precedes a switched off option, not a comment
+
+ CALLING SEQUENCE:
+   climada_color_plot(values,lon,lat,figure_name,title_str,plot_method,interp_method,npoints)
+ EXAMPLE:
+   climada_color_plot(mean(hazard.arr,2),hazard.lon,hazard.lat)
+ INPUTS:
+   values: values at zone centroids
+   lon,lat: zone centroids
+   interactive_mode: 'interactive' allows for GUIs
+ OPTIONAL INPUT PARAMETERS:
+   figure_name: name of the figure window, if set to 'none', no figure is opened
+   title_str:plot title
+   plot_method: 'pcolor' or 'contour', default is matrix
+   interp_method: method in griddata, like 'linear', 'cubic',...
+   npoints: the number of points used
+   plot_centroids: if set to 0, do not plot dentroids as red dots
+       (default=1)
+   caxis_range: [min max] data values for constant color bars
+   stencil_ext: to extend the stencil range (in units of the target grid,
+       default=0
+ OUTPUTS:
+   makes new figure
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120430
+View <A HREF=code/climada_color_plot.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_damage_exceedence">
+<H2>climada_damage_exceedence</H2></A>
+<font color="blue">function [sorted_damage,exceedence_freq,cumulative_probability,sorted_freq,event_index_out]=climada_damage_exceedence(event_damage,event_freq,event_index); </font>
+ climada event damage hazard probabilistic stochastic
+ NAME:
+   climada_damage_exceedence
+ PURPOSE:
+   sort the damages descendingly
+   calculate the exceedence frequency
+   calculate the cumulative probability
+
+ CALLING SEQUENCE:
+   [damage,exceedence_freq,cumulative_probability]=climada_damage_exceedence(event_damage,event_freq);
+ EXAMPLE:
+   [damage,exceedence_freq,cumulative_probability]=climada_damage_exceedence([10 1000 100],[0.1 0.001 0.01]);
+ INPUTS:
+   event_damage: event damages (array)
+   event_freq: occurrence frequency of each event damage (array)
+ OPTIONAL INPUT PARAMETERS:
+   event_index: the event_ID for each event_damage
+ OUTPUTS:
+   sorted_damage:   sorted damages (descendingly)
+   exceedence_freq: exceedence frequency for each damage
+   cumulative_probability: cumulative probability of each damage
+   sorted_freq: frequency sorted as event damages
+   event_index_out: event_index sorted as damages (only if provided input)
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120430
+View <A HREF=code/climada_damage_exceedence.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_demo">
+<H2>climada_demo</H2></A>
+<font color="blue">function climada_demo </font>
+ climada
+ NAME:
+   climada_demo
+ PURPOSE:
+   a brief demo of climada by way of an interactive GUI
+   
+ CALLING SEQUENCE:
+   climada_demo
+ EXAMPLE:
+   climada_demo
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120116
+View <A HREF=code/climada_demo.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_distribution_lon_lat">
+<H2>climada_distribution_lon_lat</H2></A>
+<font color="blue">function climada_distribution_lon_lat(tc_track, check_printplot, check_printplot_2) </font>
+ distribution of start point longitude and latitude and difference in
+ longitude and latitude
+ NAME:
+   climada_distribution_lon_lat
+ PURPOSE:
+   plot to visually control distribution of probabilistic to historical
+   track data
+ CALLING SEQUENCE:
+   climada_distribution_lon_lat(tc_track_prob, check_printplot, check_printplot_2)
+ EXAMPLE:
+   climada_distribution_lon_lat
+   climada_distribution_lon_lat([],1,1)
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   tc_track_prob  :  probabilistic track set, if not given prompted for
+   check_printplot:  if set to 1 will print (save) figure, default 0
+ OUTPUTS:
+   plot
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110715
+ david.bresch@gmail.com, 20120407, load(colormap) fixed, but still some Q.
+View <A HREF=code/climada_distribution_lon_lat.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_distribution_v0_vi">
+<H2>climada_distribution_v0_vi</H2></A>
+<font color="blue">function [mu, sigma, A] = climada_distribution_v0_vi(tc_track, output_unit, check_visible, check_printplot) </font>
+ distribution of initial wind speed v0 and change in in wind speed vi
+ tc_track has to be recorded at 6h intervals with wind speed in kn
+ NAME:
+   climada_distribution_v0_vi
+ PURPOSE:
+   fit normal distribution to inital wind speed from tc tracks and 
+   fit normal distribution to 
+   previous:   .....
+   next:       ....
+ CALLING SEQUENCE:
+   [mu, sigma] = climada_distribution_v0_vi(tc_name, check_printplot)
+ EXAMPLE:
+   [mu, sigma] = climada_distribution_v0_vi('all', 1);
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   tc_track:     historical tc tracks, prompted for if not given
+   output_unit:      output unit of mu and sigma, e.g. 'kn' for knots or
+   'm/s' for m/s, default m/s
+   check_visible:    if set to 1 will show figure, default 1
+   check_printplot:  if set to 1 will print (save) figure, default 0
+ OUTPUTS:
+   mu and sigma, mean and standard deviation of fitted normal distribution
+   mu:     mean for initial wind speed v0 mu(1) and difference in wind
+   speed vi mu(2)
+   sigma:  standard deviation for initial wind speed v0 sigma(1) and difference in wind
+   speed vi sigma(2)
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110616
+View <A HREF=code/climada_distribution_v0_vi.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_ellipse">
+<H2>climada_ellipse</H2></A>
+<font color="blue">function h=climada_ellipse(ra,rb,ang,x0,y0,C,Nb) </font>
+ Ellipse adds ellipses to the current plot
+
+ ELLIPSE(ra,rb,ang,x0,y0) adds an ellipse with semimajor axis of ra,
+ a semimajor axis of radius rb, a semimajor axis of ang, centered at
+ the point x0,y0.
+
+  A copy of ellipse, just to fix the following 'bug':
+  Undefined function 'ellipse' for input arguments of type 'double'
+  The present version does read double...
+
+ The length of ra, rb, and ang should be the same. 
+ If ra is a vector of length L and x0,y0 scalars, L ellipses
+ are added at point x0,y0.1
+ If ra is a scalar and x0,y0 vectors of length M, M ellipse are with the same 
+ radii are added at the points x0,y0.
+ If ra, x0, y0 are vectors of the same length L=M, M ellipses are added.
+ If ra is a vector of length L and x0, y0 are  vectors of length
+ M~=L, L*M ellipses are added, at each point x0,y0, L ellipses of radius ra.
+
+ ELLIPSE(ra,rb,ang,x0,y0,C)
+ adds ellipses of color C. C may be a string ('r','b',...) or the RGB value. 
+ If no color is specified, it makes automatic use of the colors specified by 
+ the axes ColorOrder property. For several circles C may be a vector.
+
+ ELLIPSE(ra,rb,ang,x0,y0,C,Nb), Nb specifies the number of points
+ used to draw the ellipse. The default value is 300. Nb may be used
+ for each ellipse individually.
+
+ h=ELLIPSE(...) returns the handles to the ellipses.
+
+ as a sample of how ellipse works, the following produces a red ellipse
+ tipped up at a 45 deg axis from the x axis
+ ellipse(1,2,pi/8,1,1,'r')
+
+ note that if ra=rb, ELLIPSE plots a circle
+
+
+ written by D.G. Long, Brigham Young University, based on the
+ CIRCLES.m original 
+ written by Peter Blattner, Institute of Microtechnology, University of 
+ Neuchatel, Switzerland, blattner@imt.unine.ch
+View <A HREF=code/climada_ellipse.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_entity_load">
+<H2>climada_entity_load</H2></A>
+<font color="blue">function entity_out=climada_entity_load(entity_file) </font>
+ climada
+ NAME:
+   climada_entity_load
+ PURPOSE:
+   load a previously saved entity (just to avoid typing long paths and
+   filenames in the cmd window)
+ CALLING SEQUENCE:
+   entity_out=climada_entity_load(entity_file)
+ EXAMPLE:
+   entity_out=climada_entity_load(entity_file)
+ INPUTS:
+   entity_file: the filename with path of a previously saved entity, see
+       climada_entity_save(climada_assets_encode(climada_assets_read))
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   entity_out: a struct, see e.g. climada_assets_read for details
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091230
+View <A HREF=code/climada_entity_load.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_entity_read">
+<H2>climada_entity_read</H2></A>
+<font color="blue">function [entity hazard] = climada_entity_read(entity_filename,hazard) </font>
+ climada assets read import
+ NAME:
+   climada_entity_read
+ PURPOSE:
+   read the Excel file with the assets, vulnerabilities, measures etc.
+   climada_assets_encode is automatically invoked
+
+   read also the damagefunctions sheet, if it exists (and run some checks)
+
+   read also the measures sheet, if it exists (in this case,
+   climada_measures_encode is automatically invoked)
+
+   read also the discount sheet, if it exists (and run some checks)
+
+ CALLING SEQUENCE:
+   entity=climada_entity_read(entity_filename,hazard)
+ EXAMPLE:
+   entity=climada_entity_read;
+ INPUTS:
+   entity_filename: the filename of the Excel file with the assets
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+       &ampgt promted for if not given (out of climada_assets_encode)
+ OUTPUTS:
+   entity: a structure, with 
+       assets: a structure, with 
+           Latitude: the latitude of the values
+           Longitude: the longitude of the values
+           Value: the total insurable value
+           Deductible: the deductible
+           Cover: the cover
+           DamageFunID: the damagefunction curve ID
+       damagefunctions: a structure, with 
+           DamageFunID: the damagefunction curve ID
+           Intensity: the hazard intensity
+           MDD: the mean damage degree
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090920
+ Lea Mueller, 20110720
+View <A HREF=code/climada_entity_read.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_entity_save">
+<H2>climada_entity_save</H2></A>
+<font color="blue">function climada_entity_save(entity,entity_file) </font>
+ climada
+ NAME:
+   climada_entity_save
+ PURPOSE:
+   save an entity to a .mat file (just to avoid typing long paths and
+   filenames in the cmd window)
+ CALLING SEQUENCE:
+   climada_entity_save(entity,entity_file)
+ EXAMPLE:
+   climada_entity_save(climada_assets_encode(climada_assets_read))
+ INPUTS:
+   entity: the entity struct to be saved, see e.g. climate_assets_encode
+   entity_file: the filename to save the entity in
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   entity saved to a .mat file
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091230
+View <A HREF=code/climada_entity_save.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_excel_hazard_set">
+<H2>climada_excel_hazard_set</H2></A>
+<font color="blue">function hazard=climada_excel_hazard_set(excel_file,hazard_set_file,visualize) </font>
+ climada excel hazard event set generate
+ NAME:
+   climada_excel_hazard_set
+ PURPOSE:
+   generate a hazard event set based on Excel input. The Excel sheet
+   contains all the event footprints. 
+
+   An easy method to use climada with a finite (small) number of
+   predefined events (more hazard event scenarios then a full
+   probabilistic set). 
+
+   NOTE: no consistency checks performed, user to ensure that number of
+   events equals number of frequencies, events defined at all centroids...
+   
+   see also: e.g. climada_tc_hazard_set
+   next: diverse
+ CALLING SEQUENCE:
+   hazard=climada_excel_hazard_set(excel_file,hazard_set_file,visualize)
+ EXAMPLE:
+   hazard=climada_excel_hazard_set('','',1)
+ INPUTS:
+   excel_file: an Excel file with the centroid and hazard information
+       required tabs: centroids, hazard_intensity and hazard_frequency
+       centroids, required columns: centroid_ID, Longitude, Latitude
+       hazard_intensity, required columns: centroid_ID, event001, event002, ...
+       hazard_frequency, required columns: event_ID, frequency, orig_event_flag
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   hazard_set_file: the name of the hazard set file
+       &ampgt promted for if not given
+   visualize: whether we plot the centroids on a map (=1) or not (=0,default)
+ OUTPUTS:
+   hazard: a struct, the hazard event set, more for tests, since the
+       hazard set is stored as hazard_set_file, see code
+       lon(centroid_i): the longitude of each centroid
+       lat(centroid_i): the latitude of each centroid
+       centroid_ID(centroid_i): a unique ID for each centroid
+       peril_ID: just an ID identifying the peril, e.g. 'TC' for
+       tropical cyclone or 'ET' for extratropical cyclone
+       comment: a free comment, normally containing the time the hazard
+           event set has been generated
+       orig_years: the original years the set is based upon
+       orig_event_count: the original events
+       event_count: the total number of events in the set, including all
+           probabilistic ones, hence event_count&ampgt=orig_event_count
+       orig_event_flag(event_i): a flag for each event, whether it's an original
+           (1) or probabilistic (0) one
+       event_ID: a unique ID for each event
+       date: the creation date of the set
+       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
+           centroid_i
+       frequency(event_i): the frequency of each event
+       matrix_density: the density of the sparse array hazard.arr
+       windfield_comment: a free comment, not in all hazard event sets
+       filename: the filename of the hazard event set (if passed as a
+           struct, this is often useful)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110328
+View <A HREF=code/climada_excel_hazard_set.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_figuresize">
+<H2>climada_figuresize</H2></A>
+<font color="blue">function fig = climada_figuresize(height, width) </font>
+ figure size for printing/saving pdf figures
+ NAME:
+   climada_figuresize
+ PURPOSE:
+   create figure so that pdf not A4 but customed to matlab figure
+   and set default axes font size, line width, marker line width and text
+   font size bigger, so that approriate for export
+ CALLING SEQUENCE:
+   fig = climada_figuresize(height, width)
+ EXAMPLE:
+   fig = climada_figuresize(0.4, 0.5)
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   height: percentage of height of screen
+   width:  percentage of height of screen
+ %   width:  percentage of width of screen
+ OUTPUTS:
+   figure with handle fig with requested height and width
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110616
+View <A HREF=code/climada_figuresize.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_geo_distance">
+<H2>climada_geo_distance</H2></A>
+<font color="blue">function dist_m = climada_geo_distance(lon1,lat1,lon2,lat2) </font>
+ climada distance
+ NAME:
+   climada_geo_distance
+ PURPOSE:
+   calculate distance between two points or a point and a series of points
+ CALLING SEQUENCE:
+   climada_geo_distance(lon1,lat1,lon2,lat2);
+ EXAMPLE:
+   climada_geo_distance(0.0,45.0,1.0,45.0); % two points
+   climada_geo_distance(0.0,45.0,[1.0 2.0 2.0],[45.0 45.0 46.0]); % point and a series of points
+ INPUTS:
+   lon1,lat1: longitude and latitude of first point
+   lon2,lat2: longitude and latitude of second point
+       or, if vectors of the same length, series of points
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   dist_m: distance(s) between points in [m]
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091227
+View <A HREF=code/climada_geo_distance.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_gridded_VALUE">
+<H2>climada_gridded_VALUE</H2></A>
+<font color="blue">function [X, Y, gridded_VALUE] = climada_gridded_VALUE(values      ,... </font>
+                                                         centroids,...
+                                                         interp_method,...
+                                                         npoints      ,...
+                                                         stencil_ext)
+ NAME:
+   climada_gridded_VALUE
+ PURPOSE:
+   gridded data of wind speed in hazard.arr 
+   for creating color plot
+ CALLING SEQUENCE:
+   climada_gridded_VALUE(values,centroids,interp_method,npoints,stencil_ext)
+ EXAMPLE:
+   climada_gridded_VALUE(values,centroids)
+ INPUTS:
+   values
+   centroids
+ OPTIONAL INPUT PARAMETERS:
+   interp_method: method in griddata, like 'linear', 'cubic',...
+   npoints: the number of points used
+   stencil_ext: to extend the stencil range (in units of the target grid,
+       default=0
+ OUTPUTS:
+   X, Y, gridded Value
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120430
+ Lea Mueller, 17.5.2011
+View <A HREF=code/climada_gridded_VALUE.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_hazard2hazard">
+<H2>climada_hazard2hazard</H2></A>
+<font color="blue">function hazard=climada_hazard2hazard(hazard_set_file_in,hazard_set_file_out) </font>
+ climada
+ NAME:
+   climada_hazard2hazard
+ PURPOSE:
+   convert a hazard event set, a struct with fields like:
+       comment: 
+       peril_ID:
+       date: '13-Dec-2005'
+       lat:
+       lon:
+       CalculationUnitID:
+       event_count:
+       arr: 
+       orig_event_flag:
+       frequency:
+       event_ID:
+       orig_years: 30
+       event_years: 150
+       matrix_density: 0.2539
+   into a climada hazard event set: a struct, the hazard event set, with:
+       lon(centroid_i): the longitude of each centroid
+       lat(centroid_i): the latitude of each centroid
+       centroid_ID(centroid_i): a unique ID for each centroid
+       peril_ID: just an ID identifying the peril, e.g. 'TC' for
+       tropical cyclone or 'ET' for extratropical cyclone
+       comment: a free comment, normally containing the time the hazard
+           event set has been generated
+       orig_years: the original years the set is based upon
+       orig_event_count: the original events
+       event_count: the total number of events in the set, including all
+           probabilistic ones, hence event_count&ampgt=orig_event_count
+       orig_event_flag(event_i): a flag for each event, whether it's an original
+           (1) or probabilistic (0) one
+       event_ID: a unique ID for each event
+       date: the creation date of the set
+       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
+           centroid_i
+       frequency(event_i): the frequency of each event
+       matrix_density: the density of the sparse array hazard.arr
+       windfield_comment: a free comment, not in all hazard event sets
+       filename: the filename of the hazard event set (if passed as a
+           struct, this is often useful)
+
+   please check the PARAMETERS section below, e.g. for
+       hazard_reference_year, the reference year for the hazard set
+ CALLING SEQUENCE:
+   hazard=climada_hazard2hazard(hazard_set_file_in,hazard_set_file_out)
+ EXAMPLE:
+   climada_hazard2hazard
+ INPUTS:
+   hazard_set_file_in: hazard set file (a .mat file with a stored hazard
+       structure)
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   hazard_set_file_out: the name of the new hazard set file
+       &ampgt promted for if not given
+ OUTPUTS:
+   hazard event set to file
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090920
+View <A HREF=code/climada_hazard2hazard.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_hazard_clim_scen">
+<H2>climada_hazard_clim_scen</H2></A>
+<font color="blue">function hazard = climada_hazard_clim_scen(hazard,hazard_clim_file,frequency_screw,intensity_screw) </font>
+ climada
+ NAME:
+   climada_template
+ PURPOSE:
+   starting from a given hazard event set (hazard), construct the
+   climate scenario hazard event set (hazard_clim_file)
+
+   Modifications done in code, so please visit/edit the code prior to use,
+   please check the PARAMETERS section below, e.g. for
+       frequency_screw, intensity_screw
+       hazard_reference_year: the reference year for the hazard set
+ CALLING SEQUENCE:
+   hazard=climada_tc_hazard_clim_scen(hazard,hazard_clim_file)
+ EXAMPLE:
+   hazard=climada_tc_hazard_clim_scen
+ INPUTS:
+   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   hazard_clim_file: the filename of the new climate scenario hazard event set
+       &ampgt promted for if not given
+ OUTPUTS:
+   hazard: the hazard event set for the climate scenario, also stored to hazard_clim_file
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090920
+ Lea Mueller, 20110720
+ Reto Stockmann 20120719
+View <A HREF=code/climada_hazard_clim_scen.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_hazard_stats">
+<H2>climada_hazard_stats</H2></A>
+<font color="blue">function hazard = climada_hazard_stats(hazard, return_periods, hazard_R_file, check_plot, centroids, rain, check_printplot) </font>
+ wind speed for return periods are calculate based on historical and 
+ probabilistic data set or climate change hazard 
+ NAME:
+   climada_hazard_stats
+ PURPOSE:
+   add wind speed for requested return periods
+     .intensity_fit_ori
+     .intensity_fit
+     .R_fit (requested return periods)
+ CALLING SEQUENCE:
+   climada_hazard_stats(hazard, return_periods, hazard_R_file, check_plot, centroids)
+ EXAMPLE:
+   for wind:
+   climada_hazard_stats
+   climada_hazard_stats([],[1 5 10 25 50 100 500 1000],[],1,[])
+   for rain:
+   climada_hazard_stats([],[1 5 10 25 50 100 500 1000],[],1,[],1)
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   hazard:         hazard structure, if not given, prompted for
+   return_periods: vector containing the requested return periods 
+                   (e.g. [1 5 10 25 50 100 500 1000])
+   check_printplot:if set to 0, won't be asked to print figure, default 1
+   rain:            1: for rain colormap and titles
+ OUTPUTS:
+   hazard structure with 
+   - hazard.arr_sort:          probabilistic sorted windspeed per centroid
+   - hazard.arr_ori_sort:      historical sorted windspeed per centroid
+   - hazard.R_fit:             requested return periods
+   - hazard.intensity_fit_ori: fitted wind speed for requested
+                               return periods for every centroid 
+   - hazard.intensity_fit:     fitted wind speed for requested
+                               return periods for every centroid 
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110623
+View <A HREF=code/climada_hazard_stats.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_init_vars">
+<H2>climada_init_vars</H2></A>
+<font color="blue">function ok=climada_init_vars(reset_flag) </font>
+ init variables global
+ NAME:
+	climada_init_vars
+ PURPOSE:
+	initialize path and filenames 
+
+ CALLING SEQUENCE:
+	ok=climada_init_vars(reset_flag)
+ EXAMPLE:
+	ok=climada_init_vars;
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   reset_flag: if set to 1, forced re-init
+ OUTPUTS:
+	ok: =1 if no troubles, 0 else
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120430
+ David N. Bresch, david.bresch@gmail.com, 20130316, EDS-&ampgtEDS...
+View <A HREF=code/climada_init_vars.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_measures_encode">
+<H2>climada_measures_encode</H2></A>
+<font color="blue">function measures=climada_measures_encode(measures); </font>
+ climada
+ NAME:
+   climada_measures_encode
+ PURPOSE:
+   
+ CALLING SEQUENCE:
+   measures=climada_measures_encode(measures);
+ EXAMPLE:
+   measures=climada_measures_encode(climada_measures_read);
+ INPUTS:
+   measures: a structure, with the measures
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20100107
+View <A HREF=code/climada_measures_encode.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_measures_impact">
+<H2>climada_measures_impact</H2></A>
+<font color="blue">function measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures) </font>
+ climada
+ NAME:
+   climada_measures_impact
+ PURPOSE:
+   calculate the impact of a series of measures on a given set of assets
+   under a given hazard
+
+   next step: climada_adaptation_cost_curve
+ CALLING SEQUENCE:
+   measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures)
+ EXAMPLE:
+   measures_impact=climada_measures_impact(climada_entity_read)
+   hazard_set_file='...\climada\data\hazards\TCNA_A_Probabilistic.mat';
+   measures_impact=climada_measures_impact(climada_entity_read('',hazard_set_file),hazard_set_file,'no')
+ INPUTS:
+   entity: a read and encoded assets and damagefunctions file, see climada_assets_encode(climada_assets_read)
+       &ampgt promted for if not given
+   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   measures_impact_reference: reference measures (e.g. portfolio today and
+       measures today). Used to properly calculate the net present values
+       of future impacts
+       set to 'no' if you would not like to be asked for a reference
+   measures: either a struct containing the measures or a measures set file (.mat with a struct)
+       see climada_measures_read. 
+       A bit complex: 
+       If measures is empty (not provided), it is taken from entity.measures (in case entity
+           contains measures). If entity does not contain measures, user gets prompted for.
+       If user provides measures, these measures are used
+       If user set measures to 'ASK', he gets prompted for and these are used
+ OUTPUTS:
+   measures_impact: a structure with
+       EDS(measure_i): the event damage set for each measure, last one EDS(end) for no measures
+       ED(measure_i): the annual expected damage to the assets under measure_i, 
+           last one ED(end) for no measures
+       benefit(measure_i): the benefit of measure_i
+       b_ratio(measure_i): the cost/benefit ratio of measure_i
+       measures: just a copy of measures, so we have all we need together
+       title_str: a meaningful title, of the format: measures @ assets | hazard
+       NOTE: currently measures_impact is also stored (with a lengthy filename)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091228
+ David N. Bresch, david.bresch@gmail.com, 20130316, EDS-&ampgtEDS...
+View <A HREF=code/climada_measures_impact.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_measures_read">
+<H2>climada_measures_read</H2></A>
+<font color="blue">function measures=climada_measures_read(measures_filename) </font>
+ climada measures read import
+ NAME:
+   climada_measures_read
+ PURPOSE:
+   read the Excel file with the list of measures
+
+   usually, measures are read together with assets and damagefunctions in
+   climada_entity_read. This code allows single Excel files with measures
+   (and, if a tab damagefunctions exists, damage functions) to be read
+   The user will then have to 'switch' measures in an already read and
+   encoded entity with the measures read here.
+ CALLING SEQUENCE:
+   measures=climada_measures_read(measures_filename)
+ EXAMPLE:
+   measures=climada_measures_read;
+ INPUTS:
+   measures_filename: the filename of the Excel file with the measures
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   measures: a structure, with the measures
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091228
+ David N. Bresch, david.bresch@gmail.com, 20130316, vulnerability-&ampgtdamagefunctions...
+View <A HREF=code/climada_measures_read.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_nonspheric_distance_m">
+<H2>climada_nonspheric_distance_m</H2></A>
+<font color="blue">function [fDistance_km GridVect] = climada_nonspheric_distance_m(fLon1,fLat1,fLon2,fLat2,... </font>
+                                                        CUID, inreach)
+                           
+      
+ This function calculates the distance for each individual gridpoint from
+ the TC center. Distance differences in x direction, depending on
+ latitude, are normalized in the whole inreach-box with the value at the
+ TC-Center
+View <A HREF=code/climada_nonspheric_distance_m.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_play_adapt_cost_curve">
+<H2>climada_play_adapt_cost_curve</H2></A>
+<font color="blue">function [impact_present, impact_future, insurance_benefit, insurance_cost]=climada_play_adapt_cost_curve(climada_play_params,omit_plot, scaled_AED, nice_numbers) </font>
+ climada
+ NAME:
+   climada_play_adapt_cost_curve
+ PURPOSE:
+   update the play entity etc. to reflect parameter changes
+   (first time, it reads the play entity from the Excel file play_present.xls)
+   run the calculations and call climada_adaptation_cost_curve for the
+   visualization (all in one, hence easy to call from the GUI)
+   
+   see also: climada_play_gui, normally called therefrom
+ CALLING SEQUENCE:
+   [impact_present,impact_future]=climada_play_adapt_cost_curve(climada_play_params,omit_plot);
+ EXAMPLE:
+   climada_play_params.growth=0.02;climada_play_params.scenario=1;climada_play_params.measures.beachnourish=1;
+   climada_play_params.measures.mangroves=1;climada_play_params.measures.seawall=1;
+   climada_play_params.measures.quality=1;climada_play_params.measures.insurance_deductible=0;
+   [impact_present,impact_future]=climada_play_adapt_cost_curve(climada_play_params);
+ INPUTS:
+   climada_play_params: a structure with the climada parameters the play GUI allows to edit:
+       growth: the percentage, decimal (0.02 means 2% CAGR until 2030)
+       scenario: 0, 1 or 2 for no, moderate and high climate change
+       discount_rate: the discount rate used to discount damages
+       measures, a sub-structure with
+          beachnourish: the level of investment 0..1
+          mangroves: 0..1
+          seawall: 0..1, costs non-linear (power 4)
+          quality: 0..1, costs non-linear (power 4)
+          insurance_deductible: 0..1, costs dealt with also in ELS
+      &ampgt ususally set in GUI, hard-coded for testing (if nothing handed over or empty)
+ OPTIONAL INPUT PARAMETERS:
+   omit_plot: if =1, omit plotting (faster), degfault=0 (do plot)
+ OUTPUTS:
+   impact_present: impact structure, see climada_measures_impact
+   impact_future: impact structure, see climada_measures_impact
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110623, Ashdown Park
+View <A HREF=code/climada_play_adapt_cost_curve.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_play_gui">
+<H2>climada_play_gui</H2></A>
+<font color="blue">function varargout = climada_play_gui(varargin) </font>
+ CLIMADA_PLAY_GUI M-file for climada_play_gui.fig
+      CLIMADA_PLAY_GUI, by itself, creates a new CLIMADA_PLAY_GUI or raises the existing
+      singleton*.
+
+      H = CLIMADA_PLAY_GUI returns the handle to a new CLIMADA_PLAY_GUI or the handle to
+      the existing singleton*.
+
+      CLIMADA_PLAY_GUI('CALLBACK',hObject,eventData,handles,...) calls the local
+      function named CALLBACK in CLIMADA_PLAY_GUI.M with the given input
+      arguments.
+
+      CLIMADA_PLAY_GUI('Property','Value',...) creates a new CLIMADA_PLAY_GUI or raises the
+      existing singleton*.  Starting from the left, property value pairs are
+      applied to the GUI before climada_play_gui_OpeningFcn gets called.  An
+      unrecognized property name or invalid value makes property application
+      stop.  All inputs are passed to climada_play_gui_OpeningFcn via varargin.
+
+      *See GUI Options on GUIDE's Tools menu.  Choose &quotGUI allows only one
+      instance to run (singleton)&quot.
+
+ See also: GUIDE, GUIDATA, GUIHANDLES
+
+ Edit the above text to modify the response to help climada_play_gui
+
+ Last Modified by GUIDE v2.5 08-Oct-2012 10:40:33
+View <A HREF=code/climada_play_gui.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_play_parameter_table">
+<H2>climada_play_parameter_table</H2></A>
+<font color="blue">function climada_play_parameter_table(csv_filename) </font>
+ climada
+ NAME:
+   climada_play_parameter_table
+ PURPOSE:
+   based on climada_play_gui, create a (extensive) parameter table
+   for use by applications which cannot truly simulate the risk
+   such applications will have to interpolate (linearly) between
+   lookup points.
+
+   NOTE: This code takes more than 10 hours to run:
+   for each line of output, it simulates 15*13'000 events (takes a few sec)
+   number of lines in the output file: 3*11*11*n_measures*parameter_resolution
+
+   measure names etc. are currently hard-wired, could be made dynamic
+ CALLING SEQUENCE:
+   climada_play_parameter_table(csv_filename)
+ EXAMPLE:
+   climada_play_parameter_table
+ INPUTS:
+   csv_filename:
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+	parameters written to file csv_filename
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110628, sur TGV Paris-Mulhouse
+View <A HREF=code/climada_play_parameter_table.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_play_parameter_table_App">
+<H2>climada_play_parameter_table_App</H2></A>
+<font color="blue">function climada_play_parameter_table_App(csv_filename) </font>
+ climada
+ NAME:
+   climada_play_parameter_table
+ PURPOSE:
+   based on climada_play_gui, create a (extensive) parameter table
+   for use by applications which cannot truly simulate the risk
+   such applications will have to interpolate (linearly) between
+   lookup points.
+
+   NOTE: This code takes more than 10 hours to run:
+   for each line of output, it simulates 15*13'000 events (takes a few sec)
+   number of lines in the output file: 3*11*11*n_measures*parameter_resolution
+
+   measure names etc. are currently hard-wired, could be made dynamic
+ CALLING SEQUENCE:
+   climada_play_parameter_table(csv_filename)
+ EXAMPLE:
+   climada_play_parameter_table
+ INPUTS:
+   csv_filename:
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+	parameters written to file csv_filename
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110628, sur TGV Paris-Mulhouse
+View <A HREF=code/climada_play_parameter_table_App.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_play_parameter_table_full">
+<H2>climada_play_parameter_table_full</H2></A>
+<font color="blue">function climada_play_parameter_table(csv_filename) </font>
+ climada
+ NAME:
+   climada_play_parameter_table
+ PURPOSE:
+   based on climada_play_gui, create a (extensive) parameter table
+   for use by applications which cannot truly simulate the risk
+   such applications will have to interpolate (linearly) between
+   lookup points.
+
+   This code might need several hours to run:
+   for each line of output, it simulates 15*13'000 events (takes a few sec)
+   number of lines in the output file: 3*6*6*(parameter_resolution^n_measures)
+
+   measure names etc. are currently hard-wired, could be made dynamic
+ CALLING SEQUENCE:
+   climada_play_parameter_table(csv_filename)
+ EXAMPLE:
+   climada_play_parameter_table
+ INPUTS:
+   csv_filename: 
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+	parameters written to file csv_filename
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110628, sur TGV Paris-Mulhouse
+View <A HREF=code/climada_play_parameter_table_full.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_play_waterfall_graph">
+<H2>climada_play_waterfall_graph</H2></A>
+<font color="blue">function [risk_today,risk_econ_growth,risk_climate_change]=climada_play_waterfall_graph(climada_play_params,omit_plot,nice_numbers) </font>
+ climada
+ NAME:
+   climada_play_waterfall_graph
+ PURPOSE:
+   produce the waterfall graph for the climada GUI
+   (first time, it reads the play entity from the Excel file play_present.xls)
+   run the calculations and show the waterfall graph
+
+   see also: climada_play_gui, normally called therefrom
+ CALLING SEQUENCE:
+   climada_play_waterfall_graph(climada_play_params,omit_plot);
+ EXAMPLE:
+   climada_play_params.growth=0.02;climada_play_params.scenario=1;
+   climada_play_waterfall_graph(climada_play_params);
+ INPUTS:
+   climada_play_params: a structure with the climada parameters the play GUI allows to edit:
+       growth: the percentage, decimal (0.02 means 2% CAGR until 2030)
+       scenario: 0, 1 or 2 for no, moderate and high climate change
+      &ampgt ususally set in GUI, hard-coded for testing (if nothing handed over or empty)
+ OPTIONAL INPUT PARAMETERS:
+   omit_plot: if =1, omit plotting (faster), degfault=0 (do plot)
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110625
+ David N. Bresch, david.bresch@gmail.com, 20130316, EDS-&ampgtEDS...
+View <A HREF=code/climada_play_waterfall_graph.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_plot_ACE">
+<H2>climada_plot_ACE</H2></A>
+<font color="blue">function tc_track = climada_plot_ACE(tc_track, name_tag, check_printplot) </font>
+ ---------------------------------------------
+% ACCUMULATED CYCLONE ENERGY ACE
+ % The ACE of a season is calculated by 
+ % summing the squares of the estimated maximum sustained velocity of
+ % - every active tropical storm (wind speed 35 knots (65 km/h) or higher),
+ % - at six-hour intervals. 
+ ---------------------------------------------
+
+ plot histograms of Accumulated Cyclone Energy ACE, No. of storms per
+ seasons, No. of hurricanes and No. of major hurricanes per season of
+ probabilistic tracks, with historical tracks indicated with dotted black
+ lines
+ NAME:
+   climada_plot_ACE
+ PURPOSE:
+   given a probabilistic tc_track structure, histograms of ACE, No. storms,
+   hurricanes and major hurricanes per season and compare with historical
+   histograms (black dotted lines), check distributions
+   ACE of a season is calculated by summing the squares of the estimated 
+   maximum sustained velocity of
+   - every active tropical storm (wind speed 35 knots (65 km/h) or higher),
+   - at six-hour intervals. 
+ 
+   previous step:  generation of probabilistic tracks, 
+   tc_track_prob = climada_tc_random_walk_position_windspeed;
+   next step:      
+ CALLING SEQUENCE:
+   climada_plot_ACE(tc_track, name_tag, check_printplot)
+ EXAMPLE:
+   climada_plot_ACE(tc_track_prob, '4480', 1)
+ INPUTS:
+   tc_track: probabilistic tc track set (random walk of wind speed, 
+   longitude and latitude), wind speed in knots, nodes every six hours
+ OPTIONAL INPUT PARAMETERS:
+   name_tag:        string that will be used for name of printed pdf
+   check_printplot: if set to 1 will print (save) figure
+ OUTPUTS:
+   figure, printout of figure if requested
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110621
+ davids.bresch@gmail.com, 20120407
+View <A HREF=code/climada_plot_ACE.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_plot_IFC_return">
+<H2>climada_plot_IFC_return</H2></A>
+<font color="blue">function climada_plot_IFC_return(hazard, centroids, important_centroid, check_printplot) </font>
+ climada intensity vs return period for multiple centroids
+ based on probabistic hazard set
+ NAME:
+   climada_plot_IFC_return
+ PURPOSE:
+   find all wind speed greater zero that hit important centroid
+   (historical and probabilistic storms)
+   calculate the exceedence frequency and return period 
+   fit a gumbel distribution for requested return period and extrapolate
+   according wind speed values
+   plot wind speed vs return period
+ CALLING SEQUENCE:
+   climada_plot_IFC_return(hazard,centroids,important_centroid,check_printplot);
+ EXAMPLE:
+   climada_plot_IFC_return
+ INPUTS:
+   hazard: probabilistic hazard set (structure)
+   centroids
+   important_centroid: index number of one or multiple centroids (scalar or array)
+ OPTIONAL INPUT PARAMETERS:
+   check_printplot: if set to 1 will print (save) figure
+ OUTPUTS:
+   none
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ Lea Mueller, 19.05.2011
+View <A HREF=code/climada_plot_IFC_return.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_plot_probabilistic_wind_speed_map">
+<H2>climada_plot_probabilistic_wind_speed_map</H2></A>
+<font color="blue">function climada_plot_probabilistic_wind_speed_map(tc_track, track_req) </font>
+ plot historical tc track (Longitude, Latitude) in world map according to
+ saffir-simpson hurrican scale. Add plot of probabilistic generated sister
+ storms. Historical tracks has black lines around markers to identify as
+ original track.
+ NAME:
+   climada_plot_probabilistic_wind_speed_map
+ PURPOSE:
+   analyse visuallly historical tc track and its generated probabilistic
+   sister storms. Check Longitude, Latitude and wind speed category
+   (saffir-simpson hurricane scale) 
+ CALLING SEQUENCE:
+   climada_plot_probabilistic_wind_speed_map(tc_track)
+ EXAMPLE:
+   climada_plot_probabilistic_wind_speed_map
+ INPUTS:
+   tc_track: probabilistic tc track set (random walk of wind speed, 
+   longitude and latitude), wind speed in knots, nodes every six hours, if
+   not given, prompted for
+ OPTIONAL INPUT PARAMETERS:
+   track_req:  number of specific historical track to be displayed with
+   its probabilistic sister storms, prompts for input 
+   p:          to print figure
+   x:          to exit
+   41:         or any other track number. will be rounded to the nearest 
+               historical track.
+   enter:      to continue.
+ OUTPUTS:
+   figure, printout of figure if requested
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110628
+View <A HREF=code/climada_plot_probabilistic_wind_speed_map.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_plot_tc_track_season">
+<H2>climada_plot_tc_track_season</H2></A>
+<font color="blue">function climada_plot_tc_track_season(tc_track, season, markersize, check_printplot, invisible) </font>
+ plot historical tc tracks for one specific season (year) in colors 
+ according to saffir-simpson hurricane scale
+ NAME:
+   climada_plot_tc_track_season
+ PURPOSE:
+   plot tc tracks for one specific season in colors according to saffir-simpson
+   hurricane scale
+   provide handle of tc_track
+ CALLING SEQUENCE:
+   [h] =
+   climada_plot_tc_track_season(tc_track,season,markersize,check_printplot,invisible)
+ EXAMPLE:
+   [h] =
+   climada_plot_tc_track_season(tc_track,1980,10,1,1)
+ INPUTS:
+	tc_track:       one or more tc_tracks (structure)
+   season:         specific season (scalar) for tc tracks to be plotted          
+ OPTIONAL INPUT PARAMETERS:
+   markersize:     markersize of tc_track nodes, default 7   
+   check_printplot:if set to 1 figure is saved in folder
+                   \results\mozambique\tc_tracks\tracks_1978.pdf
+   invisible:      if set to 1 figure is not visible on screen
+ OUTPUTS:
+   h:               handle of tc_track nodes
+ Lea Mueller, 20110606
+View <A HREF=code/climada_plot_tc_track_season.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_plot_tc_track_stormcategory">
+<H2>climada_plot_tc_track_stormcategory</H2></A>
+<font color="blue">function  [h] = climada_plot_tc_track_stormcategory(tc_track, markersize, check_legend, linewidth) </font>
+ plot tc track in colors according to saffir-simpson hurricane scale
+ NAME:
+   climada_plot_tc_track_stormcategory
+ PURPOSE:
+   plot tc track in colors according to saffir-simpson hurricane scale
+   provide handle of tc_track
+ CALLING SEQUENCE:
+   [h] =
+   climada_plot_tc_track_stormcategory(tc_track,markersize,check_legend)
+ EXAMPLE:
+   [h] =
+   climada_plot_tc_track_stormcategory(tc_track(1),10,1)
+ INPUTS:
+	tc_track:        one or more tc_tracks (structure)
+ OPTIONAL INPUT PARAMETERS:
+   markersize:      markersize of tc_track nodes, default 7   
+   check_legend:    if set to 1 legend of saffir-simpson hurricane scale
+   in upper left corner
+ OUTPUTS:
+   h:               handle of tc_track nodes
+ Lea Mueller, 20110603
+View <A HREF=code/climada_plot_tc_track_stormcategory.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_plot_world_borders">
+<H2>climada_plot_world_borders</H2></A>
+<font color="blue">function [varagout] = climada_plot_world_borders(linewidth, check_country, map_border_file, keep_boundary, country_color) </font>
+ world border map country political
+ NAME:
+	climada_plot_world_borders
+ PURPOSE:
+   read file with ASCII border information and plot it
+   in existing figure (do not forget hold on before) or create new one
+
+   reads the ASCII file (*.gen) the first time, stores into a borders
+   structure with:
+   borders.name{i}: name of country i
+   borders.poly{i}.lon{j}: polygon j of country i, longitudes
+   borders.poly{i}.lat{j}: polygon j of country i, latitudes
+   uses this .mat file with the borders info in subsequent calls for
+   speedup
+
+   NOTE: in case of troubles, first delete the border .mat file to force
+   its re-generation.
+ CALLING SEQUENCE:
+   climada_plot_world_borders(linewidth,map_border_file,keep_boundary);
+ EXAMPLE:
+   climada_plot_world_borders(0.8,'United States (USA)')
+   climada_plot_world_borders(0.8,{'Canada' 'Germany'})
+   climada_plot_world_borders
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   linewidth:       line width of borders, default is 1
+   check_country:   name of one or multiple countries, e.g. 'Germany' or
+                    {'Germany' 'Ghana'},that will be gray shaded in the world
+                    plot, default is no shading of countries
+                    Note that 'United States (USA)' is used, hence
+                    both 'United States' and 'USA' work
+   map_border_file: filename and path to a *.gen border file
+
+       the *.gen file has to be of the following format
+       file content                        description (NOT in file)
+       -------------------------------------------------------------------
+       country_name                        Name of the country
+       -70.6,35.2                          longitude,latitude of first polygon point
+       -75.3,23.5                          longitude,latitude of second polygon point
+       -75.3,23.5                          longitude,latitude of next polygon point
+       END                                 marks end of one closed contour
+       -45.45,23-6                         next colsed polygon (eg island)
+       -67.3,23.7
+       END                                 marks end of one closed contour
+       country_name                        next country name
+       -70.6,35.2                          longitude,latitude of first polygon point
+       ...                                 etc...
+       END                                 marks end of one closed contour
+       END                                 last (double) end to close file (optional)
+
+       SPECIAL: if the path contains TC_data\geodata\bathymetry, the code
+       assumes the map_border_file points to the Sandville bathymetry and
+       thus plots the high-res coastline, not using any *.gen file but the
+       Sandville info instead.
+   keep_boundary: if =1, keep axes boundaries, default =0, undefined
+ OUTPUTS:
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20080926
+ Lea Mueller,   20110805
+ Martin Heynen, 20120426
+ David N. Bresch, david.bresch@gmail.com, 20120430
+ Lea Mueller,   20120731
+View <A HREF=code/climada_plot_world_borders.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_processed2assets">
+<H2>climada_processed2assets</H2></A>
+<font color="blue">function assets=climada_processed2assets(processed_file) </font>
+ climada
+ NAME:
+   climada_processed2assets
+ PURPOSE:
+   converts a processed (encoded) file into the essential information as
+   needed by climada
+ CALLING SEQUENCE:
+   assets=climada_processed2assets(processed_file)
+ EXAMPLE:
+   assets=climada_processed2assets(processed_file)
+ INPUTS:
+   processed_file: filename of a processed (encoded) file
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   assets: a climada asset structure, but more important, a .csv file (to
+   be converted into xls) with the same information is generated
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091229
+View <A HREF=code/climada_processed2assets.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_sparse_interp">
+<H2>climada_sparse_interp</H2></A>
+<font color="blue">function res = climada_sparse_interp(matrix); </font>
+ climada event loss hazard probabilistic stochastic damagefunctions
+ NAME:
+   climada_sparse_interp
+ PURPOSE:
+   helper-function to allow for very efficient execution of the
+   mapping from the hazard-array to the MDD-matrix
+   since the hazard-array is sparse, we cannot directly apply interp1
+   but do this only on the non-zero elements by use of a function handle
+   to the present routine climada_sparse_interp, but before, we pass the other
+   two arguments of interp1 as global variables:
+
+   global interp_x_table
+   global interp_y_table
+   MDD=spfun(@climada_sparse_interp,hazard_arr);
+
+   see climada_ELS_calc about further details (in the code)
+
+ CALLING SEQUENCE:
+   res=climada_sparse_interp(matrix)
+ EXAMPLE:
+   res=climada_sparse_interp(matrix)
+   see climada_ELS_calc
+ INPUTS:
+   matrix: any matrix to be interpolated based upon the relation
+       defined by (interp_x_table,interp_y_table), passed as global variables
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   the interpolated matrix res of same dimensions as matrix
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20091228
+View <A HREF=code/climada_sparse_interp.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_add_timestep">
+<H2>climada_tc_add_timestep</H2></A>
+<font color="blue">function tc_track_out=climada_tc_add_timestep(tc_track) </font>
+ climada tc track timestep
+ NAME:
+   climada_tc_add_timestep
+ PURPOSE:
+   add TimeStep [hours] to a TC track, which contains only date (yyyymmdd and time
+   in hours) of each node. TimeStep is defined between nodes (thus one
+   element shorter than nodes)
+
+ CALLING SEQUENCE:
+   tc_track_out=climada_tc_add_timestep(tc_track)
+ EXAMPLE:
+   tc_track_out=climada_tc_add_timestep(tc_track)
+ INPUTS:
+   tc_track: a TC structure, e.g. as returned by climada_read_unisys_database
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   tc_track: a TC structure, with added TimeStep
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20120430
+View <A HREF=code/climada_tc_add_timestep.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_equal_timestep">
+<H2>climada_tc_equal_timestep</H2></A>
+<font color="blue">function tc_track_out=climada_tc_equal_timestep(tc_track,default_min_TimeStep) </font>
+ tropical cycline track
+ NAME:
+   bago_tc_equal_timestep
+ PURPOSE:
+   NOTE: just a local copy of the TCart code tc_equal_timestep for
+   stand-alone use
+
+   make sure the track has equal timesteps - we go for 1 hour or the shortest
+   TimeStep if smaller than 1h (TimeStep is calculated first if not existing)
+
+ CALLING SEQUENCE:
+   tc_track_out=climada_tc_equal_timestep(tc_track)
+ EXAMPLE:
+   tc_track_out=climada_tc_equal_timestep(tc_track)
+ INPUTS:
+   tc_track: a TC structure, eg as returned by *_read_unisys_track
+ OPTIONAL INPUT PARAMETERS:
+   default_min_TimeStep: the default minimum TimeStep, default=1 [hour]
+       default defined in climada_init_vars
+ OUTPUTS:
+   tc_track: a TC structure, with equal timesteps
+ MODIFICATION HISTORY:
+ David N. Bresch, david_bresch@swissre.com, 11.9.2004, 20081006
+ Mathias Hauser, 20120507
+ Lea Mueller, 20121203
+View <A HREF=code/climada_tc_equal_timestep.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_hazard_clim_scen">
+<H2>climada_tc_hazard_clim_scen</H2></A>
+<font color="blue">function hazard = climada_tc_hazard_clim_scen(hazard,hazard_clim_file,frequency_screw,intensity_screw) </font>
+ climada
+ NAME:
+   climada_template
+ PURPOSE:
+   starting from a given hazard event set (hazard), construct the
+   climate scenario hazard event set (hazard_clim_file)
+
+   Modifications done in code, so please visit/edit the code prior to use,
+   please check the PARAMETERS section below, e.g. for
+       frequency_screw, intensity_screw
+       hazard_reference_year: the reference year for the hazard set
+ CALLING SEQUENCE:
+   hazard=climada_tc_hazard_clim_scen(hazard,hazard_clim_file)
+ EXAMPLE:
+   hazard=climada_tc_hazard_clim_scen
+ INPUTS:
+   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   hazard_clim_file: the filename of the new climate scenario hazard event set
+       &ampgt promted for if not given
+ OUTPUTS:
+   hazard: the hazard event set for the climate scenario, also stored to hazard_clim_file
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090920
+ Lea Mueller, 20110720
+ Reto Stockmann 20120719
+View <A HREF=code/climada_tc_hazard_clim_scen.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_hazard_set">
+<H2>climada_tc_hazard_set</H2></A>
+<font color="blue">function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids) </font>
+ climada TC hazard event set generate
+ NAME:
+   climada_tc_hazard_set
+ PURPOSE:
+   generate a tc (tropical cyclone) hazard event set
+   previous: likely climada_random_walk
+   next: diverse
+ CALLING SEQUENCE:
+   res=climada_tc_hazard_set(tc_track,hazard_set_file)
+ EXAMPLE:
+   res=climada_tc_hazard_set(tc_track)
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   tc_track: a TC track structure, or a filename of a saved one
+       details: see e.g. climada_tc_random_walk
+       &ampgt promted for if not given
+   hazard_set_file: the name of the hazard set file
+       &ampgt promted for if not given
+   centroids: the variable grid centroids (see climada_centroids_read)
+       a structure with
+           Longitude(1,:): the longitudes   
+           Latitude(1,:): the latitudes   
+           centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
+       or a file which contains the struct (saved after climada_centroids_read)
+       if you select Cancel, a regular default grid is used, see hard-wired definition in code
+ OUTPUTS:
+   hazard: a struct, the hazard event set, more for tests, since the
+       hazard set is stored as hazard_set_file, see code
+       lon(centroid_i): the longitude of each centroid
+       lat(centroid_i): the latitude of each centroid
+       centroid_ID(centroid_i): a unique ID for each centroid
+       peril_ID: just an ID identifying the peril, e.g. 'TC' for
+       tropical cyclone or 'ET' for extratropical cyclone
+       comment: a free comment, normally containing the time the hazard
+           event set has been generated
+       orig_years: the original years the set is based upon
+       orig_event_count: the original events
+       event_count: the total number of events in the set, including all
+           probabilistic ones, hence event_count&ampgt=orig_event_count
+       orig_event_flag(event_i): a flag for each event, whether it's an original
+           (1) or probabilistic (0) one
+       event_ID: a unique ID for each event
+       date: the creation date of the set
+       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
+           centroid_i
+       frequency(event_i): the frequency of each event
+       matrix_density: the density of the sparse array hazard.arr
+       windfield_comment: a free comment, not in all hazard event sets
+       filename: the filename of the hazard event set (if passed as a
+           struct, this is often useful)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090729
+View <A HREF=code/climada_tc_hazard_set.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_hazard_set_exercise">
+<H2>climada_tc_hazard_set_exercise</H2></A>
+<font color="blue">function hazard = climada_tc_hazard_set_exercise(tc_track, hazard_set_file, centroids) </font>
+ climada TC hazard event set generate
+ NAME:
+   climada_tc_hazard_set_exercise
+ PURPOSE:
+   generate a tc (tropical cyclone) hazard event set
+
+   previous: likely climada_random_walk
+   next: diverse
+
+   NOTE: code for demonstration purposes (e.g. lecture), see 
+   climada_tc_windfield for the operational code
+
+ CALLING SEQUENCE:
+   res=climada_tc_hazard_set_exercise(tc_track,hazard_set_file)
+ EXAMPLE:
+   res=climada_tc_hazard_set_exercise(tc_track)
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   tc_track: a TC track structure, or a filename of a saved one
+       details: see e.g. climada_tc_random_walk
+       &ampgt promted for if not given
+   hazard_set_file: the name of the hazard set file
+       &ampgt promted for if not given
+   centroids: the variable grid centroids (see climada_centroids_read)
+       a structure with
+           Longitude(1,:): the longitudes   
+           Latitude(1,:): the latitudes   
+           centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
+       or a file which contains the struct (saved after climada_centroids_read)
+       if you select Cancel, a regular default grid is used, see hard-wired definition in code
+ OUTPUTS:
+   hazard: a struct, the hazard event set, more for tests, since the
+       hazard set is stored as hazard_set_file, see code
+       lon(centroid_i): the longitude of each centroid
+       lat(centroid_i): the latitude of each centroid
+       centroid_ID(centroid_i): a unique ID for each centroid
+       peril_ID: just an ID identifying the peril, e.g. 'TC' for
+       tropical cyclone or 'ET' for extratropical cyclone
+       comment: a free comment, normally containing the time the hazard
+           event set has been generated
+       orig_years: the original years the set is based upon
+       orig_event_count: the original events
+       event_count: the total number of events in the set, including all
+           probabilistic ones, hence event_count&ampgt=orig_event_count
+       orig_event_flag(event_i): a flag for each event, whether it's an original
+           (1) or probabilistic (0) one
+       event_ID: a unique ID for each event
+       date: the creation date of the set
+       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
+           centroid_i
+       frequency(event_i): the frequency of each event
+       matrix_density: the density of the sparse array hazard.arr
+       windfield_comment: a free comment, not in all hazard event sets
+       filename: the filename of the hazard event set (if passed as a
+           struct, this is often useful)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090729
+ David N. Bresch, david.bresch@gmail.com, 20120404 copy from climada_tc_hazard_set
+View <A HREF=code/climada_tc_hazard_set_exercise.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_hazard_set_ori">
+<H2>climada_tc_hazard_set_ori</H2></A>
+<font color="blue">function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids) </font>
+ climada TC hazard event set generate
+ NAME:
+   climada_tc_hazard_set
+ PURPOSE:
+   generate a tc (tropical cyclone) hazard event set
+
+   previous: likely climada_random_walk
+   next: diverse
+ CALLING SEQUENCE:
+   res=climada_tc_hazard_set(tc_track,hazard_set_file)
+ EXAMPLE:
+   res=climada_tc_hazard_set(tc_track)
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   tc_track: a TC track structure, or a filename of a saved one
+       details: see e.g. climada_tc_random_walk
+       &ampgt promted for if not given
+   hazard_set_file: the name of the hazard set file
+       &ampgt promted for if not given
+   centroids: the variable grid centroids (see climada_centroids_read)
+       a structure with
+           Longitude(1,:): the longitudes   
+           Latitude(1,:): the latitudes   
+           centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
+       or a file which contains the struct (saved after climada_centroids_read)
+       if you select Cancel, a regular default grid is used, see hard-wired definition in code
+ OUTPUTS:
+   hazard: a struct, the hazard event set, more for tests, since the
+       hazard set is stored as hazard_set_file, see code
+       lon(centroid_i): the longitude of each centroid
+       lat(centroid_i): the latitude of each centroid
+       centroid_ID(centroid_i): a unique ID for each centroid
+       peril_ID: just an ID identifying the peril, e.g. 'TC' for
+       tropical cyclone or 'ET' for extratropical cyclone
+       comment: a free comment, normally containing the time the hazard
+           event set has been generated
+       orig_years: the original years the set is based upon
+       orig_event_count: the original events
+       event_count: the total number of events in the set, including all
+           probabilistic ones, hence event_count&ampgt=orig_event_count
+       orig_event_flag(event_i): a flag for each event, whether it's an original
+           (1) or probabilistic (0) one
+       event_ID: a unique ID for each event
+       date: the creation date of the set
+       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
+           centroid_i
+       frequency(event_i): the frequency of each event
+       matrix_density: the density of the sparse array hazard.arr
+       windfield_comment: a free comment, not in all hazard event sets
+       filename: the filename of the hazard event set (if passed as a
+           struct, this is often useful)
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090729
+View <A HREF=code/climada_tc_hazard_set_ori.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_interp">
+<H2>climada_tc_interp</H2></A>
+<font color="blue">function y = climada_tc_interp(x,sample_rate) </font>
+ TC new event set windfield calculation
+ NAME:
+   climada_tc_interp
+ PURPOSE:
+   increase resolution of any data by linear interpolation between nodes
+ CALLING SEQUENCE:
+   y = climada_tc_interp(x,sample_rate)
+ EXAMPLE:
+   y = climada_tc_interp([1 2 3],1); y = [1 1.5 2 2.5 3];
+ INPUTS:
+   x: one-dimensional vector to be interpolated between nodes
+   sample_rate: number of interpolation points between nodes
+       =0 returns x unchanged
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   y: the resampled vector x
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ srzdnb, 29.4.2003
+View <A HREF=code/climada_tc_interp.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_overview_table">
+<H2>climada_tc_overview_table</H2></A>
+<font color="blue">function climada_tc_overview_table(tc_track,csv_filename) </font>
+ climada
+ NAME:
+   climada_tc_overview_table
+ PURPOSE:
+   write key information of tracks into .csv file
+ CALLING SEQUENCE:
+   climada_tc_overview_table(tc_track)
+ EXAMPLE:
+   climada_tc_overview_table
+ INPUTS:
+   tc_track: a tc_track structure, as returned eg by climada_tc_read_unisys_database
+       &ampgt promted for if not given
+   csv_filename: the name of the file to write to
+       &ampgt promted for if not given (well, prompted for a binary file that
+       contains a tc_track structure)
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110307
+View <A HREF=code/climada_tc_overview_table.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_random_walk">
+<H2>climada_tc_random_walk</H2></A>
+<font color="blue">function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,check_plot) </font>
+ TC event set random walk probabilistic
+ NAME:
+   climada_tc_random_walk
+ PURPOSE:
+   given a tc_track structure, create ens_size varied derived tracks based on
+   directed random walk
+
+   NOTE see PARAMETER section to change parameters
+   (e.g. ens_amp0,ens_amp,Maxangle)
+
+   previous step: see climada_tc_read_unisys_database
+   next step: see climada_tc_hazard_set
+ CALLING SEQUENCE:
+   tc_track=climada_tc_random_walk(tc_track,ens_size);
+ EXAMPLE:
+   tc_track=climada_read_unisys_database;
+   tc_track=climada_tc_random_walk(tc_track);
+ INPUTS:
+   tc_track: a structure with the track information for each cyclone i at
+       each node j, see climada_read_unisys_database for a detailed
+       description
+ OPTIONAL INPUT PARAMETERS:
+   ens_size: create ens_size varied derived tracks, default 9 
+       (means for each original track, 9 daughter tracks are generated)
+   ens_amp: amplitude of random walk wiggles in degree longitude for
+       'directed', default 0.35. Be careful when changing, test with one track and plot, e.g.
+       climada_tc_random_walk(tc_track(1),9,ens_amp,[],1)
+   Maxangle: the angle the track direction can change for one timestep
+       default=pi/7. Be careful when changing, test with one track and plot, e.g.
+       climada_tc_random_walk(tc_track(1),9,[],Maxangle,1)
+   check_plot: whether we show a check plot (=1) or not (=0), default=0
+ OUTPUTS:
+   same structure now including the ens_size times number of tracks
+   all the info from the original tracks is copied, only the lat, lon
+   differs
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090728
+ Markus Huber, markus.huber@env.ethz.ch, 20100412
+ Omar Bellprat, mar.bellprat@env.ethz.ch, 20100412, Maxangle added as input
+View <A HREF=code/climada_tc_random_walk.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_random_walk_position_windspeed">
+<H2>climada_tc_random_walk_position_windspeed</H2></A>
+<font color="blue">function tc_track_prob = climada_tc_random_walk_position_windspeed(tc_track , tc_track_save, ens_size, ens_amp, Maxangle,... </font>
+                                                                  check_plot, check_printplot)
+                                                              
+ TC event set with probabilistic longitude, latitude and wind speed based
+ on random walk
+ NAME:
+   climada_tc_random_walk_position_windspeed
+ PURPOSE:
+   given a tc_track structure, create ens_size WIND SPEED varied derived tracks based on
+   directed random walk
+   and generates ens_size LONGITUDE, LATITUDE varied based on directed
+   random walk
+   PARAMETERS for wind speed: distribution of initial wind speed v0 and
+   distribution of change in wind speed vi (mu and sigma) obtained by
+   function: [mu, sigma, A]   = climada_distribution_v0_vi('all');
+   PARAMETERS for longitude, latitude:
+   ens_amp0, ens_amp, Maxangle, etc.
+   previous step:  see climada_tc_read_unisys_database
+   next step:      see climada_tc_hazard_set
+ CALLING SEQUENCE:
+   tc_track_prob = climada_tc_random_walk_position_windspeed(tc_track,
+   'tc_track_prob',
+   ens_size, ens_amp, Maxangle, check_plot, check_printplot);
+ EXAMPLE:
+   tc_track_prob = climada_tc_random_walk_position_windspeed;
+ INPUTS:
+   none, if tc_track empty prompted for
+ OPTIONAL INPUT PARAMETERS:
+   tc_track: a structure with the track information for each cyclone i at
+       each node j, see climada_read_unisys_database for a detailed
+       description, wind speed in knots, nodes every six hours
+   ens_size: create ens_size varied derived tracks, default 9
+ OUTPUTS:
+   same structure now including the ens_size times number of tracks
+   all the info from the original tracks is copied, only the WIND SPEED
+   differs
+   field category and season is added
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110616
+View <A HREF=code/climada_tc_random_walk_position_windspeed.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_read_unisys_database">
+<H2>climada_tc_read_unisys_database</H2></A>
+<font color="blue">function tc_track=climada_tc_read_unisys_database(unisys_file) </font>
+ TC event set track database UNISYS
+ NAME:
+   climada_tc_read_unisys_database
+ PURPOSE:
+   read UNISYS database file, raw data file to be downloaded from
+   http://weather.unisys.com/hurricane/index.html
+   filter the raw data, namely:
+   - a VALID record (=node) is required to have lat, lon and either pressure
+     or windspeed (so recrods with only geographical information are skipped)
+   - pressure [mb] needs to be in the range 800..1100, otherwise set to
+     NaN, windspeeds of zero are also set to NaN
+   - longitudes are converted such that east is positive and that the
+     coordinates within one region (basin) are uniform, means no jump from
+     180 to -180 (done based on median longitude of basin database)
+   - latitudes (always North in UNISYS data) are converted for Southern
+     Hemipshere datasets, if the unisys_file contains 'she' or 'bsh' in the filename
+     (see parameter  convert_latitude, she: southern hemisphere, bsh: best track southern hemisphere)
+
+   NOTE: if the binary file (see tc_track_bin_file) exists, reading of raw
+   data is skipped. This allows faster iteration iro filtering (as often
+   required, since raw data contains missing and errors). One needs to
+   delete the binary file to re-read the raw ASCII data.
+
+   next step: see climada_tc_random_walk
+ CALLING SEQUENCE:
+   tc_track=climada_tc_read_unisys_database(unisys_file);
+ EXAMPLE:
+   tc_track=climada_tc_read_unisys_database(unisys_file);
+ INPUTS:
+   unisys_file: the filename of the raw databse file (as downloaded from
+       UNISYS), prompted for, if not given
+   see also PARAMETERS section, especially for filters
+ OPTIONAL INPUT PARAMETERS:
+ OUTPUTS:
+   tc_track: a structure with the track information for each cyclone i and
+           data for each node j (times are at 00Z, 06Z, 12Z, 18Z): 
+       tc_track(i).lat(j): latitude at node j of cyclone i
+       tc_track(i).lon(j): longitude at node j of cyclone i
+       tc_track(i).MaxSustainedWind(j): Maximum sustained (1 minute)
+           surface (10m) windspeed in knots (in general, these are to the nearest 5 knots).
+       tc_track(i).MaxSustainedWindUnis, almost always 'kn' 
+           (others allowed: 'mph', 'm/s' or 'km/h')
+       tc_track(i).CentralPressure(j): optional
+       tc_track(i).CentralPressureUnit: 'mb'
+       tc_track(i).yyyy: 4-digit year, optional
+       tc_track(i).mm: month, optional
+       tc_track(i).dd: day, optional
+       tc_track(i).hh: hours
+       tc_track(i).nodetime_mat:  matlab notation for dat: yyyy,mm,dd,hh
+       tc_track(i).TimeStep(j)=time step [h] from this to next node
+       tc_track(i).ID_no: unique ID, optional
+       tc_track(i).name: name, optional
+       tc_track(i).orig_event_flag: whether it is an mother(=1) or daugther(=0) storm
+
+   Please note that a binary file of raw_data is stored (in the
+   background), not of tc_track. Save tc_track manually (using save) if
+   needed. The raw_data is stored to ease (and speedup) re-reading the
+   data. To really start from the raw text file again, please delete the
+   binary file (*_bin.mat).
+
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090728
+ Joeri Rogelj, jr@env.ethz.ch, 20120429 / correct time step computation
+ Reto Stockmann, 20120808 / added axes labels and limits
+ Lea Mueller, 20120813, added overview of years in plot and codewort 'she'
+ for southern hemisphere filename
+View <A HREF=code/climada_tc_read_unisys_database.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_read_unisys_track">
+<H2>climada_tc_read_unisys_track</H2></A>
+<font color="blue">function tc_track = climada_tc_read_unisys_track(track_filename) </font>
+ climada unisys TC track
+ NAME:
+   climada_tc_read_unisys_track
+ PURPOSE:
+   read a single track data file as downloaded from 
+   http://www.weather.unisys.com/hurricane/
+
+    see also for windfields http://wrf-model.org/plots/showforecast_hurricane.php
+
+   can be used to add to existing tc_track structure like:
+   tc_track(end+1)=climada_tc_read_unisys_track
+ CALLING SEQUENCE:
+   tc_track=climada_tc_read_unisys_track(filename)
+ EXAMPLE:
+   tc_track=climada_tc_read_unisys_track
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   filename: the filename with path of a UNISYS *.dat file
+       &ampgt user gets prompted for if not specified
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20110429
+ Lea Mueller, 20110718
+View <A HREF=code/climada_tc_read_unisys_track.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_season">
+<H2>climada_tc_season</H2></A>
+<font color="blue">function  [tc_track, seasons] = climada_tc_season(tc_track) </font>
+ add season for every tc track (former climada_add_tc_track_season)
+ NAME:
+   climada_tc_season
+ PURPOSE:
+   add season for every tc track 
+ CALLING SEQUENCE:
+   [tc_track, seasons] = climada_tc_season(tc_track)
+ EXAMPLE:
+   [tc_track, seasons] = climada_tc_season(tc_track)
+ INPUTS:
+	tc_track:    one or more tc_tracks (structure)
+ OPTIONAL INPUT PARAMETERS:
+   none
+ OUTPUTS:
+   tc_track:    tc_track with tc_track.season (array)
+ Lea Mueller, 20110620
+View <A HREF=code/climada_tc_season.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_stormcategory">
+<H2>climada_tc_stormcategory</H2></A>
+<font color="blue">function  tc_track = climada_tc_stormcategory(tc_track) </font>
+ add  Saffir Simpson category for every tc track (former
+ climada_add_tc_track_stormcategory)
+ NAME:
+   climada_tc_stormcategory
+ PURPOSE:
+   add storm category for every tc track according to saffir-simpson
+   hurricane scale
+   -1 tropical depression
+    0 tropical storm
+    1 Hurrican category 1
+    2 Hurrican category 2
+    3 Hurrican category 3
+    4 Hurrican category 4
+    5 Hurrican category 5
+ CALLING SEQUENCE:
+   [tc_track] = climada_tc_stormcategory(tc_track)
+ EXAMPLE:
+   [tc_track] = climada_tc_stormcategory(tc_track)
+ INPUTS:
+	tc_track:    one or more tc_tracks (structure)
+ OPTIONAL INPUT PARAMETERS:
+   none
+ OUTPUTS:
+   tc_track:    tc_track with tc_track.category (array)
+ Lea Mueller, 20110614
+View <A HREF=code/climada_tc_stormcategory.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_windfield">
+<H2>climada_tc_windfield</H2></A>
+<font color="blue">function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_mode, check_plot) </font>
+ TC windfield calculation
+ NAME:
+   climada_tc_windfield
+ PURPOSE:
+   given a TC track (lat/lon,CentralPressure,MaxSustainedWind), calculate
+   the wind field at locations (=centroids)
+
+   mainly called from: see climada_tc_hazard_set
+
+ CALLING SEQUENCE:
+   climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode)
+ EXAMPLE:
+   climada_tc_windfield
+   plot windfield:
+   climada_tc_windfield(tc_track(1411), centroids,1,1,1)
+ INPUTS:
+   tc_track: a structure with the track information:
+       tc_track.lat
+       tc_track.lon
+       tc_track.MaxSustainedWind: maximum sustained wind speed (one-minute)
+       tc_track.MaxSustainedWindUnit as 'kn', 'mph', 'm/s' or 'km/h'
+       tc_track.CentralPressure: optional
+       tc_track.Celerity: translational (forward speed) of the hurricane.
+           optional, calculated from lat/lon if missing
+       tc_track.TimeStep: optional, only needed if Celerity needs to be
+           calculated, 6h assumed as default
+       tc_track.Azimuth: the forward moving angle, calculated if not given
+           to ensure consistency, it is even suggested not to pass Azimuth
+       tc_track.yyyy: 4-digit year, optional
+       tc_track.mm: month, optional
+       tc_track.dd: day, optional
+       tc_track.ID_no: unique ID, optional
+       tc_track.name: name, optional
+       tc_track.SaffSimp: Saffir-Simpson intensity, optional
+   centroids: a structure with the centroids information
+       centroids.Latitude: the latitude of the centroids
+       centroids.Longitude: the longitude of the centroids
+ OPTIONAL INPUT PARAMETERS:
+   equal_timestep: if set=1 (default), first interpolate the track to a common
+       timestep, if set=0, no equalization of TC track data (not recommended)
+   silent_mode: if =1, do not write to stdout unless severe warning
+ OUTPUTS:
+   res.gust: the windfield [m/s] at all centroids
+       the single-character variables refer to the Pioneer offering circular
+       that's why we kept these short names (so one can copy the OC for
+       documentation)
+   res.lat: the latitude of the centroids
+   res.lon: the longitude of the centroids
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090728
+View <A HREF=code/climada_tc_windfield.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_windfield_animation">
+<H2>climada_tc_windfield_animation</H2></A>
+<font color="blue">function climada_tc_windfield_animation(tc_track,centroids,aggregation,check_avi)                                 </font>
+ plot animation of windfield for a specific historical or
+ probabilistic storm
+ to find a specific windstorm use
+ climada_plot_probabilistic_wind_speed_map
+ NAME:
+   climada_tc_windfield_animation
+ PURPOSE:
+   plot animation of windfield for a specific historical or
+   probabilistic storm, plot is produced every aggregation time step
+   (minimum 1 hour or more)
+ CALLING SEQUENCE:
+   climada_tc_windfield_animation(tc_track       ,...
+                                  centroids      ,...
+                                  aggregation    ,...
+                                  check_printplot)
+ EXAMPLE:
+   climada_tc_windfield_animation(tc_track_prob(1226), centroids, 1, 6)
+ INPUTS:
+	tc_track:           just one tc_track, tc_track_prob(1)
+   centroids:          centroid mat file
+ OPTIONAL INPUT PARAMETERS:
+   aggregation:        desired timestep for plots (minimum one plot per
+   hour, can be one plot for 6 hours or more)
+   check_avi:         if set to 1 will save animation as avi-file
+ OUTPUTS:
+   plot of windfield (footprint) for every aggreagation step
+   (minimum 1 hour) for one specific storm track
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110603
+View <A HREF=code/climada_tc_windfield_animation.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_windfield_exercise">
+<H2>climada_tc_windfield_exercise</H2></A>
+<font color="blue">function res = climada_tc_windfield_wo(tc_track, centroids, equal_timestep, silent_mode, check_plot) </font>
+ TC windfield calculation
+ NAME:
+   climada_tc_windfield
+ PURPOSE:
+   given a TC track (lat/lon,CentralPressure,MaxSustainedWind), calculate
+   the wind field at locations (=centroids)
+
+   mainly called from: see climada_tc_hazard_set
+
+ CALLING SEQUENCE:
+   climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode)
+ EXAMPLE:
+   climada_tc_windfield
+   plot windfield:
+   climada_tc_windfield(tc_track(1411), centroids,1,1,1)
+ INPUTS:
+   tc_track: a structure with the track information:
+       tc_track.lat
+       tc_track.lon
+       tc_track.MaxSustainedWind: maximum sustained wind speed (one-minute)
+       tc_track.MaxSustainedWindUnit as 'kn', 'mph', 'm/s' or 'km/h'
+       tc_track.CentralPressure: optional
+       tc_track.Celerity: translational (forward speed) of the hurricane.
+           optional, calculated from lat/lon if missing
+       tc_track.TimeStep: optional, only needed if Celerity needs to be
+           calculated, 6h assumed as default
+       tc_track.Azimuth: the forward moving angle, calculated if not given
+           to ensure consistency, it is even suggested not to pass Azimuth
+       tc_track.yyyy: 4-digit year, optional
+       tc_track.mm: month, optional
+       tc_track.dd: day, optional
+       tc_track.ID_no: unique ID, optional
+       tc_track.name: name, optional
+       tc_track.SaffSimp: Saffir-Simpson intensity, optional
+   centroids: a structure with the centroids information
+       centroids.Latitude: the latitude of the centroids
+       centroids.Longitude: the longitude of the centroids
+ OPTIONAL INPUT PARAMETERS:
+   equal_timestep: if set=1 (default), first interpolate the track to a common
+       timestep, if set=0, no equalization of TC track data (not recommended)
+   silent_mode: if =1, do not write to stdout unless severe warning
+ OUTPUTS:
+   res.gust: the windfield [m/s] at all centroids
+       the single-character variables refer to the Pioneer offering circular
+       that's why we kept these short names (so one can copy the OC for
+       documentation)
+   res.lat: the latitude of the centroids
+   res.lon: the longitude of the centroids
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090728
+View <A HREF=code/climada_tc_windfield_exercise.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_windfield_ori">
+<H2>climada_tc_windfield_ori</H2></A>
+<font color="blue">function res = climada_tc_windfield_wo(tc_track, centroids, equal_timestep, silent_mode, check_plot) </font>
+ TC windfield calculation
+ NAME:
+   climada_tc_windfield
+ PURPOSE:
+   given a TC track (lat/lon,CentralPressure,MaxSustainedWind), calculate
+   the wind field at locations (=centroids)
+
+   mainly called from: see climada_tc_hazard_set
+
+ CALLING SEQUENCE:
+   climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode)
+ EXAMPLE:
+   climada_tc_windfield
+   plot windfield:
+   climada_tc_windfield(tc_track(1411), centroids,1,1,1)
+ INPUTS:
+   tc_track: a structure with the track information:
+       tc_track.lat
+       tc_track.lon
+       tc_track.MaxSustainedWind: maximum sustained wind speed (one-minute)
+       tc_track.MaxSustainedWindUnit as 'kn', 'mph', 'm/s' or 'km/h'
+       tc_track.CentralPressure: optional
+       tc_track.Celerity: translational (forward speed) of the hurricane.
+           optional, calculated from lat/lon if missing
+       tc_track.TimeStep: optional, only needed if Celerity needs to be
+           calculated, 6h assumed as default
+       tc_track.Azimuth: the forward moving angle, calculated if not given
+           to ensure consistency, it is even suggested not to pass Azimuth
+       tc_track.yyyy: 4-digit year, optional
+       tc_track.mm: month, optional
+       tc_track.dd: day, optional
+       tc_track.ID_no: unique ID, optional
+       tc_track.name: name, optional
+       tc_track.SaffSimp: Saffir-Simpson intensity, optional
+   centroids: a structure with the centroids information
+       centroids.Latitude: the latitude of the centroids
+       centroids.Longitude: the longitude of the centroids
+ OPTIONAL INPUT PARAMETERS:
+   equal_timestep: if set=1 (default), first interpolate the track to a common
+       timestep, if set=0, no equalization of TC track data (not recommended)
+   silent_mode: if =1, do not write to stdout unless severe warning
+ OUTPUTS:
+   res.gust: the windfield [m/s] at all centroids
+       the single-character variables refer to the Pioneer offering circular
+       that's why we kept these short names (so one can copy the OC for
+       documentation)
+   res.lat: the latitude of the centroids
+   res.lon: the longitude of the centroids
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090728
+View <A HREF=code/climada_tc_windfield_ori.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_tc_windfield_timestep">
+<H2>climada_tc_windfield_timestep</H2></A>
+<font color="blue">function res = climada_tc_windfield_timestep(tc_track, centroids, equal_timestep) </font>
+ TC windfield calculation for every timestep
+ NAME:
+   climada_tc_windfield_timestep
+ PURPOSE:
+   given a TC track (lat/lon,CentralPressure,MaxSustainedWind), calculate
+   the wind field at locations (=centroids) for every timestep and display
+   it in a loop
+ CALLING SEQUENCE:
+   climada_tc_windfield_timestep(tc_track, centroids, equal_timestep)
+ EXAMPLE:
+   climada_tc_windfield_timestep
+ INPUTS:
+   tc_track: a structure with the track information:
+       tc_track.lat
+       tc_track.lon
+       tc_track.MaxSustainedWind: maximum sustained wind speed (one-minute)
+       tc_track.MaxSustainedWindUnit as 'kn', 'mph', 'm/s' or 'km/h'
+       tc_track.CentralPressure: optional
+       tc_track.Celerity: translational (forward speed) of the hurricane.
+           optional, calculated from lat/lon if missing
+       tc_track.TimeStep: optional, only needed if Celerity needs to be
+           calculated, 6h assumed as default
+       tc_track.Azimuth: the forward moving angle, calculated if not given
+           to ensure consistency, it is even suggested not to pass Azimuth
+       tc_track.yyyy: 4-digit year, optional
+       tc_track.mm: month, optional
+       tc_track.dd: day, optional
+       tc_track.ID_no: unique ID, optional
+       tc_track.name: name, optional
+       tc_track.SaffSimp: Saffir-Simpson intensity, optional
+   centroids: a structure with the centroids information
+       centroids.Latitude: the latitude of the centroids
+       centroids.Longitude: the longitude of the centroids
+ OPTIONAL INPUT PARAMETERS:
+   equal_timestep: if set=1 (default), first interpolate the track to a common
+       timestep, if set=0, no equalization of TC track data (not
+       recommended)
+ OUTPUTS:
+   res.gust: the windfield [m/s] at all centroids
+       the single-character variables refer to the Pioneer offering circular
+       that's why we kept these short names (so one can copy the OC for
+       documentation)
+   res.lat: the latitude of the centroids
+   res.lon: the longitude of the centroids
+ RESTRICTIONS:
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110721
+View <A HREF=code/climada_tc_windfield_timestep.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_template">
+<H2>climada_template</H2></A>
+<font color="blue">function climada_template(param1,param2) </font>
+ climada
+ NAME:
+   climada_template
+ PURPOSE:
+   
+ CALLING SEQUENCE:
+   climada_template(param1,param2);
+ EXAMPLE:
+   climada_template(param1,param2);
+ INPUTS:
+   param1: 
+       &ampgt promted for if not given
+ OPTIONAL INPUT PARAMETERS:
+   param2: as an example
+ OUTPUTS:
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20090920
+View <A HREF=code/climada_template.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_waterfall_graph">
+<H2>climada_waterfall_graph</H2></A>
+<font color="blue">function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_printplot) </font>
+ waterfall figure, expected damage for specified return period for 
+ - today,
+ - increase from economic growth, 
+ - increase from high climate change, total expected damage 2030
+ for the three EDS quoted above
+ NAME:
+   climada_waterfall_graph
+ PURPOSE:
+   plot expected damage for specific return period
+ CALLING SEQUENCE:
+   climada_waterfall_graph(EDS1, EDS2, EDS3, return_period,
+   check_printplot)
+ EXAMPLE:
+   climada_waterfall_graph
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   EDS:            three event damage sets 
+                   - today
+                   - economic growth
+                   - cc combined with economic growth, future
+   return_period:  requested return period for according expected damage,or
+                   annual expted damage, prompted if not given
+   check_printplot:if set to 1, figure saved, default 0. 
+ OUTPUTS:
+   waterfall graph
+ MODIFICATION HISTORY:
+ Lea MuEDler, 20110622
+ Martin Heynen, 20120329
+ David N. Bresch, david.bresch@gmail.com, 20130316 EDS-&ampgtEDS
+View <A HREF=code/climada_waterfall_graph.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_waterfall_graph_animation">
+<H2>climada_waterfall_graph_animation</H2></A>
+<font color="blue">function climada_waterfall_graph_animation(ELS1, ELS2, ELS3) </font>
+ waterfall figure, expected loss for specified return period for 
+ - today,
+ - increase from economic growth, 
+ - increase from high climate change, total expected loss 2030
+ for the three ELS quoted above
+ NAME:
+   climada_waterfall_graph_animation
+ PURPOSE:
+   plot expected loss for specific return period
+ CALLING SEQUENCE:
+   climada_waterfall_graph_animation(ELS1, ELS2, ELS3)
+ EXAMPLE:
+   climada_waterfall_graph_animation
+ INPUTS:
+   none
+ OPTIONAL INPUT PARAMETERS:
+   ELS:            three event loss sets 
+                   - today
+                   - economic growth
+                   - cc combined with economic growth, future       
+ OUTPUTS:
+   waterfall graph animation
+ MODIFICATION HISTORY:
+ Lea Mueller, 20110622
+View <A HREF=code/climada_waterfall_graph_animation.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="climada_xlsread">
+<H2>climada_xlsread</H2></A>
+<font color="blue">function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_mode) </font>
+ climada excel data import read
+ NAME:
+   climada_xlsread
+ PURPOSE:
+   read one Excel sheet from an Excel file and return the content in a
+   structure. 
+   
+   NOTE: for older MATLAB versions, only the array-type input works, not
+   the single variables (header) etc.
+
+   The sheet might contain as many single variables (a header)
+   and in the second part (data) as many columns as you like.
+   % preceedes rows used for comment
+   * denotes single variables (scalars) all read as text, the string after
+       the asterix is used as variable name and the next right cell as value.
+       Any further cells to the right are not processed (eg used for comments,
+       as shown below)
+   the last row before the data section is used to label the data columns
+ 
+   an Excel sheet of eg the following form will be processed:
+
+ %climada post event TC trackdata sheet, fill in at least the bold data, either MaxSustainedWind or Pressure…									
+ *event_date	20030906	the date as yyyymmdd							
+ *event_name	Isabel	    the name							
+ *MaxSustainedWindUnit	kn	either kn (also use kn for kt), mph, km/h or m/s							
+ *CentralPressureUnit	mb	mb or hPa							
+ *CelerityUnit	kn	        either kn, mph, km/h or m/s							
+ *track_timestep	6	    in hours, used in Celerity calculation if Celerity and/or time not given below							
+ *unique_ID	0	        default=0							
+ *MaxSaffSimp	4	        maximum Safir Simson scale reached							
+ *record_date	20030919	date of this record							
+ *comment	test	        free comment							
+ %follows the track data (next line are headers, fill in as much as you know, do NOT change headers!)									
+ lat	lon	                MaxSustainedWind	CentralPressure	Celerity	SaffSimp	time	yyyy	mm	dd
+ 14	-34	61.775			0	                                                            13	2003	9	6
+ 13.6	-34.5	61.775	    0	                                                            15	2003	9	6
+   ...
+ 13.4	-35.4	79.425		0	                                                            21	2003	9	6
+
+   and returned in a structure like:
+
+   res.event_date='20030906'
+   res.event_name='Isabel'
+   ...
+   res.comment='test'
+   res.lat the vector hold all latitudes
+   res.lon the vector holding all longitides
+   res.MaxSustainedWind the windspeed vector
+   ...
+   res.dd the day number vector
+
+   note that empty columns (like CentralPressure) are skipped
+ CALLING SEQUENCE:
+   res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet);
+ EXAMPLE:
+   res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet);
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   interactive_mode: 'interactive' or 'no'. If interactive, the user gets
+       prompted for the sheet in the Excel file
+       (Currently hard-wired to interactive)
+   excel_file: the Excel file to read
+   in_excel_sheet: the Excel sheet to read in the excel_file
+   silent_mode: if =1, do not write messages to stdout, default=0, means writing
+ OUTPUTS:
+   res: a structure holding the data from the selected Excel sheet
+ RESTRICTIONS:
+   none
+ MODIFICATION HISTORY:
+ David N. Bresch, david.bresch@gmail.com, 20020901, 20080924
+ Lea Mueller, muellele@gmail.com, 20120730, if ~isempty(NUMERIC) also possible
+View <A HREF=code/climada_xlsread.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="compile_function_header_doc">
+<H2>compile_function_header_doc</H2></A>
+<font color="blue">function compile_function_header_doc(folder,recursive_flag,output_file,req_output_mode,out_fid) </font>
+ wk02 sounding
+ NAME:
+	compile_function_header_doc
+ PURPOSE:
+   crawl through all .m files in a given folder and compile the headers
+   into one single text (.txt) or html (.html) document. The html document
+   starts with a header listing all routine names, followed by the full
+   header listings, each with a link to the full source code.
+
+   see DEBUG_mode in PARAMETERS in code for debug mode
+ CALLING SEQUENCE:
+	compile_function_header_doc(folder,recursive_flag,output_file);
+ EXAMPLE:
+   compile_function_header_doc;
+ INPUTS:
+ OPTIONAL INPUT PARAMETERS:
+   folder: folder with m-files
+       &ampgt asked for if not provided
+   recursive_flag: if =1, also crawl subfolder recursively
+   output_file: file to write (.txt or .html)
+       &ampgt asked for if not provided
+   req_output_mode: for internal use only (in recursive_flag case)
+   out_fid: for internal use only (in recursive_flag case)
+ OUTPUTS:
+   a file with all headers. Note that the output is appended to the file,
+   thus delete the file manually prior to running this code for a new
+   version.
+ MODIFICATION HISTORY:
+ David N. Bresch, david.n.bresch@alumni.ethz.ch, 30.9.2003
+ Lea Mueller, 20111025
+View <A HREF=code/compile_function_header_doc.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="gauss_distribution">
+<H2>gauss_distribution</H2></A>
+<font color="blue">function f = gauss_distribution(x, mu, s) </font>
+View <A HREF=code/gauss_distribution.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="hist2d">
+<H2>hist2d</H2></A>
+<font color="blue">function [X,Y,H] = hist2d(D,Xn,Yn,Xrange,Yrange) </font>
+ Calculates and returns the 2 Dimensional Histogram of D.
+ D must be a 2 column or 2 row matrix or an array of complex numbers
+ Example:
+ hist2d([randn(1,10000); randn(1,10000)])
+
+ used for climada_distribution_lon_lat
+View <A HREF=code/hist2d.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="mygaussfit">
+<H2>mygaussfit</H2></A>
+<font color="blue">function [sigma,mu,A] = mygaussfit(x,y,h) </font>
+
+ this function is doing fit to the function
+ y = A * exp( -(x-mu)^2 / (2*sigma^2) )
+
+ the fitting is been done by a polyfit
+ the lan of the data.
+
+ h is the threshold which is the fraction
+ from the maximum y height that the data
+ is been taken from.
+ h should be a number between 0-1.
+ if h have not been taken it is set to be 0.2
+ as default.
+ 
+ used in climada_distribution_v0_vi
+View <A HREF=code/mygaussfit.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="parseArgs">
+<H2>parseArgs</H2></A>
+<font color="blue">function ArgStruct=parseArgs(args,ArgStruct,varargin) </font>
+ Helper function for parsing varargin. 
+
+
+ ArgStruct=parseArgs(varargin,ArgStruct[,FlagtypeParams[,Aliases]])
+
+ * ArgStruct is the structure full of named arguments with default values.
+ * Flagtype params is params that don't require a value. (the value will be set to 1 if it is present)
+ * Aliases can be used to map one argument-name to several argstruct fields
+
+
+ example usage: 
+ --------------
+ function parseargtest(varargin)
+
+ %define the acceptable named arguments and assign default values
+ Args=struct('Holdaxis',0, ...
+        'SpacingVertical',0.05,'SpacingHorizontal',0.05, ...
+        'PaddingLeft',0,'PaddingRight',0,'PaddingTop',0,'PaddingBottom',0, ...
+        'MarginLeft',.1,'MarginRight',.1,'MarginTop',.1,'MarginBottom',.1, ...
+        'rows',[],'cols',[]); 
+
+ %The capital letters define abrreviations.  
+ %  Eg. parseargtest('spacingvertical',0) is equivalent to  parseargtest('sv',0) 
+
+ Args=parseArgs(varargin,Args, ... % fill the arg-struct with values entered by the user
+           {'Holdaxis'}, ... %this argument has no value (flag-type)
+           {'Spacing' {'sh','sv'}; 'Padding' {'pl','pr','pt','pb'}; 'Margin' {'ml','mr','mt','mb'}});
+
+ disp(Args)
+
+
+
+
+ % Aslak Grinsted 2003
+View <A HREF=code/parseArgs.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="plot_normal">
+<H2>plot_normal</H2></A>
+<font color="blue">function plot_normal( x,params,hAx,plot_num,fontsize ) </font>
+ plot the normal distribution with parameter &quotu&quot and &quotsig2&quot
+ 
+ the distribution is given by:
+
+        p(r) = sqrt(1/2/pi/sig^2)*exp(-((r-u)^2)/(2*sig^2))
+
+ format:   plot_normal( x,params,hAx,plot_num,fontsize )
+
+ input:    x         - X axis, for the plot
+           params    - the distribution parameter, RMS error and VAR or CRB
+           hAx       - where to plot the distribution curve
+           plot_num  - since the curve is added with a text to the axes,
+                       this parameter specifies where the text should be displayed
+                       and what color to choose for the curve
+           fontsize  - size of the font of the text, default 9
+
+
+ example:  plot_normal( x,fit_ML_normal(data),hAx,3 )
+View <A HREF=code/plot_normal.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+
+
+<A NAME="subaxis">
+<H2>subaxis</H2></A>
+<font color="blue">function h=subaxis(varargin) </font>
+SUBAXIS Create axes in tiled positions. (just like subplot)
+   Usage:
+      h=subaxis(rows,cols,cellno[,settings])
+      h=subaxis(rows,cols,cellx,celly[,settings])
+      h=subaxis(rows,cols,cellx,celly,spanx,spany[,settings])
+
+ SETTINGS: Spacing,SpacingHoriz,SpacingVert
+           Padding,PaddingRight,PaddingLeft,PaddingTop,PaddingBottom
+           Margin,MarginRight,MarginLeft,MarginTop,MarginBottom
+           Holdaxis
+
+           all units are relative (e.g from 0 to 1)
+
+           Abbreviations of parameters can be used.. (Eg MR instead of MarginRight)
+           (holdaxis means that it wont delete any axes below.)
+
+
+ Example:
+
+   &ampgt&ampgt subaxis(2,1,1,'SpacingVert',0,'MR',0); 
+   &ampgt&ampgt imagesc(magic(3))
+   &ampgt&ampgt subaxis(2,'p',.02);
+   &ampgt&ampgt imagesc(magic(4))
+
+ 2001 / Aslak Grinsted  (Feel free to modify this code.)
+=gcf;
+rgs=[];
+serDataArgsOK=0;
+rgs=get(f,'UserData');
+f isstruct(Args) 
+   UserDataArgsOK=isfield(Args,'SpacingHorizontal')&ampisfield(Args,'Holdaxis')&ampisfield(Args,'rows')&ampisfield(Args,'cols');
+nd
+KToStoreArgs=isempty(Args)|UserDataArgsOK;
+f isempty(Args)&amp(~UserDataArgsOK)
+   Args=struct('Holdaxis',0, ...
+       'SpacingVertical',0.05,'SpacingHorizontal',0.05, ...
+       'PaddingLeft',0,'PaddingRight',0,'PaddingTop',0,'PaddingBottom',0, ...
+       'MarginLeft',.1,'MarginRight',.1,'MarginTop',.1,'MarginBottom',.1, ...
+       'rows',[],'cols',[]); 
+nd
+rgs=parseArgs(varargin,Args,{'Holdaxis'},{'Spacing' {'sh','sv'}; 'Padding' {'pl','pr','pt','pb'}; 'Margin' {'ml','mr','mt','mb'}});
+f (length(Args.NumericArguments)&ampgt1)
+   Args.rows=Args.NumericArguments{1};
+   Args.cols=Args.NumericArguments{2};
+remove these 2 numerical arguments
+   Args.NumericArguments={Args.NumericArguments{3:end}};
+nd
+f OKToStoreArgs
+   set(f,'UserData',Args);
+nd
+   
+witch length(Args.NumericArguments)
+  case 0
+      return % no arguments but rows/cols.... 
+  case 1
+     x1=mod((Args.NumericArguments{1}-1),Args.cols)+1; x2=x1;
+     y1=floor((Args.NumericArguments{1}-1)/Args.cols)+1; y2=y1;
+  case 2
+     x1=Args.NumericArguments{1};x2=x1;
+     y1=Args.NumericArguments{2};y2=y1;
+  case 4
+     x1=Args.NumericArguments{1};x2=x1+Args.NumericArguments{3}-1;
+     y1=Args.NumericArguments{2};y2=y1+Args.NumericArguments{4}-1;
+  otherwise
+     error('subaxis argument error')
+nd
+   
+ellwidth=((1-Args.MarginLeft-Args.MarginRight)-(Args.cols-1)*Args.SpacingHorizontal)/Args.cols;
+ellheight=((1-Args.MarginTop-Args.MarginBottom)-(Args.rows-1)*Args.SpacingVertical)/Args.rows;
+pos1=Args.MarginLeft+Args.PaddingLeft+cellwidth*(x1-1)+Args.SpacingHorizontal*(x1-1);
+pos2=Args.MarginLeft-Args.PaddingRight+cellwidth*x2+Args.SpacingHorizontal*(x2-1);
+pos1=Args.MarginTop+Args.PaddingTop+cellheight*(y1-1)+Args.SpacingVertical*(y1-1);
+pos2=Args.MarginTop-Args.PaddingBottom+cellheight*y2+Args.SpacingVertical*(y2-1);
+f Args.Holdaxis
+   h=axes('position',[xpos1 1-ypos2 xpos2-xpos1 ypos2-ypos1]);
+lse
+   h=subplot('position',[xpos1 1-ypos2 xpos2-xpos1 ypos2-ypos1]);
+nd
+et(h,'box','on');
+h=axes('position',[x1 1-y2 x2-x1 y2-y1]);
+et(h,'units',get(gcf,'defaultaxesunits'));
+et(h,'tag','subaxis');
+f (nargout==0) clear h; end;
+View <A HREF=code/subaxis.m>source</A>
+<A HREF="#ROUTINELIST">[List of Routines]</A>
+<PRE>
+</UL><P>
+ 
+<HR>
+ 
+<H1>Routine Descriptions</H1>
+<PRE>
