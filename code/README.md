@@ -1,1 +1,1 @@
-this folder contains the core climada code
+this folder contains the core climada MATLAB code
