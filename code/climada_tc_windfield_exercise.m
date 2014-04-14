@@ -1,4 +1,4 @@
-function res = climada_tc_windfield_wo(tc_track, centroids, equal_timestep, silent_mode, check_plot)
+function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_mode, check_plot)
 % TC windfield calculation
 % NAME:
 %   climada_tc_windfield
@@ -240,12 +240,10 @@ end
 
 cos_tc_track_lat = cos(tc_track.lat/180*pi);
 centroid_count   = length(centroids.Latitude);
-res.gust         = spalloc(centroid_count,1,ceil(centroid_count*0.1));
-
-% res.gust         = zeros(1,centroid_count);
-% res.node_Azimuth = zeros(1,centroid_count);
-% res.node_lat     = zeros(1,centroid_count);
-% res.node_lon     = zeros(1,centroid_count);
+res.gust         = zeros(1,centroid_count);
+res.node_Azimuth = zeros(1,centroid_count);
+res.node_lat     = zeros(1,centroid_count);
+res.node_lon     = zeros(1,centroid_count);
                 
 % add further fields (for climada use)
 if isfield(centroids,'OBJECTID')   , res.OBJECTID = centroids.OBJECTID;    end
@@ -255,50 +253,40 @@ res.lat = centroids.Latitude;
 res.lon = centroids.Longitude;
 
 
-% find centroids within track
-dist_km     = climada_geo_distance(0,max(tc_track.lat),0,max(tc_track.lat)+1)/1000;
-dist_degree = 75*10/dist_km; 
-track_poly = [min(tc_track.lon)-dist_degree  min(tc_track.lat)-dist_degree;...
-              min(tc_track.lon-dist_degree)  max(tc_track.lat)+dist_degree;...
-              max(tc_track.lon)+dist_degree  max(tc_track.lat)+dist_degree;...
-              max(tc_track.lon)+dist_degree  min(tc_track.lat)-dist_degree ];
-% plot(track_poly(:,1),track_poly(:,2),'x-r')
-   
-cen_in = find(inpoly([centroids.Longitude' centroids.Latitude'],track_poly));
-
 tic;
-for centroid_i = cen_in'  % centroid_i=1:centroid_count % now loop over all centroids
+for centroid_i=1:centroid_count % now loop over all centroids
     
     % the single-character variables refer to the Pioneer offering circular
     % that's why we kept these short names (so one can copy the OC for documentation)
 
     % find closest node
-    dd = ((tc_track.lon-res.lon(centroid_i)).*cos_tc_track_lat).^2 + (tc_track.lat-res.lat(centroid_i)).^2; % in km
+    dd=((tc_track.lon-res.lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track.lat-res.lat(centroid_i)).^2; % in km
 
     [min_dd,pos] = min(dd);
     %dd=sqrt(dd(pos))*111.12; % if one would need the real distance in km
+
     node_i       = pos(1); % take first if more than one
 
-    %res.node_lat (centroid_i) = tc_track.lat(node_i);
-    %res.node_lon (centroid_i) = tc_track.lon(node_i);
-    %res.node_id  (centroid_i) = node_i;
-    %res.dist_node(centroid_i) = sqrt(min_dd(1))*111.12;
+    res.node_lat (centroid_i) = tc_track.lat(node_i);
+    res.node_lon (centroid_i) = tc_track.lon(node_i);
+    res.node_id  (centroid_i) = node_i;
+    res.dist_node(centroid_i) = sqrt(min_dd(1))*111.12;
   
     D = sqrt(dd(node_i))*111.12; % now in km
 
     R = 30; % radius of max wind
-    if abs(tc_track.lat(node_i)) > 24, R = 30+2.5*(abs(tc_track.lat(node_i))-24); end
-    if abs(tc_track.lat(node_i)) > 42, R = 75; end
+    if abs(res.node_lat(centroid_i)) > 24, R = 30+2.5*(abs(res.node_lat(centroid_i))-24); end
+    if abs(res.node_lat(centroid_i)) > 42, R = 75; end
 
     if D<10*R % close enough to have an impact
         %%if D<5*R % faster method for non-Pioneer applications
 
         % calculate angle to node to determine left/right of track
-        ddx          = (res.lon(centroid_i) - tc_track.lon(node_i))*cos(tc_track.lat(node_i)/180*pi);
-        ddy          = (res.lat(centroid_i) - tc_track.lat(node_i));
+        ddx          = (res.lon(centroid_i)-res.node_lon(centroid_i))*cos(res.node_lat(centroid_i)/180*pi);
+        ddy          = (res.lat(centroid_i)-res.node_lat(centroid_i));
         node_Azimuth = atan2(ddy,ddx)*180/pi; % in degree
         node_Azimuth = mod(-node_Azimuth+90,360); % convert wind such that N is 0, E is 90, S is 180, W is 270
-        %res.node_Azimuth(centroid_i) = node_Azimuth; % to store
+        res.node_Azimuth(centroid_i) = node_Azimuth; % to store
         M            = tc_track.MaxSustainedWind(node_i);
 
         if mod(node_Azimuth-tc_track.Azimuth(node_i)+360,360)<180
@@ -309,24 +297,24 @@ for centroid_i = cen_in'  % centroid_i=1:centroid_count % now loop over all cent
             T = -tc_track.Celerity(node_i);
         end;
         % switch sign for Southern Hemisphere
-        if tc_track.lat(node_i)<0
+        if res.node_lat(centroid_i)<0
             T = -T;
         end 
 
         if treat_extratropical_transition
             % special to avoid unrealistic celerity after extratropical transition
-            max_T_fact = 0.0;
-            T_fact     = 1.0; % init
-            if abs(node_lat) > 35, T_fact = 1.0 + (max_T_fact-1.0)*(abs(node_lat)-35)/(42-35);end;
-            if abs(node_lat) > 42, T_fact = max_T_fact; end;
-            T = sign(T)*min(abs(T),abs(M)); % first, T never exceeds M
-            T = T*T_fact; % reduce T influence by latitude
+            max_T_fact=0.0;
+            T_fact=1.0; % init
+            if abs(node_lat) > 35, T_fact=1.0+(max_T_fact-1.0)*(abs(node_lat)-35)/(42-35);end;
+            if abs(node_lat) > 42, T_fact=max_T_fact; end;
+            T=sign(T)*min(abs(T),abs(M)); % first, T never exceeds M
+            T=T*T_fact; % reduce T influence by latitude
         end;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % start adding your code here
         
-        
+
         
         % end your code here
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -376,7 +364,7 @@ if check_plot
  
     
     cmap_=...
-   [1.0000    1.0000    1.0000;
+  [1.0000    1.0000    1.0000;
     0.8100    0.8100    0.8100;
     0.6300    0.6300    0.6300;
     1.0000    0.8000    0.2000;
