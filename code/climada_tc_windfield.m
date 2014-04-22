@@ -42,9 +42,6 @@ function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_
 %   silent_mode: if =1, do not write to stdout unless severe warning
 % OUTPUTS:
 %   res.gust: the windfield [m/s] at all centroids
-%       the single-character variables refer to the Pioneer offering circular
-%       that's why we kept these short names (so one can copy the OC for
-%       documentation)
 %   res.lat: the latitude of the centroids
 %   res.lon: the longitude of the centroids
 % RESTRICTIONS:
@@ -52,14 +49,25 @@ function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_
 % David N. Bresch, david.bresch@gmail.com, 20090728
 %-
 
+res = []; % init output
 
 global climada_global
 if ~climada_init_vars, return; end
+
 if ~exist('tc_track'      , 'var'), tc_track       = []; end
 if ~exist('centroids'     , 'var'), centroids      = []; end
 if ~exist('equal_timestep', 'var'), equal_timestep = 1; end
 if ~exist('silent_mode'   , 'var'), silent_mode    = 0; end
 if ~exist('check_plot'    , 'var'), check_plot     = 0; end
+
+% PARAMETERS
+%
+% threshold above which we calculate the windfield
+wind_threshold = 0; % in m/s, default=0
+%
+% treat the extratropical transition celerity exceeding vmax problem
+treat_extratropical_transition = 0; % default=0, since non-standard iro Holland
+
 
 % prompt for tc_track if not given
 if isempty(tc_track)
@@ -116,21 +124,6 @@ if ~isstruct(centroids)
     end
 end
 
-
-res = []; % init output
-
-
-% PARAMETERS
-%
-% threshold above which we calculate the windfield
-wind_threshold = 0; % in m/s, default=0
-%
-% treat the extratropical transition celerity exceeding vmax problem
-treat_extratropical_transition = 0; % default=0, since non-standard iro Holland
-%
-% whether we plot the windfield (more for debugging this code)
-% (you rather plot the output of this routine in your own code than setting this flag, for speed reasons)
-% check_plot = 0; % default=0 
 tc_track_ori = tc_track;
 
 if equal_timestep
@@ -333,7 +326,7 @@ if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
 
 
 %--------------
-%% FIGURE
+% FIGURE
 %--------------
 if check_plot
     fprintf('preparing footprint plot\n')

@@ -56,8 +56,8 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090729
 % David N. Bresch, david.bresch@gmail.com, 20130506, centroids filename handling improved
+% David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
 %-
-
 
 hazard=[]; % init
 
@@ -167,17 +167,22 @@ hazard.orig_event_count = 0; % init
 hazard.event_count      = length(tc_track);
 hazard.event_ID         = 1:hazard.event_count;
 hazard.orig_event_flag  = zeros(1,hazard.event_count);
+hazard.yyyy             = zeros(1,hazard.event_count);
+hazard.mm               = zeros(1,hazard.event_count);
+hazard.dd               = zeros(1,hazard.event_count);
+hazard.nodetime_mat     = zeros(1,hazard.event_count);
 
 % allocate the hazard array (sparse, to manage memory)
 hazard.arr = spalloc(hazard.event_count,length(hazard.lon),...
                      ceil(hazard.event_count*length(hazard.lon)*hazard_arr_density));
 
 t0       = clock;
-msgstr   = sprintf('processing %i tracks',length(tc_track));
+n_tracks = length(tc_track);
+msgstr   = sprintf('processing %i tracks',n_tracks);
 fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
 h        = waitbar(0,msgstr);
 mod_step = 10; % first time estimate after 10 tracks, then every 100
-for track_i=1:length(tc_track)
+for track_i=1:n_tracks
     
     % calculate wind for every centroids, equal timestep within this routine  
     res                             = climada_tc_windfield(tc_track(track_i),centroids,1,1,check_plot); 
@@ -185,6 +190,12 @@ for track_i=1:length(tc_track)
     hazard.arr(track_i,:)           = res.gust;
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
     hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag;
+    
+    hazard.yyyy(track_i)            = tc_track(track_i).yyyy(1);
+    hazard.mm(track_i)              = tc_track(track_i).mm(1);
+    hazard.dd(track_i)              = tc_track(track_i).dd(1);
+    hazard.nodetime_mat(track_i)    = tc_track(track_i).nodetime_mat(1);
+    hazard.name{track_i}            = tc_track(track_i).name;
     
     % if check_plot
     %     values = res.gust;
@@ -198,10 +209,14 @@ for track_i=1:length(tc_track)
     if mod(track_i,mod_step)==0
         mod_step          = 100;
         t_elapsed_track   = etime(clock,t0)/track_i;
-        tracks_remaining  = length(tc_track)-track_i;
-        t_projected_track = t_elapsed_track*tracks_remaining;
-        msgstr            = sprintf('est. %3.2f min left (%i/%i tracks)',t_projected_track/60, track_i, length(tc_track));
-        waitbar(track_i/length(tc_track),h,msgstr); % update waitbar
+        tracks_remaining  = n_tracks-track_i;
+        t_projected_sec   = t_elapsed_track*tracks_remaining;
+        if t_projected_sec<60
+            msgstr = sprintf('est. %3.0f sec left (%i/%i events)',t_projected_sec, track_i, n_tracks);
+        else
+            msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60, track_i, n_tracks);
+        end
+        waitbar(track_i/n_tracks,h,msgstr); % update waitbar
     end
 
 end %track_i
@@ -210,7 +225,6 @@ close(h); % dispose waitbar
 t_elapsed = etime(clock,t0);
 msgstr    = sprintf('generating %i windfields took %3.2f min (%3.2f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
 fprintf('%s\n',msgstr);
-
 
 
 % number of derived tracks per original one
@@ -228,6 +242,5 @@ hazard.date              = datestr(now);
 
 fprintf('saving hazard set in .../data/hazards folder as %s\n',hazard_set_file);
 save(hazard_set_file,'hazard')
-
 
 return
