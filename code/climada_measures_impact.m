@@ -45,6 +45,8 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact...
 % David N. Bresch, david.bresch@gmail.com, 20130623, hazard set switch added
+% David N. Bresch, david.bresch@gmail.com, 20140509, non-linear damage time dependency implemented
+% David N. Bresch, david.bresch@gmail.com, 20140509, risk premium calc added
 %-
 
 global climada_global
@@ -169,7 +171,7 @@ if ~isstruct(measures)
 end
 
 
-%% loop over all measures and calculate the corresponding EDSs
+% loop over all measures and calculate the corresponding EDSs
 % -----------------------------------------------------------
 
 % make (backup) copies of the original data in entity:
@@ -329,6 +331,9 @@ discount_rates   = entity.discount.discount_rate(present_year_pos:future_year_po
 ED_no_measures   = full(sum(EDS(end).damage .* EDS(end).frequency)); % calculate annual expected damage
 ED(end+1)        = ED_no_measures; % store the ED with no measures at the end (convention)
 
+% time evolution of benefits etc. (linear if climada_global.impact_time_dependence=1)
+time_dependence=(0:n_years-1).^climada_global.impact_time_dependence/(n_years-1)^climada_global.impact_time_dependence;
+
 for measure_i = 1:n_measures
     
     % first, calculate the ED (exepected damage) perspective
@@ -345,18 +350,26 @@ for measure_i = 1:n_measures
         benefits       = ones(1,n_years)*(ED(end)-ED(measure_i)); % same benefit each year
         risk_transfers = ones(1,n_years)*ED_risk_transfer(measure_i); % same risk transfer costs each year
     else
-        % (strong) assumption: benefits evolve linearly over years
+        % time evolution of benefits
         present_benefit = measures_impact_reference.ED(end) - measures_impact_reference.ED(measure_i);
         future_benefit  = ED(end)-ED(measure_i);
-        d_benefit       = (future_benefit-present_benefit)/(n_years-1);
-        d_benefits      = [0,ones(1,n_years-1)*d_benefit];
-        benefits        = present_benefit+cumsum(d_benefits); % linear increase
+        benefits        = present_benefit+(future_benefit-present_benefit)*time_dependence;
         % and similarly for risk transfer costs
         present_risk_transfer = measures_impact_reference.ED_risk_transfer(measure_i);
         future_risk_transfer  = ED_risk_transfer(measure_i);
-        d_risk_transfer       = (future_risk_transfer-present_risk_transfer)/(n_years-1);
-        d_risk_transfers      = [0,ones(1,n_years-1)*d_risk_transfer];
-        risk_transfers        = present_risk_transfer+cumsum(d_risk_transfers);
+        risk_transfers        = present_risk_transfer+(future_risk_transfer-present_risk_transfer)*time_dependence;
+        
+        % old, linear only, kept for backward compatibility, same as climada_global.impact_time_dependence=1
+        %         d_benefit       = (future_benefit-present_benefit)/(n_years-1);
+        %         d_benefits      = [0,ones(1,n_years-1)*d_benefit];
+        %         benefits        = present_benefit+cumsum(d_benefits); % linear increase
+        %         % and similarly for risk transfer costs
+        %         present_risk_transfer = measures_impact_reference.ED_risk_transfer(measure_i);
+        %         future_risk_transfer  = ED_risk_transfer(measure_i);
+        %         d_risk_transfer       = (future_risk_transfer-present_risk_transfer)/(n_years-1);
+        %         d_risk_transfers      = [0,ones(1,n_years-1)*d_risk_transfer];
+        %         risk_transfers        = present_risk_transfer+cumsum(d_risk_transfers);
+        
     end
     
     % discount the benefits
@@ -372,11 +385,14 @@ end % measure_i
 if isempty(measures_impact_reference)
     NPV_total_climate_risk = climada_NPV(ones(1,n_years)*ED(end), discount_rates);
 else
+    % time evolution of risk
     present_TCR = measures_impact_reference.ED(end);
     future_TCR  = ED(end);
-    d_TCR       = (future_TCR-present_TCR)/(n_years-1);
-    d_TCRs      = [0,ones(1,n_years-1)*d_TCR];
-    TCRs        = present_TCR+cumsum(d_TCRs); % linear increase
+    TCRs        = present_TCR+(future_TCR-present_TCR)*time_dependence;
+    % old, linear only, kept for backward compatibility, same as climada_global.impact_time_dependence=1
+    % d_TCR       = (future_TCR-present_TCR)/(n_years-1);
+    % d_TCRs      = [0,ones(1,n_years-1)*d_TCR];
+    % TCRs        = present_TCR+cumsum(d_TCRs); % linear increase
     NPV_total_climate_risk = climada_NPV(TCRs, discount_rates);
 end
 
@@ -407,6 +423,18 @@ save_filename = strrep(save_filename,'|','_'); % for filename
 save_filename = [climada_global.data_dir filesep 'results' filesep save_filename];
 
 measures_impact.filename = save_filename;
+
+% last but not least, calculate risk premium
+measures_impact.risk_premium_fgu=measures_impact.NPV_total_climate_risk/measures_impact.EDS(1).Value;
+fprintf('total climate risk premium (fgu):                       %f%%\n',...
+    measures_impact.risk_premium_fgu*100);
+measures_impact.risk_premium_net=(measures_impact.NPV_total_climate_risk-...
+    sum(measures_impact.ED_benefit(find(measures_impact.cb_ratio<1))))/measures_impact.EDS(1).Value;
+fprintf('total climate risk premium (net of effective measures): %f%%\n',...
+    measures_impact.risk_premium_net*100);
+fprintf('total climate risk premium reduction                   %2.2f%%\n',...
+    -(measures_impact.risk_premium_net/measures_impact.risk_premium_fgu-1)*100);
+measures_impact.risk_premium_comment='total climate risk divided by the total value of assets';
 
 save(save_filename,'measures_impact')
 fprintf('results written to %s\n',save_filename);

@@ -90,19 +90,23 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.map_border_file=[climada_global.system_dir filesep 'world_50m.gen'];
 
     % country-specific csv delimuter (to read and convert to Excel properly)
-    climada_global.csv_delimiter=';';
+    climada_global.csv_delimiter=';'; % ';' default
     
     % tropical cyclone (TC) specific parameters
     climada_global.tc.default_min_TimeStep=1; % 1 hour
     
     % evaluation and NPV (net present value) specific parameters
-    climada_global.present_reference_year=2014;
-    climada_global.future_reference_year =2030;
+    climada_global.present_reference_year = 2014; % yyyy
+    climada_global.future_reference_year  = 2030; % yyyy
+    % time dependence of impacts (1 for linear, default)
+    % >1 concave (eg 2: cubic), <1 for convex (eg 1/2: like quare root)
+    % concave means: damage increases slowly first (see climada_measures_impact)
+    climada_global.impact_time_dependence = 1; % 1 for linear
     
     % standard return periods for DFC report
     climada_global.DFC_return_periods=[1 5 10 20 25 30 35 40 45 50 75 100 125 150 175 200 250 300 400 500 1000];
     
-    % whether we show waitbars for progress (eg in climada_EDS-_calc), =1:yes, =0: no
+    % whether we show waitbars for progress (eg in climada_EDS_calc), =1:yes, =0: no
     climada_global.waitbar=1;
     
     % create the root dir of additional
