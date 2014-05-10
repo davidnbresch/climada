@@ -56,8 +56,6 @@ if ~exist('entity','var'),entity=[];end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('annotation_name','var'),annotation_name='';end
 
-damage_per_cu = 0;
-
 % PARAMETERS
 %
 % TEST settings
@@ -122,16 +120,18 @@ end
 EDS.event_ID          = hazard.event_ID;
 EDS.damage            = zeros(1,size(hazard.arr,1));
 n_assets              = length(entity.assets.centroid_index);
-% allocate the damage per calculation array (sparse, to manage memory)
-damage_per_cu_density = 0.03; % 3% sparse damage per cu array density (estimated)
-EDS.damage_per_cu     = spalloc(n_assets, hazard.event_count,...
-                                ceil(hazard.event_count*n_assets*damage_per_cu_density));  
-EDS.ED_per_cu         = zeros(n_assets,1); 
+EDS.ED_at_centroid   = zeros(n_assets,1); % expected damage per centroid
 EDS.Value             = 0;
 EDS.frequency         = hazard.frequency;
 EDS.orig_event_flag   = hazard.orig_event_flag;
 EDS.hazard.peril_ID   = hazard.peril_ID;
-[i j x]               = find(EDS.damage_per_cu);
+if climada_global.EDS_at_centroid
+    % allocate the damage per centroid array (sparse, to manage memory)
+    damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
+    EDS.damage_at_centroid     = spalloc(n_assets, hazard.event_count,...
+        ceil(hazard.event_count*n_assets*damage_at_centroid_density));
+    [i,j,x]           = find(EDS.damage_at_centroid);
+end
 
 % start the calculation
 % THIS CODE MIGHT NEED FUTURE OPTIMIZATION
@@ -179,14 +179,15 @@ for asset_i=1:n_assets
     % calculate the from ground up (fgu) damage
     temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
 
-    if any(full(temp_damage))
+    if any(full(temp_damage)) % if at least one damage>0
         if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
             % apply Deductible and Cover
             temp_damage=min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
         end
-        %EDS.damage_per_cu(:,asset_i) = temp_damage'; % add to EDS damage per calculation unit
-
-        if damage_per_cu
+        EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+        
+        if climada_global.EDS_at_centroid
+            %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
             index_ = j == asset_i; %index_ = i == asset_i;
             i(index_) = [];
             j(index_) = [];
@@ -196,12 +197,11 @@ for asset_i=1:n_assets
             j = [j; zeros(nnz(temp_damage),1)+asset_i]; 
             x = [x; nonzeros(temp_damage)];
         else
-            EDS.ED_per_cu(asset_i,1) = full(sum(temp_damage' .* EDS.frequency));
+            EDS.ED_at_centroid(asset_i,1) = full(sum(temp_damage' .* EDS.frequency));
         end 
-        EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+        
     end 
     EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
-    
     
     % TEST output
     %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
@@ -232,6 +232,9 @@ elseif strfind(computer,'PCWIN')
 end
 EDS.hazard.comment  = hazard.comment;
 EDS.assets.filename = entity.assets.filename;
+EDS.assets.Latitude = entity.assets.Latitude;
+EDS.assets.Longitude = entity.assets.Longitude;
+EDS.assets.Value = entity.assets.Value; % note EDS.Value is sum of...
 EDS.damagefunctions.filename = entity.damagefunctions.filename;
 if isempty(annotation_name)
     [fP,name]       = fileparts(EDS.hazard.filename);
@@ -239,10 +242,10 @@ if isempty(annotation_name)
 end
 EDS.annotation_name = annotation_name;
 EDS.ED              = full(sum(EDS.damage.*EDS.frequency)); % calculate annual expected damage
-if damage_per_cu
-    EDS.damage_per_cu = sparse(i,j,x,hazard.event_count,n_assets);
-    EDS.damage_per_cu = EDS.damage_per_cu';
-    EDS.ED_per_cu     = full(sum(bsxfun(@times, EDS.damage_per_cu, EDS.frequency),2));
+if climada_global.EDS_at_centroid
+    EDS.damage_at_centroid = sparse(i,j,x,hazard.event_count,n_assets);
+    EDS.damage_at_centroid = EDS.damage_at_centroid';
+    EDS.ED_at_centroid     = full(sum(bsxfun(@times, EDS.damage_at_centroid, EDS.frequency),2));
 end
 
 return

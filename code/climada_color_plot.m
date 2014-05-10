@@ -120,6 +120,6 @@ switch plot_method
         if ~isempty(caxis_range),caxis(caxis_range);end;axis off
 end;
 if plot_centroids,plot(lon,lat,'+r','MarkerSize',1);end;% red + at each centroid
-axis([min(lon)-1 max(lon)+1 min(lat)-1 max(lat)+1]); % set axis for good zoom
 climada_plot_world_borders(1);title(title_str,'FontSize',9);hold off;colorbar;
+axis([min(lon)-1 max(lon)+1 min(lat)-1 max(lat)+1]); % set axis for good zoom
 drawnow;

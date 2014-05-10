@@ -109,6 +109,12 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % whether we show waitbars for progress (eg in climada_EDS_calc), =1:yes, =0: no
     climada_global.waitbar=1;
     
+    % whether we store the damage (=1) at each centroid for each event (an EDS
+    % for each centroid). Heavy memory, see climada_EDS_calc; therefore: default=0
+    % please note that ED_at_centroid is always calculated (only a vector
+    % length number of centroids)
+    climada_global.EDS_at_centroid=0; % default=0
+    
     % create the root dir of additional
     climada_root_dir_additional = [fileparts(climada_global.root_dir) filesep 'climada_additional'];
     if exist(climada_root_dir_additional,'dir')  

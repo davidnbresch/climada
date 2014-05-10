@@ -1,4 +1,4 @@
-function measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures)
+function measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures,map_risk_premium)
 % climada
 % NAME:
 %   climada_measures_impact
@@ -6,13 +6,29 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %   calculate the impact of a series of measures on a given set of assets
 %   under a given hazard
 %
-%   next step: climada_adaptation_cost_curve
+%   next step: climada_adaptation_cost_curve or
+%   climada_adaptation_event_view
+%
+%   Note: the risk premiums show need to be handled with UTMOST care, as
+%   they are proxies of real risk premiums. First, the total climate risk
+%   premium is calculated as NPV of total climate risk divided by the sum
+%   of all assets (that simple), hence it does not really reperesent a
+%   premium that one would i.e. charge to cover these risks over the course
+%   of a year (since it's the NPV...). The total climate risk premium
+%   reduction provides an upper bound of the risk premium reduction due to
+%   the cost-effective measures, since any further csosts, such as
+%   distribution, claims handling and capital costs are not considered at
+%   all. Second, the risk premiums mapped (if map_risk_premium=1) are calculated
+%   as the expected damage at each centroid divided by the asset value at
+%   this centroid, hence are again a CRUDE PROXY. Again, the difference of
+%   the fgu and net values is more telling than the absolute numbers.
 % CALLING SEQUENCE:
 %   measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures)
 % EXAMPLE:
-%   measures_impact=climada_measures_impact(climada_entity_read)
+%   measures_impact=climada_measures_impact % all prompted for
 %   hazard_set_file='...\climada\data\hazards\TCNA_A_Probabilistic.mat';
 %   measures_impact=climada_measures_impact(climada_entity_read('',hazard_set_file),hazard_set_file,'no')
+%   measures_impact=climada_measures_impact('','','','',1) % all interactive, show risk premium map
 % INPUTS:
 %   entity: a read and encoded assets and damagefunctions file, see climada_assets_encode(climada_assets_read)
 %       > promted for if not given
@@ -30,6 +46,11 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %           contains measures). If entity does not contain measures, user gets prompted for.
 %       If user provides measures, these measures are used
 %       If user set measures to 'ASK', he gets prompted for and these are used
+%   map_risk_premium: whether we show a plot (=1) of risk premium at each
+%       centroid using a contour plot on a map, with cost-effective
+%       measures and without any measures(fgu). Default=0 
+%       Please note that this risk premium is a proxy for a real premium,
+%       as it just consistes of the expected damage at each centroid.
 % OUTPUTS:
 %   measures_impact: a structure with
 %       EDS(measure_i): the event damage set for each measure, last one EDS(end) for no measures
@@ -47,6 +68,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20130623, hazard set switch added
 % David N. Bresch, david.bresch@gmail.com, 20140509, non-linear damage time dependency implemented
 % David N. Bresch, david.bresch@gmail.com, 20140509, risk premium calc added
+% David N. Bresch, david.bresch@gmail.com, 20140510, risk premium map added
 %-
 
 global climada_global
@@ -59,6 +81,7 @@ if ~exist('entity','var'),entity=[];end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('measures_impact_reference','var'),measures_impact_reference=[];end
 if ~exist('measures','var'),measures='';end
+if ~exist('map_risk_premium','var'),map_risk_premium=0;end
 
 % PARAMETERS
 
@@ -426,17 +449,62 @@ measures_impact.filename = save_filename;
 
 % last but not least, calculate risk premium
 measures_impact.risk_premium_fgu=measures_impact.NPV_total_climate_risk/measures_impact.EDS(1).Value;
-fprintf('total climate risk premium (fgu):                       %f%%\n',...
+fprintf('total climate risk premium (fgu - only a proxy):        %f%%\n',...
     measures_impact.risk_premium_fgu*100);
 measures_impact.risk_premium_net=(measures_impact.NPV_total_climate_risk-...
     sum(measures_impact.ED_benefit(find(measures_impact.cb_ratio<1))))/measures_impact.EDS(1).Value;
 fprintf('total climate risk premium (net of effective measures): %f%%\n',...
     measures_impact.risk_premium_net*100);
-fprintf('total climate risk premium reduction                   %2.2f%%\n',...
+fprintf('total climate risk premium reduction (relative)        %2.2f%%\n',...
     -(measures_impact.risk_premium_net/measures_impact.risk_premium_fgu-1)*100);
 measures_impact.risk_premium_comment='total climate risk divided by the total value of assets';
 
 save(save_filename,'measures_impact')
 fprintf('results written to %s\n',save_filename);
+
+if map_risk_premium
+    % plot the total climate risk premium
+    
+    % risk premium fgu at each centroid
+    centroid_risk_premium_fgu=measures_impact.EDS(end).ED_at_centroid;
+    
+    % risk premium net of effective measures at each centroid
+    d_risk_premium_net=centroid_risk_premium_fgu*0; % init
+    effective_measures_pos=find(measures_impact.cb_ratio<1);
+    for i=1:length(effective_measures_pos) % sum over all benefits with c/b <1
+        d_risk_premium_net=d_risk_premium_net+(centroid_risk_premium_fgu-...
+            measures_impact.EDS(effective_measures_pos(i)).ED_at_centroid);
+    end % i
+    centroid_risk_premium_net=centroid_risk_premium_fgu-d_risk_premium_net;
+    % divide by total Value ast each centroid (to obtain risk premium)
+    centroid_risk_premium_fgu=centroid_risk_premium_fgu./measures_impact.EDS(end).assets.Value*100;
+    centroid_risk_premium_net=centroid_risk_premium_net./measures_impact.EDS(end).assets.Value*100;
+    
+    % define a common color axis
+    caxis_range=[min(min(centroid_risk_premium_fgu),min(centroid_risk_premium_net)) ...
+        max(max(centroid_risk_premium_fgu),max(centroid_risk_premium_net))];
+    
+    % plot on two panes, figure whether wider extent in lon or lat
+    dlon=max(measures_impact.EDS(end).assets.Longitude)-min(measures_impact.EDS(end).assets.Longitude);
+    dlat=max(measures_impact.EDS(end).assets.Latitude)-min(measures_impact.EDS(end).assets.Latitude);
+    if dlat>dlon,subplot(1,3,1),else subplot(3,1,1);end
+    climada_color_plot(centroid_risk_premium_fgu,...
+        measures_impact.EDS(end).assets.Longitude,...
+        measures_impact.EDS(end).assets.Latitude,'none','risk premium fgu [%]',...
+        'pcolor','linear',199,1,caxis_range);
+    if dlat>dlon,subplot(1,3,2),else subplot(3,1,2);end
+    climada_color_plot(centroid_risk_premium_net,...
+        measures_impact.EDS(end).assets.Longitude,...
+        measures_impact.EDS(end).assets.Latitude,'none','risk premium net [%]',...
+        'pcolor','linear',199,1,caxis_range);
+    set(gcf,'Color',[1 1 1]);
+    if dlat>dlon,subplot(1,3,3),else subplot(3,1,3);end
+    climada_color_plot(-(centroid_risk_premium_net./centroid_risk_premium_fgu-1)*100,...
+        measures_impact.EDS(end).assets.Longitude,...
+        measures_impact.EDS(end).assets.Latitude,'none','risk premium reduction [rel %]',...
+        'pcolor','linear',199,1);
+    set(gcf,'Color',[1 1 1]);
+        
+end % map_risk_premium
 
 return
