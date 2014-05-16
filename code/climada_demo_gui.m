@@ -20,10 +20,11 @@ function varargout = climada_demo_gui(varargin)
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
+% david.bresch@gmail.com, 20140516, reverse_cb added
 %
 % Edit the above text to modify the response to help climada_demo_gui
 %
-% Last Modified by GUIDE v2.5 21-Feb-2014 10:39:54
+% Last Modified by GUIDE v2.5 16-May-2014 11:10:19
 %-
 
 % Begin initialization code - DO NOT EDIT
@@ -75,6 +76,7 @@ climada_demo_params.measures.mangroves    = 99;
 climada_demo_params.measures.beachnourish = get(handles.slider4, 'Value');
 climada_demo_params.measures.seawall      = get(handles.slider5, 'Value');
 climada_demo_params.measures.quality      = get(handles.slider6, 'Value');
+climada_demo_params.measures.reverse_cb   = get(handles.radiobutton_bc, 'Value');
 climada_demo_params.discount_rate         = str2double(get(handles.edit3,'String'))/100;
     
 
@@ -200,6 +202,10 @@ if climada_demo_params.measures.quality ~= get(handles.slider6, 'Value');
     climada_demo_params.measures.quality = get(handles.slider6, 'Value');
     cost_curve = 1;
 end
+if climada_demo_params.measures.reverse_cb ~= get(handles.radiobutton_bc, 'Value');
+    climada_demo_params.measures.reverse_cb = get(handles.radiobutton_bc, 'Value');
+    cost_curve = 1;
+end
 if cost_curve
     set(handles.text3,'String',['Mangroves '         num2str(get(handles.slider3, 'Value')*100,'%2.0f') '%'])
     set(handles.text4,'String',['Beach nourishment ' num2str(get(handles.slider4, 'Value')*100,'%2.0f') '%'])
@@ -209,8 +215,10 @@ if cost_curve
     axes(handles.axes1);
     cla;
     [impact_present,impact_future, insurance_benefit, insurance_cost] = ...
-         climada_demo_adapt_cost_curve(climada_demo_params,0);
-         %climada_demo_adapt_cost_curve(climada_demo_params,0,scaled_AED,nice_numbers);
+        climada_demo_adapt_cost_curve(climada_demo_params,0,scaled_AED, ...
+        nice_numbers,climada_demo_params.measures.reverse_cb);
+    % climada_demo_adapt_cost_curve(climada_demo_params,0); % until 20140516
+
     %display cost of measures
     if nice_numbers
         fct = 10^-8;
@@ -218,7 +226,7 @@ if cost_curve
         fct = 1;
     end
     if scaled_AED
-        global climada_global
+        %%%global climada_global
         scale_factor = impact_future.ED(end) /impact_future.NPV_total_climate_risk;
         %delta_years = climada_global.future_reference_year - climada_global.present_reference_year;
         %fct_AED     = 1/delta_years;
@@ -742,3 +750,13 @@ function slider3_KeyPressFcn(hObject, eventdata, handles)
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in radiobutton_bc.
+function radiobutton_bc_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton_bc (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton_bc
+pushbutton1_Callback(hObject, eventdata, handles); % recalc, since vertical axis swapped

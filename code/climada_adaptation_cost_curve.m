@@ -14,6 +14,7 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 % EXAMPLE:
 %   climada_adaptation_cost_curve(climada_measures_impact(climada_entity_read)) % from scratch
 %   climada_adaptation_cost_curve(climada_measures_impact,climada_measures_impact) % one needs to really understand what's going on
+%   climada_adaptation_cost_curve('','','','',0,0,1) % inverted c/b
 % INPUTS:
 %   measures_impact: either a struct containing the impacts of measures or a measures_impact file (.mat with a struct)
 %       see climada_measures_impact
@@ -41,7 +42,7 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 % David N. Bresch, david.bresch@gmail.com, 20091228
 % David N. Bresch, david.bresch@gmail.com, 20091230 major revision, appreance similar to ECA graphs
 % David N. Bresch, david.bresch@gmail.com, 20130316 EDS->EDS
-% David N. Bresch, david.bresch@gmail.com, 20130316 compatibility for both direct call as well as via climada_play_gui
+% David N. Bresch, david.bresch@gmail.com, 20130316 compatibility for both direct call as well as via climada_demo_gui
 %-
 
 global climada_global
@@ -99,7 +100,7 @@ if called_from_play_adapt_cost_curve
     scaled_AED            = 1;
     nice_numbers          = 1;
     add_insurance_measure = 1;
-    fontsize_             = 8;
+    fontsize_             = 11; % 20140516, was 8, too small
 else
     add_insurance_measure = 0;
     fontsize_             = 11;
@@ -163,54 +164,57 @@ title_str                    = measures_impact.title_str;
 [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
 if reverse_cb,sorted_cb_ratio=1./sorted_cb_ratio;end
 
-
-%% COMMAND WINDOW: results
+% COMMAND WINDOW: results
 fprintf('%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
-fprintf('\t Measure \t\t\t\t\t Cost \t\t\t Benefit \t\t CB_ratio\n');
+fprintf('\t Measure \t\t\t Cost \t\t\t Benefit \t\t CB_ratio\n');
 if scaled_AED
-    fprintf('\t \t\t    \t\t\t\t(Mio USD)\t\t(Mio USD)\t\t(USD/USD)\n');
+    fprintf('\t \t    \t\t\t(Mio USD)\t\t(Mio USD)\t\t(USD/USD)\n');
 elseif nice_numbers>1
-    fprintf('\t \t\t    \t\t\t\t(10^%1.0f USD)\t\t(10^%1.0f USD)\t\t(USD/USD)\n', nice_numbers, nice_numbers);
+    fprintf('\t \t\t    \t\t(10^%1.0f USD)\t\t(10^%1.0f USD)\t\t(USD/USD)\n', nice_numbers, nice_numbers);
 else
-    fprintf('\t \t\t    \t\t\t\t(USD)\t\t\t(USD)\t\t\t(USD/USD)\n');
+    fprintf('\t \t    \t\t\t(USD)\t\t\t(USD)\t\t\t(USD/USD)\n');
 end
 for measure_i = 1:n_measures   
     m_name = [measures_impact.measures.name{measure_i} '                    '];
     m_name = m_name(1:25);
     fprintf(['\t %s ' nr_format ' \t ' ['\t' nr_format] ' \t\t\t\t %2.1f \n'],...
-            m_name,...
-           (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
-            measures_impact.benefit(measure_i)*fct,...
-            measures_impact.cb_ratio(measure_i));
+        m_name,...
+        (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
+        measures_impact.benefit(measure_i)*fct,...
+        measures_impact.cb_ratio(measure_i));
 end % measure_i
 if add_insurance_measure % NOTE: this section not relevant for lecture
-    fprintf('\t Residual damage to be covered by insurance \n')
-    fprintf(['\t\t\t\t\t\t\t' nr_format ' \t ' ['\t' nr_format] '\t\t\t\t %2.1f\n'],...
-            insurance_cost*fct, insurance_benefit*fct, insurance_cb)
+    fprintf('\t Residual covered by insurance')
+    fprintf([nr_format ' \t ' ['\t' nr_format] '\t\t\t\t %2.1f\n'],...
+        insurance_cost*fct, insurance_benefit*fct, insurance_cb)
+    if reverse_cb,insurance_cb=1./insurance_cb;end
     sorted_cb_ratio = [sorted_cb_ratio insurance_cb];
 else
     fprintf('\t Residual damage \n')
     fprintf(['\t\t\t\t\t\t\t' nr_format '  \t ' ['\t ' nr_format] '\t\t\t\t %2.1f\n'],...
-             0, (tot_climate_risk-sum(measures_impact.benefit))*fct, 0)
+        0, (tot_climate_risk-sum(measures_impact.benefit))*fct, 0)
 end
 cumulated_benefit = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk]*fct;
 
-
-%% PLOT: a dummy plot to open the figure and set the axes
+% PLOT: a dummy plot to open the figure and set the axes
 xmax      = max(cumulated_benefit);
 ymax      = max([max(sorted_cb_ratio),1.1]);
 if called_from_play_adapt_cost_curve
     plot([0,xmax],[ymax,ymax],'.w'); hold on
-    set(gca,'FontSize',fontsize_);
+    set(gca,'FontSize',fontsize_);    
 else
     climada_figuresize(0.5,0.7);
     subaxis(1,1,1,'Mb',0.18)
     set(subaxis(1),'FontSize',fontsize_);hold on
 end
 xlabel(xlabel_str,'fontsize',fontsize_+1)
-ylabel('Cost/benefit ratio (USD/USD)','fontsize',fontsize_+1)
-    
+if reverse_cb
+    ylabel('Benefit/cost ratio (USD/USD)','fontsize',fontsize_+1)
+else
+    ylabel('Cost/benefit ratio (USD/USD)','fontsize',fontsize_+1)
+end;
+
 % plot measures
 for measure_i = 1:n_measures+add_insurance_measure   
     if measure_i == n_measures+1 %insurance cover, only if called from climada_play_adapt_cost_curve  
@@ -251,7 +255,7 @@ end
 % text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'Color','red','FontSize',fontsize_,'fontweight','bold');
 
 
-%% arrow below graph to indicate cost-efficient adaptation and residual damage
+% arrow below graph to indicate cost-efficient adaptation and residual damage
 if called_from_play_adapt_cost_curve
     y_ = -max(sorted_cb_ratio)*1.2*0.18;
     arrow_width  = 10;
@@ -283,13 +287,13 @@ end
 ylim([0 max(sorted_cb_ratio)*1.1])
 % xlim([0 max(cumulated_benefit)*1.03])
 
-%% add title
+% add title
 title_str=strrep(title_str,'_',' '); % since title is LaTEX format
 title_str=strrep(title_str,'|','\otimes'); % LaTEX format
 title(title_str,'FontSize',fontsize_);
 
 
-%% comparison scenario
+% comparison scenario
 if ~isempty(measures_impact_comparison)
     if ~isstruct(measures_impact_comparison)
         measures_impact_comparison_file = measures_impact_comparison;

@@ -1,4 +1,4 @@
-function [impact_present, impact_future, insurance_benefit, insurance_cost] = climada_demo_adapt_cost_curve(climada_demo_params,omit_plot, scaled_AED, nice_numbers)
+function [impact_present, impact_future, insurance_benefit, insurance_cost] = climada_demo_adapt_cost_curve(climada_demo_params,omit_plot, scaled_AED, nice_numbers, reverse_cb)
 % climada
 % NAME:
 %   climada_demo_adapt_cost_curve
@@ -36,6 +36,7 @@ function [impact_present, impact_future, insurance_benefit, insurance_cost] = cl
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20110623, Ashdown Park
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact...
+% David N. Bresch, david.bresch@gmail.com, 20140516, reverse_cb added
 %-
 
 impact_present = []; % init
@@ -49,6 +50,7 @@ if ~exist('climada_demo_params', 'var'), climada_demo_params = []; end
 if ~exist('omit_plot'          , 'var'), omit_plot           = 0 ; end
 if ~exist('scaled_AED'         , 'var'), scaled_AED          = 1 ; end
 if ~exist('nice_numbers'       , 'var'), nice_numbers        = 1 ; end
+if ~exist('reverse_cb'         , 'var'), reverse_cb          = 0 ; end
 
 % PARAMETERS
 %
@@ -196,7 +198,7 @@ impact_future = climada_measures_impact(entity_future,hazard_future,impact_prese
 if ~omit_plot
    % plot the adaptation cost curve
    % ------------------------------
-   [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(impact_future,[],[],[], scaled_AED, nice_numbers);
+   [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(impact_future,[],[],[], scaled_AED, nice_numbers, reverse_cb);
 else
     insurance_benefit = [];
     insurance_cost    = [];

@@ -41,6 +41,8 @@ if ~exist('nice_numbers'       , 'var'), nice_numbers        = 1; end
 
 % PARAMETERS
 %
+fontsize_             = 11;
+%
 % filename and path to the entity used for the demo GUI:
 climada_demo_entity_excel_file = [climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];
 climada_demo_entity_save_file  = [climada_global.data_dir filesep 'entities' filesep 'demo_today.mat'];
@@ -172,14 +174,14 @@ if ~omit_plot
     xlim([-0.2 5.7])
     hold on
     set(gca,'XTick',[0.5,2,3.5,5]);
-    set(gca,'XTickLabel',xticklabel_,'fontsize',8);
+    set(gca,'XTickLabel',xticklabel_,'fontsize',fontsize_);
     ylim_  = get(gca,'ylim');
     text_y = -diff(ylim_)*0.1;
     
-    text(0.5, text_y, 'Risk today'        ,'fontsize',8, 'horizontalalignment','center')
-    text(2.0, text_y, 'economic growth'   ,'fontsize',8, 'horizontalalignment','center')
-    text(3.5, text_y, 'climate change'    ,'fontsize',8, 'horizontalalignment','center')
-    text(5.0, text_y, 'Total climate risk','fontsize',8, 'horizontalalignment','center')
+    text(0.5, text_y, 'Risk today'        ,'fontsize',fontsize_, 'horizontalalignment','center')
+    text(2.0, text_y, 'economic growth'   ,'fontsize',fontsize_, 'horizontalalignment','center')
+    text(3.5, text_y, 'climate change'    ,'fontsize',fontsize_, 'horizontalalignment','center')
+    text(5.0, text_y, 'Total climate risk','fontsize',fontsize_, 'horizontalalignment','center')
     
     ylabel(ylabel_str)
     %axis tight
