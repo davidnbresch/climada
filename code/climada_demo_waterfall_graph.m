@@ -41,7 +41,8 @@ if ~exist('nice_numbers'       , 'var'), nice_numbers        = 1; end
 
 % PARAMETERS
 %
-fontsize_             = 11;
+fontsize_           = 8;
+if ismac, fontsize_ = 11;end % larger font on Mac looks better
 %
 % filename and path to the entity used for the demo GUI:
 climada_demo_entity_excel_file = [climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];

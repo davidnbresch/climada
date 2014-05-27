@@ -30,9 +30,9 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 %   scaled_AED: scaled annual expected damage (only used by Lea Mueller),
 %       default=0 (inactive)
 %   nice_numbers: used in the special mode for the climada_play_gui, where
-%       this code is called from climada_play_adapt_cost_curve, 
+%       this code is called from climada_play_adapt_cost_curve,
 %       default=0 (inactive)
-%   reverse_cb: reverse the vertical axis (=1), instead of cost/benefit, 
+%   reverse_cb: reverse the vertical axis (=1), instead of cost/benefit,
 %       show benefit per cost, default=0
 % OUTPUTS:
 %   insurance_benefit and insurance_cost: only used when called from
@@ -66,6 +66,10 @@ if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 0; 
 % length of the x/y-axis)
 if isempty(x_text_control), x_text_control=30;end
 if isempty(y_text_control), y_text_control=50;end
+%
+% whether we plot arrows underneath the x-axis to show cost-effective
+% measures and non-cost-effective measures extent
+plot_arrows=0; % defaul=1
 
 % prompt for measures_impact if not given
 if isempty(measures_impact) % local GUI
@@ -96,11 +100,12 @@ if ~isstruct(measures_impact)
 end
 
 % set the extras for the play gui
-if called_from_play_adapt_cost_curve 
+if called_from_play_adapt_cost_curve
     scaled_AED            = 1;
     nice_numbers          = 1;
     add_insurance_measure = 1;
-    fontsize_             = 11; % 20140516, was 8, too small
+    fontsize_             = 8; % 20140527, on PC, use smaller
+    if ismac, fontsize_   = 11;end % 20140516, was 8, too small
 else
     add_insurance_measure = 0;
     fontsize_             = 11;
@@ -118,7 +123,7 @@ else
     tot_climate_risk  = measures_impact.NPV_total_climate_risk;
 end
 
-if add_insurance_measure % NOTE: this section not relevant for lecture  
+if add_insurance_measure % NOTE: this section not relevant for lecture
     %cover residual damage with insurance
     insurance_benefit    = tot_climate_risk - sum(measures_impact.benefit);
     %calculate insurance costs
@@ -150,7 +155,7 @@ else
     nr_format  = '%2.1e';
     xlabel_str = sprintf('Averted damage over %d years (USD)',n_years);
 end
-                                       
+
 
 %% correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
@@ -159,7 +164,7 @@ if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
     measures_impact.benefit(risk_transfer_idx)  = tot_climate_risk - sum(measures_impact.benefit(~risk_transfer_idx));
     %measures_impact.cb_ratio(risk_transfer_idx) = measures_impact.measures.cost(risk_transfer_idx)/measures_impact.benefit(risk_transfer_idx);
 end
-    
+
 title_str                    = measures_impact.title_str;
 [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
 if reverse_cb,sorted_cb_ratio=1./sorted_cb_ratio;end
@@ -175,7 +180,7 @@ elseif nice_numbers>1
 else
     fprintf('\t \t    \t\t\t(USD)\t\t\t(USD)\t\t\t(USD/USD)\n');
 end
-for measure_i = 1:n_measures   
+for measure_i = 1:n_measures
     m_name = [measures_impact.measures.name{measure_i} '                    '];
     m_name = m_name(1:25);
     fprintf(['\t %s ' nr_format ' \t ' ['\t' nr_format] ' \t\t\t\t %2.1f \n'],...
@@ -202,7 +207,7 @@ xmax      = max(cumulated_benefit);
 ymax      = max([max(sorted_cb_ratio),1.1]);
 if called_from_play_adapt_cost_curve
     plot([0,xmax],[ymax,ymax],'.w'); hold on
-    set(gca,'FontSize',fontsize_);    
+    set(gca,'FontSize',fontsize_);
 else
     climada_figuresize(0.5,0.7);
     subaxis(1,1,1,'Mb',0.18)
@@ -216,11 +221,11 @@ else
 end;
 
 % plot measures
-for measure_i = 1:n_measures+add_insurance_measure   
-    if measure_i == n_measures+1 %insurance cover, only if called from climada_play_adapt_cost_curve  
+for measure_i = 1:n_measures+add_insurance_measure
+    if measure_i == n_measures+1 %insurance cover, only if called from climada_play_adapt_cost_curve
         % NOTE: this section not relevant for lecture
         area(cumulated_benefit(measure_i:measure_i+1), [insurance_cb, insurance_cb],...
-        'FaceColor',[193 193 193 ]/255,'EdgeColor','w'); %grey
+            'FaceColor',[193 193 193 ]/255,'EdgeColor','w'); %grey
     else
         area(cumulated_benefit(measure_i:measure_i+1),...
             [sorted_cb_ratio(measure_i), sorted_cb_ratio(measure_i)],...
@@ -229,20 +234,20 @@ for measure_i = 1:n_measures+add_insurance_measure
 end
 
 % annotate names of measures
-for measure_i = 2:n_measures+1 %first entry = 0 
+for measure_i = 2:n_measures+1 %first entry = 0
     if ~isnan(sorted_cb_ratio(measure_i-1))
         text(cumulated_benefit(measure_i)-(cumulated_benefit(measure_i)-cumulated_benefit(measure_i-1))/2,...
-             max(sorted_cb_ratio)/y_text_control,...
-             [measures_impact.measures.name{sort_index(measure_i-1)},...
-             '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_);                               
+            max(sorted_cb_ratio)/y_text_control,...
+            [measures_impact.measures.name{sort_index(measure_i-1)},...
+            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_);
     end
 end
 % show net present value of total climate risk
 plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
 tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
 text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
-            'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
-                              
+    'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
+
 if add_insurance_measure % NOTE: this section not relevant for lecture
     %insurance to cover residual damage
     measure_i = measure_i+1;
@@ -255,37 +260,39 @@ end
 % text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'Color','red','FontSize',fontsize_,'fontweight','bold');
 
 
-% arrow below graph to indicate cost-efficient adaptation and residual damage
-if called_from_play_adapt_cost_curve
-    y_ = -max(sorted_cb_ratio)*1.2*0.18;
-    arrow_width  = 10;
-    arrow_length = 10;
-else
-    y_ = -max(sorted_cb_ratio)*1.2*0.14;
-    arrow_width  = 15;
-    arrow_length = 15;
+if plot_arrows
+    % arrow below graph to indicate cost-efficient adaptation and residual damage
+    if called_from_play_adapt_cost_curve
+        y_ = -max(sorted_cb_ratio)*1.2*0.18;
+        arrow_width  = 10;
+        arrow_length = 10;
+    else
+        y_ = -max(sorted_cb_ratio)*1.2*0.14;
+        arrow_width  = 15;
+        arrow_length = 15;
+    end
+    s_ = 0.5;
+    m_cost_eff = sum(sorted_cb_ratio<=1)+1;
+    climada_arrow([cumulated_benefit(end) y_*1.0], [cumulated_benefit(m_cost_eff)+s_/2 y_*1.0],...
+        'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[205 0 0]/255);
+    if add_insurance_measure
+        text(mean(cumulated_benefit([end end-1])),y_, 'Non-cost-efficient','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
+    else
+        climada_arrow([cumulated_benefit(m_cost_eff) y_*1.0], [cumulated_benefit(end-1)+s_/2 y_*1.0],...
+            'width',arrow_width-9,'Length',arrow_length-5, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[255 127   0]/255);
+        text((cumulated_benefit(m_cost_eff)+cumulated_benefit(end-1))/2,y_, 'Non-cost-efficient'       ,'color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
+        text(mean(cumulated_benefit([end end-1])),y_, 'Residual damage','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
+    end
+    if cumulated_benefit(m_cost_eff)>0
+        climada_arrow([0 y_], [cumulated_benefit(m_cost_eff)-s_/2 y_],...
+            'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[0 197 205]/255);
+        text(cumulated_benefit(m_cost_eff)/2,y_, 'Cost-efficient adaptation','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
+    end
+    % text in arrows
+    % text((cumulated_benefit(m_cost_eff)+cum_benefit(end-1))/2,y_,'Non-cost-efficient'       ,'color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_2,'fontweight','bold');
+    ylim([0 max(sorted_cb_ratio)*1.1])
+    % xlim([0 max(cumulated_benefit)*1.03])
 end
-s_ = 0.5;
-m_cost_eff = sum(sorted_cb_ratio<=1)+1;
-climada_arrow([cumulated_benefit(end) y_*1.0], [cumulated_benefit(m_cost_eff)+s_/2 y_*1.0],...
-              'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[205 0 0]/255);
-if add_insurance_measure              
-    text(mean(cumulated_benefit([end end-1])),y_, 'Non-cost-efficient','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');          
-else
-    climada_arrow([cumulated_benefit(m_cost_eff) y_*1.0], [cumulated_benefit(end-1)+s_/2 y_*1.0],...
-                  'width',arrow_width-9,'Length',arrow_length-5, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[255 127   0]/255);
-    text((cumulated_benefit(m_cost_eff)+cumulated_benefit(end-1))/2,y_, 'Non-cost-efficient'       ,'color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
-    text(mean(cumulated_benefit([end end-1])),y_, 'Residual damage','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');                
-end
-if cumulated_benefit(m_cost_eff)>0
-    climada_arrow([0 y_], [cumulated_benefit(m_cost_eff)-s_/2 y_],...
-                  'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[0 197 205]/255);
-    text(cumulated_benefit(m_cost_eff)/2,y_, 'Cost-efficient adaptation','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');          
-end
-% text in arrows
-% text((cumulated_benefit(m_cost_eff)+cum_benefit(end-1))/2,y_,'Non-cost-efficient'       ,'color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_2,'fontweight','bold');
-ylim([0 max(sorted_cb_ratio)*1.1])
-% xlim([0 max(cumulated_benefit)*1.03])
 
 % add title
 title_str=strrep(title_str,'_',' '); % since title is LaTEX format
@@ -314,14 +321,14 @@ if ~isempty(measures_impact_comparison)
     n_measures     = length(measures_impact.measures.cost);
     
     fprintf('\t Measure \t\t\t\t Cost \t\t\t Benefit \t CB_ratio\n');
-    for measure_i = 1:n_measures  
+    for measure_i = 1:n_measures
         fprintf(['\t %s \t\t\t' nr_format ' \t ' ['\t' nr_format] ' \t\t\t %2.1f \n'],...
-                measures_impact.measures.name{measure_i},...
-               (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
-                measures_impact.benefit(measure_i)*fct,...
-                measures_impact.cb_ratio(measure_i));
+            measures_impact.measures.name{measure_i},...
+            (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
+            measures_impact.benefit(measure_i)*fct,...
+            measures_impact.cb_ratio(measure_i));
     end % measure_i
-
+    
     if scaled_AED
         measures_impact.measures.cost = bsxfun(@times, measures_impact.measures.cost, scale_factor);
         measures_impact.risk_transfer = bsxfun(@times, measures_impact.risk_transfer, scale_factor);
@@ -334,24 +341,24 @@ if ~isempty(measures_impact_comparison)
     end
     [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
     cumulated_benefit            = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk]*fct;
-
+    
     % to scale such that the plot comprises both
     xmax = max([xmax, cumulated_benefit(end)]);
     ymax = max([max(sorted_cb_ratio),1.1,ymax]);
     hold on; plot([0,xmax],[ymax,ymax],'.w');
-
+    
     % plot measures (semi-transparent)
     version_no=str2double(strsplit(version,'.'));version_no=version_no(1);% get main version number
     for measure_i = 1:n_measures
         if version_no>6 % for version 7 and later
-            patch([cumulated_benefit(measure_i:measure_i+1) cumulated_benefit(measure_i+1:-1:measure_i)],... % 
-                  [0 0 sorted_cb_ratio(measure_i) sorted_cb_ratio(measure_i)],...
-                  measures_impact.measures.color_RGB(sort_index(measure_i),:),...
-                  'FaceAlpha',0.2, 'EdgeColor',[.9 .9 .9]);
+            patch([cumulated_benefit(measure_i:measure_i+1) cumulated_benefit(measure_i+1:-1:measure_i)],... %
+                [0 0 sorted_cb_ratio(measure_i) sorted_cb_ratio(measure_i)],...
+                measures_impact.measures.color_RGB(sort_index(measure_i),:),...
+                'FaceAlpha',0.2, 'EdgeColor',[.9 .9 .9]);
         else % reverse compatibility
             % area('v6',...) creates patch objects instead of areaseries
             % objects for compatibility with MATLAB 6.5 and earlier.
-            area('v6',cumulated_benefit(measure_i:measure_i+1),... % 
+            area('v6',cumulated_benefit(measure_i:measure_i+1),... %
                 [sorted_cb_ratio(measure_i),sorted_cb_ratio(measure_i)],...
                 'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),...
                 'FaceAlpha',0.2,'EdgeColor',[.9 .9 .9]);
@@ -374,7 +381,7 @@ if ~isempty(measures_impact_comparison)
         plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
         text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
     end
-
+    
     both_title_str{1} = title_str;
     comp_title_str    = strrep(comp_title_str,'_',' '); % since title is LaTEX format
     comp_title_str    = strrep(comp_title_str,'|','\otimes'); % LaTEX format
