@@ -22,6 +22,7 @@ function tc_track=climada_tc_read_unisys_database(unisys_file)
 %   required, since raw data contains missing and errors). One needs to
 %   delete the binary file to re-read the raw ASCII data.
 %
+%   previous step: see climada_tc_get_unisys_databases
 %   next step: see climada_tc_random_walk
 % CALLING SEQUENCE:
 %   tc_track=climada_tc_read_unisys_database(unisys_file);
