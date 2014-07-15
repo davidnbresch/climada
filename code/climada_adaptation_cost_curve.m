@@ -1,4 +1,4 @@
-function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(measures_impact, measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb)
+function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(measures_impact, measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrow)
 % climada measures impact climate adaptation cost curve
 % NAME:
 %   climada_adaptation_cost_curve
@@ -34,6 +34,9 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 %       default=0 (inactive)
 %   reverse_cb: reverse the vertical axis (=1), instead of cost/benefit,
 %       show benefit per cost, default=0
+%   plot_arrows: whether we do (=1) or don't (=0) plot arrows underneath
+%       the x-axis to show cost-effective measures and non-cost-effective
+%       measures extent, has occasionally some issues, hence default =0
 % OUTPUTS:
 %   insurance_benefit and insurance_cost: only used when called from
 %       climada_play_adapt_cost_curve, see there (in essence to write
@@ -59,6 +62,7 @@ if ~exist('y_text_control'            , 'var'), y_text_control             = [];
 if ~exist('scaled_AED'                , 'var'), scaled_AED                 = 0 ; end
 if ~exist('nice_numbers'              , 'var'), nice_numbers               = []; end
 if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 0; end
+if ~exist('plot_arrows'               , 'var'), plot_arrows                = 0; end
 
 % PARAMETERS
 %
@@ -66,10 +70,7 @@ if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 0; 
 % length of the x/y-axis)
 if isempty(x_text_control), x_text_control=30;end
 if isempty(y_text_control), y_text_control=50;end
-%
-% whether we plot arrows underneath the x-axis to show cost-effective
-% measures and non-cost-effective measures extent
-plot_arrows=0; % defaul=1
+
 
 % prompt for measures_impact if not given
 if isempty(measures_impact) % local GUI
@@ -270,7 +271,7 @@ if plot_arrows
         y_ = -max(sorted_cb_ratio)*1.2*0.14;
         arrow_width  = 15;
         arrow_length = 15;
-    end
+    end    
     s_ = 0.5;
     m_cost_eff = sum(sorted_cb_ratio<=1)+1;
     climada_arrow([cumulated_benefit(end) y_*1.0], [cumulated_benefit(m_cost_eff)+s_/2 y_*1.0],...
@@ -288,10 +289,11 @@ if plot_arrows
             'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[0 197 205]/255);
         text(cumulated_benefit(m_cost_eff)/2,y_, 'Cost-efficient adaptation','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
     end
-    % text in arrows
-    % text((cumulated_benefit(m_cost_eff)+cum_benefit(end-1))/2,y_,'Non-cost-efficient'       ,'color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_2,'fontweight','bold');
-    ylim([0 max(sorted_cb_ratio)*1.1])
-    % xlim([0 max(cumulated_benefit)*1.03])
+    %%% FOR LEA: next code line is the tricky one, leave
+    %%%it commented, and arrows show nicely, but unfortunately the vertical
+    %%%axis goes below zero and the arrows are shown below zero line...
+    %%%ylim([0 max(sorted_cb_ratio)*1.1])
+    % xlim([0 max(cumulated_benefit)*1.03]) % was commented already
 end
 
 % add title
