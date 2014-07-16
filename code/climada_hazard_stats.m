@@ -250,6 +250,21 @@ if check_plot
     if strcmp(peril_ID,'TC')
         caxis_max = 100;
         steps10 = 10;
+        % create colormap for wind:
+        cmap=[  1.0000    1.0000    1.0000;
+            0.8100    0.8100    0.8100;
+            0.6300    0.6300    0.6300;
+            1.0000    0.8000    0.2000;
+            0.9420    0.6667    0.1600;
+            0.8839    0.5333    0.1200;
+            0.8259    0.4000    0.0800;
+            0.7678    0.2667    0.0400;
+            0.7098    0.1333         0;
+            0.5412    0.1020         0];
+        
+    elseif strcmp(peril_ID,'TR')
+        caxis_max = 500;
+        
         % create colormap for rain
         cmap1 = [];
         cmap2 = [];
@@ -262,19 +277,6 @@ if check_plot
             cmap2(:,i)=middlecolor2(i):(endcolor(i)-middlecolor2(i))/(steps10/2-1):endcolor(i);
         end
         cmap = [cmap1; cmap2];
-    elseif strcmp(peril_ID,'TR')
-        caxis_max = 500;
-        % create colormap for wind:
-        cmap=[  1.0000    1.0000    1.0000;
-            0.8100    0.8100    0.8100;
-            0.6300    0.6300    0.6300;
-            1.0000    0.8000    0.2000;
-            0.9420    0.6667    0.1600;
-            0.8839    0.5333    0.1200;
-            0.8259    0.4000    0.0800;
-            0.7678    0.2667    0.0400;
-            0.7098    0.1333         0;
-            0.5412    0.1020         0];
     else
         caxis_max=full(max(max(hazard.intensity_fit)));
         % use default colormap, hence no cmap defined
