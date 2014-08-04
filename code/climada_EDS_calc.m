@@ -234,7 +234,7 @@ EDS.hazard.comment  = hazard.comment;
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.Latitude = entity.assets.Latitude;
 EDS.assets.Longitude = entity.assets.Longitude;
-EDS.assets.Value = entity.assets.Value; % note EDS.Value is sum of...
+EDS.assets.Value     = entity.assets.Value; % note EDS.Value is sum of...
 EDS.damagefunctions.filename = entity.damagefunctions.filename;
 if isempty(annotation_name)
     [fP,name]       = fileparts(EDS.hazard.filename);
@@ -248,4 +248,4 @@ if climada_global.EDS_at_centroid
     EDS.ED_at_centroid     = full(sum(bsxfun(@times, EDS.damage_at_centroid, EDS.frequency),2));
 end
 
-return
+end

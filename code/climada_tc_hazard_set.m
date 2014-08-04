@@ -181,6 +181,7 @@ n_tracks = length(tc_track);
 msgstr   = sprintf('processing %i tracks',n_tracks);
 fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
 h        = waitbar(0,msgstr);
+set(h,'Name','Hazard TC: tropical cyclones wind');
 mod_step = 10; % first time estimate after 10 tracks, then every 100
 for track_i=1:n_tracks
     

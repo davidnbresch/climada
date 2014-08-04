@@ -144,7 +144,7 @@ end
 title_str        = sprintf('%s | %s',assets_name,hazard_name);
 title_str        = strrep(title_str,'_',' '); % since title is LaTEX format
 title_str        = strrep(title_str,'|','\otimes'); % LaTEX format
-title(title_str,'FontSize',12);
+% title(title_str,'FontSize',12);
 
 hold off;
 

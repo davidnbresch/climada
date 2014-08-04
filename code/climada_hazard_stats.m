@@ -3,7 +3,6 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,peril_ID
 %   climada_hazard_stats
 % PURPOSE:
 %   plot hazard intensity maps for different return periods
-%
 %   add statistics
 %     .intensity_fit_ori
 %     .intensity_fit
@@ -241,51 +240,43 @@ if calc
     
 end % if calc
 
+
 % FIGURE
 % ------
-
 if check_plot
     fontsize = 12;
-    % some color settings
-    if strcmp(peril_ID,'TC')
-        caxis_max = 100;
-        steps10 = 10;
-        % create colormap for wind:
-        cmap=[  1.0000    1.0000    1.0000;
-            0.8100    0.8100    0.8100;
-            0.6300    0.6300    0.6300;
-            1.0000    0.8000    0.2000;
-            0.9420    0.6667    0.1600;
-            0.8839    0.5333    0.1200;
-            0.8259    0.4000    0.0800;
-            0.7678    0.2667    0.0400;
-            0.7098    0.1333         0;
-            0.5412    0.1020         0];
-        
-    elseif strcmp(peril_ID,'TR')
-        caxis_max = 500;
-        
-        % create colormap for rain
-        cmap1 = [];
-        cmap2 = [];
-        startcolor   = [0.89	0.93	0.89];
-        middlecolor1 = [0.55	0.78	0.59];
-        middlecolor2 = [0.43	0.84	0.78];
-        endcolor     = [0.05	0.37	0.55];
-        for i=1:3
-            cmap1(:,i)=startcolor(i):(middlecolor1(i)-startcolor(i))/(steps10/2-1):middlecolor1(i);
-            cmap2(:,i)=middlecolor2(i):(endcolor(i)-middlecolor2(i))/(steps10/2-1):endcolor(i);
-        end
-        cmap = [cmap1; cmap2];
-    else
-        caxis_max=full(max(max(hazard.intensity_fit)));
-        % use default colormap, hence no cmap defined
+    % some color settings 
+    cmap = climada_colormap(peril_ID);    
+    switch peril_ID
+        case 'TC'
+            caxis_max = 100;
+            xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
+            %xtick_    = [20 40 60 80 caxis_max];
+            cbar_str  = 'Probabilistic wind speed (m/s)';
+            
+        case 'TR'
+            caxis_max = 300; %caxis_max = 500;
+            xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+            %xtick_    = [10 50 100 200 caxis_max];
+            cbar_str  = 'Probabilistic rain sum (mm)';
+            
+        case 'TS'
+            caxis_max = 3;
+            xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+            %xtick_    = [1 2 4 caxis_max];
+            cbar_str  = 'Probabilistic surge height (m)';
+            
+        otherwise
+            % use default colormap, hence no cmap defined  
+            caxis_max = full(max(max(hazard.intensity_fit)));
+            xtick_    = [];
+            cbar_str  = '';
     end
-    
+     
     fprintf('Preparing intensity vs return periods maps\n')
     
-    centroids.Longitude=hazard.lon;
-    centroids.Latitude=hazard.lat;
+    centroids.Longitude = hazard.lon;
+    centroids.Latitude  = hazard.lat;
     scale = max(centroids.Longitude)-min(centroids.Longitude);
     scale2= (max(centroids.Longitude)-min(centroids.Longitude)+scale*2/30)...
         /(max(centroids.Latitude )-min(centroids.Latitude )+scale*2/30);
@@ -317,18 +308,10 @@ if check_plot
     pos = get(subaxis(2),'pos');
     % distance in normalized units from the top of the axes
     dist = .06;
-    if strcmp(peril_ID,'TR')
-        hc = colorbar('yTick',[10 20 40 60 80 100],'location','northoutside','position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
-        set(get(hc,'xlabel'),'String', 'Probabilistic rain sum (mm)','fontsize',fontsize);
-    elseif strcmp(peril_ID,'TR')
-        hc = colorbar('yTick',[10 20 40 60 80 100],'location','northoutside','position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
-        set(get(hc,'xlabel'),'String', 'Probabilistic wind speed (m/s)','fontsize',fontsize);
-    else
-        hc = colorbar('location','northoutside','position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
-    end
+    hc = colorbar('location','northoutside', 'position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
+    set(get(hc,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);
     caxis([0 caxis_max])
     set(gca,'fontsize',fontsize)
-    
     hold on
     
     for i=1:return_count %x_no*y_no %return_count
@@ -355,8 +338,10 @@ if check_plot
         % do not display xticks, nor yticks
         set(subaxis(i),'xtick',[],'ytick',[],'DataAspectRatio',[1 1 1])
         caxis([0 caxis_max])
-        if exist('cmap','var'),colormap(cmap);end
+        if ~exist('cmap','var'), cmap = '';end
+        if ~isempty(cmap), colormap(cmap);end
         set(gca,'fontsize',fontsize)
+        set(hc,'XTick',xtick_)
     end %return_i
     
     close(h); % dispose waitbar
