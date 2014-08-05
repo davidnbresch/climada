@@ -5,10 +5,7 @@
 % --------------------------------
 climada_root_dir=pwd; % current directory (print working directory)
 %
-%clc % clear command window
-
-fprintf('climada, Copyright (C) 2014, david.bresch@gmail.com\n');
-fprintf('This program comes with ABSOLUTELY NO WARRANTY\n');
+clc % clear command window
 
 % create the root dir of additional
 climada_root_dir_additional=[fileparts(climada_root_dir) filesep 'climada_additional'];
@@ -16,6 +13,8 @@ climada_root_dir_additional=[fileparts(climada_root_dir) filesep 'climada_additi
 % add to MATLAB path for code
 % these last to be top in path list
 addpath([climada_root_dir filesep 'code']);
+addpath([climada_root_dir filesep 'code' filesep 'helper_functions']);
+
 if exist(climada_root_dir_additional,'dir')  
     fprintf('climada_additional modules found: \n');
     add_dir  = dir(climada_root_dir_additional);
