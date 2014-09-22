@@ -241,7 +241,7 @@ hazard.filename          = hazard_set_file;
 hazard.comment           = sprintf('TCNA hazard event set, generated %s',datestr(now));
 hazard.date              = datestr(now);
 
-fprintf('saving hazard set in .../data/hazards folder as %s\n',hazard_set_file);
+fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
 save(hazard_set_file,'hazard')
 
 return

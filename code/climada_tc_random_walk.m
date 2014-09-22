@@ -161,7 +161,7 @@ t_elapsed = etime(clock,t0);
 fprintf('generating %i derived storms took %f sec (%f sec/track)\n',ens_count,t_elapsed,t_elapsed/ens_count);
 close(h); % dispose waitbar
 
-fprintf('HINT: for further use, save the generated tracks using the ''save'' command\n');
+%%fprintf('HINT: for further use, save the generated tracks using the ''save'' command\n');
 
 if check_plot
     fprintf('preparing check plot ...\n');

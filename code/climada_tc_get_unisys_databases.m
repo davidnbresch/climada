@@ -1,4 +1,4 @@
-function climada_tc_get_unisys_databases
+function climada_tc_get_unisys_databases(tc_tracks_folder)
 % climada
 % NAME:
 %   climada_tc_get_unisys_databases
@@ -16,6 +16,8 @@ function climada_tc_get_unisys_databases
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   param2: as an example
+%   tc_tracks_folder: the place to store the data files to
+%       default the climada core /data/tc_tracks folder
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140715
@@ -25,6 +27,10 @@ global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
+
+if ~exist('tc_tracks_folder','var')
+    tc_tracks_folder = [climada_global.data_dir filesep 'tc_tracks'];
+end
 
 % PARAMETERS
 %
@@ -43,7 +49,7 @@ for file_i=1:length(unisys_files)
     fprintf('reading %s ... ',fE);
     [S,STATUS] = urlread(www_filename);
     if STATUS==1
-        txt_filename=[climada_global.data_dir filesep 'tc_tracks' filesep fN fE '.txt'];
+        txt_filename=[tc_tracks_folder filesep fN fE '.txt'];
         fprintf(' save as %s%s.txt ...',fN,fE);
         fid=fopen(txt_filename,'w');
         fprintf(fid,'%s',S);
