@@ -213,9 +213,9 @@ for track_i=1:n_tracks
         tracks_remaining  = n_tracks-track_i;
         t_projected_sec   = t_elapsed_track*tracks_remaining;
         if t_projected_sec<60
-            msgstr = sprintf('est. %3.0f sec left (%i/%i events)',t_projected_sec, track_i, n_tracks);
+            msgstr = sprintf('est. %3.0f sec left (%i/%i tracks)',t_projected_sec,   track_i,n_tracks);
         else
-            msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60, track_i, n_tracks);
+            msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
         end
         waitbar(track_i/n_tracks,h,msgstr); % update waitbar
     end
