@@ -37,6 +37,7 @@ if ~exist('event_i','var'),event_i=-1;end
 if ~exist('label','var'),label=[];end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
+if isempty(hazard),return;end
 
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);

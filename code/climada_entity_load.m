@@ -41,7 +41,7 @@ if isempty(entity_file) % local GUI
 end
 
 load(entity_file)
-vars = whos('-file', entity_file);
+vars = whos('-file', entity_file); % why do we need this?
 if ~strcmp(vars.name,'entity')
     entity = eval(vars.name);
     clear (vars.name)

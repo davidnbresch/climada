@@ -28,24 +28,24 @@ global climada_global
 
 ok=1;
 
-warning off MATLAB:divideByZero % avoid division by zero Warnings
-warning off MATLAB:griddata:DuplicateDataPoints % avoid duplicate data points Warnings
-warning off MATLAB:nonIntegerTruncatedInConversionToChar % alloe eg conversion of NaN to empty char
 persistent climada_vars_initialised % used to communicate status of initialisation
 
 if exist('reset_flag','var')
     if reset_flag==1
-        % force re-init
-        climada_vars_initialised=[];
+        climada_vars_initialised=[]; % force re-init
     end
 end
 
 if length(climada_vars_initialised)<1 % initialise and check only first time called
-
+    
+    %warning off MATLAB:divideByZero % avoid division by zero Warnings OLD removed 20141016
+    warning off MATLAB:griddata:DuplicateDataPoints % avoid duplicate data points Warnings
+    warning off MATLAB:nonIntegerTruncatedInConversionToChar % alloe eg conversion of NaN to empty char
+    
     % first, check some MATLAB version specifics
     % ------------------------------------------
-
-    climada_LOCAL_ROOT_DIR=getenv('climada_LOCAL_ROOT_DIR'); % get operating system's environment variable 
+    
+    climada_LOCAL_ROOT_DIR=getenv('climada_LOCAL_ROOT_DIR'); % get operating system's environment variable
     climada_LOCAL_ROOT_DIR=strrep(climada_LOCAL_ROOT_DIR,'"','');
 
     if exist(climada_LOCAL_ROOT_DIR,'dir')
