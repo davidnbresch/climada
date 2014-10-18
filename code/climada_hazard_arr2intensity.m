@@ -1,22 +1,27 @@
-function hazard=climada_hazard_load(hazard_file)
+function hazard=climada_hazard_arr2intensity(hazard_file)
 % climada
 % NAME:
-%   climada_hazard_load
+%   climada_hazard_arr2intensity
 % PURPOSE:
-%   load a hazard event set (just to avoid typing long paths and
-%   filenames in the cmd window)
+%   switch from hazard.arr to hazard.intensity, i.e. load a hazard set and
+%   rename the field.
+%
+%   We decided 20141017 to switch from hazard.arr to hazard.intensity,
+%   sincde this fieldname is more telling.
 % CALLING SEQUENCE:
-%   hazard=climada_hazard_load(hazard_file)
+%   hazard=climada_hazard_arr2intensity(hazard_file)
 % EXAMPLE:
-%   hazard=climada_hazard_load(hazard_file)
+%   hazard=climada_hazard_arr2intensity(hazard_file)
 % INPUTS:
 %   hazard_file: the filename with path of a previously saved hazard event set
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 %   hazard: a struct, see e.g. climada_tc_hazard_set
+%   the hazard with the fielname changed is saved back to the original .mat
+%   file
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20140302
+% David N. Bresch, david.bresch@gmail.com, 20141017
 %-
 
 global climada_global
@@ -40,6 +45,10 @@ if isempty(hazard_file) % local GUI
 end
 
 load(hazard_file); % really the only code line
+hazard.intensity=hazard.arr;
+hazard=rmfield(hazard,'arr');
+fprintf('hazard saved as %s\n',hazard_file);
+save(hazard_file,'hazard');
 
 return
 

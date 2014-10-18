@@ -19,6 +19,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20130316, EDS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130623, re_check_encoding
 % Lea Mueller, muellele@gmail.com, 20140211, start year set to 2014
+% David N. Bresch, david.bresch@gmail.com, 20141018, switch to modules instead of climada_additional
 %-
 
 global climada_global
@@ -78,6 +79,11 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % --------------------------------
     
     climada_global.data_dir=[climada_global.root_dir filesep 'data'];
+    alternative_data_dir=[fileparts(climada_global.root_dir) filesep 'climada_data'];
+    if exist(alternative_data_dir,'dir')
+        fprintf('\nNOTE: switched to data dir %s\n',alternative_data_dir);
+        climada_global.data_dir=alternative_data_dir;
+    end
     if ~exist(climada_global.data_dir,'dir')
         fprintf('WARNING: please create %s manually\n',climada_global.data_dir);
     end
