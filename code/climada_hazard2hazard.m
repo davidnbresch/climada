@@ -37,7 +37,7 @@ function hazard=climada_hazard2hazard(hazard_set_file_in,hazard_set_file_out)
 %       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
 %           centroid_i
 %       frequency(event_i): the frequency of each event
-%       matrix_density: the density of the sparse array hazard.arr
+%       matrix_density: the density of the sparse array hazard.intensity
 %       windfield_comment: a free comment, not in all hazard event sets
 %       filename: the filename of the hazard event set (if passed as a
 %           struct, this is often useful)
@@ -107,8 +107,8 @@ end
 
 hazard.centroid_ID=hazard.CalculationUnitID;
 hazard=rmfield(hazard,'CalculationUnitID');
-hazard.event_count=size(hazard.arr,1);
-hazard.arr=hazard.arr'; % TRANSPOSED for speed-up
+hazard.event_count=size(hazard.intensity,1);
+hazard.intensity=hazard.intensity'; % TRANSPOSED for speed-up
 hazard.frequency=hazard.frequency'; % TRANSPOSED
 % lon, lat, peril_ID, comment, orig_years, event_ID, date, orig_event_count, orig_event_flag the same
 hazard.filename=hazard_set_file_out;

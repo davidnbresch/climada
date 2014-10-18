@@ -115,7 +115,7 @@ r_length                 = 1:1:length(requested_return_periods);
 for imp_i = 1:length(important_centroid)
     %% historical data
     %1: intensity (wind speed) 
-    int{imp_i}         = full(sort(hazard.arr(1:no_generated:end,important_centroid(imp_i)),'descend'));
+    int{imp_i}         = full(sort(hazard.intensity(1:no_generated:end,important_centroid(imp_i)),'descend'));
     neg                = int{imp_i} < threshold;
     %frequency
     int{imp_i}(:,3)    = hazard.frequency(1)*no_generated;
@@ -131,7 +131,7 @@ for imp_i = 1:length(important_centroid)
     
     %% probabilistic data
     %4: intensity
-    int_               = full(sort(hazard.arr(:,important_centroid(imp_i)),'descend'));
+    int_               = full(sort(hazard.intensity(:,important_centroid(imp_i)),'descend'));
     int{imp_i}(:,4)    = int_(1:length(int{imp_i}));
     neg                = int{imp_i}(:,4) < threshold;
     %frequency

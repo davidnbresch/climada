@@ -30,7 +30,7 @@ if ~exist('root_folder','var'),root_folder=[];end
 
 % prompt for root_folder if not given
 if isempty(root_folder) % local GUI
-    root_folder=climada_global.additional_dir;
+    root_folder=climada_global.modules_dir;
     root_folder = uigetdir(root_folder, 'Select module to add folder structure:');
     if isequal(root_folder,0)
         return % cancel

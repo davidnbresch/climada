@@ -115,12 +115,6 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % length number of centroids)
     climada_global.EDS_at_centroid=0; % default=0
     
-    % create the root dir of additional
-    climada_root_dir_additional = [fileparts(climada_global.root_dir) filesep 'climada_additional'];
-    if exist(climada_root_dir_additional,'dir')  
-        climada_global.additional_dir = climada_root_dir_additional;  
-    end
-    
     % the default spreadsheet type, either '.xls' (default) or '.ods'
     % the user can always select from 'All Files', the default is only
     % used to compose the default filename.

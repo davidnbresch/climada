@@ -118,7 +118,7 @@ else
     EDS.reference_year=climada_global.present_reference_year;
 end
 EDS.event_ID          = hazard.event_ID;
-EDS.damage            = zeros(1,size(hazard.arr,1));
+EDS.damage            = zeros(1,size(hazard.intensity,1));
 n_assets              = length(entity.assets.centroid_index);
 EDS.ED_at_centroid   = zeros(n_assets,1); % expected damage per centroid
 EDS.Value             = 0;
@@ -157,24 +157,24 @@ for asset_i=1:n_assets
     % we need a trick to apply interp1 to the SPARSE hazard matrix: we evaluate only at non-zero elements, but therefore need a function handle
     interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
     interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-    MDD            = spfun(@climada_sparse_interp,hazard.arr(:,asset_hazard_pos)); % apply to non-zero elements only
+    MDD            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
     % OPTIMIZATION HINT: see climada_sparse_interp, would interp_x_table be uniformly spaced...
     
 
     % figure
     % plot(interp_x_table, interp_y_table,':')
     % hold on
-    % plot(hazard.arr(:,asset_hazard_pos), MDD,'o')
+    % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
 
     % similarly, convert hazard intensity into PAA
     interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-    PAA            = spfun(@climada_sparse_interp,hazard.arr(:,asset_hazard_pos)); % apply to non-zero elements only
+    PAA            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
         
 
     % figure
     % plot(interp_x_table, interp_y_table,':k')
     % hold on
-    % plot(hazard.arr(:,asset_hazard_pos), PAA,'ok')
+    % plot(hazard.intensity(:,asset_hazard_pos), PAA,'ok')
 
     % calculate the from ground up (fgu) damage
     temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA

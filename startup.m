@@ -7,24 +7,24 @@ climada_root_dir=pwd; % current directory (print working directory)
 %
 clc % clear command window
 
-% create the root dir of additional
-climada_root_dir_additional=[fileparts(climada_root_dir) filesep 'climada_additional'];
+% create the dir to find the additional modules
+climada_modules_dir=[climada_root_dir filesep 'modules'];
 
 % add to MATLAB path for code
 % these last to be top in path list
 addpath([climada_root_dir filesep 'code']);
 addpath([climada_root_dir filesep 'code' filesep 'helper_functions']);
 
-if exist(climada_root_dir_additional,'dir')  
-    fprintf('climada_additional modules found: \n');
-    add_dir  = dir(climada_root_dir_additional);
+if exist(climada_modules_dir,'dir')  
+    fprintf('climada modules found: \n');
+    add_dir  = dir(climada_modules_dir);
     for a_i = 1:length(add_dir)
-        if exist([climada_root_dir_additional filesep add_dir(a_i).name filesep 'code'],'dir')  
-            addpath([climada_root_dir_additional filesep add_dir(a_i).name filesep 'code']);
+        if length(add_dir(a_i).name)>2 && exist([climada_modules_dir filesep add_dir(a_i).name filesep 'code'],'dir')  
+            addpath([climada_modules_dir filesep add_dir(a_i).name filesep 'code']);
             fprintf('\t %s\n',add_dir(a_i).name);
             
             % checking for sub-folders within code (only one level)
-            sub_dir=[climada_root_dir_additional filesep add_dir(a_i).name filesep 'code'];
+            sub_dir=[climada_modules_dir filesep add_dir(a_i).name filesep 'code'];
             add_subdir  = dir(sub_dir);
             for as_i = 1:length(add_subdir)
                 if add_subdir(as_i).isdir && length(add_subdir(as_i).name)>2
@@ -42,6 +42,7 @@ end
 % pass the global root directory
 global climada_global
 climada_global.root_dir = deblank(climada_root_dir);
+climada_global.modules_dir = deblank(climada_modules_dir);
 
 fprintf('initializing climada... ');
 

@@ -35,8 +35,8 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,peril_ID
 %   check_printplot: if =1, user will be asked to generate a pdf, default=0
 % OUTPUTS:
 %   hazard structure with
-%   - hazard.arr_sort:          probabilistic sorted intensity per centroid
-%   - hazard.arr_ori_sort:      historical sorted intensity per centroid
+%   - hazard.intensity_sort:          probabilistic sorted intensity per centroid
+%   - hazard.intensity_ori_sort:      historical sorted intensity per centroid
 %   - hazard.R_fit:             requested return periods
 %   - hazard.intensity_fit_ori: fitted intensity for requested return periods
 %                               for every centroid for original events
@@ -124,9 +124,9 @@ if calc
     fprintf('Calculate statistics...\n')
     
     % probabilistic
-    hazard.arr_sort     = sort(hazard.arr,'descend');
+    hazard.intensity_sort     = sort(hazard.intensity,'descend');
     % historical
-    hazard.arr_ori_sort = sort(hazard.arr(1:no_generated:end,:),'descend');
+    hazard.intensity_ori_sort = sort(hazard.intensity(1:no_generated:end,:),'descend');
     
     hazard.R            = 1./cumsum(hazard.frequency);
     hazard.R_ori        = 1./cumsum(hazard.frequency(1:no_generated:end)*no_generated);
@@ -137,7 +137,7 @@ if calc
     %   .R_fit_ori
     %   .intensity_fit
     %   .R_fit
-    n_centroids              = size(hazard.arr,2);
+    n_centroids              = size(hazard.intensity,2);
     hazard.intensity_fit_ori = spalloc(length(return_periods_calc),length(hazard.centroid_ID),ceil(length(return_periods_calc)*length(hazard.centroid_ID)*0.01));
     hazard.intensity_fit     = spalloc(length(return_periods_calc),length(hazard.centroid_ID),ceil(length(return_periods_calc)*length(hazard.centroid_ID)*0.01));
     hazard.R_fit             = return_periods_calc;
@@ -155,7 +155,7 @@ if calc
             % historical data
             % ---------------
             
-            [intensity_pos, ind_int]   = sort(hazard.arr(1:no_generated:end,centroid_i),'descend');
+            [intensity_pos, ind_int]   = sort(hazard.intensity(1:no_generated:end,centroid_i),'descend');
             intensity_pos              = full(intensity_pos);
             below_thresh_pos           = intensity_pos<intensity_threshold;
             intensity_pos(intensity_pos<intensity_threshold) = [];
@@ -187,7 +187,7 @@ if calc
         % ------------------
         
         % intensity
-        [intensity_pos, ind_int]   = sort(hazard.arr(:,centroid_i),'descend');
+        [intensity_pos, ind_int]   = sort(hazard.intensity(:,centroid_i),'descend');
         intensity_pos              = full(intensity_pos);
         below_thresh_pos           = intensity_pos<intensity_threshold;
         intensity_pos(intensity_pos<intensity_threshold) = [];

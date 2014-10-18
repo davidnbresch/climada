@@ -23,7 +23,7 @@ function climada_color_plot(values,...
 % CALLING SEQUENCE:
 %   climada_color_plot(values,lon,lat,figure_name,title_str,plot_method,interp_method,npoints)
 % EXAMPLE:
-%   climada_color_plot(mean(hazard.arr,2),hazard.lon,hazard.lat)
+%   climada_color_plot(mean(hazard.intensity,2),hazard.lon,hazard.lat)
 % INPUTS:
 %   values: values at zone centroids
 %   lon,lat: zone centroids

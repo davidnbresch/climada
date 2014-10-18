@@ -85,7 +85,7 @@ end
 hazard.frequency = hazard.frequency*frequency_screw;
 
 % assumption 2) intensity increase
-hazard.arr       = hazard.arr*intensity_screw;
+hazard.intensity       = hazard.intensity*intensity_screw;
 
 pause(1)
 

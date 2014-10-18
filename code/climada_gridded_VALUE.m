@@ -2,7 +2,7 @@ function [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,interp_m
 % NAME:
 %   climada_gridded_VALUE
 % PURPOSE:
-%   gridded data of wind speed in hazard.arr 
+%   gridded data of wind speed in hazard.intensity 
 %   for creating color plot
 % CALLING SEQUENCE:
 %   climada_gridded_VALUE(values,centroids,interp_method,npoints,stencil_ext)

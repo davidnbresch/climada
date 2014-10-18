@@ -51,7 +51,7 @@ function hazard=climada_excel_hazard_set(excel_file,hazard_set_file,visualize)
 %       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
 %           centroid_i
 %       frequency(event_i): the frequency of each event
-%       matrix_density: the density of the sparse array hazard.arr
+%       matrix_density: the density of the sparse array hazard.intensity
 %       windfield_comment: a free comment, not in all hazard event sets
 %       filename: the filename of the hazard event set (if passed as a
 %           struct, this is often useful)
@@ -136,7 +136,7 @@ hazard.orig_event_flag=hazard_frequency.orig_event_flag;
 hazard.orig_event_count=sum(hazard.orig_event_flag);
 
 % allocate the hazard array (sparse, to manage memory)
-hazard.arr = spalloc(hazard.event_count,length(hazard.lon),...
+hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
     ceil(hazard.event_count*length(hazard.lon)*hazard_arr_density));
 
 t0 = clock;
@@ -148,7 +148,7 @@ for event_i=1:hazard.event_count
 
     event_column_name=sprintf('event%3.3i',event_i);
     %%fprintf('%s, %f\n',event_column_name,max(hazard_intensity.(event_column_name)));
-    hazard.arr(event_i,:)=sparse(hazard_intensity.(event_column_name)); % fill hazard array
+    hazard.intensity(event_i,:)=sparse(hazard_intensity.(event_column_name)); % fill hazard array
     
     if mod(event_i,mod_step)==0
         mod_step=100;
@@ -167,7 +167,7 @@ msgstr=sprintf('generating %i events took %f sec (%f sec/event)\n',hazard.event_
 fprintf('%s\n',msgstr);
 
 hazard.frequency=hazard_frequency.frequency; % not transposed, just regular
-hazard.matrix_density=nnz(hazard.arr)/numel(hazard.arr);
+hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 hazard.generation_comment=msgstr;
 hazard.filename=hazard_set_file;
 hazard.excel_file=excel_file;

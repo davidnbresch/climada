@@ -49,7 +49,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
 %           centroid_i
 %       frequency(event_i): the frequency of each event
-%       matrix_density: the density of the sparse array hazard.arr
+%       matrix_density: the density of the sparse array hazard.intensity
 %       windfield_comment: a free comment, not in all hazard event sets
 %       filename: the filename of the hazard event set (if passed as a
 %           struct, this is often useful)
@@ -173,7 +173,7 @@ hazard.dd               = zeros(1,hazard.event_count);
 hazard.nodetime_mat     = zeros(1,hazard.event_count);
 
 % allocate the hazard array (sparse, to manage memory)
-hazard.arr = spalloc(hazard.event_count,length(hazard.lon),...
+hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
                      ceil(hazard.event_count*length(hazard.lon)*hazard_arr_density));
 
 t0       = clock;
@@ -188,7 +188,7 @@ for track_i=1:n_tracks
     % calculate wind for every centroids, equal timestep within this routine  
     res                             = climada_tc_windfield(tc_track(track_i),centroids,1,1,check_plot); 
     %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,1,1,check_plot);
-    hazard.arr(track_i,:)           = res.gust;
+    hazard.intensity(track_i,:)           = res.gust;
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
     hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag;
     
@@ -234,7 +234,7 @@ event_frequency = 1/(orig_years*(ens_size+1));
 
 % not transposed, just regular
 hazard.frequency         = ones(1,hazard.event_count)*event_frequency; 
-hazard.matrix_density    = nnz(hazard.arr)/numel(hazard.arr);
+hazard.matrix_density    = nnz(hazard.intensity)/numel(hazard.intensity);
 hazard.windfield_comment = msgstr;
 hazard.peril_ID          = 'TC';
 hazard.filename          = hazard_set_file;

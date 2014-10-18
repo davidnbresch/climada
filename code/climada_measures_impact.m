@@ -263,7 +263,7 @@ for measure_i = 1:n_measures+1 % last with no measures
                         % if array dimension do not match, above check fails
                         fprintf('WARNING: hazard might not at all be compatible with encoded assets\n');
                     end % try
-                    if abs(numel(hazard.arr)-numel(hazard.arr))
+                    if abs(numel(hazard.intensity)-numel(hazard.intensity))
                         fprintf('WARNING: hazard might not be fully compatible with EDS\n');
                     end
                 else
