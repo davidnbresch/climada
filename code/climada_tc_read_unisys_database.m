@@ -4,8 +4,8 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file)
 %   climada_tc_read_unisys_database
 % PURPOSE:
 %   read UNISYS database file, raw data file to be downloaded from
-%   http://weather.unisys.com/hurricane/index.html
-%   filter the raw data, namely:
+%   http://weather.unisys.com/hurricane/index.html (see
+%   climada_tc_get_unisys_databases), filter the raw data, namely:
 %   - a VALID record (=node) is required to have lat, lon and either pressure
 %     or windspeed (so recrods with only geographical information are skipped)
 %   - pressure [mb] needs to be in the range 800..1100, otherwise set to
@@ -120,7 +120,7 @@ time_stamps=[0 6 12 18];
 time_offsets=[0 17 34 51];
 %
 % TEST data
-%%unisys_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'TEST_tracks.atl.txt']
+%unisys_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'TEST_tracks.atl.txt']
 
 % prompt for unisys_file if not given
 if isempty(unisys_file) % local GUI
@@ -170,7 +170,7 @@ if ~exist(tc_track_proc_file,'file')
             line_count=line_count+1;
             if length(line)>0
                 
-                %% line
+                % line
                 if track_record_count>0,record_type=2;end; % track record
                 if track_record_count==0,record_type=3;end; % after track records
                 if track_record_count==-1,record_type=1;end; % header
@@ -190,14 +190,14 @@ if ~exist(tc_track_proc_file,'file')
                         track_record_count=str2num(line(20:21));
                     case 2 % body
                         
-                        %% try
+                        % try
                         % body format:
                         % 000000000111111111122222222223333333333444444444455555555556
                         % 123456789012345678901234567890123456789012345678901234567890
                         % 92580 04/22S2450610  30 1003S2490615  45 1002S2520620  45 1002S2550624  45 1003*
                         % Card# MM/DD&LatLongWindPress&LatLongWindPress&LatLongWindPress&LatLongWindPress
                         
-                        %%fprintf('%s\n',line(1:5)) % DEBUG only
+                        %fprintf('%s\n',line(1:5)) % DEBUG only
                         
                         % loop over (four) timesteps per day
                         for offset_i=1:length(time_offsets)
@@ -250,7 +250,7 @@ if ~exist(tc_track_proc_file,'file')
         save(tc_track_raw_file,'raw_data');
     else
         fprintf('reading binary file %s\n',tc_track_raw_file);
-        %%fprintf('> please delete this file to read data from raw file again\n');
+        %fprintf('> please delete this file to read data from raw file again\n');
         load(tc_track_raw_file);
     end
     
@@ -439,7 +439,7 @@ if ~exist(tc_track_proc_file,'file')
     
 else
     fprintf('reading processed file %s\n',tc_track_proc_file);
-    %%fprintf('> please delete this file to read data from raw file again\n');
+    %fprintf('> please delete this file to read data from raw file again\n');
     load(tc_track_proc_file);
 end
 

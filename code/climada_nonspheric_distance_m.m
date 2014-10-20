@@ -24,7 +24,7 @@ R = 6371;
 
 %abs() makes it compatible for north and south hemisphere
 latrad    = degtorad(abs(fLat2));  %previous version named deg2rad(abs(fLat2));  
-% deg2rad(1) = distance for 1° longitude on given latitude
+% deg2rad(1) = distance for 1 deg longitude on given latitude
 delta_lon = 0.0174532925199433;     
 % square of half the chord length between the points
 a         = cos(latrad)^2 * sin(delta_lon/2)^2;       
