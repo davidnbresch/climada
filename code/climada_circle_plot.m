@@ -35,8 +35,8 @@ function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,
 % David N. Bresch, david.bresch@gmail.com, 20120430
 %-
 
-global climada_global
-if not(climada_init_vars(1)),return;end; % init/import global variables
+%global climada_global
+if ~climada_init_vars,return;end; % init/import global variables
 
 values=full(values);
 

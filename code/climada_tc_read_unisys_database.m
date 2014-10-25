@@ -1,4 +1,4 @@
-function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file)
+function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file,check_plot)
 % TC event set track database UNISYS
 % NAME:
 %   climada_tc_read_unisys_database
@@ -22,7 +22,7 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file)
 %   to the code and results in substantial speed-up.
 %   if the binary file (see tc_track_raw_file) exists, reading of raw
 %   data is skipped. This allows faster iteration iro filtering (as often
-%   required, since raw data contains missing and errors). 
+%   required, since raw data contains missing and errors).
 %   One needs to delete the binary files to re-read the raw ASCII data.
 %
 %   previous step: see climada_tc_get_unisys_databases
@@ -36,6 +36,7 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file)
 %       UNISYS), prompted for, if not given
 %   see also PARAMETERS section, especially for filters
 % OPTIONAL INPUT PARAMETERS:
+%   check_plot: if =1, show plots, =0 not (default)
 % OUTPUTS:
 %   tc_track: a structure with the track information for each cyclone i and
 %           data for each node j (times are at 00Z, 06Z, 12Z, 18Z):
@@ -86,14 +87,13 @@ if ~climada_init_vars,return;end
 
 % check inputs
 if ~exist('unisys_file','var'),unisys_file=[];end
+if ~exist('check_plot','var'),check_plot=0;end
 
 % PARAMETERS
 %
 % general settings
 % ----------------
 min_nodes=3;    % minimal nodes a track must have to be selected
-%
-check_plot=1; % whether we show a check plot (=1) or not (=0)
 %
 % some likely basin/dataset specific settings
 % -------------------------------------------
@@ -151,7 +151,8 @@ tc_track.TimeStep             = 6; % check!
 if ~exist(tc_track_proc_file,'file')
     
     if ~exist(tc_track_raw_file,'file')
-        h = waitbar(0.5,'Reading and converting data ...');
+        
+        if climada_global.waitbar,h = waitbar(0.5,'Reading and converting data ...');end
         % open the database for reading
         if ~exist(unisys_file,'file'),fprintf('ERROR: file %s not found\n',unisys_file);return;end
         fid=fopen(unisys_file,'r');
@@ -343,14 +344,14 @@ if ~exist(tc_track_proc_file,'file')
     n_tracks=length(unique_unique_ID);  % amount of read tracks
     msgstr=sprintf('Processing %i tracks ...',n_tracks);
     fprintf('%s\n',msgstr);
-    h = waitbar(0,msgstr);
+    if climada_global.waitbar,h = waitbar(0,msgstr);end
     
     % for printing some features (tests)
     selected_tracks=0;   % init: number of tracks selected
     unselected_tracks=0; % init: number of tracks unselected
     
     for ID_i=1:n_tracks
-        waitbar(ID_i/n_tracks,h); % update waitbar
+        if climada_global.waitbar,waitbar(ID_i/n_tracks,h);end % update waitbar
         
         pos=find(unique_ID==unique_unique_ID(ID_i)); %find all datapoints which belong to the same ID (=same track)
         
@@ -413,7 +414,7 @@ if ~exist(tc_track_proc_file,'file')
         
     end % ID_i
     fprintf('%i tracks read, %i tracks chosen, %i tracks not chosen\n',n_tracks,selected_tracks,unselected_tracks)
-    close(h); % dispose waitbar
+    if exist('h','var'), close(h), end % close waitbar
     
     clear raw_data % to save space
     
