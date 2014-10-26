@@ -41,6 +41,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name)
 % David N. Bresch, david.bresch@gmail.com, 20091228
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130623, re-encoding optional
+% David N. Bresch, david.bresch@gmail.com, 20141025, peril_ID added to waitbar title
 %-
 
 global climada_global
@@ -142,7 +143,7 @@ end
 t0 = clock;
 msgstr=sprintf('processing %i assets and %i events, ',n_assets,length(hazard.frequency));
 %fprintf('%s',msgstr);
-if climada_global.waitbar,h = waitbar(0,msgstr,'name','Calculating damage for assets');end % CLIMADA_OPT
+if climada_global.waitbar,h = waitbar(0,msgstr,'name',sprintf('Calculating %s damage for assets',hazard.peril_ID));end % CLIMADA_OPT
 mod_step=2; % first time estimate after 2 calcs, then every 100
 
 for asset_i=1:n_assets
