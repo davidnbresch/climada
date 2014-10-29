@@ -1,4 +1,4 @@
-function [entity hazard] = climada_entity_read(entity_filename,hazard)
+function [entity hazard entity_save_file] = climada_entity_read(entity_filename,hazard)
 % climada assets read import
 % NAME:
 %   climada_entity_read
@@ -47,16 +47,19 @@ function [entity hazard] = climada_entity_read(entity_filename,hazard)
 %           DamageFunID: the damagefunction curve ID
 %           Intensity: the hazard intensity
 %           MDD: the mean damage degree
+%   entity_save_file: the name the encoded entity got saved to
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090920
 % Lea Mueller, 20110720
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact ...
+% David N. Bresch, david.bresch@gmail.com, 20141029, entity_save_file added as output
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 entity=[];
+entity_save_file=[];
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 

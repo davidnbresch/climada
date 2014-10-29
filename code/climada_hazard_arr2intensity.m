@@ -44,11 +44,17 @@ if isempty(hazard_file) % local GUI
     end
 end
 
-load(hazard_file); % really the only code line
-hazard.intensity=hazard.arr;
-hazard=rmfield(hazard,'arr');
-fprintf('hazard saved as %s\n',hazard_file);
-save(hazard_file,'hazard');
+load(hazard_file); % really the only code line, loads hazard
+if isfield(hazard,'arr')
+    hazard.intensity=hazard.arr;
+    hazard=rmfield(hazard,'arr');
+    fprintf('hazard saved as %s\n',hazard_file);
+    save(hazard_file,'hazard');
+elseif isfield(hazard,'intensity')
+    fprintf('hazard does already contain a field hazard.intensity, no change necessary\n');
+else
+    fprintf('WARNING: further inspection needed, hazard does not contain neither .arr nor .intensity\n'); 
+end
 
 return
 
