@@ -1,4 +1,4 @@
-function fig = climada_EDS_DFC(EDS, EDS_comparison,Percentage_Of_Value_Flag)
+function fig = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
 % climada
 % NAME:
 %   climada_EDS_DFC
@@ -22,12 +22,15 @@ function fig = climada_EDS_DFC(EDS, EDS_comparison,Percentage_Of_Value_Flag)
 %       that damage as percentage of value is shown, instead of damage amount,
 %       default=0 (damage amount shown). Very useful to compare DFCs of
 %       different portfolios to see relative differences in risk
+%   plot_loglog: if =1, plot logarithmic scale both axes, =0 plot linear
+%       axes (default)
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100108
 % David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
 % Lea Mueller, 20120816, comparison title of all comparisons, changed markersize
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
+% David N. Bresch, david.bresch@gmail.com, 20130316, slight cleanup
 %-
 
 global climada_global
@@ -37,6 +40,7 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('EDS','var'),EDS=[];end
 if ~exist('EDS_comparison','var'),EDS_comparison='';end
 if ~exist('Percentage_Of_Value_Flag','var'),Percentage_Of_Value_Flag=0;end
+if ~exist('plot_loglog','var'),plot_loglog=0;end
 
 
 % prompt for EDS if not given
@@ -104,7 +108,7 @@ if length(EDS)>  size(color_,1)
 end
 % order accroding to size of damage
 damage_                 = arrayfun(@(x)(sum(x.damage)), EDS);
-[dam_sorted sort_index] = sort(damage_,'ascend');
+[~,sort_index] = sort(damage_,'ascend');
 color_ = color_(sort_index,:);
 
 marker_ = ['*- ';'o- ';'p- ';'.- ';'s- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'.--';'s--';'v--';'d--'];
@@ -121,7 +125,11 @@ for EDS_i=1:length(EDS)
     exceedence_freq = exceedence_freq(nonzero_pos);
     return_period   = 1./exceedence_freq;
     if Percentage_Of_Value_Flag,sorted_damage = sorted_damage/EDS(EDS_i).Value*100; end
-    plot(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+    if plot_loglog
+        loglog(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+    else
+        plot(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+    end
     hold on
     ii = ii+1; if ii>length(marker_), ii=1; end
     if isfield(EDS(EDS_i),'annotation_name'), legend_str{EDS_i}=EDS(EDS_i).annotation_name; end
@@ -139,8 +147,8 @@ end
 % set(gcf,'Color',[1 1 1])
 
 % add title
-[fP,hazard_name] = fileparts(EDS(1).hazard.filename);
-[fP,assets_name] = fileparts(EDS(1).assets.filename);
+[~,hazard_name] = fileparts(EDS(1).hazard.filename);
+[~,assets_name] = fileparts(EDS(1).assets.filename);
 title_str        = sprintf('%s | %s',assets_name,hazard_name);
 title_str        = strrep(title_str,'_',' '); % since title is LaTEX format
 title_str        = strrep(title_str,'|','\otimes'); % LaTEX format
@@ -190,8 +198,8 @@ if length(EDS_comparison)>0
         ii = ii+1; if ii>length(marker_), ii=1; end
         if isfield(EDS(EDS_i),'annotation_name'), legend_str{end+1} = EDS(EDS_i).annotation_name; end
         % add title
-        [fP,hazard_name]    = fileparts(EDS(EDS_i).hazard.filename);
-        [fP,assets_name]    = fileparts(EDS(EDS_i).assets.filename);
+        [~,hazard_name]    = fileparts(EDS(EDS_i).hazard.filename);
+        [~,assets_name]    = fileparts(EDS(EDS_i).assets.filename);
         title_str_comp      = sprintf('%s | %s',assets_name,hazard_name);
         title_strs{EDS_i+1} = strrep(strrep(title_str_comp,'_',' '),'|','\otimes'); % since title is LaTEX format
         
