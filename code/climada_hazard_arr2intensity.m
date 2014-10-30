@@ -7,7 +7,9 @@ function hazard=climada_hazard_arr2intensity(hazard_file)
 %   rename the field.
 %
 %   We decided 20141017 to switch from hazard.arr to hazard.intensity,
-%   sincde this fieldname is more telling.
+%   since this fieldname is more telling.
+%
+%   The code also checkes for hazard.event_count to be correct
 % CALLING SEQUENCE:
 %   hazard=climada_hazard_arr2intensity(hazard_file)
 % EXAMPLE:
@@ -53,7 +55,13 @@ if isfield(hazard,'arr')
 elseif isfield(hazard,'intensity')
     fprintf('hazard does already contain a field hazard.intensity, no change necessary\n');
 else
-    fprintf('WARNING: further inspection needed, hazard does not contain neither .arr nor .intensity\n'); 
+    fprintf('WARNING: further inspection needed, hazard does not contain neither .arr nor .intensity\n');
+end
+
+if abs(hazard.event_count-size(hazard.intensity,1))>0
+    hazard.event_count=size(hazard.intensity,1);
+    fprintf('hazard.event_count corrected to %i',hazard.event_count);
+    save(hazard_file,'hazard');
 end
 
 return
