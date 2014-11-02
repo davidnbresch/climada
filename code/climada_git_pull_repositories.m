@@ -39,13 +39,13 @@ repository_list={
     'climada_module_tc_surge'
     'climada_module_ws_europe'
     };
-%
-parent_dir='/home/dbresch/climada_modules’;
+
+parent_dir=deblank(climada_global.modules_dir);
 
 for repository_i=1:length(repository_list)
-command_str=sprintf('cd %s%s%s ; git pull',parent_dir,filesep,repository_list{repository_i});
-fprintf('%s\n',command_str)
-system(command_str);
+    command_str=sprintf('cd %s%s%s ; git pull',parent_dir,filesep,repository_list{repository_i});
+    fprintf('>>> %s\n',command_str)
+    system(command_str);
 end % repository_i
 
 return
