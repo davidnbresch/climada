@@ -40,7 +40,7 @@ repository_list={
     'climada_module_ws_europe'
     };
 %
-parent_dir='/home/dbresch';
+parent_dir='/home/dbresch/climada_modules’;
 
 for repository_i=1:length(repository_list)
 command_str=sprintf('cd %s%s%s ; git pull',parent_dir,filesep,repository_list{repository_i});
