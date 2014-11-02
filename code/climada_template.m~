@@ -1,0 +1,61 @@
+function climada_template(param1,param2)
+% climada
+% NAME:
+%   climada_template
+% PURPOSE:
+%   
+% CALLING SEQUENCE:
+%   climada_template(param1,param2);
+% EXAMPLE:
+%   climada_template(param1,param2);
+% INPUTS:
+%   param1: 
+%       > promted for if not given
+% OPTIONAL INPUT PARAMETERS:
+%   param2: as an example
+% OUTPUTS:
+% MODIFICATION HISTORY:
+% David N. Bresch, david.bresch@gmail.com, 20090920
+%-
+
+global climada_global
+if ~climada_init_vars,return;end % init/import global variables
+
+%%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
+
+% poor man's version to check arguments
+if ~exist('param1','var'),param1=[];end
+if ~exist('param2','var'),param2=[];end
+
+% PARAMETERS
+%
+% set default value for param2 if not given
+if isempty(param2),param2=2;end
+
+repositories_list={
+    'climada_module_country_risk'
+    'climada_module_eq_global'
+    'climada_module_etopo'
+    'climada_module_GDP_entity'
+    'climada_module_tc_hazard_advanced'
+    'climada_module_tc_rain'
+    'climada_module_tc_surge'
+    'climada_module_ws_europe'
+    };
+
+command_str=sprintf('cd %s',repositories_list{item_i});
+status = system(sprintf('cd %s);
+status = system('cd climada_modules/climada_module_tc_surge');
+
+% prompt for param1 if not given
+if isempty(param1) % local GUI
+    param1=[climada_global.data_dir filesep '*.mat'];
+    [filename, pathname] = uigetfile(param1, 'Open:');
+    if isequal(filename,0) || isequal(pathname,0)
+        return; % cancel
+    else
+        param1=fullfile(pathname,filename);
+    end
+end
+
+return
