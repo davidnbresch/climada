@@ -7,6 +7,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name)
 %   the event damage set (EDS)
 %
 %   Note that the waitbar consumes quite some time, so switch it off by
+%   setting climada_global.waitbar=0 or by
 %   using the climada_code_optimizer, which removes all slowing code...
 % CALLING SEQUENCE:
 %   EDS=climada_EDS_calc(entity,hazard,annotation_name)
@@ -42,6 +43,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name)
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130623, re-encoding optional
 % David N. Bresch, david.bresch@gmail.com, 20141025, peril_ID added to waitbar title
+% David N. Bresch, david.bresch@gmail.com, 20141103, entity.damagefunctions.peril_ID
 %-
 
 global climada_global
@@ -59,10 +61,6 @@ if ~exist('annotation_name','var'),annotation_name='';end
 
 % PARAMETERS
 %
-% TEST settings
-%%load([climada_global.data_dir filesep 'assets' filesep 'TEST_long_TC_assets.mat']); % entity
-%%hazard_set=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_TEST_atl_ens_hazard.mat']; % hazard
-%%hazard_set=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_atl_ens_hazard.mat']; % hazard
 
 % prompt for hazard_set if not given
 if isempty(entity) % local GUI
@@ -153,70 +151,76 @@ for asset_i=1:n_assets
     
     % find the damagefunctions for the asset under consideration
     asset_damfun_pos = find(entity.damagefunctions.DamageFunID == entity.assets.DamageFunID(asset_i));
+    if isfield(entity.damagefunctions,'peril_ID') % refine for peril
+        asset_damfun_pos=asset_damfun_pos(strcmp(entity.damagefunctions.peril_ID(asset_damfun_pos),hazard.peril_ID(1:2)));
+    end
     
-    % convert hazard intensity into MDD
-    % we need a trick to apply interp1 to the SPARSE hazard matrix: we evaluate only at non-zero elements, but therefore need a function handle
-    interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-    interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-    MDD            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
-    % OPTIMIZATION HINT: see climada_sparse_interp, would interp_x_table be uniformly spaced...
-    
-
-    % figure
-    % plot(interp_x_table, interp_y_table,':')
-    % hold on
-    % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
-
-    % similarly, convert hazard intensity into PAA
-    interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-    PAA            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
+    if ~isempty(asset_damfun_pos)
+        % convert hazard intensity into MDD
+        % we need a trick to apply interp1 to the SPARSE hazard matrix: we evaluate only at non-zero elements, but therefore need a function handle
+        interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
+        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp        
+        MDD            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
+        % OPTIMIZATION HINT: see climada_sparse_interp, would interp_x_table be uniformly spaced...
         
-
-    % figure
-    % plot(interp_x_table, interp_y_table,':k')
-    % hold on
-    % plot(hazard.intensity(:,asset_hazard_pos), PAA,'ok')
-
-    % calculate the from ground up (fgu) damage
-    temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
-
-    if any(full(temp_damage)) % if at least one damage>0
-        if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
-            % apply Deductible and Cover
-            temp_damage=min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
+        
+        % figure
+        % plot(interp_x_table, interp_y_table,':')
+        % hold on
+        % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
+        
+        % similarly, convert hazard intensity into PAA
+        interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
+        PAA            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
+        
+        
+        % figure
+        % plot(interp_x_table, interp_y_table,':k')
+        % hold on
+        % plot(hazard.intensity(:,asset_hazard_pos), PAA,'ok')
+        
+        % calculate the from ground up (fgu) damage
+        temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
+        
+        if any(full(temp_damage)) % if at least one damage>0
+            if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
+                % apply Deductible and Cover
+                temp_damage=min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
+            end
+            EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+            
+            if climada_global.EDS_at_centroid
+                %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
+                index_ = j == asset_i; %index_ = i == asset_i;
+                i(index_) = [];
+                j(index_) = [];
+                x(index_) = [];
+                
+                i = [i; find(temp_damage)];
+                j = [j; zeros(nnz(temp_damage),1)+asset_i];
+                x = [x; nonzeros(temp_damage)];
+            else
+                EDS.ED_at_centroid(asset_i,1) = full(sum(temp_damage' .* EDS.frequency));
+            end
+            
         end
-        EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+        EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
         
-        if climada_global.EDS_at_centroid
-            %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
-            index_ = j == asset_i; %index_ = i == asset_i;
-            i(index_) = [];
-            j(index_) = [];
-            x(index_) = [];
-
-            i = [i; find(temp_damage)];
-            j = [j; zeros(nnz(temp_damage),1)+asset_i]; 
-            x = [x; nonzeros(temp_damage)];
-        else
-            EDS.ED_at_centroid(asset_i,1) = full(sum(temp_damage' .* EDS.frequency));
-        end 
+        % TEST output
+        %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
-    end 
-    EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
-    
-    % TEST output
-    %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
-    
-    if climada_global.waitbar % CLIMADA_OPT
-        if mod(asset_i,mod_step)==0 % CLIMADA_OPT
-            mod_step         = 100; % CLIMADA_OPT
-            t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
-            calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
-            t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-            msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
-            waitbar(asset_i/n_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+        if climada_global.waitbar % CLIMADA_OPT
+            if mod(asset_i,mod_step)==0 % CLIMADA_OPT
+                mod_step         = 100; % CLIMADA_OPT
+                t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
+                calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
+                t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
+                msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
+                waitbar(asset_i/n_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+            end % CLIMADA_OPT
         end % CLIMADA_OPT
-    end % CLIMADA_OPT
+        
+    end % ~isempty(asset_damfun_pos)
     
 end % asset_i
 if climada_global.waitbar,close(h);end % dispose waitbar % CLIMADA_OPT
