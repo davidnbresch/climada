@@ -148,9 +148,9 @@ tc_track.MaxSustainedWindUnit = 'kn';
 tc_track.CentralPressureUnit  = 'mb';
 tc_track.TimeStep             = 6; % check!
 
-if ~exist(tc_track_proc_file,'file')
+if ~climada_check_matfile(unisys_file,tc_track_proc_file)
     
-    if ~exist(tc_track_raw_file,'file')
+    if ~climada_check_matfile(unisys_file,tc_track_raw_file)
         
         if climada_global.waitbar,h = waitbar(0.5,'Reading and converting data ...');end
         % open the database for reading

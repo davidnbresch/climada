@@ -109,8 +109,7 @@ if keep_boundary
 end
 
 map_border_file_bin=strrep(map_border_file,'.gen','.mat');
-if exist(map_border_file_bin,'file')
-    
+if climada_check_matfile(map_border_file)
     % load previously stored border data (faster)
     load(map_border_file_bin);
 else
@@ -162,9 +161,9 @@ else
     
     % add ISO3 country codes, groupID and region
     txt_file = [climada_global.system_dir filesep 'countryname_ISO3_groupID_region.txt'];
-    if exist(txt_file,'file')        
+    if exist(txt_file,'file')
         fid = fopen(txt_file);
-        C   = textscan(fid, '%f %s %s %s', 'Delimiter','\t','headerLines',1); 
+        C   = textscan(fid, '%f %s %s %s', 'Delimiter','\t','headerLines',1);
         borders.ISO3    = cell (1,length(C{1}));
         borders.groupID = zeros(1,length(C{1}));
         borders.region  = cell (1,length(C{1}));
@@ -175,14 +174,14 @@ else
                 borders.ISO3{c_i}    = C{2}{index};
                 if ~isnan(C{1}(index))
                     borders.groupID(c_i) = C{1}(index);
-                end  
+                end
                 borders.region{c_i} = C{4}{index};
             else
                 fprintf('No match found for country %s\n', borders.name{c_i})
             end
-        end   
+        end
     end
-   
+    
     save(map_border_file_bin,'borders','whole_world_borders');
 end % exist(map_border_file_bin,'file')
 
