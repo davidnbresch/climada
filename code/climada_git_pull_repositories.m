@@ -4,6 +4,8 @@ function climada_git_pull_repositories
 %   climada_git_pull_repositories
 % PURPOSE:
 %   execute a git pull on all repositories
+%
+%   see also climada_code_copy
 % CALLING SEQUENCE:
 %   climada_git_pull_repositories
 % EXAMPLE:
