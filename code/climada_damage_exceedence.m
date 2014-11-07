@@ -1,4 +1,4 @@
-function [sorted_damage,exceedence_freq,cumulative_probability,sorted_freq,event_index_out]=climada_damage_exceedence(event_damage,event_freq,event_index);
+function [sorted_damage,exceedence_freq,cumulative_probability,sorted_freq,event_index_out]=climada_damage_exceedence(event_damage,event_freq,event_index)
 % climada event damage hazard probabilistic stochastic
 % NAME:
 %   climada_damage_exceedence

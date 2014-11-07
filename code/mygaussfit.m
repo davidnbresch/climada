@@ -12,15 +12,15 @@ function [sigma,mu,A] = mygaussfit(x,y,h)
 % h should be a number between 0-1.
 % if h have not been taken it is set to be 0.2
 % as default.
-% 
+%
 % used in climada_distribution_v0_vi
 %-
 
 
-%% threshold
+% threshold
 if nargin==2, h=0.2; end
 
-%% cutting
+% cutting
 ymax = max(y);
 xnew = [];
 ynew = [];
@@ -31,7 +31,7 @@ for n = 1:length(x)
     end
 end
 
-%% fitting
+% fitting
 ylog  = log(ynew);
 xlog  = xnew;
 p     = polyfit(xlog,ylog,2);
@@ -42,3 +42,4 @@ sigma = sqrt(-1/(2*A2));
 mu    = A1*sigma^2;
 A     = exp(A0 + mu^2 / (2*sigma^2) );
 
+end

@@ -9,9 +9,8 @@ function m = nanmean(x,dim)
 %   NANMEAN(X,DIM) takes the mean along dimension DIM of X.
 %
 %   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
-
 %   Copyright 1993-2004 The MathWorks, Inc.
-
+%-
 
 % Find NaNs and set them to zero
 nans = isnan(x);
@@ -31,3 +30,4 @@ else
     m = sum(x,dim) ./ n;
 end
 
+end

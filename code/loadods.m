@@ -16,10 +16,9 @@
 %
 % VERSION: 1.0
 %
-
 % Copyright (C) 2007 Alex Marten - alex.marten@gmail.com
 % see license at the bottom of this file
-
+%-
 
 function data = loadods(filename,options)
 

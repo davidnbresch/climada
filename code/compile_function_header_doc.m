@@ -27,9 +27,11 @@ function compile_function_header_doc(folder,recursive_flag,output_file,req_outpu
 %   thus delete the file manually prior to running this code for a new
 %   version.
 % MODIFICATION HISTORY:
-% David N. Bresch, david.n.bresch@alumni.ethz.ch, 30.9.2003
+% david.n.bresch@alumni.ethz.ch, 20030930, during WK (military repetition course at IAC, ETH)
 % Lea Mueller, 20111025
+% David N. Bresch, david.bresch@gmail.com, 20141107, cleanup (on flight to Dubai)
 %-
+
 
 % PARAMETERS
 %
@@ -38,11 +40,10 @@ link_relative_to_top_folder=1;
 %
 % set =1 for DEBUG mode (=0 for normal operation)
 DEBUG_mode=0; % default=0
-%
 if DEBUG_mode
     % hard-wired for DEBUG purposes only:
     % here, one can clearly see that this code has been written in a
-    % military repetition course in 2002 (wk02)by srzdnb...
+    % military repetition course in 2002 (wk02) by srzdnb...
     if ~exist('folder','dir'),folder='O:\wk02\MATLAB\code';end % DEBUGGING, default: comment this line
     output_file='O:\wk02\MATLAB\function_overview.txt'; % DEBUGGING, default: comment this line
     recursive_flag=1; % DEBUGGING, default: comment this line
@@ -59,7 +60,7 @@ end
 if ~exist('output_file','var')
     [filename, pathname] = uiputfile('*.txt;*.html', 'Save header overview as (either .txt or .html):');
     if isequal(filename,0) || isequal(pathname,0)
-        return; % Cancel pressed    
+        return; % Cancel pressed
     else
         output_file=fullfile(pathname,filename);
     end
@@ -76,7 +77,7 @@ if ~exist('recursive_flag','var'),recursive_flag=0;end % recursive by default
 if ~exist('req_output_mode','var'),req_output_mode=[1,2];end % internal use
 
 % figure out format to write
-[fP,fN,fE]=fileparts(output_file);
+[~,~,fE]=fileparts(output_file);
 if strcmp(fE,'.txt')
     write_html_formatted=0;
 else
@@ -85,8 +86,29 @@ end
 
 % get list of files
 % -----------------
-fprintf('processing %s:\n',folder);
-m_files=dir(folder);
+if iscell(folder)
+    m_files=[]; % init
+    folders={}; % init
+    link_relative_to_top_folder=0; % as climada modules can be elsewhere
+    for folder_i=1:length(folder)
+        fprintf('pre-processing %s:\n',folder{folder_i});
+        add_m_files=dir(folder{folder_i});
+        for m_file_i=1:length(add_m_files);folders{end+1}=folder{folder_i};end
+        m_files=[m_files ; add_m_files];
+    end
+else
+    fprintf('processing %s:\n',folder);
+    folders={}; % init
+    m_files=dir(folder);
+    for m_file_i=1:length(m_files);folders{end+1}=folder;end
+end
+
+fprintf('\n');
+
+% for TESTs, prints all files potentially to be processed:
+% for file_i=1:length(m_files)
+%     fprintf('%s %s\n',folders{file_i},m_files(file_i).name);
+% end
 
 total_line_count=0; % init
 
@@ -102,7 +124,7 @@ if length(m_files)>0
             out_fid=fopen(output_file,'a'); % open output file in append mode
         end
     end
-
+    
     if length(req_output_mode)>1
         if write_html_formatted
             % Title and intro info.
@@ -134,20 +156,21 @@ if length(m_files)>0
     end
     
     for output_mode_i=1:length(req_output_mode)
-                
+        
         output_mode=req_output_mode(output_mode_i);
         % output_mode=1: function name only
         % output_mode=2: full function header
-
+        
         % loop over all files
         for file_i=1:length(m_files)
             m_file_name=m_files(file_i).name;
             if not(m_files(file_i).isdir)
                 % we have a file
-                if strcmp(m_file_name(end-1:end),'.m')
+                [~,fN,fE]=fileparts(m_file_name);
+                if strcmp(fE,'.m') && ~strcmp(fN,'Contents')
                     % we have a .m file
                     fprintf('processing %s ...\n',m_file_name);
-                    routine_name=m_file_name(1:end-2);
+                    routine_name=fN;
                     if output_mode==1
                         if write_html_formatted
                             fprintf(out_fid,'<LI><A HREF="#%s">%s</A>\r\n',routine_name,routine_name);
@@ -161,7 +184,7 @@ if length(m_files)>0
                         else
                             fprintf(out_fid,'\r\n'); % just an empty line
                         end
-                        line_count=local_process_function_header(out_fid,[folder filesep m_file_name]);
+                        line_count=local_process_function_header(out_fid,[folders{file_i} filesep m_file_name]);
                         total_line_count=total_line_count+line_count;
                         if write_html_formatted
                             full_name=which(routine_name); % only show link to source for routines in MATLAB path
@@ -173,7 +196,7 @@ if length(m_files)>0
                                     fprintf(out_fid,'View <A HREF=%s>source</A>\r\n',full_name);
                                 else
                                     full_name=strrep(full_name,filesep,'/'); % switch to for html-separator
-                                    fprintf(out_fid,'View <A HREF=file:/%s>source</A>\r\n',full_name);
+                                    fprintf(out_fid,'View <A HREF=file:%s>source</A>\r\n',full_name);
                                 end
                             else
                                 fprintf(out_fid,'No source code since not in active MATLAB path\r\n');
@@ -218,11 +241,15 @@ end
 
 fprintf('\ntotal line count %i\n',total_line_count);
 
-return; % compile_function_header_doc
+end % compile_function_header_doc
+
+
 
 
 % follows local helper function
 % -----------------------------
+
+
 function line_count=local_process_function_header(out_fid,filename)
 % function overview
 % NAME:
@@ -245,59 +272,58 @@ function line_count=local_process_function_header(out_fid,filename)
 % David N. Bresch, david.n.bresch@alumni.ethz.ch, 30.9.2003
 %-
 try
-in_fid=fopen(filename,'r');
-
-% read lines
-% line=fgetl(in_fid); % skip first line: function ...
-% line=fgetl(in_fid); % skip second line with keywords
-
-line_count=0; % init
-
-read_next_line=1;
-%%while not(feof(in_fid)) & read_next_line
-while not(feof(in_fid))
-    line=fgetl(in_fid); % skip first function... line
-    line_count=line_count+1;
-    if length(line)>0 % line not empty
-        if strcmp(line(1),'%') % is a comment
-            if length(line)>1
-                if strcmp(line(1:2),'%-')
-                    read_next_line=0; % header ended
+    in_fid=fopen(filename,'r');
+    
+    % read lines
+    % line=fgetl(in_fid); % skip first line: function ...
+    % line=fgetl(in_fid); % skip second line with keywords
+    
+    line_count=0; % init
+    
+    read_next_line=1;
+    %%while not(feof(in_fid)) & read_next_line
+    while not(feof(in_fid))
+        line=fgetl(in_fid); % skip first function... line
+        line_count=line_count+1;
+        if length(line)>0 % line not empty
+            if strcmp(line(1),'%') % is a comment
+                if length(line)>1
+                    if strcmp(line(1:2),'%-')
+                        read_next_line=0; % header ended
+                    end
                 end
             end
-        end
-               
-        if read_next_line
-            % replace html-reserved characters
-            line=strrep(line,'<','&lt');
-            line=strrep(line,'>','&gt');
-            line=strrep(line,'&','&amp');
-            line=strrep(line,'"','&quot');
-            if strcmp(strtok(line),'function')
-                % write function header line
-                line = ['<font color="blue">' line ' </font>'];
-                fprintf(out_fid,'%s\r\n',line); 
-            else
-                fprintf(out_fid,'%s\r\n',line(2:end));% write header line
+            
+            if read_next_line
+                % replace html-reserved characters
+                line=strrep(line,'<','&lt');
+                line=strrep(line,'>','&gt');
+                line=strrep(line,'&','&amp');
+                line=strrep(line,'"','&quot');
+                if strcmp(strtok(line),'function')
+                    % write function header line
+                    line = ['<font color="blue">' line ' </font>'];
+                    fprintf(out_fid,'%s\r\n',line);
+                else
+                    fprintf(out_fid,'%s\r\n',line(2:end));% write header line
+                end
             end
-        end 
-    else
-        %%read_next_line=0; % empty line reached, header has ended
-    end
-
-end % while
-
-fclose(in_fid); % close m-file
-
+        else
+            %%read_next_line=0; % empty line reached, header has ended
+        end
+        
+    end % while
+    
+    fclose(in_fid); % close m-file
+    
 catch
-    try 
+    try
         % try to close the opened m-file
         fclose(in_fid);
     catch
-
+        
     end
     fprintf('ERROR processing %s\n',filename);
 end
 
-return; % local_process_function_header
-
+end % local_process_function_header

@@ -3,10 +3,18 @@ function climada_code_copy(verbose)
 % NAME:
 %   climada_code_copy
 % PURPOSE:
-%   copy all climada code and code of all active modules into a new folder
-%   structure for easy exchange (e.g. to be zipped and sent by email)
+%   Copy all climada code and code of all active modules into a new folder
+%   structure for easy exchange (e.g. to be zipped and sent by email).
+%   Overwrites any existing climada_code_bucket folder (in order to have a
+%   clean code version, delete any possibly existing climada_code_bucket
+%   folder before calling)
 %
-%   see also climada_git_pull_repositories
+%   It's mainly intended to be used to support users unable to get git
+%   installed. That's why there is no 'code extract' or the like, as the
+%   local names of the user's repositories might differ etc.
+%
+%   see also climada_git_pull_repositories (recommended for all with local
+%   git installed, since much more comprehensive, user-friendly etc.)
 % CALLING SEQUENCE:
 %   climada_code_copy(verbose)
 % EXAMPLE:
@@ -17,8 +25,11 @@ function climada_code_copy(verbose)
 %       if =2, only list filenames, without folder
 %       if =0, silent, only notify errors (default)
 % OUTPUTS:
+%   writes a folder [climada_global.root_dir]\climada_code_bucket with code
+%       for core climada and modules as sub-folders
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141105
+% David N. Bresch, david.bresch@gmail.com, 20141107, cleanup (on flight to Dubai)
 %-
 
 global climada_global
@@ -49,12 +60,7 @@ for module_i=1:length(D)
     end
 end % module_i
 
-% zip would need yet another nested/recursive loop, hence done manually,
-% not here (for the time being)
-% ZIPFILENAME=[dest_code_folder '.zip'];
-% fprintf('writing zip file %s ..',ZIPFILENAME);
-% zip(ZIPFILENAME,'*.*',dest_code_folder);
-% fprintf('done\n')
+fprintf('Note: now zip %s and distribute by e-mail...\n',dest_code_folder);
 
 end
 

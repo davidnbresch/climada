@@ -16,9 +16,8 @@ function [varargout] = nanmax(varargin)
 %   [M,NDX] = NANMAX(A,[],DIM) operates along the dimension DIM.
 %
 %   See also MAX, NANMIN, NANMEAN, NANMEDIAN, NANMIN, NANVAR, NANSTD.
-
 %   Copyright 1993-2004 The MathWorks, Inc. 
-
+%-
 
 % Call [m,ndx] = max(a,b) with as many inputs and outputs as needed
 [varargout{1:nargout}] = max(varargin{:});

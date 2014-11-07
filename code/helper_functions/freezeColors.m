@@ -2,13 +2,13 @@ function freezeColors(varargin)
 % freezeColors  Lock colors of plot, enabling multiple colormaps per figure. (v2.3)
 %
 %   Problem: There is only one colormap per figure. This function provides
-%       an easy solution when plots using different colomaps are desired 
+%       an easy solution when plots using different colomaps are desired
 %       in the same figure.
 %
-%   freezeColors freezes the colors of graphics objects in the current axis so 
+%   freezeColors freezes the colors of graphics objects in the current axis so
 %       that subsequent changes to the colormap (or caxis) will not change the
-%       colors of these objects. freezeColors works on any graphics object 
-%       with CData in indexed-color mode: surfaces, images, scattergroups, 
+%       colors of these objects. freezeColors works on any graphics object
+%       with CData in indexed-color mode: surfaces, images, scattergroups,
 %       bargroups, patches, etc. It works by converting CData to true-color rgb
 %       based on the colormap active at the time freezeColors is called.
 %
@@ -46,32 +46,32 @@ function freezeColors(varargin)
 %
 %   John Iversen (iversen@nsi.edu) 3/23/05
 %
-
 %   Changes:
 %   JRI (iversen@nsi.edu) 4/19/06   Correctly handles scaled integer cdata
-%   JRI 9/1/06   should now handle all objects with cdata: images, surfaces, 
+%   JRI 9/1/06   should now handle all objects with cdata: images, surfaces,
 %                scatterplots. (v 2.1)
 %   JRI 11/11/06 Preserves NaN colors. Hidden option (v 2.2, not uploaded)
 %   JRI 3/17/07  Preserve caxis after freezing--maintains colorbar scale (v 2.3)
 %   JRI 4/12/07  Check for painters mode as Matlab doesn't support rgb in it.
 %   JRI 4/9/08   Fix preserving caxis for objects within hggroups (e.g. contourf)
 %   JRI 4/7/10   Change documentation for colorbars
-
+%
 % Hidden option for NaN colors:
 %   Missing data are often represented by NaN in the indexed color
 %   data, which renders transparently. This transparency will be preserved
-%   when freezing colors. If instead you wish such gaps to be filled with 
-%   a real color, add 'nancolor',[r g b] to the end of the arguments. E.g. 
+%   when freezing colors. If instead you wish such gaps to be filled with
+%   a real color, add 'nancolor',[r g b] to the end of the arguments. E.g.
 %   freezeColors('nancolor',[r g b]) or freezeColors(axh,'nancolor',[r g b]),
 %   where [r g b] is a color vector. This works on images & pcolor, but not on
 %   surfaces.
-%   Thanks to Fabiano Busdraghi and Jody Klymak for the suggestions. Bugfixes 
+%   Thanks to Fabiano Busdraghi and Jody Klymak for the suggestions. Bugfixes
 %   attributed in the code.
-
+%
 % Free for all uses, but please retain the following:
 %   Original Author:
 %   John Iversen, 2005-10
 %   john_iversen@post.harvard.edu
+%-
 
 appdatacode = 'JRI__freezeColorsData';
 
@@ -85,22 +85,22 @@ cmap = colormap;
 nColors = size(cmap,1);
 cax = caxis;
 
-% convert object color indexes into colormap to true-color data using 
+% convert object color indexes into colormap to true-color data using
 %  current colormap
 for hh = cdatah',
     g = get(hh);
     
     %preserve parent axis clim
     parentAx = getParentAxes(hh);
-    originalClim = get(parentAx, 'clim');    
-   
+    originalClim = get(parentAx, 'clim');
+    
     %   Note: Special handling of patches: For some reason, setting
     %   cdata on patches created by bar() yields an error,
     %   so instead we'll set facevertexcdata instead for patches.
     if ~strcmp(g.Type,'patch'),
         cdata = g.CData;
     else
-        cdata = g.FaceVertexCData; 
+        cdata = g.FaceVertexCData;
     end
     
     %get cdata mapping (most objects (except scattergroup) have it)
@@ -113,7 +113,7 @@ for hh = cdatah',
     %save original indexed data for use with unfreezeColors
     siz = size(cdata);
     setappdata(hh, appdatacode, {cdata scalemode});
-
+    
     %convert cdata to indexes into colormap
     if strcmp(scalemode,'scaled'),
         %4/19/06 JRI, Accommodate scaled display of integer cdata:
@@ -131,11 +131,11 @@ for hh = cdatah',
     %clamp to [1, nColors]
     idx(idx<1) = 1;
     idx(idx>nColors) = nColors;
-
+    
     %handle nans in idx
     nanmask = isnan(idx);
     idx(nanmask)=1; %temporarily replace w/ a valid colormap index
-
+    
     %make true-color data--using current colormap
     realcolor = zeros(siz);
     for i = 1:3,
@@ -170,9 +170,9 @@ end %loop on indexed-color objects
 % ============================================================================ %
 % Local functions
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% getCDataHandles -- get handles of all descendents with indexed CData
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % getCDataHandles -- get handles of all descendents with indexed CData
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function hout = getCDataHandles(h)
 % getCDataHandles  Find all objects with indexed CData
@@ -180,7 +180,7 @@ function hout = getCDataHandles(h)
 %recursively descend object tree, finding objects with indexed CData
 % An exception: don't include children of objects that themselves have CData:
 %   for example, scattergroups are non-standard hggroups, with CData. Changing
-%   such a group's CData automatically changes the CData of its children, 
+%   such a group's CData automatically changes the CData of its children,
 %   (as well as the children's handles), so there's no need to act on them.
 
 error(nargchk(1,1,nargin,'struct'))
@@ -193,17 +193,17 @@ for hh = ch'
     g = get(hh);
     if isfield(g,'CData'),     %does object have CData?
         %is it indexed/scaled?
-        if ~isempty(g.CData) && isnumeric(g.CData) && size(g.CData,3)==1, 
+        if ~isempty(g.CData) && isnumeric(g.CData) && size(g.CData,3)==1,
             hout = [hout; hh]; %#ok<AGROW> %yes, add to list
         end
     else %no CData, see if object has any interesting children
-            hout = [hout; getCDataHandles(hh)]; %#ok<AGROW>
+        hout = [hout; getCDataHandles(hh)]; %#ok<AGROW>
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% getParentAxes -- return handle of axes object to which a given object belongs
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % getParentAxes -- return handle of axes object to which a given object belongs
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function hAx = getParentAxes(h)
 % getParentAxes  Return enclosing axes of a given object (could be self)
 
@@ -222,9 +222,9 @@ else
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% checkArgs -- Validate input arguments
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % checkArgs -- Validate input arguments
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [h, nancolor] = checkArgs(args)
 % checkArgs  Validate input arguments to freezeColors
@@ -241,14 +241,14 @@ if mod(nargs,2),
     end
     % 4/2010 check if object to be frozen is a colorbar
     if strcmp(get(h,'Tag'),'Colorbar'),
-      if ~exist('cbfreeze.m'),
-        warning('JRI:freezeColors:checkArgs:cannotFreezeColorbar',...
-            ['You seem to be attempting to freeze a colorbar. This no longer'...
-            'works. Please read the help for freezeColors for the solution.'])
-      else
-        cbfreeze(h);
-        return
-      end
+        if ~exist('cbfreeze.m'),
+            warning('JRI:freezeColors:checkArgs:cannotFreezeColorbar',...
+                ['You seem to be attempting to freeze a colorbar. This no longer'...
+                'works. Please read the help for freezeColors for the solution.'])
+        else
+            cbfreeze(h);
+            return
+        end
     end
     args{1} = [];
     nargs = nargs-1;
@@ -271,5 +271,3 @@ if nargs == 2,
             'Unrecognized option (%s). Only ''nancolor'' is valid.',args{end-1})
     end
 end
-
-

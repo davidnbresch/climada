@@ -1,23 +1,29 @@
-function climada_git_pull_repositories
+function climada_git_pull_repositories(TEST_mode,git_pull_command)
 % climada
 % NAME:
 %   climada_git_pull_repositories
 % PURPOSE:
-%   execute a git pull on all repositories
-%
+%   Execute a git pull on core climada and all repositories
+%   
+%   Automatically updates all local repositories' code, including core
+%   climada. Only prerequisite: git installed locally (such that the system
+%   command 'git pull' is valied, see OPTIONAL INPUT git_pull_command)
+%   
 %   see also climada_code_copy
 % CALLING SEQUENCE:
-%   climada_git_pull_repositories
+%   climada_git_pull_repositories(TEST_mode,git_pull_command)
 % EXAMPLE:
 %   climada_git_pull_repositories
 % INPUTS:
-%   param1: 
-%       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
-%   param2: as an example
+%   TEST_mode: idf =1, do not execute any system command, just lost them to
+%       stdout, =0, execute (default)
+%   git_pull_command: the local operating system's <git pull> command
+%       default ='git pull'
 % OUTPUTS:
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20141102
+% David N. Bresch, david.bresch@gmail.com, 20141102, initial
+% David N. Bresch, david.bresch@gmail.com, 20141107, TEST_mode added
 %-
 
 global climada_global
@@ -26,28 +32,35 @@ if ~climada_init_vars,return;end % init/import global variables
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
 % poor man's version to check arguments
-%if ~exist('param1','var'),param1=[];end
+if ~exist('TEST_mode','var'), TEST_mode = 0;end
+if ~exist('git_pull_command','var'), git_pull_command = 'git pull';end
 
 % PARAMETERS
 %
-% define the list of repositories to be updated
-repository_list={
-    'climada_module_country_risk'
-    'climada_module_eq_global'
-    'climada_module_etopo'
-    'climada_module_GDP_entity'
-    'climada_module_tc_hazard_advanced'
-    'climada_module_tc_rain'
-    'climada_module_tc_surge'
-    'climada_module_ws_europe'
-    };
 
-parent_dir=deblank(climada_global.modules_dir);
 
+% run the git pull for climada code
+fprintf('-- processing climada core:\n');
+command_str=sprintf('cd %s ; %s',climada_global.root_dir,git_pull_command);
+fprintf(' > %s\n',command_str)
+if ~TEST_mode,system(command_str);end
+
+% get all local modules
+D=dir(climada_global.modules_dir);
+rep_i=1;
+for module_i=1:length(D)
+    if D(module_i).isdir && ~strcmp(D(module_i).name(1),'.')
+        repository_list{rep_i}=D(module_i).name;
+        rep_i=rep_i+1;
+    end
+end % module_i
+
+% run the git pull for all local modules
+fprintf('-- processing climada modules:\n');
 for repository_i=1:length(repository_list)
-    command_str=sprintf('cd %s%s%s ; git pull',parent_dir,filesep,repository_list{repository_i});
-    fprintf('>>> %s\n',command_str)
-    system(command_str);
+    command_str=sprintf('cd %s%s%s ; %s',climada_global.modules_dir,filesep,repository_list{repository_i},git_pull_command);
+    fprintf(' > %s\n',command_str)
+    if ~TEST_mode,system(command_str);end
 end % repository_i
 
 return

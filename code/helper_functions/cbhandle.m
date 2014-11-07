@@ -29,17 +29,14 @@ function CBH = cbhandle(varargin)
 %   MATLAB:  7.7.0.471 (R2008b)
 %   AUTHOR:  Carlos Adrian Vargas Aguilera (MEXICO)
 %   CONTACT: nubeobscura@hotmail.com
-
 %   REVISIONS:
 %   1.0      Released. (Jun 08, 2009)
 %   1.1      Fixed bug with colorbar handle input. (Aug 20, 2009)
-
 %   DISCLAIMER:
 %   cbhandle.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
-
 %   Copyright (c) 2009 Carlos Adrian Vargas Aguilera
-
+%-
 
 % INPUTS CHECK-IN
 % -------------------------------------------------------------------------

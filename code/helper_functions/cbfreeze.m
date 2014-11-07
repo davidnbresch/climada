@@ -63,18 +63,15 @@ function CBH = cbfreeze(varargin)
 %   MATLAB:  7.7.0.471 (R2008b)
 %   AUTHOR:  Carlos Adrian Vargas Aguilera (MEXICO)
 %   CONTACT: nubeobscura@hotmail.com
-
 %   REVISIONS:
 %   1.0      Released. (Jun 08, 2009)
 %   1.1      Fixed BUG with image handle on MATLAB R2009a. Thanks to Sergio
 %            Muniz. (Sep 02, 2009)
-
 %   DISCLAIMER:
 %   cbfreeze.m is provided "as is" without warranty of any kind, under the
 %   revised BSD license.
-
 %   Copyright (c) 2009 Carlos Adrian Vargas Aguilera
-
+%-
 
 % INPUTS CHECK-IN
 % -------------------------------------------------------------------------
@@ -185,7 +182,7 @@ end
 % MAIN 
 % -------------------------------------------------------------------------
 % Note: only CBH and S are necesary, but I use pax to avoid the use of the
-%       "hidden" 'Axes' COLORBAR's property. Why... ¿?
+%       "hidden" 'Axes' COLORBAR's property. Why... ??
 
 % Saves current position:
 fig = get(  0,'CurrentFigure');
