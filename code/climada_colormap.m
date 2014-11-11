@@ -1,4 +1,6 @@
 function cmap = climada_colormap(peril_ID)
+% helper function, see code
+%-
 
 % init global variables
 global climada_global
