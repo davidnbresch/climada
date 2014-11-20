@@ -1,4 +1,4 @@
-function [entity hazard entity_save_file] = climada_entity_read(entity_filename,hazard)
+function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % climada assets read import
 % NAME:
 %   climada_entity_read
@@ -23,6 +23,9 @@ function [entity hazard entity_save_file] = climada_entity_read(entity_filename,
 %   NOTE: For backward compatibility, the code does read OLD entity files
 %   with a tab vulnerability (instead of damagefunctions) and VulnCurveID ...
 %   It renames respective fields in the resulting entity structure.
+%
+%   Please consider climada_damagefunction_read in case you would like to
+%   read damagefunctions separately.
 %
 % CALLING SEQUENCE:
 %   entity=climada_entity_read(entity_filename,hazard)
@@ -53,6 +56,7 @@ function [entity hazard entity_save_file] = climada_entity_read(entity_filename,
 % Lea Mueller, 20110720
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact ...
 % David N. Bresch, david.bresch@gmail.com, 20141029, entity_save_file added as output
+% David N. Bresch, david.bresch@gmail.com, 20141121, hint to climada_damagefunction_read added
 %-
 
 global climada_global
@@ -88,17 +92,17 @@ assets                   = climada_spreadsheet_read('no',entity_filename,'assets
 if isfield(assets,'VulnCurveID'),assets.DamageFunID=assets.VulnCurveID;assets=rmfield(assets,'VulnCurveID');end
 
 % encode assets
-[entity.assets hazard]   = climada_assets_encode(assets,hazard);
+[entity.assets,hazard]   = climada_assets_encode(assets,hazard);
 
 % figure out the file type
-[fP,fN,fE]=fileparts(entity_filename);
+[~,~,fE]=fileparts(entity_filename);
 
 if strcmp(fE,'.ods')
     % hard-wired sheet names for files of type .ods
     sheet_names={'damagefunctions','measures','discount'};
 else
     % inquire sheet names from .xls
-    [sheet_type,sheet_names] = xlsfinfo(entity_filename);
+    [~,sheet_names] = xlsfinfo(entity_filename);
 end
 
 try

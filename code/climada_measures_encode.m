@@ -14,9 +14,10 @@ function measures=climada_measures_encode(measures);
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100107
+% David N. Bresch, david.bresch@gmail.com, 20141121, using only damagefunctions_map information
 %-
 
-global climada_global
+%global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
@@ -35,7 +36,7 @@ end
 % interpret all the mappings
 if isfield(measures,'damagefunctions_map')
     if isfield(measures,'damagefunctions'),DamageFunIDs=unique(measures.damagefunctions.DamageFunID);end
-    for measure_i=1:length(measures.cost)
+    for measure_i=1:length(measures.damagefunctions_map) % 20141121, used measures.cost before
         damagefunctions_map=deblank(measures.damagefunctions_map{measure_i});
         if ~strcmp(damagefunctions_map,'nil')
             n_maps=length(findstr(damagefunctions_map,';'))+1; % always one map more than separators
