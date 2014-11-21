@@ -7,16 +7,18 @@ function entity=climada_damagefunctions_map(entity,damagefunctions,damagefunctio
 %   alternative damagefunctions with climada_damagefunction_read
 %
 %   If only entity is entered, the current DamageFunIDs in entity.assets
-%   and entity.damagefunctions are shown. 
+%   and entity.damagefunctions are shown.
 %
 %   If both entity and damagefunctions are passed, but no map,
-%   the DamageFunIDs in both entity and damagefunctions are shown. 
+%   the DamageFunIDs in both entity and damagefunctions are shown.
 %
 %   Only if a valid damage function map is passed, the mapping effectively
 %   happens. After mapping, the consistency is checked (a damagefunction
-%   definition for each DamageFunID).
+%   definition for each DamageFunID). Please note that the mapping occurs
+%   independent of peril_ID (this is correct, since this alows to analyze
+%   the same assets with different perils).
 %
-%   See also climada_damagefunction_read
+%   See also climada_damagefunctions_read and climada_damagefunctions_plot
 % CALLING SEQUENCE:
 %   entity=climada_damagefunctions_map(entity,damagefunctions,damagefunctions_map)
 % EXAMPLE:
@@ -37,7 +39,7 @@ function entity=climada_damagefunctions_map(entity,damagefunctions,damagefunctio
 %       - a string with the mappings, e.g.
 %       '1to3;2to4', as in the entity.measures.damagefunctions_map
 %       - or a structure as in entity.measures.damagefunctions_mapping with
-%       fields map_from and map_to, such that we map map_from(i) to map_to(i) 
+%       fields map_from and map_to, such that we map map_from(i) to map_to(i)
 %       If empty, the DamageFunIDs in both entity and damagefunctions are
 %       shown, but no mapping actually occurs.
 % OUTPUTS:
@@ -110,7 +112,7 @@ if ~isempty(damagefunctions_map)
     damagefunctions_DamageFunIDs=unique(entity.damagefunctions.DamageFunID);
     tf=ismember(asset_DamageFunIDs,damagefunctions_DamageFunIDs);
     if length(find(tf))<length(tf)
-        fprintf('WARNING: DamageFunIDs in assets might not all be defined in damagefunctions:\n');
+        fprintf('WARNING: DamageFunIDs in assets might not (all) be defined in damagefunctions:\n');
         show_DamageFunIDs=1; % show what's in assets etc.
     end
     
@@ -121,7 +123,7 @@ else
 end
 
 if show_DamageFunIDs
-
+    
     asset_DamageFunIDs=unique(entity.assets.DamageFunID);
     fprintf('DamageFunIDs in entity.assets: %i',asset_DamageFunIDs(1));
     for i=2:length(asset_DamageFunIDs)
@@ -129,19 +131,39 @@ if show_DamageFunIDs
     end
     fprintf('\n');
     
-    asset_DamageFunIDs=unique(entity.damagefunctions.DamageFunID);
-    fprintf('DamageFunIDs in entity.damagefunctions: %i',asset_DamageFunIDs(1));
-    for i=2:length(asset_DamageFunIDs)
-        fprintf(', %i',asset_DamageFunIDs(i));
-    end
-    fprintf('\n');
+    loop_n=1;if ~isempty(damagefunctions),loop_n=2;end
     
-    if ~isempty(damagefunctions)
-        damagefunctions_DamageFunIDs=unique(damagefunctions.DamageFunID);
-        fprintf('DamageFunIDs in damagefunctions: %i',damagefunctions_DamageFunIDs(1));
-        for i=2:length(damagefunctions_DamageFunIDs)
-            fprintf(', %i',damagefunctions_DamageFunIDs(i));
+    for loop_i=1:loop_n
+        if loop_i==1
+            tmp_damagefunctions=entity.damagefunctions;
+            msg_str='entity.damagefunctions';
+        elseif loop_i==2
+            tmp_damagefunctions=damagefunctions;
+            msg_str='damagefunctions';
         end
-        fprintf('\n');
-    end
+        
+        if isfield(tmp_damagefunctions,'peril_ID')
+            % since there might be the same DamageFunID for two different
+            % perils, re-define the damage function
+            for i=1:length(tmp_damagefunctions.DamageFunID)
+                unique_ID{i}=sprintf('%s %i',tmp_damagefunctions.peril_ID{i},tmp_damagefunctions.DamageFunID(i));
+            end % i
+            unique_IDs=unique(unique_ID);
+            fprintf('DamageFunIDs in %s: %s',msg_str,unique_IDs{1});
+            for i=2:length(unique_IDs)
+                fprintf(', %s',unique_IDs{i});
+            end
+            fprintf('\n');
+        else
+            % simple, there is no peril_ID, hence only DamageFunID
+            DamageFunIDs=unique(tmp_damagefunctions.DamageFunID);
+            fprintf('DamageFunIDs in %s: %i',msg_str,DamageFunIDs(1));
+            for i=2:length(DamageFunIDs)
+                fprintf(', %i',DamageFunIDs(i));
+            end
+            fprintf('\n');
+        end
+        
+    end % loop_i
+
 end

@@ -3,7 +3,9 @@ function climada_hazard_plot(hazard,event_i,label)
 % NAME:
 %   climada_hazard_plot
 % PURPOSE:
-%   plot hazard event as contour on a map
+%   plot hazard event as contour on a map, works for all perils
+%
+%   see also climada_plot_tc_footprint (works for TC only)
 % CALLING SEQUENCE:
 %   climada_hazard_plot(hazard,event_i,label)
 % EXAMPLE:

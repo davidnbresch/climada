@@ -1,15 +1,29 @@
 function cmap = climada_colormap(peril_ID)
-% helper function, see code
+% climada color map
+% NAME:
+%   climada_colormap
+% PURPOSE:
+%   a helper function, returns a color map for specified perils
+% CALLING SEQUENCE:
+%   cmap = climada_colormap(peril_ID)
+% EXAMPLE:
+%   cmap = climada_colormap('TC')
+% INPUTS:
+%   peril_ID: a peril ID, currently implemented are TC, TS and TR
+% OPTIONAL INPUT PARAMETERS:
+% OUTPUTS:
+% MODIFICATION HISTORY:
+% David N. Bresch, david.bresch@gmail.com, 20141121, raw documentation
 %-
 
-% init global variables
-global climada_global
+cmap    = []; %init output
+
+%global climada_global % init global variables
 if ~climada_init_vars, return; end
 
 % poor man's version to check arguments
 if ~exist('peril_ID', 'var'), peril_ID = []; end
 
-cmap    = []; %init
 steps10 = 10;
 cmap1   = [];
 cmap2   = [];
@@ -18,15 +32,15 @@ switch peril_ID
     case 'TC'
         % create colormap for wind:
         cmap =[  1.0000    1.0000    1.0000;
-                0.8100    0.8100    0.8100;
-                0.6300    0.6300    0.6300;
-                1.0000    0.8000    0.2000;
-                0.9420    0.6667    0.1600;
-                0.8839    0.5333    0.1200;
-                0.8259    0.4000    0.0800;
-                0.7678    0.2667    0.0400;
-                0.7098    0.1333         0;
-                0.5412    0.1020         0];
+            0.8100    0.8100    0.8100;
+            0.6300    0.6300    0.6300;
+            1.0000    0.8000    0.2000;
+            0.9420    0.6667    0.1600;
+            0.8839    0.5333    0.1200;
+            0.8259    0.4000    0.0800;
+            0.7678    0.2667    0.0400;
+            0.7098    0.1333         0;
+            0.5412    0.1020         0];
         
     case 'TR'
         % create colormap for rain
@@ -51,11 +65,5 @@ switch peril_ID
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
         cmap = [[1 1 1];cmap1; cmap2];
-
+        
 end
-    
-        
-        
-        
-        
-        

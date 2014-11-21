@@ -1,16 +1,15 @@
-function [fDistance_km GridVect] = climada_nonspheric_distance_m(fLon1,fLat1,fLon2,fLat2,...
+function [fDistance_km,GridVect] = climada_nonspheric_distance_m(fLon1,fLat1,fLon2,fLat2,...
                                                          CUID, inreach)
-                            
-       
 % This function calculates the distance for each individual gridpoint from
 % the TC center. Distance differences in x direction, depending on
 % latitude, are normalized in the whole inreach-box with the value at the
 % TC-Center
-
+%
 %--------------------------------------------------------------------------
-% Modified Haversine Formula to normalize distance differences in y (longitudinal)
-% direction at different latitudes
+% Modified Haversine Formula to normalize distance differences in y
+% (longitudinal) direction at different latitudes 
 %--------------------------------------------------------------------------
+%-
 
 if ~exist('CUID'   , 'var'), CUID    = [] ; end
 if ~exist('inreach', 'var'), inreach = [] ; end

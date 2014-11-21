@@ -1,9 +1,13 @@
-function measures=climada_measures_encode(measures);
+function measures=climada_measures_encode(measures)
 % climada
 % NAME:
 %   climada_measures_encode
 % PURPOSE:
-%   
+%   encode measures, i.e. process the damagefunctions_map to concert it
+%   into a damagefunctions_mapping, which allows climada_measures_impact to
+%   switch damagefunctions for specific measures. 
+%
+%   See also climada_damagefunctions_read and climada_damagefunctions_map
 % CALLING SEQUENCE:
 %   measures=climada_measures_encode(measures);
 % EXAMPLE:

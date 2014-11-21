@@ -1,7 +1,7 @@
-function [damagefunctions,entity] = climada_damagefunction_read(damagefunction_filename,entity)
+function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_filename,entity)
 % climada damage function vulnerability read import
 % NAME:
-%   climada_damagefunction_read
+%   climada_damagefunctions_read
 % PURPOSE:
 %   read a file with damage functions (vulnerabilities)
 %
@@ -19,11 +19,11 @@ function [damagefunctions,entity] = climada_damagefunction_read(damagefunction_f
 %   with a tab vulnerability (instead of damagefunctions) and VulnCurveID ...
 %   It renames respective fields in the resulting structure.
 %
-%   See also climada_damagefunction_map
+%   See also climada_damagefunction_map and climada_damagefunctions_plot
 % CALLING SEQUENCE:
-%   damagefunctions = climada_damagefunction_read(damagefunction_filename)
+%   damagefunctions = climada_damagefunctions_read(damagefunction_filename)
 % EXAMPLE:
-%   damagefunctions=climada_damagefunction_read
+%   damagefunctions=climada_damagefunctions_read
 % INPUTS:
 %   damagefunction_filename: the filename of the Excel file with the assets
 %       > promted for if not given

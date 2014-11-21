@@ -9,7 +9,8 @@ function hazard=climada_hazard_arr2intensity(hazard_file)
 %   We decided 20141017 to switch from hazard.arr to hazard.intensity,
 %   since this fieldname is more telling.
 %
-%   The code also checkes for hazard.event_count to be correct
+%   The code also checkes for hazard.event_count to be correct and for
+%   hazard.lon and hazard.lat to be of size 1xN, not Nx1
 % CALLING SEQUENCE:
 %   hazard=climada_hazard_arr2intensity(hazard_file)
 % EXAMPLE:
@@ -24,6 +25,7 @@ function hazard=climada_hazard_arr2intensity(hazard_file)
 %   file
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141017
+% David N. Bresch, david.bresch@gmail.com, 20141121, hazard.lon check added
 %-
 
 global climada_global
@@ -56,6 +58,14 @@ elseif isfield(hazard,'intensity')
     fprintf('hazard does already contain a field hazard.intensity, no change necessary\n');
 else
     fprintf('WARNING: further inspection needed, hazard does not contain neither .arr nor .intensity\n');
+end
+
+if size(hazard.lon,1)>1
+    % transpose old hazard event sets
+    hazard.lon=hazard.lon';
+    hazard.lat=hazard.lat';
+    fprintf('hazard.lon and .lat transposed, saved as %s\n',hazard_file);
+    save(hazard_file,'hazard');
 end
 
 if abs(hazard.event_count-size(hazard.intensity,1))>0
