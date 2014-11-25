@@ -1,17 +1,30 @@
-function [varagout] = climada_plot_world_borders(linewidth, check_country, map_border_file, keep_boundary, country_color)
-
+function climada_plot_world_borders(linewidth, check_country, map_border_file, keep_boundary, country_color)
 % world border map country political
 % NAME:
 %	climada_plot_world_borders
 % PURPOSE:
-%   read file with ASCII border information and plot it
-%   in existing figure (do not forget hold on before) or create new one
+%   plot (world= borders for map in lat/lon
+%   
+%   Reads the file with border information (.gen or .shp) and plots it
+%   (line plot) in existing figure (do not forget hold on before) or create
+%   new one.
 %
-%   reads the ASCII file (*.gen) the first time, stores into a borders
-%   structure with:
+%   The first the a particular (.gen or .shp) file is read, it saves the
+%   resulting border struct in a .mat file.
+%   
+%   If the file is *.gen it stores into a borders structure with:
 %   borders.name{i}: name of country i
 %   borders.poly{i}.lon{j}: polygon j of country i, longitudes
 %   borders.poly{i}.lat{j}: polygon j of country i, latitudes
+%   and a struct whole_world_borders with the whole in one (speeds up plot)
+
+%   If the file is *.shp it stores into a borders structure with:
+%   borders.poly{i}.lon{j}: polygon j of country i, longitudes
+%   borders.poly{i}.lat{j}: polygon j of country i, latitudes
+%   and a struct whole_world_borders with the whole in one (speeds up plot)
+%   uses this .mat file with the borders info in subsequent calls for
+%   speedup
+
 %   uses this .mat file with the borders info in subsequent calls for
 %   speedup
 %
@@ -20,18 +33,19 @@ function [varagout] = climada_plot_world_borders(linewidth, check_country, map_b
 % CALLING SEQUENCE:
 %   climada_plot_world_borders(linewidth,map_border_file,keep_boundary);
 % EXAMPLE:
+%   climada_plot_world_borders
 %   climada_plot_world_borders(0.8,'United States (USA)')
 %   climada_plot_world_borders(0.8,{'Canada' 'Germany'})
-%   climada_plot_world_borders
+%   climada_plot_world_borders(1,'','ASK') % prompt for border file
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
-%   linewidth:       line width of borders, default is 1
-%   check_country:   name of one or multiple countries, e.g. 'Germany' or
-%                    {'Germany' 'Ghana'},that will be gray shaded in the world
-%                    plot, default is no shading of countries
-%                    Note that 'United States (USA)' is used, hence
-%                    both 'United States' and 'USA' work
-%   map_border_file: filename and path to a *.gen border file
+%   linewidth: line width of borders, default is 1
+%   check_country (for *.gen map file only): name of one or multiple 
+%       countries, e.g. 'Germany' or {'Germany' 'Ghana'},that will be gray
+%       shaded in the world plot, default is no shading of countries. 
+%       Note that 'United States (USA)' is used, hence both 'United States' and 'USA' work.   
+%   map_border_file: filename and path to a *.gen or *.shp border file
+%       if set to 'ASK', prompt for the .gen broder file
 %
 %       the *.gen file has to be of the following format
 %       file content                        description (NOT in file)
@@ -49,13 +63,13 @@ function [varagout] = climada_plot_world_borders(linewidth, check_country, map_b
 %       ...                                 etc...
 %       END                                 marks end of one closed contour
 %       END                                 last (double) end to close file (optional)
-%
-%       SPECIAL: if the path contains TC_data\geodata\bathymetry, the code
-%       assumes the map_border_file points to the Sandville bathymetry and
-%       thus plots the high-res coastline, not using any *.gen file but the
-%       Sandville info instead.
 %   keep_boundary: if =1, keep axes boundaries, default =0, undefined
+%   country_color: the RGB triple for country coloring (e.g. [255 236
+%       139]/255). Default set in code (yellow)
+%
+%   See also climada module naturalearthdata
 % OUTPUTS:
+%   plot borders as line plot
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20080926
@@ -63,26 +77,34 @@ function [varagout] = climada_plot_world_borders(linewidth, check_country, map_b
 % Martin Heynen, 20120426
 % David N. Bresch, david.bresch@gmail.com, 20120430
 % Lea Mueller,   20120731
+% David N. Bresch, david.bresch@gmail.com, 20141124, 'ASK' added and line 166
+% David N. Bresch, david.bresch@gmail.com, 20141125, '.shp' added
 %-
 
 % import/setup global variables
 global climada_global
 if ~climada_init_vars,return;end;
 
-if ~exist('linewidth'       , 'var'), linewidth        = []; end
+if ~exist('linewidth'       , 'var'), linewidth        = 1; end
 if ~exist('check_country'   , 'var'), check_country    = []; end
 if ~exist('map_border_file' , 'var'), map_border_file  = []; end
-if ~exist('keep_boundary'   , 'var'), keep_boundary    = []; end
+if ~exist('keep_boundary'   , 'var'), keep_boundary    = 0; end
 if ~exist('country_color'   , 'var'), country_color    = []; end
-if isempty(linewidth)               , linewidth        = 1 ; end
-if isempty(keep_boundary)           , keep_boundary    = 0 ; end
-if isempty(country_color)           , country_color    = [255 236 139]/255; end % default yellow
 
 % PARAMETERS
 %
-% border_color = [255 236 139]/255;
-% border_color = [238 224 229 ]/255;
 border_color = [81 81 81]/255; %dark gray
+if isempty(country_color),country_color=[255 236 139]/255;end % default yellow
+
+if strcmp(map_border_file,'ASK')
+    map_border_file=[climada_global.data_dir filesep 'system' filesep '*.gen'];
+    [filename, pathname] = uigetfile(map_border_file, 'Select map border file:');
+    if isequal(filename,0) || isequal(pathname,0)
+        return; % cancel
+    else
+        map_border_file=fullfile(pathname,filename);
+    end
+end
 
 if isempty(map_border_file)
     % check for map_border_file
@@ -108,13 +130,15 @@ if keep_boundary
     YLim = get(get(gcf,'CurrentAxes'),'YLim');
 end
 
-map_border_file_bin=strrep(map_border_file,'.gen','.mat');
+[fP,fN,fE]=fileparts(map_border_file);
+map_border_file_bin=[fP filesep fN '.mat'];
 if climada_check_matfile(map_border_file)
     % load previously stored border data (faster)
     load(map_border_file_bin);
-else
     
-    % read border file (the first time)
+elseif strcmp(fE,'.gen')
+    
+    % read the .gen border file (the first time)
     fid  = fopen(map_border_file);
     
     % read first line
@@ -122,6 +146,7 @@ else
     
     counter_country               = 1;
     borders.name{counter_country} = line;
+    first_country                 = line;
     counter_poly                  = 0;
     
     % test that not end of file (keyword END)
@@ -132,7 +157,7 @@ else
         if ~isempty(pts)
             %make struct
             if strcmp(line, 'END')==0
-                if strcmp(line, 'Canada')==0
+                if strcmp(line,first_country)==0 % was 'Canada', not general
                     counter_country               = counter_country+1;
                     borders.name{counter_country} = line;
                     counter_poly                  = 0;
@@ -183,13 +208,40 @@ else
     end
     
     save(map_border_file_bin,'borders','whole_world_borders');
+    
+elseif strcmp(fE,'.shp')
+    
+    % read the .shp border file (the first time)
+    borders.poly=shaperead(map_border_file);
+    
+    if ~strcmp(borders.poly(1).Geometry,'Line')
+        fprintf('WARNING: %s might not contain lines\n',map_border_file);
+    end
+    
+    % store also in one contiguous list (for plot speedup)
+    whole_world_borders.lon = [];
+    whole_world_borders.lat = [];
+    for i=1:length(borders.poly)
+        whole_world_borders.lon = [whole_world_borders.lon; borders.poly(i).X']; % NaN at end already there
+        whole_world_borders.lat = [whole_world_borders.lat; borders.poly(i).Y']; % NaN at end already there
+    end
+    
+    % rename fields for consistency with *.gen
+    borders.poly(i).lon=borders.poly(i).X;
+    borders.poly(i).lat=borders.poly(i).Y;
+    borders.poly=rmfield(borders.poly,'X');
+    borders.poly=rmfield(borders.poly,'Y');
+    
+    save(map_border_file_bin,'borders','whole_world_borders');
+    
 end % exist(map_border_file_bin,'file')
 
 % plot all in one (speedy)
 plot(whole_world_borders.lon, whole_world_borders.lat, 'color', border_color,'LineWidth',linewidth);
 
-hold on;
-if ~isempty(check_country) % shade selected country
+hold on
+
+if ~isempty(check_country) && isfield(borders,'name') % shade selected country (only *.gen)
     for country_i = 1:length(borders.poly)
         if any(strcmpi(borders.name{country_i},check_country)) %shade
             for poly_j = 1:length(borders.poly{country_i}.lon)
@@ -204,8 +256,3 @@ if keep_boundary
 else
     axis([-200 200 -100 100])
 end
-
-if nargout > 0
-    varagout{1} = hlines;
-end
-

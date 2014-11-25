@@ -15,6 +15,9 @@ function climada_code_copy(verbose)
 %
 %   see also climada_git_pull_repositories (recommended for all with local
 %   git installed, since much more comprehensive, user-friendly etc.)
+%   
+%   and climada_code_update, which updated local code based on the
+%   climada_code_bucket created by climada_code_copy
 % CALLING SEQUENCE:
 %   climada_code_copy(verbose)
 % EXAMPLE:
@@ -60,7 +63,7 @@ for module_i=1:length(D)
     end
 end % module_i
 
-fprintf('Note: now zip %s and distribute by e-mail...\n',dest_code_folder);
+fprintf('Note: now zip %s and distribute by e-mail... (and then use climada_code_update)\n',dest_code_folder);
 
 end
 
