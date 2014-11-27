@@ -1,4 +1,4 @@
-function EDS=climada_EDS_calc(entity,hazard,annotation_name)
+function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % climada calculate event damage set
 % NAME:
 %   climada_EDS_calc
@@ -20,7 +20,10 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name)
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   annotation_name: a free text that will appear e.g. on plots for
-%       annotation, default=''
+%       annotation, default is the name of the hazard set
+%   force_re_encode: if =1, force re-encoding (either to be on the safe
+%       side, or if the entity has been encoded t a different hazard event
+%       set). Default=0
 % OUTPUTS:
 %   EDS, the event damage set with:
 %       reference_year: the year the damages are references to
@@ -44,6 +47,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name)
 % David N. Bresch, david.bresch@gmail.com, 20130623, re-encoding optional
 % David N. Bresch, david.bresch@gmail.com, 20141025, peril_ID added to waitbar title
 % David N. Bresch, david.bresch@gmail.com, 20141103, entity.damagefunctions.peril_ID
+% David N. Bresch, david.bresch@gmail.com, 20141127, force_re_encode
 %-
 
 global climada_global
@@ -58,6 +62,7 @@ EDS=[]; % init output
 if ~exist('entity','var'),entity=[];end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('annotation_name','var'),annotation_name='';end
+if ~exist('force_re_encode','var'),force_re_encode=0;end
 
 % PARAMETERS
 %
@@ -92,6 +97,10 @@ end
 if ~isstruct(hazard)
     hazard_file=hazard;hazard=[];
     load(hazard_file);
+end
+
+if force_re_encode % re-encode entity to hazard
+    entity = climada_assets_encode(entity,hazard);
 end
 
 % check for consistency of entity and the hazard set it has been encoded to
