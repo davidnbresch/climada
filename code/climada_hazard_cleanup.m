@@ -100,6 +100,8 @@ if size(hazard.intensity,2)~=size(hazard.lon,2)
     show_hazard=1;
 end
 
+hazard.intensity=sparse(hazard.intensity); % to be sure
+
 hazard.event_count=size(hazard.intensity,1);
 
 % clean not needed fields (to be on thr safe side)

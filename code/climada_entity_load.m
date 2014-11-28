@@ -32,7 +32,7 @@ if ~exist('entity_file','var'),entity_file=[];end
 % prompt for entity_file if not given
 if isempty(entity_file) % local GUI
     entity_file=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
-    [filename, pathname] = uigetfile(entity_file, 'Open:');
+    [filename, pathname] = uigetfile(entity_file, 'Select entity to open:');
     if isequal(filename,0) || isequal(pathname,0)
         entity_out = []; return; % cancel
     else
