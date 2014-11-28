@@ -1,4 +1,4 @@
-function [assets hazard] = climada_assets_encode(assets,hazard)
+function [assets,hazard] = climada_assets_encode(assets,hazard)
 % climada assets encode
 % NAME:
 %   climada_assets_encode
@@ -27,7 +27,8 @@ function [assets hazard] = climada_assets_encode(assets,hazard)
 %       output is also the entity
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091227
-% David N. Bresch, david.bresch@gmail.com, 20100107 revised, changed from entity.assets to assets
+% David N. Bresch, david.bresch@gmail.com, 20100107, revised, changed from entity.assets to assets
+% David N. Bresch, david.bresch@gmail.com, 20141127, allows for assets OR entity as input
 %-
 
 global climada_global
@@ -42,7 +43,7 @@ if ~exist('hazard','var'),hazard=[];end
 % whether we print all encoded centroids (=1) or not (=0), rather to TEST
 verbose=0; % default =0
 
-% prompt for hazard if not given
+% prompt for assets (entity) if not given
 if isempty(assets) % local GUI
     entity_file=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
     [filename, pathname] = uigetfile(entity_file, 'Select entity to re-encode:');
@@ -50,8 +51,8 @@ if isempty(assets) % local GUI
         return; % cancel
     else
         entity_file=fullfile(pathname,filename);
-        load(entity_file)
-        assets=entity; % see below
+        load(entity_file) % loads entity
+        assets=entity; % see below, entity_passed_on_input
     end
 end
 

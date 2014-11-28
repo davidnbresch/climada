@@ -131,7 +131,7 @@ fprintf('saving hazard as %s\n',hazard_file);
 save(hazard_file,'hazard','-v6'); % -v6 for speed-up(no compression)
 
 if show_hazard
-    hazard % ok to show to stdour
+    hazard % ok to show to stdout
 end
 
 return
