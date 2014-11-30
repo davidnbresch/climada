@@ -84,6 +84,8 @@ if size(hazard.frequency,1)>size(hazard.frequency,2),hazard.frequency=hazard.fre
 if size(hazard.event_ID,1)>size(hazard.event_ID,2),hazard.event_ID=hazard.event_ID';end
 if isfield(hazard,'orig_event_flag')
     if size(hazard.orig_event_flag,1)>size(hazard.orig_event_flag,2),hazard.orig_event_flag=hazard.orig_event_flag';end
+else
+    hazard.orig_event_flag=hazard.frequency*0+1; % set all to 1, since not known
 end
 
 if size(hazard.intensity,1)~=size(hazard.frequency,2)

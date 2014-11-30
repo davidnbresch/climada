@@ -1,4 +1,4 @@
-function climada_hazard_plot(hazard,event_i,label)
+function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label)
 % climada plot single hazard event footprint
 % NAME:
 %   climada_hazard_plot
@@ -26,6 +26,7 @@ function climada_hazard_plot(hazard,event_i,label)
 %       name: the label itself, like 'gaga'
 % OUTPUTS:
 %   creates a figure
+%   X, Y and gridded_VALUE are the values as shown
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140302
 %-
