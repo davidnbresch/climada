@@ -1,4 +1,4 @@
-function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label)
+function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_range)
 % climada plot single hazard event footprint
 % NAME:
 %   climada_hazard_plot
@@ -24,6 +24,8 @@ function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label)
 %       longitude: the longitude (decimal)
 %       latitude: the latitude (decimal)
 %       name: the label itself, like 'gaga'
+%   caxis_range: [minval maxval], the range of the color axis, e.g. [20 40]
+%       to show colors for values brtween 20 and 40
 % OUTPUTS:
 %   creates a figure
 %   X, Y and gridded_VALUE are the values as shown
@@ -38,6 +40,7 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('event_i','var'),event_i=-1;end
 if ~exist('label','var'),label=[];end
+if ~exist('caxis_range','var'),caxis_range=[];end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
 if isempty(hazard),return;end
@@ -84,8 +87,8 @@ if isfield(hazard,'units'),title_str=[title_str ' [' hazard.units ']'];end % add
 if sum(values(not(isnan(values))))>0 % nansum(values)>0
     
     % create figure
-    fig = climada_figuresize(height,height*scale2+0.15);
-    set(fig,'Name',hazard.peril_ID);
+    %fig = climada_figuresize(height,height*scale2+0.15);
+    %set(fig,'Name',hazard.peril_ID);
     
     centroids.Longitude=hazard.lon; % as the gridding routine needs centroids
     centroids.Latitude=hazard.lat;
@@ -98,6 +101,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     axis equal
     axis(ax_lim)
     title(title_str);
+    if ~isempty(caxis_range),caxis(caxis_range);end
     colorbar
 else
     fprintf('all intensities zero for event %i\n',event_i);
