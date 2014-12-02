@@ -19,6 +19,7 @@ function [assets,hazard] = climada_assets_encode(assets,hazard)
 %       returned in 'assets')
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
 %       > promted for if not given
+%       if set to 'SKIP', do not encoe, return original assets
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 %   the encoded assets, means locations mapped to calculation centroids
@@ -66,6 +67,8 @@ if isempty(hazard) % local GUI
     else
         hazard=fullfile(pathname,filename);
     end
+elseif ischar(hazard)
+    if strcmp(hazard,'SKIP'),return;end
 end
 
 % load the hazard, if a filename has been passed

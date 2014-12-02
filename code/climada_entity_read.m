@@ -116,8 +116,9 @@ try
             entity.damagefunctions=climada_spreadsheet_read('no',entity_filename,'vulnerability',1);
         end
     end % sheet_i
-    
-    if isfield(entity,'damagefunctions')
+        
+    if isfield(entity,'damagefunctions') && sum(isnan(entity.assets.DamageFunID))<length(entity.assets.DamageFunID)
+
         % check for OLD naming convention, VulnCurveID -> DamageFunID
         if isfield(entity.damagefunctions,'VulnCurveID'),entity.damagefunctions.DamageFunID=entity.damagefunctions.VulnCurveID;entity.damagefunctions=rmfield(entity.damagefunctions,'VulnCurveID');end
         
