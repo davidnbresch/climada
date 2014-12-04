@@ -85,57 +85,64 @@ if isempty(entity_filename) % local GUI
     end
 end
 
-% read assets
-% -----------
-assets                   = climada_spreadsheet_read('no',entity_filename,'assets',1);
-% check for OLD naming convention, VulnCurveID -> DamageFunID
-if isfield(assets,'VulnCurveID'),assets.DamageFunID=assets.VulnCurveID;assets=rmfield(assets,'VulnCurveID');end
-
-% encode assets
-[entity.assets,hazard]   = climada_assets_encode(assets,hazard);
-
-% figure out the file type
-[~,~,fE]=fileparts(entity_filename);
-
-if strcmp(fE,'.ods')
-    % hard-wired sheet names for files of type .ods
-    sheet_names={'damagefunctions','measures','discount'};
+[fP,fN] = fileparts(entity_filename);
+entity_save_file=[fP filesep fN '.mat'];
+if climada_check_matfile(entity_save_file)
+    % there is a .mat file more recent than the Excel
+    load(entity_save_file)
 else
-    % inquire sheet names from .xls
-    [~,sheet_names] = xlsfinfo(entity_filename);
-end
-
-try
-    % read damagefunctions
-    % --------------------
-    for sheet_i=1:length(sheet_names) % loop over tab (sheet) names
-        if strcmp(sheet_names{sheet_i},'damagefunctions')
-            entity.damagefunctions=climada_spreadsheet_read('no',entity_filename,'damagefunctions',1);
-        end
-        if strcmp(sheet_names{sheet_i},'vulnerability')
-            entity.damagefunctions=climada_spreadsheet_read('no',entity_filename,'vulnerability',1);
-        end
-    end % sheet_i
-        
-    if isfield(entity,'damagefunctions') && sum(isnan(entity.assets.DamageFunID))<length(entity.assets.DamageFunID)
-
-        % check for OLD naming convention, VulnCurveID -> DamageFunID
-        if isfield(entity.damagefunctions,'VulnCurveID'),entity.damagefunctions.DamageFunID=entity.damagefunctions.VulnCurveID;entity.damagefunctions=rmfield(entity.damagefunctions,'VulnCurveID');end
-        
-        % check consistency (a damagefunction definition for each DamageFunID)
-        asset_DamageFunIDs=unique(entity.assets.DamageFunID);
-        damagefunctions_DamageFunIDs=unique(entity.damagefunctions.DamageFunID);
-        tf=ismember(asset_DamageFunIDs,damagefunctions_DamageFunIDs);
-        if length(find(tf))<length(tf)
-            fprintf('WARN: DamageFunIDs in assets might not all be defined in damagefunctions tab\n')
-        end
+    
+    % read assets
+    % -----------
+    assets                   = climada_spreadsheet_read('no',entity_filename,'assets',1);
+    % check for OLD naming convention, VulnCurveID -> DamageFunID
+    if isfield(assets,'VulnCurveID'),assets.DamageFunID=assets.VulnCurveID;assets=rmfield(assets,'VulnCurveID');end
+    
+    % encode assets
+    [entity.assets,hazard]   = climada_assets_encode(assets,hazard);
+    
+    % figure out the file type
+    [~,~,fE]=fileparts(entity_filename);
+    
+    if strcmp(fE,'.ods')
+        % hard-wired sheet names for files of type .ods
+        sheet_names={'damagefunctions','measures','discount'};
+    else
+        % inquire sheet names from .xls
+        [~,sheet_names] = xlsfinfo(entity_filename);
     end
     
-catch ME
-    fprintf('WARN: no damagefunctions data read, %s\n',ME.message)
-end
-
-%try
+    try
+        % read damagefunctions
+        % --------------------
+        for sheet_i=1:length(sheet_names) % loop over tab (sheet) names
+            if strcmp(sheet_names{sheet_i},'damagefunctions')
+                entity.damagefunctions=climada_spreadsheet_read('no',entity_filename,'damagefunctions',1);
+            end
+            if strcmp(sheet_names{sheet_i},'vulnerability')
+                entity.damagefunctions=climada_spreadsheet_read('no',entity_filename,'vulnerability',1);
+            end
+        end % sheet_i
+        
+        if isfield(entity,'damagefunctions') && sum(isnan(entity.assets.DamageFunID))<length(entity.assets.DamageFunID)
+            
+            % check for OLD naming convention, VulnCurveID -> DamageFunID
+            if isfield(entity.damagefunctions,'VulnCurveID'),entity.damagefunctions.DamageFunID=entity.damagefunctions.VulnCurveID;entity.damagefunctions=rmfield(entity.damagefunctions,'VulnCurveID');end
+            
+            % check consistency (a damagefunction definition for each DamageFunID)
+            asset_DamageFunIDs=unique(entity.assets.DamageFunID);
+            damagefunctions_DamageFunIDs=unique(entity.damagefunctions.DamageFunID);
+            tf=ismember(asset_DamageFunIDs,damagefunctions_DamageFunIDs);
+            if length(find(tf))<length(tf)
+                fprintf('WARN: DamageFunIDs in assets might not all be defined in damagefunctions tab\n')
+            end
+        end
+        
+    catch ME
+        fprintf('WARN: no damagefunctions data read, %s\n',ME.message)
+    end
+    
+    %try
     % try to read also the measures (if exists)
     % -----------------------------
     for sheet_i=1:length(sheet_names) % loop over tab (sheet) names
@@ -153,27 +160,26 @@ end
             
         end
     end % sheet_i
-% catch ME
-%     fprintf('WARN: no measures data read, %s\n',ME.message)
-% end
-
-try
-    % try to read also the discount sheet (if exists)
-    % -----------------------------------
-    for sheet_i=1:length(sheet_names) % loop over tab (sheet) names
-        if strcmp(sheet_names{sheet_i},'discount')
-            %%fprintf('NOTE: also reading measures tab\n');
-            entity.discount = climada_spreadsheet_read('no',entity_filename,'discount',1);
-        end
-    end % sheet_i
-catch ME
-    fprintf('WARN: no discount data read, %s\n',ME.message)
-end
-
-% save entity as .mat file for fast access
-[fP,fN] = fileparts(entity_filename);
-entity_save_file=[fP filesep fN '.mat'];
-save(entity_save_file,'entity');
-fprintf('entity saved as mat-file in %s\n',entity_save_file);
+    % catch ME
+    %     fprintf('WARN: no measures data read, %s\n',ME.message)
+    % end
+    
+    try
+        % try to read also the discount sheet (if exists)
+        % -----------------------------------
+        for sheet_i=1:length(sheet_names) % loop over tab (sheet) names
+            if strcmp(sheet_names{sheet_i},'discount')
+                %%fprintf('NOTE: also reading measures tab\n');
+                entity.discount = climada_spreadsheet_read('no',entity_filename,'discount',1);
+            end
+        end % sheet_i
+    catch ME
+        fprintf('WARN: no discount data read, %s\n',ME.message)
+    end
+    
+    % save entity as .mat file for fast access
+    fprintf('saved entity as %s\n',entity_save_file);
+    save(entity_save_file,'entity');
+end % climada_check_matfile
 
 return
