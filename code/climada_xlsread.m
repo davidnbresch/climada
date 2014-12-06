@@ -118,10 +118,6 @@ if length(sheet_names)>1
         if ~isempty(in_excel_sheet) % first try user-requested sheet
             excel_sheet=strmatch(in_excel_sheet,char(sheet_names),'exact');
         end
-        if length(excel_sheet)<1 % second try 'trackdata'
-            % use first sheet or the one which is called portfolio
-            excel_sheet=strmatch('trackdata',char(sheet_names),'exact');
-        end
         if length(excel_sheet)>0
             excel_sheet=char(sheet_names(excel_sheet));
         else

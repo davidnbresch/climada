@@ -87,7 +87,7 @@ end
 
 [fP,fN] = fileparts(entity_filename);
 entity_save_file=[fP filesep fN '.mat'];
-if climada_check_matfile(entity_save_file)
+if climada_check_matfile(entity_filename,entity_save_file)
     % there is a .mat file more recent than the Excel
     load(entity_save_file)
 else
@@ -178,7 +178,7 @@ else
     end
     
     % save entity as .mat file for fast access
-    fprintf('saved entity as %s\n',entity_save_file);
+    fprintf('saving entity as %s\n',entity_save_file);
     save(entity_save_file,'entity');
 end % climada_check_matfile
 
