@@ -15,7 +15,7 @@ function climada_template(param1,param2)
 %   param2: as an example
 % OUTPUTS:
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20090920
+% David N. Bresch, david.bresch@gmail.com, 20141206
 %-
 
 global climada_global
@@ -26,6 +26,9 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('param1','var'),param1=[];end
 if ~exist('param2','var'),param2=[];end
+
+% locate the module's data
+module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 
 % PARAMETERS
 %

@@ -1,4 +1,4 @@
-function fig = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
+function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
 % climada
 % NAME:
 %   climada_EDS_DFC
@@ -25,13 +25,22 @@ function fig = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_
 %   plot_loglog: if =1, plot logarithmic scale both axes, =0 plot linear
 %       axes (default)
 % OUTPUTS:
+%   a figure with the DFC plot
+%   legend_str: the legend string
+%   return_period: the return periods as shown (for the last DFC plottet,
+%       be careful)
+%   sorted_damage: the damage as shown (for the last DFC plottet,
+%       be careful)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100108
 % David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
 % Lea Mueller, 20120816, comparison title of all comparisons, changed markersize
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130316, slight cleanup
+% David N. Bresch, david.bresch@gmail.com, 20141206, legend_str as output added
 %-
+
+fig=[];legend_str=[];
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -115,7 +124,7 @@ marker_ = ['*- ';'o- ';'p- ';'.- ';'s- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'.-
 ii      = 1;
 
 %create figure
-fig        = climada_figuresize(0.5,0.8);         
+fig = climada_figuresize(0.5,0.8);         
 
 for EDS_i=1:length(EDS)
     [sorted_damage,exceedence_freq]... 
