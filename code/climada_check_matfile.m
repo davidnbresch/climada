@@ -27,9 +27,11 @@ function ok=climada_check_matfile(source_filename,mat_filename)
 %       =0 if .mat file does not exist or if source file is more recent
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141104
+% David N. Bresch, david.bresch@gmail.com, 20141208, datenum_mat-datenum_source>=0
 %-
 
 ok=0; % init output
+
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
@@ -61,14 +63,14 @@ if exist(source_filename,'file')
     
     [fP,fN]=fileparts(source_filename);
     
-    if isempty(mat_filename)mat_filename=[fP filesep fN '.mat'];end
+    if isempty(mat_filename),mat_filename=[fP filesep fN '.mat'];end
     
     if exist(mat_filename,'file')
         
         D_mat = dir(mat_filename);
         datenum_mat=datenum(D_mat.date); % date of .mat
         
-        if datenum_mat-datenum_source >0
+        if datenum_mat-datenum_source >=0
             ok=1; % only if .mat exists and is newer
         end
     end
