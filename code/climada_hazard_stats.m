@@ -146,7 +146,7 @@ if calc
     mod_step = 10; % first time estimate after 10 tracks, then every 100
     msgstr   = sprintf('processing %i centroids',n_centroids);
     fprintf('%s (updating waitbar with estimation of time remaining every 100th centroid)\n',msgstr);
-    h        = waitbar(0,msgstr);
+    if climada_global.waitbar,h        = waitbar(0,msgstr);end
     
     for centroid_i = 1:n_centroids
         
@@ -180,7 +180,7 @@ if calc
                 neg                                    = return_periods_calc >max(R);
                 intensity_fit(neg)                     = 0; %nan
                 hazard.intensity_fit_ori(:,centroid_i) = intensity_fit;
-            end
+            end % sum(intensity_pos)
         end % historical data
         
         % probabilistic data
@@ -214,7 +214,7 @@ if calc
             hazard.intensity_fit(:,centroid_i) = intensity_fit;
         end % intensity_pos, probabilistic data
         
-        if mod(centroid_i,mod_step)==0
+        if mod(centroid_i,mod_step)==0 && climada_global.waitbar
             mod_step = 100;
             t_elapsed = etime(clock,t0)/centroid_i;
             n_remaining = n_centroids-centroid_i;
@@ -229,7 +229,7 @@ if calc
         
     end % centroid_i
     
-    close(h); % dispose waitbar
+    if climada_global.waitbar,close(h);end % dispose waitbar
     
     % save hazard file with stats
     [fP,fN]=fileparts(hazard.filename);
@@ -288,10 +288,7 @@ if check_plot
     return_count = length(return_periods_show);
     if return_count < 3; y_no = return_count; else y_no  = 3; end
     x_no         = ceil(return_count/3);
-    
-    msgstr   = sprintf('Plotting wind speed vs return period map: probabilistic data');
-    h        = waitbar(0,msgstr);
-    
+
     scale_tot = (y_no*scale2)/x_no;
     he = 0.7;
     wi = 0.7*scale_tot;
@@ -314,8 +311,11 @@ if check_plot
     set(gca,'fontsize',fontsize)
     hold on
     
+    msgstr   = sprintf('Plotting wind speed vs return period map: probabilistic data');
+    if climada_global.waitbar,h        = waitbar(0,msgstr);end
+    
     for i=1:return_count %x_no*y_no %return_count
-        waitbar(i/return_count, h, msgstr); % update waitbar
+        if climada_global.waitbar,waitbar(i/return_count, h, msgstr);end % update waitbar
         subaxis(i)
         
         fit_index = return_periods_show(i) == hazard.R_fit;
@@ -343,8 +343,7 @@ if check_plot
         set(gca,'fontsize',fontsize)
         set(hc,'XTick',xtick_)
     end %return_i
-    
-    close(h); % dispose waitbar
+    if climada_global.waitbar,close(h);end % dispose waitbar
     
     if check_printplot %(>=1)
         choice = questdlg('print?','print');

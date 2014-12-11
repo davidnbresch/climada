@@ -142,7 +142,7 @@ hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
 t0 = clock;
 msgstr=sprintf('processing %i events',hazard.event_count);
 fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr);
-h = waitbar(0,msgstr);
+if climada_global.waitbar,h = waitbar(0,msgstr);end
 mod_step=10; % first time estimate after 10 tracks, then every 100
 for event_i=1:hazard.event_count
 
@@ -150,7 +150,7 @@ for event_i=1:hazard.event_count
     %%fprintf('%s, %f\n',event_column_name,max(hazard_intensity.(event_column_name)));
     hazard.intensity(event_i,:)=sparse(hazard_intensity.(event_column_name)); % fill hazard array
     
-    if mod(event_i,mod_step)==0
+    if mod(event_i,mod_step)==0 && climada_global.waitbar
         mod_step=100;
         t_elapsed_events=etime(clock,t0)/event_i;
         events_remaining=hazard.event_count-event_i;
@@ -160,7 +160,7 @@ for event_i=1:hazard.event_count
     end
 
 end %event_i
-close(h); % dispose waitbar
+if climada_global.waitbar,close(h);end % dispose waitbar
 
 t_elapsed=etime(clock,t0);
 msgstr=sprintf('generating %i events took %f sec (%f sec/event)\n',hazard.event_count,t_elapsed,t_elapsed/hazard.event_count);

@@ -48,8 +48,6 @@ c_b_dir = dir(code_bucket_folder);
 mod_dir = dir(climada_global.modules_dir);
 new_mod_file = [];
 
-fprintf('Updating code... ')
-
 for i = 1:length(c_b_dir)
     if length(c_b_dir(i).name)<=2
         continue; % Ignore the . and .. files
@@ -57,6 +55,7 @@ for i = 1:length(c_b_dir)
     
     if strcmp(c_b_dir(i).name, 'code')
         % Update core climada
+        fprintf('updating core climada code ... ');
         s_path = [code_bucket_folder filesep c_b_dir(i).name];
         s_files = dir(s_path);
         for k = 1:length(s_files)
@@ -67,10 +66,14 @@ for i = 1:length(c_b_dir)
                     [climada_global.root_dir filesep filesep 'code']);
             end
         end
+        fprintf('done\n');
     else
         % Update climada modules
         mod_exists = 0;
         s_path = [code_bucket_folder filesep c_b_dir(i).name];
+        
+        fprintf('updating %s code ... ',c_b_dir(i).name);
+        
         for j = 1: length(mod_dir)
             s_files = dir(s_path);
             
@@ -102,12 +105,14 @@ for i = 1:length(c_b_dir)
                 end
             end
         end
+        
+        fprintf('done\n');
+        
     end
 end
 
-fprintf('Done \n');
 if ~isempty(new_mod_file)
-    fprintf('New modules added: \n');
+    fprintf('new modules added: \n');
     for i = 1:length(new_mod_file)
         fprintf('\t\t%s\n',char(new_mod_file{i}));
     end

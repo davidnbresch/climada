@@ -164,7 +164,7 @@ hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
 t0 = clock;
 msgstr=sprintf('processing %i tracks',length(tc_track));
 fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
-h = waitbar(0,msgstr);
+if climada_global.waitbar,h = waitbar(0,msgstr);end
 mod_step=10; % first time estimate after 10 tracks, then every 100
 for track_i=1:length(tc_track)
     
@@ -183,7 +183,7 @@ for track_i=1:length(tc_track)
     %     set(gcf,'Color',[1 1 1]);
     % end
     
-    if mod(track_i,mod_step)==0
+    if mod(track_i,mod_step)==0 && climada_global.waitbar
         mod_step=100;
         t_elapsed_track=etime(clock,t0)/track_i;
         tracks_remaining=length(tc_track)-track_i;
@@ -193,7 +193,7 @@ for track_i=1:length(tc_track)
     end
 
 end %track_i
-close(h); % dispose waitbar
+if climada_global.waitbar,close(h);end % dispose waitbar
 
 t_elapsed=etime(clock,t0);
 msgstr=sprintf('generating %i windfields took %f sec (%f sec/event)\n',length(tc_track),t_elapsed,t_elapsed/length(tc_track));

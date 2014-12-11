@@ -98,7 +98,7 @@ x0 = ens_amp0*(rand(ens_size*n_storms,1)-0.5);   % rand: uniformly distributed r
 y0 = ens_amp0*(rand(ens_size*n_storms,1)-0.5);
 
 fprintf('adding %i derived tracks to %i original storms\n',ens_size,n_storms);
-h = waitbar(0,'Processing ...');               
+if climada_global.waitbar,h = waitbar(0,'Processing ...');end            
 
 t0 = clock;
 for track_i=1:n_storms % loop over all original tracks
@@ -107,7 +107,7 @@ for track_i=1:n_storms % loop over all original tracks
 
         next_track_position = next_track_position+1; 
         
-        waitbar(track_i/n_storms,h); % update waitbar
+        if climada_global.waitbar,waitbar(track_i/n_storms,h);end % update waitbar
         
         % take lon/lat for the original track
         lon  = tc_track(track_i).lon;
@@ -159,7 +159,7 @@ end %if isempty(find(abs(diff(tc_track(i).lat))>max_lat_dist)==1)
 
 t_elapsed = etime(clock,t0);
 fprintf('generating %i derived storms took %f sec (%f sec/track)\n',ens_count,t_elapsed,t_elapsed/ens_count);
-close(h); % dispose waitbar
+if climada_global.waitbar,close(h);end % dispose waitbar
 
 %%fprintf('HINT: for further use, save the generated tracks using the ''save'' command\n');
 

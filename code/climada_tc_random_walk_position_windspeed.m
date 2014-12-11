@@ -1,6 +1,6 @@
 function tc_track_prob = climada_tc_random_walk_position_windspeed(tc_track , tc_track_save, ens_size, ens_amp, Maxangle,...
-                                                                   check_plot, check_printplot)
-                                                               
+    check_plot, check_printplot)
+
 % TC event set with probabilistic longitude, latitude and wind speed based
 % on random walk
 % NAME:
@@ -51,12 +51,12 @@ if ~exist('ens_size'       , 'var'), ens_size      = 9   ; end
 if isempty(ens_size)               , ens_size      = 9   ; end
 
 %amplitude of random walk wiggles in degree longitude for 'directed'
-if ~exist('ens_amp'        , 'var'), ens_amp  = 0.35; end 
+if ~exist('ens_amp'        , 'var'), ens_amp  = 0.35; end
 if isempty(ens_amp)                , ens_amp  = 0.35; end
 
 % maximum angle of variation, =pi is like undirected, pi/4 means one
 % quadrant
-if ~exist('Maxangle'       , 'var'), Maxangle = pi/7; end 
+if ~exist('Maxangle'       , 'var'), Maxangle = pi/7; end
 if isempty(Maxangle)               , Maxangle = pi/7; end
 
 if ~exist('check_plot'     , 'var'), check_plot      = 1  ; end
@@ -91,14 +91,14 @@ end
 %  compute mu and sigma (fitted normal distribution) in knots
 [mu, sigma]         = climada_distribution_v0_vi(tc_track,'kn',0);
 
-            %  enhance variation of change in wind speed
-            % sigma(2)       = sigma(2) *enhance_sigma;
-            % if enhance_sigma>1
-            %     fprintf('------------------ \n'); 
-            %     fprintf('sigma of change in wind speed (kn) ENHANCED by factor %10.1f \n', enhance_sigma); 
-            %     fprintf('new sigma = %10.2f \n', sigma(2));    
-            %     fprintf('------------------ \n');
-            % end
+%  enhance variation of change in wind speed
+% sigma(2)       = sigma(2) *enhance_sigma;
+% if enhance_sigma>1
+%     fprintf('------------------ \n');
+%     fprintf('sigma of change in wind speed (kn) ENHANCED by factor %10.1f \n', enhance_sigma);
+%     fprintf('new sigma = %10.2f \n', sigma(2));
+%     fprintf('------------------ \n');
+% end
 
 track_count   = length(tc_track);
 track_counter = 0;
@@ -107,19 +107,19 @@ track_counter = 0;
 %% COORDINATES
 %  ensemble generation parameters
 %  amplitude of max random starting point shift degree longitude
-ens_amp0      = 1.5; 
+ens_amp0      = 1.5;
 % maximum latitudinal distance between consequent data points. if this
 % distance is larger than max_lat_dist, the storm is not
 % used (kind of second data cleaning)
-max_lat_dist  = 10; 
+max_lat_dist  = 10;
 
 
 mu_v     = 0;
 sigma_v  = 1;
-    
-    
+
+
 fprintf('adding %i derived tracks to %i original storms \n', ens_size, track_count);
-h  = waitbar(0,'Processing ...');               
+if climada_global.waitbar,h  = waitbar(0,'Processing ...');end
 t0 = clock;
 
 randn('seed',0)
@@ -129,7 +129,7 @@ rand ('seed',0)
 for track_i = 1:track_count
     
     % update waitbar
-    waitbar(track_i/track_count,h); 
+    if climada_global.waitbar,waitbar(track_i/track_count,h);end
     track_counter = track_counter+1;
     nodes_count   = length(tc_track(track_i).MaxSustainedWind);
     
@@ -141,16 +141,16 @@ for track_i = 1:track_count
     %vi = mu(2) + sigma(2) .* randn(ens_size,nodes_count);
     vi  = mu_v  + sigma_v  .* randn(ens_size,nodes_count);
     % add up probabilistic changes in wind speed
-    vi_cum   = cumsum(vi,2); 
+    vi_cum   = cumsum(vi,2);
     %figure
     %plot(vi_cum')
-
+    
     %% COORDINATES
     % generate random starting points for ensemble members: +- 0.75. mean 0
     % rand    : uniformly distributed random numbers between 0 and 1
     % rand-0.5: uniformly distributed random numbers between +- 0.5
-    % x0, y0  : uniformly distributed random numbers between +- 0.5*1.5, +- 0.75 
-    x0 = ens_amp0 *( rand(ens_size,1)-0.5); 
+    % x0, y0  : uniformly distributed random numbers between +- 0.5*1.5, +- 0.75
+    x0 = ens_amp0 *( rand(ens_size,1)-0.5);
     y0 = ens_amp0 *( rand(ens_size,1)-0.5);
     
     % directed random walk (summed in dimension 2), how much differ the
@@ -168,15 +168,15 @@ for track_i = 1:track_count
     % 2)
     x = cumsum( ens_amp * x, 2);
     y = cumsum( ens_amp * y, 2);
-     
+    
     % figure
     % plot(x','b')
     % hold on
-    % plot(y','r')        
-    %all in one    
+    % plot(y','r')
+    %all in one
     %x = cumsum( ens_amp *sin( cumsum( 2*Maxangle*rand(ens_size,nodes_count) - Maxangle, 2)  ),2);
     %y = cumsum( ens_amp *sin( cumsum( 2*Maxangle*rand(ens_size,nodes_count) - Maxangle, 2)  ),2);
-
+    
     % add all the other vectors and arrays (copy)
     tc_track_prob(track_counter) = tc_track(track_i);
     
@@ -187,11 +187,11 @@ for track_i = 1:track_count
     %hold on
     %plot(v_cum_','b.-')
     %plot(v_cum_','b.')
-    %v    = tc_track(track_i).MaxSustainedWind    + vi_cum(ens_i,:); 
+    %v    = tc_track(track_i).MaxSustainedWind    + vi_cum(ens_i,:);
     % round to 5 kn
     %v    = round(v /5)*5;
-        
-
+    
+    
     for ens_i = 1:ens_size
         track_counter = track_counter+1;
         % first copy from original historical track and then change wind
@@ -209,9 +209,9 @@ for track_i = 1:track_count
         % % hold on
         % % plot(cumsum(vi_sort),'*-r')
         % sum up initial wind speed and following changes in wind speed
-        %v   = v0(track_i) + vi_cum; 
-        %v   = tc_track(track_i).MaxSustainedWind(1) + vi_cum; 
-        v    = tc_track(track_i).MaxSustainedWind    + vi_cum(ens_i,:); 
+        %v   = v0(track_i) + vi_cum;
+        %v   = tc_track(track_i).MaxSustainedWind(1) + vi_cum;
+        v    = tc_track(track_i).MaxSustainedWind    + vi_cum(ens_i,:);
         % round to 5 kn
         %v    = round(v /5)*5;
         % plot for check
@@ -226,26 +226,26 @@ for track_i = 1:track_count
         %tc_track_prob(track_counter).MaxSustainedWind = v;
         tc_track_prob(track_counter).MaxSustainedWind = tc_track(track_i).MaxSustainedWind;
         
-        %% COORDINATES        
+        %% COORDINATES
         % add change in coordinates to the different starting points
         x_cum = x(ens_i,:)- x(ens_i,1) + x0(ens_i);
         y_cum = y(ens_i,:)- y(ens_i,1) + y0(ens_i);
-           
+        
         % fill in the derived track: add dlon/dlat
-        tc_track_prob(track_counter).lon = tc_track(track_i).lon + x_cum;   
+        tc_track_prob(track_counter).lon = tc_track(track_i).lon + x_cum;
         tc_track_prob(track_counter).lat = tc_track(track_i).lat + y_cum;
         % add probabilistic event flag
         tc_track_prob(track_counter).orig_event_flag = 0;
         % add probabilistic season
         tc_track_prob(track_counter).season          = tc_track(track_i).season*(ens_size+1) + ens_i;
         % new names: first derived ..._gen1
-        tc_track_prob(track_counter).name            = [deblank(tc_track(track_i).name) '_gen' int2str(ens_i)];  
+        tc_track_prob(track_counter).name            = [deblank(tc_track(track_i).name) '_gen' int2str(ens_i)];
         % new ID_no are decimals for derived tracks
-        tc_track_prob(track_counter).ID_no           = tc_track(track_i).ID_no+ens_i/100; 
+        tc_track_prob(track_counter).ID_no           = tc_track(track_i).ID_no+ens_i/100;
     end
     %close
 end
-
+if climada_global.waitbar,close(h);end % dispose waitbar
 
 
 %% decay of wind speed over land
@@ -257,7 +257,6 @@ for t_i = 1:length(tc_track_prob)
     if isnan(tc_track_prob(t_i).MaxSustainedWind)
         fprintf('Not a number in wind speeds (tc_track %d)\n', t_i)
         tc_track_prob = [];
-        close(h); % dispose waitbar
         return
     end
 end
@@ -268,15 +267,12 @@ tc_track_prob = climada_tc_stormcategory(tc_track_prob);
 
 t_elapsed     = etime(clock,t0);
 fprintf('generating %i derived storms took %3.1f sec (%3.1f sec/track)\n',(ens_size+1)*track_count,t_elapsed,t_elapsed/ens_size);
-close(h); % dispose waitbar
-
-
 
 tc_track = tc_track_prob;
 
 if check_plot
     fprintf('preparing check plot ...\n');
-
+    
     %set scale for figuresize
     max_lon = max([tc_track(:).lon]);
     min_lon = min([tc_track(:).lon]);
@@ -286,7 +282,7 @@ if check_plot
     %scale2  =(max_lon - min_lon)/...
     %         (min(max_lat,60) - max(min_lat,-50));
     scale2  =(max_lon - min_lon)/...
-             (max_lat - min_lat);     
+        (max_lat - min_lat);
     height = 0.5;
     if height*scale2 > 1.2; height = 1.2/scale2; end
     
@@ -304,24 +300,24 @@ if check_plot
     end
     xlabel('Longitude')
     ylabel('Latitude')
-
+    
     axis equal
     axis([min_lon-scale/30  max_lon+scale/30 ...
-          min_lat-scale/30  max_lat+scale/30])
+        min_lat-scale/30  max_lat+scale/30])
     %axis([min_lon-scale/30  max_lon+scale/30 ...
-    %      max(min_lat,-50)-scale/30  min(max_lat,60)+scale/30])  
+    %      max(min_lat,-50)-scale/30  min(max_lat,60)+scale/30])
     set(gca,'layer','top')
     titlestr = sprintf('%d original tracks (%d - %d), %d probabilistic tracks\n%s',...
-                        sum([tc_track(:).orig_event_flag]), tc_track(1).yyyy(1), tc_track(end).yyyy(end),...
-                        length(tc_track)-sum([tc_track(:).orig_event_flag]), strrep(tc_track_save,'_',' '));
+        sum([tc_track(:).orig_event_flag]), tc_track(1).yyyy(1), tc_track(end).yyyy(end),...
+        length(tc_track)-sum([tc_track(:).orig_event_flag]), strrep(tc_track_save,'_',' '));
     title(titlestr)
-  
+    
     legend([g h],'Original tracks','Derived tracks')
     if check_printplot
         %foldername  = ['\results\mozambique\tc_tracks\tracks_prob_' int2str((ens_size+1)*track_count) '.pdf'];
         foldername  = ['\results\tracks_prob_' int2str((ens_size+1)*track_count) '.pdf'];
         print(fig,'-dpdf',[climada_global.data_dir foldername])
-        fprintf('FIGURE saved in folder %s \n', foldername);   
+        fprintf('FIGURE saved in folder %s \n', foldername);
     end
 end
 
@@ -341,13 +337,3 @@ end
 
 
 return
-
-
-%%
-
-
-
-
-
-
-
