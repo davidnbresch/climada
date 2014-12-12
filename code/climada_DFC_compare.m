@@ -51,6 +51,7 @@ function climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog,s
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141206, initial 'Samichlaus'
+% David N. Bresch, david.bresch@gmail.com, 20141212, minor edits
 %-
 
 global climada_global
@@ -110,12 +111,35 @@ EL_cmp=climada_xlsread('no',DFC_file,'Expected Loss',1);
 % TIV (we take the first number, i.e. TIV(1)
 % Ground_Up_Loss (we take the first number, i.e. Ground_Up_Loss(1)
 
-scenario_cmp=climada_xlsread('no',DFC_file,'Footprint Report',1);
-% scenario_cmp should contain (only what we need further down, if
-% footprint_comparison_flag=1):
-% Description: {n x 1 cell}
-% Expected_Loss: [n x 1 double]
-% Return_Period: [n x 1 double]
+if scenario_comparison_flag
+    scenario_cmp=climada_xlsread('no',DFC_file,'Footprint Report',1);
+    % scenario_cmp should contain (only what we need further down, if
+    % footprint_comparison_flag=1):
+    % Description: {n x 1 cell}
+    % Expected_Loss: [n x 1 double]
+    % Return_Period: [n x 1 double]
+end
+
+% compare Value (sum insured) and damages
+% ---------------------------------------
+EL_cmp_TIV=NaN;
+try
+    EL_cmp_TIV=EL_cmp.TIV{1};
+catch
+    try
+        EL_cmp_TIV=EL_cmp.TIV(1);
+    end
+end
+if EL_cmp_TIV==0,EL_cmp_TIV=NaN;end % avoid division by zero
+fprintf('Value (TIV) of EDS= %g, comparison=%g, EDS/cmp=%g\n',...
+    EDS(1).Value,EL_cmp_TIV,EDS(1).Value/EL_cmp_TIV);
+
+cmp_correction=EDS(1).Value/EL_cmp_TIV;
+if abs(cmp_correction-1)>0.01
+    fprintf('NOTE: DFC damages multiplied by %f\n',cmp_correction);
+    DFC_cmp.Loss=DFC_cmp.Loss*cmp_correction;
+    scenario_cmp.Expected_Loss=scenario_cmp.Expected_Loss*cmp_correction;
+end
 
 % add the comparison to the figure
 % --------------------------------
@@ -138,12 +162,6 @@ if ~isempty(legend_str) % add legend
     legend(legend_str,'Interpreter','none','location','nw');
 end
 
-% compare Value (sum insured) and damages
-% ---------------------------------------
-if EL_cmp.TIV(1)==0,EL_cmp.TIV(1)=NaN;end % avoid division by zero
-fprintf('Value (TIV) of EDS= %g, comparison=%g, EDS/cmp=%g\n',...
-    EDS(1).Value,EL_cmp.TIV(1),EDS(1).Value/EL_cmp.TIV(1));
-
 % compare damages
 % simply interpolate to the standard return periods and divide...
 DFC_damage = interp1(return_period,sorted_damage,climada_global.DFC_return_periods);
@@ -158,7 +176,7 @@ fprintf('EDS/cmp:');fprintf('%g\t\t',DFC_damage./cmp_damage);           fprintf(
 if scenario_comparison_flag
     
     if Percentage_Of_Value_Flag
-        scenario_cmp.Expected_Loss=scenario_cmp.Expected_Loss./EL_cmp.TIV(1)*100;
+        scenario_cmp.Expected_Loss=scenario_cmp.Expected_Loss./EL_cmp_TIV*100;
     end
     
     for scenario_i=1:length(scenario_cmp.Expected_Loss)

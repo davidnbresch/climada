@@ -26,6 +26,8 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %       climada_centroids_read) or the filename of an Excel file (the original
 %       input to climada_centroids_read) which holds the centroids, in
 %       which case climada_centroids_read is called.
+%       OR: an entity, in which case the entity.assets.Latitude and
+%       Longitude are used as centroids.
 %       > promted for .mat or .xls filename if not given
 %       NOTE: if you then select Cancel, a regular default grid is used, see hard-wired definition in code
 % OUTPUTS:
@@ -145,6 +147,17 @@ if isempty(centroids) % local GUI
         end
         
     end
+end
+
+if isfield(centroids,'assets') 
+    % centroids contains in fact an entity
+    entity=centroids; centroids=[]; % silly switch, but fastest
+    centroids.Latitude =entity.assets.Latitude;
+    centroids.Longitude=entity.assets.Longitude;
+    if isfield(entity.assets,'country_name'),centroids.country_name{1}=entity.assets.country_name;end
+    if isfield(entity.assets,'admin0_name'),centroids.admin0_name{1}=entity.assets.admin0_name;end
+    if isfield(entity.assets,'admin1_name'),centroids.admin1_name{1}=entity.assets.admin1_name;end
+    clear entity
 end
     
 if ~isstruct(centroids) % load, if filename given

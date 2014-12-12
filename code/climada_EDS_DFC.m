@@ -124,7 +124,7 @@ marker_ = ['*- ';'o- ';'p- ';'.- ';'s- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'.-
 ii      = 1;
 
 %create figure
-fig = climada_figuresize(0.5,0.8);         
+%fig = climada_figuresize(0.5,0.8);         
 
 for EDS_i=1:length(EDS)
     [sorted_damage,exceedence_freq]... 
@@ -145,7 +145,7 @@ for EDS_i=1:length(EDS)
 end % EDS_i
 
 set(gca,'fontsize',12)
-if length(legend_str)>0,legend(legend_str,'Interpreter','none','location','nw');end % add legend
+if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','nw');end % add legend
 grid on; % show grid
 xlabel('Return period (years)')
 if Percentage_Of_Value_Flag
@@ -165,7 +165,7 @@ title_str        = strrep(title_str,'|','\otimes'); % LaTEX format
 
 hold off;
 
-if length(EDS_comparison)>0
+if ~isempty(EDS_comparison)
     % load the entity, if a filename has been passed
     if ~isstruct(EDS_comparison)
         EDS_comparison_file = EDS_comparison;
