@@ -1,4 +1,4 @@
-function climada_entity_plot(entity,markersize)
+function climada_entity_plot(entity,markersize,plot_centroids)
 % plot an entity, no detailed documentation
 % NAME:
 %   climada_entity_plot
@@ -17,6 +17,8 @@ function climada_entity_plot(entity,markersize)
 %   markersize: the size of the 'tiles', one might need to experiment a
 %       bit, as the code tries (hard) to set a reasonabls default (based on
 %       resolution)
+%   plot_centroids: =1: plot centroids as small red dots
+%       =0: do not plot centroids (default)
 % OUTPUTS:
 %   a figure
 % MODIFICATION HISTORY:
@@ -31,6 +33,7 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('entity','var'),entity=[];end
 if ~exist('markersize','var'),markersize=[];end
+if ~exist('plot_centroids','var'),plot_centroids=0;end
 
 % PARAMETERS
 %
@@ -79,6 +82,9 @@ end
 set(get(cbar,'ylabel'),'string','Values','fontsize',12)
 climada_plot_world_borders(0.7);
 set(gca,'xlim',x_range,'ylim',y_range)
+if plot_centroids
+    plot(entity.assets.Longitude, entity.assets.Latitude,'.r','MarkerSize',1);
+end
 
 return
 

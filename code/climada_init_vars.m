@@ -93,7 +93,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     end
     
     % the map border file as used by climada_plot_world_borders
-    climada_global.map_border_file=[climada_global.system_dir filesep 'world_50m.gen'];
+    % (see the short documentation in climada_global.system_dir/admin0.txt)
+    climada_global.map_border_file=[climada_global.system_dir filesep 'admin0.mat'];
+    %climada_global.map_border_file=[climada_global.system_dir filesep 'world_50m.gen']; % until 20141210
 
     % country-specific csv delimuter (to read and convert to Excel properly)
     climada_global.csv_delimiter=';'; % ';' default
