@@ -43,6 +43,15 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 %   whole_world_borders: a simpler structure with all shapes in one for
 %       fast plotting, see e.g. climada_plot_world_borders (only genersted
 %       if create_world_borders=1). DISABLED, see above.
+%       In case you need whole_world_borders, add the following lines to
+%       your code:
+%           load(climada_global.map_border_file);
+%           whole_world_borders.lon = [];
+%           whole_world_borders.lat = [];
+%           for i=1:length(shapes)
+%               whole_world_borders.lon = [whole_world_borders.lon; shapes(i).X'];
+%               whole_world_borders.lat = [whole_world_borders.lat; shapes(i).Y'];
+%           end
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141211, initial
 % David N. Bresch, david.bresch@gmail.com, 20141212, SYSTEM_ADMIN0 added

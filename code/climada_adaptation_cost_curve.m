@@ -1,4 +1,4 @@
-function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(measures_impact, measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrow)
+function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measures_impact, measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
 % climada measures impact climate adaptation cost curve
 % NAME:
 %   climada_adaptation_cost_curve
@@ -7,8 +7,8 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 %   see also: climada_adaptation_event_view
 %
 %   NOTE: The mode with output arguments insurance_benefit and
-%   insurance_cost is only used when called from
-%   climada_play_adapt_cost_curve, no relevance for lecture
+%   insurance_cost is only used when called from climada_demo (the flag
+%   called_from_climada_demo), no relevance for standard use .
 % CALLING SEQUENCE:
 %   climada_adaptation_cost_curve(measures_impact,measures_impact_comparison)
 % EXAMPLE:
@@ -34,9 +34,9 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 %       default=0 (inactive)
 %   reverse_cb: reverse the vertical axis (=1), instead of cost/benefit,
 %       show benefit per cost, default=0
-%   plot_arrows: whether we do (=1) or don't (=0) plot arrows underneath
-%       the x-axis to show cost-effective measures and non-cost-effective
-%       measures extent, has occasionally some issues, hence default =0
+%   plot_arrows: whether we do (=1) or don't (=0, default) plot arrows
+%   underneath the x-axis to show cost-effective measures and
+%   non-cost-effective measures extent.
 % OUTPUTS:
 %   insurance_benefit and insurance_cost: only used when called from
 %       climada_play_adapt_cost_curve, see there (in essence to write
@@ -46,13 +46,15 @@ function [insurance_benefit, insurance_cost] = climada_adaptation_cost_curve(mea
 % David N. Bresch, david.bresch@gmail.com, 20091230 major revision, appreance similar to ECA graphs
 % David N. Bresch, david.bresch@gmail.com, 20130316 EDS->EDS
 % David N. Bresch, david.bresch@gmail.com, 20130316 compatibility for both direct call as well as via climada_demo_gui
+% Gilles Stassen gillesstassen@hotmail.com 20141212 fixed the arrow issue; changed labeling of total climate risk to USD x m rounded to 2 s.f.
+% David N. Bresch, david.bresch@gmail.com, 20141213 plot_arrows=0 by default and climada_demo option cleaned up
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
-called_from_play_adapt_cost_curve=0; % default
-if nargout>0,called_from_play_adapt_cost_curve=1;end % called from climada_play_adapt_cost_curve
+called_from_climada_demo=0; % default
+if nargout>0,called_from_climada_demo=1;end % called from climada_play_adapt_cost_curve
 
 % poor man's version to check arguments
 if ~exist('measures_impact'           , 'var'), measures_impact            = []; end
@@ -61,7 +63,7 @@ if ~exist('x_text_control'            , 'var'), x_text_control             = [];
 if ~exist('y_text_control'            , 'var'), y_text_control             = []; end
 if ~exist('scaled_AED'                , 'var'), scaled_AED                 = 0 ; end
 if ~exist('nice_numbers'              , 'var'), nice_numbers               = []; end
-if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 0; end
+if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 1; end
 if ~exist('plot_arrows'               , 'var'), plot_arrows                = 0; end
 
 % PARAMETERS
@@ -100,8 +102,8 @@ if ~isstruct(measures_impact)
     load(measures_impact_file);
 end
 
-% set the extras for the play gui
-if called_from_play_adapt_cost_curve
+% set the extras for climada_demo
+if called_from_climada_demo
     scaled_AED            = 1;
     nice_numbers          = 1;
     add_insurance_measure = 1;
@@ -158,7 +160,7 @@ else
 end
 
 
-%% correct risk transfer to not cover more than actual climate risk
+% correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
 if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
     fprintf('Risk transfer is corrected to cover only actual climate risk.\n')
@@ -206,7 +208,7 @@ cumulated_benefit = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climat
 % PLOT: a dummy plot to open the figure and set the axes
 xmax      = max(cumulated_benefit);
 ymax      = max([max(sorted_cb_ratio),1.1]);
-if called_from_play_adapt_cost_curve
+if called_from_climada_demo
     plot([0,xmax],[ymax,ymax],'.w'); hold on
     set(gca,'FontSize',fontsize_);
 else
@@ -245,7 +247,8 @@ for measure_i = 2:n_measures+1 %first entry = 0
 end
 % show net present value of total climate risk
 plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
-tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
+% tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
+tcr_str = sprintf('Total climate risk\n USD %.0f m',round(tot_climate_risk*fct/100000)/10);
 text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
     'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
 
@@ -263,7 +266,7 @@ end
 
 if plot_arrows
     % arrow below graph to indicate cost-efficient adaptation and residual damage
-    if called_from_play_adapt_cost_curve
+    if called_from_climada_demo
         y_ = -max(sorted_cb_ratio)*1.2*0.18;
         arrow_width  = 10;
         arrow_length = 10;
@@ -271,13 +274,17 @@ if plot_arrows
         y_ = -max(sorted_cb_ratio)*1.2*0.14;
         arrow_width  = 15;
         arrow_length = 15;
-    end    
+    end
     s_ = 0.5;
-    m_cost_eff = sum(sorted_cb_ratio<=1)+1;
+    if reverse_cb
+        m_cost_eff = sum(sorted_cb_ratio>=1)+1;
+    else
+        m_cost_eff = sum(sorted_cb_ratio<=1)+1;
+    end
     climada_arrow([cumulated_benefit(end) y_*1.0], [cumulated_benefit(m_cost_eff)+s_/2 y_*1.0],...
         'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[205 0 0]/255);
     if add_insurance_measure
-        text(mean(cumulated_benefit([end end-1])),y_, 'Non-cost-efficient','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
+        text(mean(cumulated_benefit([end end-1])),y_, 'Non-cost-effective','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
     else
         climada_arrow([cumulated_benefit(m_cost_eff) y_*1.0], [cumulated_benefit(end-1)+s_/2 y_*1.0],...
             'width',arrow_width-9,'Length',arrow_length-5, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[255 127   0]/255);
@@ -287,13 +294,13 @@ if plot_arrows
     if cumulated_benefit(m_cost_eff)>0
         climada_arrow([0 y_], [cumulated_benefit(m_cost_eff)-s_/2 y_],...
             'width',arrow_width,'Length',arrow_length, 'BaseAngle',90, 'TipAngle',50,'EdgeColor','none', 'FaceColor',[0 197 205]/255);
-        text(cumulated_benefit(m_cost_eff)/2,y_, 'Cost-efficient adaptation','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
+        text(cumulated_benefit(m_cost_eff)/2,y_, 'Cost-effective','color','w','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',fontsize_-1,'fontweight','bold');
     end
     %%% FOR LEA: next code line is the tricky one, leave
     %%%it commented, and arrows show nicely, but unfortunately the vertical
     %%%axis goes below zero and the arrows are shown below zero line...
-    %%%ylim([0 max(sorted_cb_ratio)*1.1])
-    % xlim([0 max(cumulated_benefit)*1.03]) % was commented already
+    ylim([0 max(sorted_cb_ratio)*1.1])
+    xlim([0 max(cumulated_benefit)*1.03]) % was commented already
 end
 
 % add title
@@ -395,7 +402,7 @@ end
 
 plot([0 xmax],[1 1],':k');
 xlim([0 xmax*1.1])
-if called_from_play_adapt_cost_curve
+if called_from_climada_demo
     set(gca,'layer','top')
 else
     set(subaxis(1),'layer','top')

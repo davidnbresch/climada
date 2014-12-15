@@ -59,14 +59,9 @@ cmap  = [cmap1; cmap2; cmap3];
 
 % plot the assets
 
-fig = climada_figuresize(0.5,0.8);
+% do not create a figure, as we might want to sue this in a subplot etc.
+%fig = climada_figuresize(0.5,0.8);
 %climada_plot_world_borders(0.7);
-
-hold on
-axis equal
-xlabel('Longitude')
-ylabel('Latitude')
-set(gca,'layer','top')
 
 x_range = [min(entity.assets.Longitude)-d max(entity.assets.Longitude)+d];
 y_range = [min(entity.assets.Latitude)-d max(entity.assets.Latitude)+d];
@@ -78,13 +73,18 @@ if isempty(markersize)
     fprintf('markersize = %i\n',markersize);
 end
 
-[cbar,asset_handle]= plotclr(entity.assets.Longitude, entity.assets.Latitude, entity.assets.Value, 's',markersize, 1,0,[],cmap,1,0);
+mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
+[cbar,asset_handle]= plotclr(entity.assets.Longitude, entity.assets.Latitude, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
+hold on
+axis equal
+xlabel('Longitude')
+ylabel('Latitude')
+set(gca,'layer','top')
+
 set(get(cbar,'ylabel'),'string','Values','fontsize',12)
 climada_plot_world_borders(0.7);
 set(gca,'xlim',x_range,'ylim',y_range)
-if plot_centroids
-    plot(entity.assets.Longitude, entity.assets.Latitude,'.r','MarkerSize',1);
-end
+if plot_centroids,plot(entity.assets.Longitude, entity.assets.Latitude,'.r','MarkerSize',1);end
 
 return
 

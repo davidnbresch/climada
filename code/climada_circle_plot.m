@@ -1,4 +1,4 @@
-function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,marker_size,marker_format,overlay_plot,axis_range,max_value);
+function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,marker_size,marker_format,overlay_plot,axis_range,max_value)
 % climada catos event damage hazard probabilistic stochastic
 % NAME:
 %   climada_circle_plot
@@ -33,6 +33,7 @@ function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,
 %   none
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20120430
+% David N. Bresch, david.bresch@gmail.com, 20141213, plot zooms to relevant area
 %-
 
 %global climada_global
@@ -75,8 +76,8 @@ if maxval-minval~=0.0
     if ~overlay_plot,axis equal;axis(axis_range);end % set axis for good zoom
     MarkerSizes=sqrt(abs(values-minval))/(maxval-minval)*circle_diam;
     pos=find(isnan(MarkerSizes));
-    if length(pos)>0,MarkerSizes(pos)=0;end;
-    pos=find(MarkerSizes<1);if length(pos)>0,MarkerSizes(pos)=0;end;
+    if ~isempty(pos),MarkerSizes(pos)=0;end;
+    pos=find(MarkerSizes<1);if ~isempty(pos),MarkerSizes(pos)=0;end;
     ok_points_pos=find(MarkerSizes>0);
     for ii=1:length(ok_points_pos)
         abs_ii=ok_points_pos(ii);
@@ -85,6 +86,7 @@ if maxval-minval~=0.0
     end
     
     if ~overlay_plot,climada_plot_world_borders(1);title(title_str);end;
+    axis([min(lon)-1 max(lon)+1 min(lat)-1 max(lat)+1]); % set axis for good zoom
     hold off;drawnow;
 
 else

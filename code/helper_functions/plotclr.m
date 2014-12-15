@@ -29,7 +29,7 @@ function [h h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, mav
 %
 % Uli Theune, University of Alberta, 2004
 % modified by Stephanie Contardo, British OCeanographic Data Centre, 2006
-%
+%-
 
 if ~exist('marker'     , 'var'), marker      = [];end
 if ~exist('markersize' , 'var'), markersize  = [];end
@@ -40,8 +40,8 @@ if ~exist('map'        , 'var'), map         = [];end
 if ~exist('zero_off'   , 'var'), zero_off    = [];end
 if ~exist('v_exp'      , 'var'), v_exp       = [];end
 
-if v_exp; 
-    v = log10(v); 
+if v_exp;
+    v = log10(v);
     v(isinf(v))         = nan;
     v(logical(imag(v))) = nan;
 end
@@ -66,23 +66,15 @@ end
 
 if isempty(map)
     map = colormap;
-%     if mav-miv+1<64
-%         map = colormap(jet(round(mav-miv)+1));
-%     else
-%         map = colormap;
-%     end
+    %     if mav-miv+1<64
+    %         map = colormap(jet(round(mav-miv)+1));
+    %     else
+    %         map = colormap;
+    %     end
 end
 map = [map(1,:); map];
 
-if mav<1
-    clrstep = (mav-miv)/(size(map,1)-1);
-else
-    clrstep = (mav-miv+1)/(size(map,1)-1);
-end
-
-if clrstep == 0
-    clrstep = 10^-2;
-end
+clrstep = (mav-miv+1)/(size(map,1)-1);
 
 
 % Plot the points
@@ -100,26 +92,25 @@ h_points(end+[1:length(iv)]) = plot3(x(iv),y(iv),v(iv),marker,'color',map(1,:),'
 for nc = 2:size(map,1)
     iv = find(v > miv+(nc-3)*clrstep & v <= miv+(nc-2)*clrstep) ;
     h_points(end+[1:length(iv)]) = ...
-         plot3(x(iv),y(iv),v(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
+        plot3(x(iv),y(iv),v(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
 end
 iv = find(v >= mav);
 h_points(end+[1:length(iv)]) = ...
-     plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
-  
-if colorbar_on
-    caxis([miv-clrstep mav]) 
+    plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
+
+if colorbar_on    
+    caxis([miv-clrstep mav])
     colormap(map)
     h = colorbar('ylim',[miv-clrstep mav]);
     if v_exp
         ytick_ = get(h,'ytick');
-        set(h,'YTick',ytick_,'YTickLabel',10.^ytick_) 
+        set(h,'YTick',ytick_,'YTickLabel',10.^ytick_)
         ytick_2 = ytick_;
         %ytick_2(2:2:end) = nan;
-        set(h,'YTick',ytick_,'YTickLabel',sprintf('%1.2g|',10.^ytick_2)) 
+        set(h,'YTick',ytick_,'YTickLabel',sprintf('%1.2g|',10.^ytick_2))
     end
 else
     h = [];
 end
 grid on
 view(2)
-

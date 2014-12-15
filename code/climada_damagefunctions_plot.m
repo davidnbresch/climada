@@ -1,4 +1,4 @@
-function climada_damagefunctions_plot(entity)
+function climada_damagefunctions_plot(entity,unique_single_ID)
 % climada
 % NAME:
 %   climada_damagefunctions_plot
@@ -20,10 +20,17 @@ function climada_damagefunctions_plot(entity)
 %       same as in entity.damagefunctions, as returned by
 %       climada_damagefunctions_read)
 % OPTIONAL INPUT PARAMETERS:
+%   unique_single_ID: a single unique ID to plot only one damage function
+%       (as in the case of an entity containing many functions, the single
+%       panes of the plot might get too small). It is recommended to run
+%       climada_damagefunctions_plot first without specifying a
+%       unique_single_ID and inspect the single sub-plot headers, i.e.
+%       unique_single_ID='TS ID 001' (the IDs are also written to stdout)
 % OUTPUTS:
 %   a figure
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE
+% David N. Bresch, david.bresch@gmail.com, 20141214, unique_single_ID added
 %-
 
 %global climada_global
@@ -33,6 +40,7 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('entity','var'),entity=[];end
+if ~exist('unique_single_ID','var'),unique_single_ID='';end
 
 % PARAMETERS
 %
@@ -62,10 +70,15 @@ else
         unique_ID{i}=sprintf('ID %3.3i',damagefunctions.DamageFunID(i));
     end % i
 end
-           
+
 unique_IDs=unique(unique_ID);
 
 if ~isfield(damagefunctions,'MDR'),damagefunctions.MDR=damagefunctions.MDD.*damagefunctions.PAA;end
+
+if ~isempty(unique_single_ID)
+    % force single damage function to be plotted
+    unique_IDs={unique_single_ID};
+end
 
 % figure number of sub-plots and their arrangement
 n_plots=length(unique_IDs);
@@ -75,15 +88,20 @@ if ~((N_n_plots*n_N_plots)>n_plots),n_N_plots=N_n_plots;end
 for ID_i=1:length(unique_IDs)
     subplot(N_n_plots,n_N_plots,ID_i);
     dmf_pos=strmatch(unique_IDs(ID_i),unique_ID);
-    plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
-    plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b');
-    plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),'-g');
-    legend('MDR','MDD','PAA');
-    xlabel('Intensity','FontSize',9);
-    ylabel('MDR')
-    title(unique_IDs{ID_i});
-    grid on
-    grid minor
+    if ~isempty(dmf_pos)
+        fprintf('plot %i: %s\n',ID_i,char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_single_ID)
+        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
+        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b');
+        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),'-g');
+        legend('MDR','MDD','PAA');
+        xlabel('Intensity','FontSize',9);
+        ylabel('MDR')
+        title(unique_IDs{ID_i});
+        grid on
+        grid minor
+    else
+        fprintf('Error: %s not found\n',char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_single_ID)
+    end
 end
 set(gcf,'Color',[1 1 1]);
 set(gcf,'Name','damagefunctions plot');
