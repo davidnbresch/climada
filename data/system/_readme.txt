@@ -4,7 +4,7 @@ admin0.* are the files to draw admin0 (country) borders etc. see admin0.txt
 
 demo_illu?.png are the three images used in climada_demo on the upper left panel
 
-USFL_MiamiDadeBrowardPalmBeach_centroids.xls are centroids to be used as a template (but the user might rather look into climada module country risk, climada_high_res_entity or the module GDP_entity and there climada_create_GDP_entity
+USFL_MiamiDadeBrowardPalmBeach_centroids.xls are centroids to be used as a template (but the user might rather look into climada module country risk (code climada_nightlight_entity) or the module GDP_entity (code climada_create_GDP_entity)
 
 colormap*.mat are various color maps, used for hazard intensity plots etc.
 
