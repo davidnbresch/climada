@@ -26,6 +26,8 @@ function hazard=climada_excel_hazard_set(excel_file,hazard_set_file,visualize)
 %       hazard_intensity, required columns: centroid_ID, event001, event002, ...
 %       hazard_frequency, required columns: event_ID, frequency, orig_event_flag
 %       > promted for if not given
+%       See file ../data/hazards/Excel_hazard.xls which contains a small
+%       example (for Mozambique).
 % OPTIONAL INPUT PARAMETERS:
 %   hazard_set_file: the name of the hazard set file
 %       > promted for if not given
@@ -48,7 +50,7 @@ function hazard=climada_excel_hazard_set(excel_file,hazard_set_file,visualize)
 %           (1) or probabilistic (0) one
 %       event_ID: a unique ID for each event
 %       date: the creation date of the set
-%       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
+%       intensity(event_i,centroid_i),sparse: the hazard intensity of event_i at
 %           centroid_i
 %       frequency(event_i): the frequency of each event
 %       matrix_density: the density of the sparse array hazard.intensity
@@ -57,6 +59,7 @@ function hazard=climada_excel_hazard_set(excel_file,hazard_set_file,visualize)
 %           struct, this is often useful)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20110328
+% David N. Bresch, david.bresch@gmail.com, 20141217, climada_hazard_cleanup added
 %-
 
 hazard=[]; % init
@@ -163,7 +166,7 @@ end %event_i
 if climada_global.waitbar,close(h);end % dispose waitbar
 
 t_elapsed=etime(clock,t0);
-msgstr=sprintf('generating %i events took %f sec (%f sec/event)\n',hazard.event_count,t_elapsed,t_elapsed/hazard.event_count);
+msgstr=sprintf('generating %i events took %f sec (%f sec/event)',hazard.event_count,t_elapsed,t_elapsed/hazard.event_count);
 fprintf('%s\n',msgstr);
 
 hazard.frequency=hazard_frequency.frequency; % not transposed, just regular
@@ -176,5 +179,8 @@ hazard.reference_year=hazard_reference_year;
 
 fprintf('saving hazard set as %s\n',hazard_set_file);
 save(hazard_set_file,'hazard')
+
+climada_hazard_cleanup(hazard_set_file); % make sure hazard is ok
+load(hazard_set_file)
 
 return

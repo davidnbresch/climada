@@ -217,7 +217,9 @@ if ~isempty(EDS_comparison)
     title_strs{1}    = title_str;
     title(title_strs,'FontSize',12);
     hold off
-
+    
 end % comparison
+
+set(gcf,'Color',[1 1 1]) % white background
 
 return
