@@ -112,7 +112,8 @@ if ~isempty(label)
     plot(label.longitude,label.latitude,'xk');
 end
 
-
+set(gcf,'Color',[1 1 1])
+ 
 return
 
 

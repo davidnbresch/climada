@@ -48,6 +48,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20141025, peril_ID added to waitbar title
 % David N. Bresch, david.bresch@gmail.com, 20141103, entity.damagefunctions.peril_ID
 % David N. Bresch, david.bresch@gmail.com, 20141127, force_re_encode
+% David N. Bresch, david.bresch@gmail.com, 20141218, Cover checks added
 %-
 
 global climada_global
@@ -113,10 +114,19 @@ end
 % encode assets of entity once more, just to be sure
 if ~isfield(entity.assets,'centroid_index')
     fprintf('Entity assets yet to be encoded to hazard.\n')
-    [entity.assets hazard] = climada_assets_encode(entity.assets, hazard);
+    [entity.assets,hazard] = climada_assets_encode(entity.assets,hazard);
 elseif ~all(diff(entity.assets.centroid_index) == 1) && climada_global.re_check_encoding
     fprintf('Encode entity assets once more.\n')
-    [entity.assets hazard] = climada_assets_encode(entity.assets, hazard);
+    [entity.assets,hazard] = climada_assets_encode(entity.assets,hazard);
+end
+
+if sum(entity.assets.Cover)==0
+    entity.assets.Cover=entity.assets.Value;
+    fprintf('Warning: Cover was zero for all assets, ignored\n')
+end
+
+if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
+    fprintf('Note: At least some assets have Cover limiting the damage\n')
 end
 
 % initialize the event damage set (EDS)
@@ -182,7 +192,7 @@ for asset_i=1:n_assets
         interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
         PAA            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
         
-        
+   
         % figure
         % plot(interp_x_table, interp_y_table,':k')
         % hold on

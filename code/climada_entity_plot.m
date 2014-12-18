@@ -86,19 +86,21 @@ climada_plot_world_borders(0.7);
 set(gca,'xlim',x_range,'ylim',y_range)
 if plot_centroids,plot(entity.assets.Longitude, entity.assets.Latitude,'.r','MarkerSize',1);end
 
+set(gcf,'Color',[1 1 1])
+
 return
 
 % below code from Lea Mueller, not active
 
 % if isfield(entity.assets,'excel_file_name')
-%     
+%
 %     % left here, but not really leading to nicer plot...
-%     
+%
 %     set(get(cbar,'ylabel'),'string','USD (exponential)','fontsize',12)
-%     
+%
 %     titlestr = sprintf('%s\n %d assets: %5.0f Bn USD, ', entity.assets.excel_file_name, size(entity.assets.Value,2), sum(entity.assets.Value)*10^-9);
 %     title(titlestr,'fontsize',11)
-%     
+%
 %     hb = get(gca,'PlotBoxAspectRatio');
 %     hb = hb(1)/hb(2);
 %     if hb/(diff(x_range)/diff(y_range))<1
@@ -110,11 +112,11 @@ return
 %         x_range = [x_range(1)-dif x_range(2)+dif];
 %         set(gca,'xlim',x_range,'ylim',y_range)
 %     end
-%     
+%
 % end
-            
+
 % for r_i = 1:length(region_str)
-%     [cbar asset_handles{r_i}]= plotclr(assets(r_i).Longitude, assets(r_i).Latitude, assets(r_i).Value, 's',markersize, 0,0,[],cmap,1,0); 
+%     [cbar asset_handles{r_i}]= plotclr(assets(r_i).Longitude, assets(r_i).Latitude, assets(r_i).Value, 's',markersize, 0,0,[],cmap,1,0);
 %     miv(r_i) = min(assets(r_i).Value);
 %     mav(r_i) = max(assets(r_i).Value);
 % end
