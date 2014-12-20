@@ -8,6 +8,7 @@ function [assets,hazard] = climada_assets_encode(assets,hazard)
 %   hazard event set
 %
 %   normally called from: climada_entity_read
+%   see also: climada_assets_encode_check
 % CALLING SEQUENCE:
 %   assets=climada_assets_encode(assets,hazard)
 % EXAMPLE:

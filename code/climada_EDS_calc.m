@@ -261,7 +261,7 @@ EDS.assets.Longitude = entity.assets.Longitude;
 EDS.assets.Value     = entity.assets.Value; % note EDS.Value is sum of...
 EDS.damagefunctions.filename = entity.damagefunctions.filename;
 if isempty(annotation_name)
-    [fP,name]       = fileparts(EDS.hazard.filename);
+    [~,name]       = fileparts(EDS.hazard.filename);
     annotation_name = name;
 end
 EDS.annotation_name = annotation_name;

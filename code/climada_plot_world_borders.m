@@ -14,7 +14,8 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %   It uses the .mat file written by climada_shaperead with the borders
 %   info in subsequent calls for speedup.
 %
-%   See also climada_shaperead
+%   Called from many plot functions, e.g. climada_entity_plot
+%   See also: climada_shaperead
 % CALLING SEQUENCE:
 %   climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color);
 % EXAMPLE:
@@ -96,12 +97,7 @@ if keep_boundary
 end
 
 % read the .shp border file (the first time)
-[shapes,whole_world_borders]=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
-
-% plot all in one (speedy) - DISABLED, since it doubles the size of the
-% .mat file but plotting world borders only takes 0.35 sec compared to 0.25
-% sec.
-%plot(whole_world_borders.lon, whole_world_borders.lat, 'color', border_color,'LineWidth',linewidth);
+shapes=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
 
 for shape_i = 1:length(shapes)
     plot(shapes(shape_i).X,shapes(shape_i).Y, 'color',border_color,'LineWidth',linewidth);

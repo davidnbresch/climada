@@ -69,6 +69,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20140509, non-linear damage time dependency implemented
 % David N. Bresch, david.bresch@gmail.com, 20140509, risk premium calc added
 % David N. Bresch, david.bresch@gmail.com, 20140510, risk premium map added
+% David N. Bresch, david.bresch@gmail.com, 20141220, re-encoding check added
 %-
 
 global climada_global
@@ -193,6 +194,24 @@ if ~isstruct(measures)
     end
 end
 
+% check for correct encoding to the hazard
+if ~isfield(entity.assets,'hazard')
+    force_re_encode=1; % entity not encoded yet
+else
+    force_re_encode=0; % entity encoded
+end
+
+if ~strcmp(entity.assets.hazard.filename,hazard.filename)
+    % not the same hazard set, force re-encoding to be on the safe side
+    % (it's likely that the climate scenario hazard event set is valid at
+    % the exact same centroids, but encoding is much faster than any later
+    % troubleshooting ;-) 
+    force_re_encode=1;
+end
+
+if force_re_encode
+    entity=climada_assets_encode(entity,hazard);
+end
 
 % loop over all measures and calculate the corresponding EDSs
 % -----------------------------------------------------------
