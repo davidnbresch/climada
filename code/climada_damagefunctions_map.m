@@ -47,6 +47,7 @@ function entity=climada_damagefunctions_map(entity,damagefunctions,damagefunctio
 %       definitions taken from damagefunctions, if passed)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE
+% David N. Bresch, david.bresch@gmail.com, 20141212, ID format switched to 3.3i
 %-
 
 %global climada_global
@@ -125,9 +126,9 @@ end
 if show_DamageFunIDs
     
     asset_DamageFunIDs=unique(entity.assets.DamageFunID);
-    fprintf('DamageFunIDs in entity.assets: %i',asset_DamageFunIDs(1));
+    fprintf('DamageFunIDs in entity.assets: %3.3i',asset_DamageFunIDs(1));
     for i=2:length(asset_DamageFunIDs)
-        fprintf(', %i',asset_DamageFunIDs(i));
+        fprintf(', %3.3i',asset_DamageFunIDs(i));
     end
     fprintf('\n');
     
@@ -146,7 +147,7 @@ if show_DamageFunIDs
             % since there might be the same DamageFunID for two different
             % perils, re-define the damage function
             for i=1:length(tmp_damagefunctions.DamageFunID)
-                unique_ID{i}=sprintf('%s %i',tmp_damagefunctions.peril_ID{i},tmp_damagefunctions.DamageFunID(i));
+                unique_ID{i}=sprintf('%s %3.3i',tmp_damagefunctions.peril_ID{i},tmp_damagefunctions.DamageFunID(i));
             end % i
             unique_IDs=unique(unique_ID);
             fprintf('DamageFunIDs in %s: %s',msg_str,unique_IDs{1});
@@ -157,9 +158,9 @@ if show_DamageFunIDs
         else
             % simple, there is no peril_ID, hence only DamageFunID
             DamageFunIDs=unique(tmp_damagefunctions.DamageFunID);
-            fprintf('DamageFunIDs in %s: %i',msg_str,DamageFunIDs(1));
+            fprintf('DamageFunIDs in %s: %3.3i',msg_str,DamageFunIDs(1));
             for i=2:length(DamageFunIDs)
-                fprintf(', %i',DamageFunIDs(i));
+                fprintf(', %3.3i',DamageFunIDs(i));
             end
             fprintf('\n');
         end

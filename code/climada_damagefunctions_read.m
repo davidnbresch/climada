@@ -30,7 +30,8 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % OPTIONAL INPUT PARAMETERS:
 %   entity: if an entity is passed, it's entity.damagefunctions is replaced
 %       by the newly imported damagefunctions (EXPERT use, as the
-%       DamageFunID have to be consistent, the code warns at least)
+%       DamageFunID have to be consistent, the code warns at least). 
+%       See also climada_damagefunctions_map
 % OUTPUTS:
 %   damagefunctions: a structure, with
 %           DamageFunID: the damagefunction curve ID
@@ -39,6 +40,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 %   entity: the entity (as on input, with exchanged damagefuncions)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE initial
+% David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed
 %-
 
 global climada_global
@@ -92,10 +94,15 @@ catch ME
     fprintf('WARN: no damagefunctions data read, %s\n',ME.message)
 end
 
+% check for OLD naming convention, VulnCurveID -> DamageFunID
 if isfield(damagefunctions,'VulnCurveID')
     damagefunctions.DamageFunID=damagefunctions.VulnCurveID;
     damagefunctions=rmfield(damagefunctions,'VulnCurveID');
 end
+
+% remove MDR, since MDR=MDD*PAA and hence we better
+% re-calculate where needed (in climada_damagefunctions_plot)
+if isfield(damagefunctions,'MDR'),damagefunctions=rmfield(damagefunctions,'MDR');end
 
 if ~isempty(entity)
     entity=rmfield(entity,'damagefunctions'); % delete OLD

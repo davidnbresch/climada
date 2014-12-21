@@ -37,6 +37,7 @@ function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,
 % OPTIONAL INPUT PARAMETERS:
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
 %       > promted for if not given (out of climada_assets_encode)
+%       ='NOENCODE' or 'noencode': do not encode assets, see climada_assets_encode
 % OUTPUTS:
 %   entity: a structure, with
 %       assets: a structure, with
@@ -49,7 +50,8 @@ function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,
 %       damagefunctions: a structure, with
 %           DamageFunID: the damagefunction curve ID
 %           Intensity: the hazard intensity
-%           MDD: the mean damage degree
+%           MDD: the mean damage degree (severity of single asset damage)
+%           PAA: the percentage of assets affected
 %   entity_save_file: the name the encoded entity got saved to
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090920
@@ -57,6 +59,7 @@ function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact ...
 % David N. Bresch, david.bresch@gmail.com, 20141029, entity_save_file added as output
 % David N. Bresch, david.bresch@gmail.com, 20141121, hint to climada_damagefunction_read added
+% David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed and NOENCODE added
 %-
 
 global climada_global
@@ -95,11 +98,19 @@ else
     % read assets
     % -----------
     assets                   = climada_spreadsheet_read('no',entity_filename,'assets',1);
-    % check for OLD naming convention, VulnCurveID -> DamageFunID
-    if isfield(assets,'VulnCurveID'),assets.DamageFunID=assets.VulnCurveID;assets=rmfield(assets,'VulnCurveID');end
     
-    % encode assets
-    [entity.assets,hazard]   = climada_assets_encode(assets,hazard);
+    % check for OLD naming convention, VulnCurveID -> DamageFunID
+    if isfield(assets,'VulnCurveID')
+        assets.DamageFunID=assets.VulnCurveID;
+        assets=rmfield(assets,'VulnCurveID');
+    end
+    
+    if ischar(hazard) && strcmpi(hazard,'NOENCODE')
+        fprintf('Note: assets not encoded\n')
+    else
+        % encode assets
+        [entity.assets,hazard] = climada_assets_encode(assets,hazard);
+    end
     
     % figure out the file type
     [~,~,fE]=fileparts(entity_filename);
@@ -127,7 +138,14 @@ else
         if isfield(entity,'damagefunctions') && sum(isnan(entity.assets.DamageFunID))<length(entity.assets.DamageFunID)
             
             % check for OLD naming convention, VulnCurveID -> DamageFunID
-            if isfield(entity.damagefunctions,'VulnCurveID'),entity.damagefunctions.DamageFunID=entity.damagefunctions.VulnCurveID;entity.damagefunctions=rmfield(entity.damagefunctions,'VulnCurveID');end
+            if isfield(entity.damagefunctions,'VulnCurveID')
+                entity.damagefunctions.DamageFunID=entity.damagefunctions.VulnCurveID;
+                entity.damagefunctions=rmfield(entity.damagefunctions,'VulnCurveID');
+            end
+            
+            % remove MDR, since MDR=MDD*PAA and hence we better
+            % re-calculate where needed (in climada_damagefunctions_plot)
+            if isfield(entity.damagefunctions,'MDR'),entity.damagefunctions=rmfield(entity.damagefunctions,'MDR');end
             
             % check consistency (a damagefunction definition for each DamageFunID)
             asset_DamageFunIDs=unique(entity.assets.DamageFunID);
@@ -142,7 +160,6 @@ else
         fprintf('WARN: no damagefunctions data read, %s\n',ME.message)
     end
     
-    %try
     % try to read also the measures (if exists)
     % -----------------------------
     for sheet_i=1:length(sheet_names) % loop over tab (sheet) names
@@ -160,9 +177,6 @@ else
             
         end
     end % sheet_i
-    % catch ME
-    %     fprintf('WARN: no measures data read, %s\n',ME.message)
-    % end
     
     try
         % try to read also the discount sheet (if exists)

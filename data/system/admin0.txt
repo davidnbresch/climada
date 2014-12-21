@@ -12,6 +12,9 @@ shapes=climada_shaperead(shape_filename,1);
 
 The file admin0.xls contains the full names of all countries for which shapes exist in admin0.mat as well as the country ISO3 codes. Use this Excel tables to match any other country name convention to the one used in climada. It is recommended to use the ISO3 name for matching, as this is safer than the full country names.
 
+Please note that the following countries needed to be restricted to their domestic (or core) extent, as we otherwise run into troubles: France, Netherlands, Norway, New Zealand , Portugal, Russia, United States. For those, X_ALL and Y_ALL contain the original shapes including ALL overseas territories etc (like Alaska for United States).
+
+
 See climada code climada_country_name
 
 copyright (c) 2014, David N. Bresch, david.bresch@gmail.com all rights reserved.

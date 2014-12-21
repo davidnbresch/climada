@@ -1,4 +1,4 @@
-function climada_damagefunctions_plot(entity,unique_single_ID)
+function climada_damagefunctions_plot(entity,unique_ID_sel)
 % climada
 % NAME:
 %   climada_damagefunctions_plot
@@ -8,7 +8,7 @@ function climada_damagefunctions_plot(entity,unique_single_ID)
 %
 %   See also climada_damagefunctions_read
 % CALLING SEQUENCE:
-%   climada_damagefunctions_plot(entity)
+%   climada_damagefunctions_plot(entity,unique_ID_sel)
 %   climada_damagefunctions_plot(climada_damagefunctions_read)
 % EXAMPLE:
 %   climada_damagefunctions_plot
@@ -20,17 +20,20 @@ function climada_damagefunctions_plot(entity,unique_single_ID)
 %       same as in entity.damagefunctions, as returned by
 %       climada_damagefunctions_read)
 % OPTIONAL INPUT PARAMETERS:
-%   unique_single_ID: a single unique ID to plot only one damage function
-%       (as in the case of an entity containing many functions, the single
-%       panes of the plot might get too small). It is recommended to run
-%       climada_damagefunctions_plot first without specifying a
-%       unique_single_ID and inspect the single sub-plot headers, i.e.
-%       unique_single_ID='TS ID 001' (the IDs are also written to stdout)
+%   unique_ID_sel: a single unique ID or the first n characters of an ID to
+%       plot only selected damage function(s), as in the case of an entity
+%       containing many functions, the single panes of the plot might get
+%       too small). It is recommended to run climada_damagefunctions_plot 
+%       first without specifying a unique_ID_sel and inspect the single 
+%       sub-plot headers. Examples are:
+%       unique_ID_sel='TC 001' % print only the one curve
+%       unique_ID_sel='TC'     % print all TC curves
 % OUTPUTS:
 %   a figure
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE
-% David N. Bresch, david.bresch@gmail.com, 20141214, unique_single_ID added
+% David N. Bresch, david.bresch@gmail.com, 20141214, unique_ID_sel added
+% David N. Bresch, david.bresch@gmail.com, 20141221, MDR calculated locally and unique_ID_sel improved
 %-
 
 %global climada_global
@@ -40,7 +43,7 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('entity','var'),entity=[];end
-if ~exist('unique_single_ID','var'),unique_single_ID='';end
+if ~exist('unique_ID_sel','var'),unique_ID_sel='';end
 
 % PARAMETERS
 %
@@ -63,21 +66,24 @@ if isfield(damagefunctions,'peril_ID')
     % since there might be the same DamageFunID for two different
     % perils, re-define the damage function
     for i=1:length(damagefunctions.DamageFunID)
-        unique_ID{i}=sprintf('%s ID %3.3i',damagefunctions.peril_ID{i},damagefunctions.DamageFunID(i));
+        unique_ID{i}=sprintf('%s %3.3i',damagefunctions.peril_ID{i},damagefunctions.DamageFunID(i));
     end % i
 else
     for i=1:length(damagefunctions.DamageFunID)
-        unique_ID{i}=sprintf('ID %3.3i',damagefunctions.DamageFunID(i));
+        unique_ID{i}=sprintf('%3.3i',damagefunctions.DamageFunID(i));
     end % i
 end
 
 unique_IDs=unique(unique_ID);
 
-if ~isfield(damagefunctions,'MDR'),damagefunctions.MDR=damagefunctions.MDD.*damagefunctions.PAA;end
+% we also show MDR, to ease understanding of MDD*PAA
+damagefunctions.MDR=damagefunctions.MDD.*damagefunctions.PAA;
 
-if ~isempty(unique_single_ID)
+if ~isempty(unique_ID_sel)
+    % find matching curves
+    unique_pos=strncmp(unique_ID_sel,unique_IDs,length(unique_ID_sel));
     % force single damage function to be plotted
-    unique_IDs={unique_single_ID};
+    unique_IDs=unique_IDs(unique_pos);
 end
 
 % figure number of sub-plots and their arrangement
@@ -89,7 +95,7 @@ for ID_i=1:length(unique_IDs)
     subplot(N_n_plots,n_N_plots,ID_i);
     dmf_pos=strmatch(unique_IDs(ID_i),unique_ID);
     if ~isempty(dmf_pos)
-        fprintf('plot %i: %s\n',ID_i,char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_single_ID)
+        fprintf('plot %i: %s\n',ID_i,char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_ID_sel)
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b');
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),'-g');
@@ -100,7 +106,7 @@ for ID_i=1:length(unique_IDs)
         grid on
         grid minor
     else
-        fprintf('Error: %s not found\n',char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_single_ID)
+        fprintf('Error: %s not found\n',char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_ID_sel)
     end
 end
 set(gcf,'Color',[1 1 1]);

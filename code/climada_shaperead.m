@@ -23,6 +23,12 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 %       > promted for if not given
 %       Special case: if set to 'SYSTEM_ADMIN0', the core climada
 %       admin0.mat file is re-created (requires country_risk module).
+%       Note that in this case, country names are unified, see
+%       reference_ISO3_country_name in PARAMETERS in code)
+%       Note that in this case, some shapes are reduced to the comestic
+%       part of the countries, namely for France, Netherlands, Norway, New
+%       Zealand, Portugal, Russia and United States (see special_shape in
+%       PARAMETERS in code)
 % OPTIONAL INPUT PARAMETERS:
 %   mat_save_flag: =1: do save as .mat file (default)
 %       =0: do not save as .mat file
@@ -55,6 +61,7 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141211, initial
 % David N. Bresch, david.bresch@gmail.com, 20141212, SYSTEM_ADMIN0 added
+% David N. Bresch, david.bresch@gmail.com, 20141221, restriction to domestic for SYSTEM_ADMIN0
 %-
 
 shapes=[]; % init output
@@ -73,6 +80,7 @@ if ~exist('force_reread','var'),force_reread=0;end % default=0
 
 % PARAMETERS
 %
+% special treatement for SYSTEM_ADMIN0
 % the consolidated reference country names as in the Excel file ../data/system/admin0.xls
 % see tab 'combined' and column 'transfer for climada_shaperead'
 reference_ISO3_country_name={
@@ -333,6 +341,35 @@ reference_ISO3_country_name={
     'ZWE','Zimbabwe'
     };
 %
+% special treatement for SYSTEM_ADMIN0
+% special treatment for some countries wth overseas territories
+% the shapes(i).X will contain the core or domestic shape, not including
+% all overseas territories (all shapes are back up in X_ALL and Y_ALL)
+% if no seleciton (e.g. in one direction), use X=[-91 91], Y=[-181 181]
+% set special_shape=[]; to suppress any restriction
+special_shape(1).NAME='France';
+special_shape(1).X_range=[-20 20]; % the X range of domestic France
+special_shape(1).Y_range=[30 70];  % the Y range of domestic France
+special_shape(2).NAME='Netherlands';
+special_shape(2).X_range=[0 20];
+special_shape(2).Y_range=[50 70];
+special_shape(3).NAME='Norway';
+special_shape(3).X_range=[0 181];
+special_shape(3).Y_range=[50 91];
+special_shape(4).NAME='New Zealand';
+special_shape(4).X_range=[150 181];
+special_shape(4).Y_range=[-91 91];
+special_shape(5).NAME='Portugal';
+special_shape(5).X_range=[-12 10];
+special_shape(5).Y_range=[-91 91];
+special_shape(6).NAME='Russia';
+special_shape(6).X_range=[0 181];
+special_shape(6).Y_range=[-91 91];
+special_shape(7).NAME='United States';
+special_shape(7).X_range=[-150 50];
+special_shape(7).Y_range=[20 50];
+%
+
 
 % prompt for shape_filename if not given
 if isempty(shape_filename) % local GUI
@@ -349,11 +386,12 @@ if strcmp(shape_filename,'SYSTEM_ADMIN0') % Special case
     SYSTEM_ADMIN0=1;
     % The shape_filename used to create the admin0.mat file (the code later
     % moves the ne_10m_admin_0_countries.mat after creation to core climada
-    % ../system/admin0.mat)  
+    % ../system/admin0.mat)
     country_risk_module_data_dir=[fileparts(fileparts(which('country_risk_calc'))) filesep 'data'];
     shape_filename=[country_risk_module_data_dir ...
         filesep 'ne_10m_admin_0_countries' filesep 'ne_10m_admin_0_countries.shp'] % no ; to show hard-wired
     fprintf('Note: %s, special case, system admin0.mat file re-created\n',mfilename);
+    force_reread=1;
 else
     SYSTEM_ADMIN0=0; % default
 end
@@ -407,6 +445,7 @@ else
             % See also the Excel file ../data/system/admin0.xls
             match_count=0; % init
             for shape_i=1:length(shapes)
+                plot(shapes(shape_i).X,shapes(shape_i).Y,'-k');hold on;
                 match_pos=strcmp(reference_ISO3_country_name(:,1),shapes(shape_i).ADM0_A3); % match ISO3
                 if sum(match_pos)>0
                     % replace name
@@ -418,7 +457,51 @@ else
             end % shape_i
             fprintf('%i of %i country names matched\n',match_count,length(shapes));
         end
-    end
+        
+        if ~isempty(special_shape)
+            fprintf('Note: %s: restricting shapes to domestic: ',mfilename)
+            % SPECIAL treatment for some countries wth overseas territories
+            for special_shape_i=1:length(special_shape)
+                match_shape_i=[];
+                for shape_i=1:length(shapes) % find country
+                    if strcmp(shapes(shape_i).NAME,special_shape(special_shape_i).NAME)
+                        match_shape_i=shape_i;
+                    end
+                end
+                if ~isempty(match_shape_i)
+                    isnan_pos=find(isnan(shapes(match_shape_i).X)); % find sub-shapes
+                    i1=1;X_dom=[];Y_dom=[]; % init
+                    X_range=special_shape(special_shape_i).X_range;
+                    Y_range=special_shape(special_shape_i).Y_range;
+                    for isnan_pos_i=1:length(isnan_pos)
+                        i2=isnan_pos(isnan_pos_i);
+                        X=shapes(match_shape_i).X(i1:i2);
+                        Y=shapes(match_shape_i).Y(i1:i2);
+                        if (min(X)>X_range(1) && max(X)<X_range(2)) && (min(Y)>Y_range(1) && max(Y)<Y_range(2))
+                            plot(shapes(match_shape_i).X(i1:i2),shapes(match_shape_i).Y(i1:i2),'-r')
+                            hold on;
+                            X_dom=[X_dom shapes(match_shape_i).X(i1:i2)];
+                            Y_dom=[Y_dom shapes(match_shape_i).Y(i1:i2)];
+                        end
+                        i1=i2;
+                        
+                        % k = waitforbuttonpress % for TEST one shape added at a time
+                        
+                    end % isnan_pos_i
+                    plot(X_dom,Y_dom,'-g')
+                    
+                    fprintf('%s, ',special_shape(special_shape_i).NAME);
+                    shapes(match_shape_i).X_ALL=shapes(match_shape_i).X;
+                    shapes(match_shape_i).X=X_dom;
+                    shapes(match_shape_i).Y_ALL=shapes(match_shape_i).Y;
+                    shapes(match_shape_i).Y=Y_dom;
+                    
+                end % ~isempty(match_shape_i)
+            end % special_shape_i
+            fprintf('\n');
+        end % special_shape
+        
+    end % SYSTEM_ADMIN0
     
     if mat_save_flag
         % save as .mat for fast re-load
