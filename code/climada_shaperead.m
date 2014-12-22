@@ -516,7 +516,7 @@ else
             if SUCCESS
                 fprintf('done\n')
             else
-                MESSAGE
+                fprintf('ERROR: %s\n',MESSAGE)
             end
         end
     end % mat_save_flag
