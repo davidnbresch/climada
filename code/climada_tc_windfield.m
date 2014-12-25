@@ -157,7 +157,7 @@ tc_track.MaxSustainedWindUnit = 'km/h'; % after conversion
 
 % calculate MaxSustainedWind if only CentralPressure given
 zero_wind_pos = find(tc_track.MaxSustainedWind==0);
-if length(zero_wind_pos)>0
+if ~isempty(zero_wind_pos)
     if ~silent_mode,fprintf('calculating MaxSustainedWind (%i of %i nodes) ...\n',length(zero_wind_pos),length(tc_track.MaxSustainedWind));end
     % hard-wired fit parameters, see climada_bom_check_Pwind_relation to get
     % these P-values (that's why they are NOT in the Parameter section above)
@@ -170,9 +170,9 @@ if length(zero_wind_pos)>0
         P2*tc_track.CentralPressure(zero_wind_pos).^2+...
         P3*tc_track.CentralPressure(zero_wind_pos)+P4;
     invalid_pos=find(tc_track.CentralPressure<700); % treat bad pressure data
-    if length(invalid_pos)>0,tc_track.MaxSustainedWind(invalid_pos)=0;end;
+    if ~isempty(invalid_pos),tc_track.MaxSustainedWind(invalid_pos)=0;end;
     filled_pos=find(tc_track.CentralPressure>=1013); % treat where pressure shows no wind
-    if length(filled_pos)>0,tc_track.MaxSustainedWind(filled_pos)=0;end;
+    if ~isempty(filled_pos),tc_track.MaxSustainedWind(filled_pos)=0;end;
 
     tc_track.zero_MaxSustainedWind_pos=zero_wind_pos; % to store
 end % length(zero_wind_pos)>0
@@ -223,7 +223,7 @@ tc_track.Azimuth(1)       = tc_track.Azimuth(2);
 
 % keep only windy nodes
 pos = find(tc_track.MaxSustainedWind > (wind_threshold*3.6)); % cut-off in km/h
-if length(pos) > 0
+if ~isempty(pos)
     tc_track.lon              = tc_track.lon(pos);
     tc_track.lat              = tc_track.lat(pos);
     tc_track.MaxSustainedWind = tc_track.MaxSustainedWind(pos);
@@ -244,7 +244,6 @@ if isfield(centroids,'centroid_ID'), res.ID       = centroids.centroid_ID; end
 
 res.lat = centroids.Latitude;
 res.lon = centroids.Longitude;
-
 
 tic;
 for centroid_i=1:centroid_count % now loop over all centroids

@@ -17,10 +17,12 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 %   shapes=climada_shaperead(shape_filename,mat_save_flag,create_world_borders,force_reread,silent_mode);
 % EXAMPLE:
 %   shapes=climada_shaperead(shape_filename);
-%   shapes=climada_shaperead('SYSTEM_ADMIN0'); % re-create admin0.mat
+%   shapes=climada_shaperead('SYSTEM_ADMIN0');    % re-create ../data/system/admin0.mat
+%   shapes=climada_shaperead('SYSTEM_COASTLINE'); % re-create ../data/system/coastline.mat
 % INPUTS:
 %   shape_filename: filename (with path) of a shapefile
 %       > promted for if not given
+%
 %       Special case: if set to 'SYSTEM_ADMIN0', the core climada
 %       admin0.mat file is re-created (requires country_risk module).
 %       Note that in this case, country names are unified, see
@@ -28,7 +30,19 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 %       Note that in this case, some shapes are reduced to the comestic
 %       part of the countries, namely for France, Netherlands, Norway, New
 %       Zealand, Portugal, Russia and United States (see special_shape in
-%       PARAMETERS in code)
+%       PARAMETERS in code and also see SYSTEM_ADMIN0 flag in code)
+%
+%       Special case: if set to 'SYSTEM_COASTLINE', the core climada
+%       coastline.mat file is re-created (requires country_risk module).
+%       The coastline is saved as one large 'Point' structure, in order to
+%       speed up calculations in climada_distance2coast_km
+%       That's currently the key use of the coastline. Since segments are
+%       still separated by NaN, one can use plot(shapes.X,shapes.Y,'-r') to
+%       show the coastline as line. In order to get the original shapes,
+%       one needs to read the source .shp file again (see PARAMETERS in
+%       code and also see SYSTEM_ADMIN0 flag in code, since the source file
+%       is defined relative to the country_risk module and hence done only
+%       if requested).
 % OPTIONAL INPUT PARAMETERS:
 %   mat_save_flag: =1: do save as .mat file (default)
 %       =0: do not save as .mat file
@@ -64,6 +78,7 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 % David N. Bresch, david.bresch@gmail.com, 20141211, initial
 % David N. Bresch, david.bresch@gmail.com, 20141212, SYSTEM_ADMIN0 added
 % David N. Bresch, david.bresch@gmail.com, 20141221, restriction to domestic for SYSTEM_ADMIN0
+% David N. Bresch, david.bresch@gmail.com, 20141225, SYSTEM_COASTLINE added
 %-
 
 shapes=[]; % init output
@@ -84,6 +99,7 @@ if ~exist('silent_mode','var'),silent_mode=0;end % default=0
 % PARAMETERS
 %
 % special treatement for SYSTEM_ADMIN0
+%
 % the consolidated reference country names as in the Excel file ../data/system/admin0.xls
 % see tab 'combined' and column 'transfer for climada_shaperead'
 reference_ISO3_country_name={
@@ -390,6 +406,12 @@ if strcmp(shape_filename,'SYSTEM_ADMIN0') % Special case
     % The shape_filename used to create the admin0.mat file (the code later
     % moves the ne_10m_admin_0_countries.mat after creation to core climada
     % ../system/admin0.mat)
+    if isempty(which('country_risk_calc'))
+        fprintf('ERROR %s: file with admin0 shape information not found: ne_10m_admin_0_countries.shp\n',mfilename);
+        fprintf(' - consider installing climada module country_risk from\n');
+        fprintf('   https://github.com/davidnbresch/climada_module_country_risk\n');
+        return
+    end
     country_risk_module_data_dir=[fileparts(fileparts(which('country_risk_calc'))) filesep 'data'];
     shape_filename=[country_risk_module_data_dir ...
         filesep 'ne_10m_admin_0_countries' filesep 'ne_10m_admin_0_countries.shp'] % no ; to show hard-wired
@@ -397,6 +419,26 @@ if strcmp(shape_filename,'SYSTEM_ADMIN0') % Special case
     force_reread=1;
 else
     SYSTEM_ADMIN0=0; % default
+end
+
+if strcmp(shape_filename,'SYSTEM_COASTLINE') % Special case
+    SYSTEM_COASTLINE=1;
+    % The shape_filename used to create the admin0.mat file (the code later
+    % moves the ne_10m_admin_0_countries.mat after creation to core climada
+    % ../system/admin0.mat)
+    if isempty(which('country_risk_calc'))
+        fprintf('ERROR %s: file with coastline information not found: ne_10m_coastline.shp\n',mfilename);
+        fprintf(' - consider installing climada module country_risk from\n');
+        fprintf('   https://github.com/davidnbresch/climada_module_country_risk\n');
+        return
+    end
+    country_risk_module_data_dir=[fileparts(fileparts(which('country_risk_calc'))) filesep 'data'];
+    shape_filename=[country_risk_module_data_dir ...
+        filesep 'ne_10m_coastline' filesep 'ne_10m_coastline.shp'] % no ; to show hard-wired
+    fprintf('Note: %s, special case, system coastline.mat file re-created\n',mfilename);
+    force_reread=1;
+else
+    SYSTEM_COASTLINE=0; % default
 end
 
 [fP,fN] = fileparts(shape_filename);
@@ -513,7 +555,32 @@ else
             fprintf('\n');
         end % special_shape
         
-    end % SYSTEM_ADMIN0
+    elseif SYSTEM_COASTLINE
+        
+        % Special case: the core climada ..data/system/coastline.mat file is re-created
+        % (requires country_risk module). Convert the 'Line' segment shapes
+        % to one large 'Point' shape to speed up calculations, see e.g.
+        % climada_distance2coast_km
+        
+        fprintf('Note: %s: converting ''Line'' coastline to ''Point'' shape\n',mfilename)
+        X=[];Y=[];
+        for shape_i=1:length(shapes)
+            X=[X shapes(shape_i).X];
+            Y=[Y shapes(shape_i).Y];
+        end % shape_i
+        
+        clear shapes
+        shapes.Geometry='Point';
+        shapes.X=X;
+        shapes.Y=Y;
+        
+        fprintf('coastline saved in %s (Geometry=''Point'')\n',climada_global.coastline_file)
+        save(climada_global.coastline_file,'shapes');
+        mat_save_flag=0;
+        
+        % plot(shapes.X,shapes.Y,'.r') % for checkplot
+        
+    end % SYSTEM_ADMIN0 or SYSTEM_COASTLINE
     
     if mat_save_flag
         % save as .mat for fast re-load
@@ -531,6 +598,7 @@ else
                 fprintf('ERROR: %s\n',MESSAGE)
             end
         end
+        
     end % mat_save_flag
     
 end % climada_check_matfile

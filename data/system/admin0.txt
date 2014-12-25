@@ -1,19 +1,10 @@
 admin0.mat is the .mat binary version of the shape file ne_10m_admin_0_countries.shp, to be obtained from from www.naturalearthdata.com/downloads/10m-cultural-vectors
-specifically the file: www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries.zip and then processed by climada_shaperead(*,1,1). See also climada_plot_world_borders. The climada module country_risk does comprise this shape file, hence easiest to download this module and re-generate the .mat file, then move  it just to the systems folder and rename to admin0.mat (for simplicity).
-
-step-by-step:
-shape_filename=[climada_global.modules_dir filesep 'climada_module_country_risk' ...
-   filesep 'data' ...
-   filesep 'ne_10m_admin_0_countries'...
-   filesep 'ne_10m_admin_0_countries.shp’];
-shapes=climada_shaperead(shape_filename,1);
-—> this creates the file: …/climada_module_country_risk/data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.mat
-—> move this .mat file to climada/data/system and rename to admin0.mat
+specifically the file: www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries.zip and then and then (re)create the .mat file with:
+shapes=climada_shaperead('SYSTEM_ADMIN0’)
 
 The file admin0.xls contains the full names of all countries for which shapes exist in admin0.mat as well as the country ISO3 codes. Use this Excel tables to match any other country name convention to the one used in climada. It is recommended to use the ISO3 name for matching, as this is safer than the full country names.
 
 Please note that the following countries needed to be restricted to their domestic (or core) extent, as we otherwise run into troubles: France, Netherlands, Norway, New Zealand , Portugal, Russia, United States. For those, X_ALL and Y_ALL contain the original shapes including ALL overseas territories etc (like Alaska for United States).
-
 
 See climada code climada_country_name
 
