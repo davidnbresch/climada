@@ -1,4 +1,4 @@
-function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_flag,create_world_borders,force_reread)
+function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_flag,create_world_borders,force_reread,silent_mode)
 % climada
 % NAME:
 %   climada_shaperead
@@ -14,7 +14,7 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 %
 %   Stores a .mat binary file with shapes for subsequent fast access
 % CALLING SEQUENCE:
-%   shapes=climada_shaperead(shape_filename);
+%   shapes=climada_shaperead(shape_filename,mat_save_flag,create_world_borders,force_reread,silent_mode);
 % EXAMPLE:
 %   shapes=climada_shaperead(shape_filename);
 %   shapes=climada_shaperead('SYSTEM_ADMIN0'); % re-create admin0.mat
@@ -41,6 +41,8 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 %       higher border shape resolution)
 %   force_reread: =1 force re-reading the original shape file
 %       =0: use the .mat file if existing
+%   silent_mode: =1, do not print anything,
+%       =0: print shape filename (default)
 % OUTPUTS:
 %   shapes: a shapes structure, containing one element for each non-null
 %       geographic feature in the shapefile. shapes is a "mapstruct" geographic
@@ -77,6 +79,7 @@ if ~exist('shape_filename','var'),shape_filename='';end
 if ~exist('mat_save_flag','var'),mat_save_flag=1;end % default=1
 if ~exist('create_world_borders','var'),create_world_borders=0;end % default=0
 if ~exist('force_reread','var'),force_reread=0;end % default=0
+if ~exist('silent_mode','var'),silent_mode=0;end % default=0
 
 % PARAMETERS
 %
@@ -411,7 +414,7 @@ if climada_check_matfile(shape_filename,shape_mat_filename) && ~force_reread
 else
     
     % read shape file
-    fprintf('reading shapes from %s\n',shape_filename);
+    if ~silent_mode,fprintf('reading shapes from %s\n',shape_filename);end
     shapes=shaperead(shape_filename);
     
     % following switched OFF, since it doubles the size of the .mat file
@@ -439,6 +442,15 @@ else
     % see also commented line below
     
     if SYSTEM_ADMIN0
+        
+        % Special case: the core climada ..data/system/admin0.mat file is re-created
+        % (requires country_risk module). Note that in this case, country
+        % names are unified, see reference_ISO3_country_name in PARAMETERS
+        % in code). Note that in this case, some shapes are reduced to the
+        % comestic part of the countries, namely for France, Netherlands,
+        % Norway, New Zealand, Portugal, Russia and United States (see
+        % special_shape in PARAMETERS in code)
+        
         if isfield(shapes(1),'ADM0_A3') && isfield(shapes(1),'NAME')
             fprintf('Note: %s: matching country names to consolidated reference ones\n',mfilename)
             % SPECIAL case to replace country names by consolidated reference ones
@@ -505,7 +517,7 @@ else
     
     if mat_save_flag
         % save as .mat for fast re-load
-        fprintf('shapes saved in %s\n',shape_mat_filename);
+        if ~silent_mode,fprintf('shapes saved in %s\n',shape_mat_filename);end
         save(shape_mat_filename,'shapes');
         %         save(shape_mat_filename,'shapes','whole_world_borders');
         

@@ -4,7 +4,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %	climada_plot_world_borders
 % PURPOSE:
 %   plot (world) borders for map in lat/lon
-%   
+%
 %   Reads the file with border information (.mat or the original .shp) and
 %   plots it (line plot) in existing figure (do not forget hold on before)
 %   or create new one. Allows to color (a set of) countries
@@ -26,22 +26,23 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   linewidth: line width of borders, default is 1
-%   check_country: name (field in shapes named 'NAME') of one or multiple 
+%   check_country: name (field in shapes named 'NAME') of one or multiple
 %       countries, e.g. 'Germany' or {'Germany' 'Ghana'},that will be gray
-%       shaded in the world plot, default is no shading of countries. 
-%       Note that 'United States (USA)' is used, hence both 'United States' and 'USA' work.   
+%       shaded in the world plot, default is no shading of countries.
+%       Note that 'United States (USA)' is used, hence both 'United States' and 'USA' work.
 %   map_shape_file: filename and path to a *.shp shapes file
 %       if set to 'ASK', prompt for the .shp file. If empty, set to the
 %       file as defined in climada_global.map_border_file (default).
 %   keep_boundary: to keep the map area (as it looks on input)
 %   country_color: a [R G B] triple, see PARAMETERS in code, default is
-%       [255 236 139]/255 (yellow). 
+%       [255 236 139]/255 (yellow).
 %       Currently, it does not color the shape, only draws the boundary.
 % OUTPUTS:
 %   plot borders as line plot
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141211, initial, supersedes old version (which read a .gen file)
+% David N. Bresch, david.bresch@gmail.com, 20141223, fill debugged
 %-
 
 % import/setup global variables
@@ -109,7 +110,24 @@ hold on
 if ~isempty(check_country) && isfield(shapes,'NAME') % shade selected country (only *.gen)
     for shape_i = 1:length(shapes)
         if any(strcmpi(shapes(shape_i).NAME,check_country)) % shade
-            fill(shapes(shape_i).X,shapes(shape_i).Y,country_color,'LineWidth',linewidth);
+            
+            %pos=find(~isnan(shapes(shape_i).X)); % remove NaN to fill
+            % BUT: since one country can be more than one closed shape,
+            % this does not lead to nice results, therefore: see tricky bit below
+            %fill(shapes(shape_i).X(pos),shapes(shape_i).Y(pos),country_color,'LineWidth',linewidth);
+            
+            % pragmatic, but leads to no fill, if NaNs still present
+            %fill(shapes(shape_i).X,shapes(shape_i).Y,country_color,'LineWidth',linewidth);
+            
+            % a bit trricky, as fill does not like NaNs:
+            isnan_pos=find(isnan(shapes(shape_i).X)); % find sub-shapes
+            i1=1; % init
+            for isnan_pos_i=1:length(isnan_pos) % plot each sub-shape without NaNs
+                i2=isnan_pos(isnan_pos_i)-1;
+                fill(shapes(shape_i).X(i1:i2),shapes(shape_i).Y(i1:i2),country_color,'LineWidth',linewidth)
+                i1=i2+2;
+            end % isnan_pos_i
+            
         end
     end % shape_i
 end % ~isempty(check_country)
@@ -118,4 +136,7 @@ if keep_boundary
     axis([XLim YLim])
 else
     axis([-200 200 -100 100])
+    set(gcf,'Color',[1 1 1])
+end
+
 end
