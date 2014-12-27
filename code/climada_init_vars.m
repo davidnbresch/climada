@@ -20,6 +20,8 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20130623, re_check_encoding
 % Lea Mueller, muellele@gmail.com, 20140211, start year set to 2014
 % David N. Bresch, david.bresch@gmail.com, 20141018, switch to modules instead of climada_additional
+% David N. Bresch, david.bresch@gmail.com, 20141225, climada_global.coastline_file added
+% David N. Bresch, david.bresch@gmail.com, 20141226, update to be in line with manual
 %-
 
 global climada_global
@@ -101,7 +103,12 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % (see the short documentation in climada_global.system_dir/coastline.txt)
     climada_global.coastline_file=[climada_global.system_dir filesep 'coastline.mat'];
 
-    % country-specific csv delimuter (to read and convert to Excel properly)
+    % the default spreadsheet type, either '.xls' (default) or '.ods'
+    % the user can always select from 'All Files', the default is only
+    % used to compose the default filename.
+    climada_global.spreadsheet_ext='.xls'; % default '.xls'
+    
+    % country-specific csv delimiter (to read and convert to Excel properly)
     climada_global.csv_delimiter=';'; % ';' default
     
     % tropical cyclone (TC) specific parameters
@@ -126,11 +133,6 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % please note that ED_at_centroid is always calculated (only a vector
     % length number of centroids)
     climada_global.EDS_at_centroid=0; % default=0
-    
-    % the default spreadsheet type, either '.xls' (default) or '.ods'
-    % the user can always select from 'All Files', the default is only
-    % used to compose the default filename.
-    climada_global.spreadsheet_ext='.xls'; % default '.xls'
     
     % whether the code checks for (possible) asset encoding issues and
     % re-encodes in case of doubt (might take time...)

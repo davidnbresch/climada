@@ -4,6 +4,12 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %   climada_tc_hazard_set
 % PURPOSE:
 %   generate a tc (tropical cyclone) hazard event set
+%
+%   If centroids.distance2coast_km exists, the hazard intensity is only
+%   calculated in the coastal_range_km (usually 200km, see PARAMETERS in
+%   climada_tc_windfield) - this speeds up calculation for large countries
+%   considerably.  
+%
 %   previous: likely climada_random_walk
 %   next: diverse
 % CALLING SEQUENCE:
@@ -19,8 +25,8 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %       > promted for if not given
 %   centroids: the variable grid centroids (see climada_centroids_read)
 %       a structure with
-%           Longitude(1,:): the longitudes   
-%           Latitude(1,:): the latitudes   
+%           Longitude(1,:): the longitudes
+%           Latitude(1,:): the latitudes
 %           centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
 %       or a .mat-file which contains a centroids struct (saved by
 %       climada_centroids_read) or the filename of an Excel file (the original
@@ -59,6 +65,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 % David N. Bresch, david.bresch@gmail.com, 20090729
 % David N. Bresch, david.bresch@gmail.com, 20130506, centroids filename handling improved
 % David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
+% David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
 %-
 
 hazard=[]; % init
@@ -108,8 +115,7 @@ end
 % prompt for hazard_set_file if not given
 if isempty(hazard_set_file) % local GUI
     hazard_set_file      = [climada_global.data_dir filesep 'hazards' filesep 'TCXX_hazard.mat'];
-    hazard_set_default   = [climada_global.data_dir filesep 'hazards' filesep 'Save in TCXX_hazard .mat'];
-    [filename, pathname] = uiputfile(hazard_set_file, 'Save TC hazard set as:',hazard_set_default);
+    [filename, pathname] = uiputfile(hazard_set_file, 'Save TC hazard set as:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -123,7 +129,7 @@ end
 if isempty(centroids) % local GUI
     centroids_default    = [climada_global.system_dir filesep '*.mat'];
     %%[filename, pathname] = uigetfile(centroids_default,'Select centroids:');
-    [filename, pathname] = uigetfile({'*.mat;*.xls'},'Select centroids (.mat or .xls):',centroids_default);    
+    [filename, pathname] = uigetfile({'*.mat;*.xls'},'Select centroids (.mat or .xls):',centroids_default);
     if isequal(filename,0) || isequal(pathname,0)
         % TEST centroids
         fprintf('WARNING: Special mode, TEST centroids grid created in %s\n',mfilename);
@@ -131,14 +137,14 @@ if isempty(centroids) % local GUI
         for lon_i=-100:1:-50
             for lat_i=20:1:50
                 ii=ii+1;
-                centroids.Longitude(ii)=lon_i;        
+                centroids.Longitude(ii)=lon_i;
                 centroids.Latitude(ii)=lat_i;
             end
         end
         centroids.centroid_ID=1:length(centroids.Longitude);
     else
         centroids_file=fullfile(pathname,filename);
-        [fP,fN,fE]=fileparts(centroids_file);
+        [~,~,fE]=fileparts(centroids_file);
         if strcmp(fE,'.xls')
             fprintf('reading centroids from %s\n',centroids_file);
             centroids=climada_centroids_read(centroids_file);
@@ -149,23 +155,28 @@ if isempty(centroids) % local GUI
     end
 end
 
-if isfield(centroids,'assets') 
+if isfield(centroids,'assets')
     % centroids contains in fact an entity
     entity=centroids; centroids=[]; % silly switch, but fastest
     centroids.Latitude =entity.assets.Latitude;
     centroids.Longitude=entity.assets.Longitude;
-    if isfield(entity.assets,'country_name'),centroids.country_name{1}=entity.assets.country_name;end
-    if isfield(entity.assets,'admin0_name'),centroids.admin0_name{1}=entity.assets.admin0_name;end
-    if isfield(entity.assets,'admin1_name'),centroids.admin1_name{1}=entity.assets.admin1_name;end
+    centroids.centroid_ID=1:length(entity.assets.Longitude);
+    % treat optional fields
+    if isfield(entity.assets,'distance2coast_km'),centroids.distance2coast_km=entity.assets.distance2coast_km;end
+    if isfield(entity.assets,'elevation_m'),centroids.elevation_m=entity.assets.elevation_m;end
+    if isfield(entity.assets,'country_name'),centroids.country_name=entity.assets.country_name;end
+    if isfield(entity.assets,'admin0_name'),centroids.admin0_name=entity.assets.admin0_name;end
+    if isfield(entity.assets,'admin0_ISO3'),centroids.admin0_ISO3=entity.assets.admin0_ISO3;end
+    if isfield(entity.assets,'admin1_name'),centroids.admin1_name=entity.assets.admin1_name;end
+    if isfield(entity.assets,'admin1_code'),centroids.admin1_code=entity.assets.admin1_code;end
     clear entity
 end
-    
+
 if ~isstruct(centroids) % load, if filename given
     centroids_file=centroids;centroids=[];
     fprintf('centroids read from %s\n',centroids_file);
     load(centroids_file); % contains centrois as a variable
 end
-
 
 min_year   = tc_track(1).yyyy(1);
 max_year   = tc_track(end).yyyy(end);
@@ -192,20 +203,20 @@ hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
 t0       = clock;
 n_tracks = length(tc_track);
 msgstr   = sprintf('processing %i tracks',n_tracks);
+mod_step = 10; % first time estimate after 10 tracks, then every 100
 if climada_global.waitbar
     fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
     h        = waitbar(0,msgstr);
     set(h,'Name','Hazard TC: tropical cyclones wind');
-    mod_step = 10; % first time estimate after 10 tracks, then every 100
 else
     fprintf('%s (waitbar suppressed)\n',msgstr);
-    mod_step=n_tracks+10;
+    format_str='%s';
 end
 
 for track_i=1:n_tracks
     
-    % calculate wind for every centroids, equal timestep within this routine  
-    res                             = climada_tc_windfield(tc_track(track_i),centroids,1,1,check_plot); 
+    % calculate wind for every centroids, equal timestep within this routine
+    res                             = climada_tc_windfield(tc_track(track_i),centroids,1,1,check_plot);
     %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,1,1,check_plot);
     hazard.intensity(track_i,:)           = res.gust;
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
@@ -236,11 +247,20 @@ for track_i=1:n_tracks
         else
             msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
         end
-        waitbar(track_i/n_tracks,h,msgstr); % update waitbar
+        if climada_global.waitbar
+            waitbar(track_i/n_tracks,h,msgstr); % update waitbar
+        else
+            fprintf(format_str,msgstr);
+            format_str=[repmat('\b',1,length(msgstr)) '%s'];
+        end
     end
-
+    
 end %track_i
-if exist('h','var'),close(h);end % dispose waitbar
+if climada_global.waitbar
+    close(h) % dispose waitbar
+else
+    fprintf(format_str,''); % move carriage to begin of line
+end
 
 t_elapsed = etime(clock,t0);
 msgstr    = sprintf('generating %i windfields took %3.2f min (%3.2f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
@@ -248,17 +268,26 @@ fprintf('%s\n',msgstr);
 
 
 % number of derived tracks per original one
-ens_size        = hazard.event_count/hazard.orig_event_count-1; 
+ens_size        = hazard.event_count/hazard.orig_event_count-1;
 event_frequency = 1/(orig_years*(ens_size+1));
 
 % not transposed, just regular
-hazard.frequency         = ones(1,hazard.event_count)*event_frequency; 
+hazard.frequency         = ones(1,hazard.event_count)*event_frequency;
 hazard.matrix_density    = nnz(hazard.intensity)/numel(hazard.intensity);
 hazard.windfield_comment = msgstr;
 hazard.peril_ID          = 'TC';
 hazard.filename          = hazard_set_file;
 hazard.comment           = sprintf('TCNA hazard event set, generated %s',datestr(now));
 hazard.date              = datestr(now);
+
+% add optional fields
+if isfield(centroids,'distance2coast_km'),hazard.distance2coast_km=centroids.distance2coast_km;end
+if isfield(centroids,'elevation_m'),hazard.elevation_m=centroids.elevation_m;end
+if isfield(centroids,'country_name'),hazard.country_name=centroids.country_name;end
+if isfield(centroids,'admin0_name'),hazard.admin0_name=centroids.admin0_name;end
+if isfield(centroids,'admin0_ISO3'),hazard.ADM0_A3=centroids.admin0_ISO3;end
+if isfield(centroids,'admin1_name'),hazard.admin1_name=centroids.admin1_name;end
+if isfield(centroids,'admin1_code'),hazard.admin1_code=centroids.admin1_code;end
 
 fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
 save(hazard_set_file,'hazard')

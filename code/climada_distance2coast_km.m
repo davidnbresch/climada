@@ -9,7 +9,7 @@ function distance_km=climada_distance2coast_km(lon,lat,check_plot)
 %   not exist (requires the climada module country_risk from
 %   https://github.com/davidnbresch/climada_module_country_risk 
 % CALLING SEQUENCE:
-%   distance_km=climada_distance2coast_km(lon,lat)
+%   distance_km=climada_distance2coast_km(lon,lat,check_plot)
 % EXAMPLE:
 %   distance_km=climada_distance2coast_km(lon,lat)
 % INPUTS:

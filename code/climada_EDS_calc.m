@@ -3,12 +3,21 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % NAME:
 %   climada_EDS_calc
 % PURPOSE:
-%   given an encoded entity (portfolio) and a hazard event set, calculate
-%   the event damage set (EDS)
+%   given an encoded entity (assets and damage functions) and a hazard
+%   event set, calculate the event damage set (EDS). The event damage set
+%   contains the event damage for each hazard event. In case you set
+%   climada_global.EDS_at_centroid=1, the damage is also stored for each
+%   event at each centroids (be aware of memory implications). The exepcted
+%   damage is always stored at each centroid, see EDS.ED_at_centroid.
 %
 %   Note that the waitbar consumes quite some time, so switch it off by
 %   setting climada_global.waitbar=0 or by
-%   using the climada_code_optimizer, which removes all slowing code...
+%   using the climada_code_optimizer, which removes all slowing code, i.e.
+%   all code lines marked by % CLIMADA_OPT - but by now, the code is pretty
+%   fast, hence climada_code_optimizer does usually not bring huge
+%   improvements.
+%
+%   next (likely): climada_EDS_DFC, climada_EDS_DFC_report
 % CALLING SEQUENCE:
 %   EDS=climada_EDS_calc(entity,hazard,annotation_name)
 % EXAMPLE:
@@ -26,11 +35,14 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 %       set). Default=0
 % OUTPUTS:
 %   EDS, the event damage set with:
+%       ED: the total expected annual damage (=EDS.damage*EDS.frequency')
 %       reference_year: the year the damages are references to
 %       event_ID(event_i): the unique ID for each event_i
-%       damage(event_i): the damage amount for event_i
-%       Value: the sum of allValues used in the calculation (to e.g. express
-%           damages in percentage of total Value)
+%       damage(event_i): the damage amount for event_i (summed up over all
+%           assets)
+%       ED_at_centroid(centroid_i): expected damage at each centroid
+%       Value: the sum of all Values used in the calculation (to e.g.
+%           express damages in percentage of total Value) 
 %       frequency(event_i): the per occurrence event frequency for each event_i
 %       orig_event_flag(event_i): whether an original event (=1) or a
 %           probabilistic one (=0)
@@ -38,9 +50,17 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 %       hazard: itself a structure, with:
 %           filename: the filename of the hazard event set
 %           comment: a free comment
+%       assets.Latitude(asset_i): the latitude of each asset_i
+%       assets.Longitude(asset_i): the longitude of each asset_i
+%       assets.Value(asset_i): the Value of asset_i, i.e. used to show
+%           ED_at_centroid in percentage of asset value.
 %       assets.filename: the filename of the assets
+%       assets.admin0_name: the admin0_name of the assets (optional)
+%       assets.admin0_ISO3: the admin0_ISO3 code of the assets (optional)
+%       assets.admin1_name: the admin1_name of the assets (optional)
+%       assets.admin1_code: the admin1_code of the assets (optional)
 %       damagefunctions.filename: the filename of the damagefunctions
-%       annotation_name: a kind of default title (sometimes empty)
+%       annotation_name: a kind of default title (sometimes empty)                 
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091228
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
@@ -100,10 +120,6 @@ if ~isstruct(hazard)
     load(hazard_file);
 end
 
-if force_re_encode % re-encode entity to hazard
-    entity = climada_assets_encode(entity,hazard);
-end
-
 % check for consistency of entity and the hazard set it has been encoded to
 % but: one might have used the same centroids for different hazard sets, so
 % it's only a WARNING, not an error
@@ -113,11 +129,21 @@ end
 
 % encode assets of entity once more, just to be sure
 if ~isfield(entity.assets,'centroid_index')
-    fprintf('Entity assets yet to be encoded to hazard.\n')
+    fprintf('Encoding entity assets to hazard... ')
     [entity.assets,hazard] = climada_assets_encode(entity.assets,hazard);
+    fprintf('done\n')
+    force_re_encode=0;
 elseif ~all(diff(entity.assets.centroid_index) == 1) && climada_global.re_check_encoding
-    fprintf('Encode entity assets once more.\n')
+    fprintf('Encode entity assets once more...')
     [entity.assets,hazard] = climada_assets_encode(entity.assets,hazard);
+    fprintf('done\n')
+    force_re_encode=0;
+end
+
+if force_re_encode % re-encode entity to hazard
+    fprintf('Encoding (forced) entity assets to hazard... ')
+    entity = climada_assets_encode(entity,hazard);
+    fprintf('done\n')
 end
 
 if sum(entity.assets.Cover)==0
@@ -159,8 +185,15 @@ end
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
 msgstr=sprintf('processing %i assets and %i events, ',n_assets,length(hazard.frequency));
-%fprintf('%s',msgstr);
-if climada_global.waitbar,h = waitbar(0,msgstr,'name',sprintf('Calculating %s damage for assets',hazard.peril_ID));end % CLIMADA_OPT
+
+if climada_global.waitbar % CLIMADA_OPT
+    fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
+    h = waitbar(0,msgstr,'Name',sprintf('Calculating %s damage for assets',hazard.peril_ID)); % CLIMADA_OPT
+else % CLIMADA_OPT
+    fprintf('%s (waitbar suppressed)\n',msgstr); % CLIMADA_OPT
+    format_str='%s'; % CLIMADA_OPT
+end % CLIMADA_OPT
+
 mod_step=2; % first time estimate after 2 calcs, then every 100
 
 for asset_i=1:n_assets
@@ -228,21 +261,30 @@ for asset_i=1:n_assets
         % TEST output
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
-        if climada_global.waitbar % CLIMADA_OPT
-            if mod(asset_i,mod_step)==0 % CLIMADA_OPT
-                mod_step         = 100; % CLIMADA_OPT
-                t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
-                calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
-                t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-                msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
+        if mod(asset_i,mod_step)==0 % CLIMADA_OPT
+            mod_step         = 100; % CLIMADA_OPT
+            t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
+            calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
+            t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
+            msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
+            
+            if climada_global.waitbar % CLIMADA_OPT
                 waitbar(asset_i/n_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+            else % CLIMADA_OPT
+                fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
+                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
             end % CLIMADA_OPT
+            
         end % CLIMADA_OPT
         
     end % ~isempty(asset_damfun_pos)
     
 end % asset_i
-if climada_global.waitbar,close(h);end % dispose waitbar % CLIMADA_OPT
+if climada_global.waitbar % CLIMADA_OPT
+    close(h) % dispose waitbar % CLIMADA_OPT
+else % CLIMADA_OPT
+    fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
+end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);
 msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
@@ -259,9 +301,13 @@ EDS.assets.filename = entity.assets.filename;
 EDS.assets.Latitude = entity.assets.Latitude;
 EDS.assets.Longitude = entity.assets.Longitude;
 EDS.assets.Value     = entity.assets.Value; % note EDS.Value is sum of...
+if isfield(entity.assets,'admin0_name'),EDS.assets.admin0_name=entity.assets.admin0_name;end
+if isfield(entity.assets,'admin0_ISO3'),EDS.assets.admin0_ISO3=entity.assets.admin0_ISO3;end
+if isfield(entity.assets,'admin1_name'),EDS.assets.admin1_name=entity.assets.admin1_name;end
+if isfield(entity.assets,'admin1_code'),EDS.assets.admin1_code=entity.assets.admin1_code;end
 EDS.damagefunctions.filename = entity.damagefunctions.filename;
 if isempty(annotation_name)
-    [~,name]       = fileparts(EDS.hazard.filename);
+    [~,name]        = fileparts(EDS.hazard.filename);
     annotation_name = name;
 end
 EDS.annotation_name = annotation_name;

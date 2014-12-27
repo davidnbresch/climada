@@ -1,4 +1,4 @@
-function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_mode, check_plot)
+function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,check_plot)
 % TC windfield calculation
 % NAME:
 %   climada_tc_windfield
@@ -6,8 +6,13 @@ function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_
 %   given a TC track (lat/lon,CentralPressure,MaxSustainedWind), calculate
 %   the wind field at locations (=centroids)
 %
-%   mainly called from: see climada_tc_hazard_set
+%   If centroids.distance2coast_km exists, the hazard intensity is only
+%   calculated in the coastal_range_km (usually 300km, see PARAMETERS) -
+%   this speeds up calculation for large countries considerably. To switch
+%   this feature off, just centroids=rmfield(centroids,'distance2coast_km')
+%   prior to passing centroids to climada_tc_windfield
 %
+%   mainly called from: see climada_tc_hazard_set
 % CALLING SEQUENCE:
 %   climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode)
 % EXAMPLE:
@@ -36,17 +41,26 @@ function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_
 %   centroids: a structure with the centroids information
 %       centroids.Latitude: the latitude of the centroids
 %       centroids.Longitude: the longitude of the centroids
+%       If centroids.distance2coast_km exists, the hazard intensity is only
+%       calculated in the coastal_range_km (usually 300km, see PARAMETERS) -
+%       this speeds up calculation for large countries considerably. To switch
+%       this feature off, just centroids=rmfield(centroids,'distance2coast_km')
+%       prior to passing centroids to climada_tc_windfield.
+%       Some other fields of centroids are also appended to res struct
 % OPTIONAL INPUT PARAMETERS:
 %   equal_timestep: if set=1 (default), first interpolate the track to a common
 %       timestep, if set=0, no equalization of TC track data (not recommended)
 %   silent_mode: if =1, do not write to stdout unless severe warning
 % OUTPUTS:
-%   res.gust: the windfield [m/s] at all centroids
-%   res.lat: the latitude of the centroids
-%   res.lon: the longitude of the centroids
+%   res: the output strcuture, with fields
+%       gust(i): the windfield [m/s] at all centroids i
+%       lat(i): the latitude of the centroids i
+%       lon(i): the longitude of the centroids i
+%       Some other fields of centroids are also appended to res struct
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090728
+% David N. Bresch, david.bresch@gmail.com, 20141227, centroids.distance2coast_km treatment added
 %-
 
 res = []; % init output
@@ -67,13 +81,15 @@ wind_threshold = 0; % in m/s, default=0
 %
 % treat the extratropical transition celerity exceeding vmax problem
 treat_extratropical_transition = 0; % default=0, since non-standard iro Holland
-
+%
+% for speed, up only process centroids within a coastal range (on/offshore)
+coastal_range_km=300;
+%
 
 % prompt for tc_track if not given
 if isempty(tc_track)
     tc_track             = [climada_global.data_dir filesep 'tc_tracks' filesep '*.mat'];
-    tc_track_default     = [climada_global.data_dir filesep 'tc_tracks' filesep 'Select PROBABILISTIC tc track .mat'];
-    [filename, pathname] = uigetfile(tc_track, 'Select PROBABILISTIC tc track set:',tc_track_default);
+    [filename, pathname] = uigetfile(tc_track, 'Select tc track (set):');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -238,15 +254,28 @@ res.node_Azimuth = zeros(1,centroid_count);
 res.node_lat     = zeros(1,centroid_count);
 res.node_lon     = zeros(1,centroid_count);
                 
-% add further fields (for climada use)
-if isfield(centroids,'OBJECTID')   , res.OBJECTID = centroids.OBJECTID;    end
-if isfield(centroids,'centroid_ID'), res.ID       = centroids.centroid_ID; end
-
 res.lat = centroids.Latitude;
 res.lon = centroids.Longitude;
 
+% add further fields (for climada use)
+if isfield(centroids,'OBJECTID')   ,res.OBJECTID    = centroids.OBJECTID;    end
+if isfield(centroids,'centroid_ID'),res.ID          = centroids.centroid_ID; end
+if isfield(centroids,'elevation_m'),res.elevation_m = centroids.elevation_m; end
+
+if isfield(centroids,'distance2coast_km')
+    % treat only centrois closer than coastal_range_km to coast for speedup
+    % coastal range both inland and offshore
+    valid_centroid_pos=find(centroids.distance2coast_km<coastal_range_km); 
+    res.distance2coast_km=centroids.distance2coast_km;
+else
+    valid_centroid_pos=1:length(centroids.Latitude);
+end
+
+centroid_count=length(valid_centroid_pos);
 tic;
-for centroid_i=1:centroid_count % now loop over all centroids
+for centroid_ii=1:centroid_count % now loop over all valid centroids
+    
+    centroid_i=valid_centroid_pos(centroid_ii);
     
     % the single-character variables refer to the Pioneer offering circular
     % that's why we kept these short names (so one can copy the OC for documentation)
