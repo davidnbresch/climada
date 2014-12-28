@@ -8,7 +8,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %   If centroids.distance2coast_km exists, the hazard intensity is only
 %   calculated in the coastal_range_km (usually 200km, see PARAMETERS in
 %   climada_tc_windfield) - this speeds up calculation for large countries
-%   considerably.  
+%   considerably.
 %
 %   previous: likely climada_random_walk
 %   next: diverse
@@ -89,6 +89,14 @@ hazard_arr_density=0.03; % 3% sparse hazard array density (estimated)
 %
 % define the reference year for this hazard set
 hazard_reference_year = climada_global.present_reference_year; % default for present hazard is normally 2010
+%
+% whether we create the yearset (=1, grouping events into years) or not (=0)
+% the yearset is only produced for original tracks, since probabilistic
+% ones can be identified as following original indices +1:ens_size, with
+% ens_size=(hazard.event_count/hazard.orig_event_count)-1; see climada_EDS2YDS
+% Note: the yearset creation assumes tracks to be ordered by ascending year
+% (that's the case for UNISYS tracks as read by climada_tc_read_unisys_database)
+create_yearset=1; % default=1
 
 % prompt for tc_track if not given
 if isempty(tc_track) % local GUI
@@ -179,7 +187,7 @@ if ~isstruct(centroids) % load, if filename given
 end
 
 min_year   = tc_track(1).yyyy(1);
-max_year   = tc_track(end).yyyy(end);
+max_year   = tc_track(end).yyyy(1); % start time of track, as we otherwise might count one year too much
 orig_years = max_year - min_year+1;
 % fill the hazard structure
 hazard.reference_year   = hazard_reference_year;
@@ -237,6 +245,7 @@ for track_i=1:n_tracks
     %     set(gcf,'Color',[1 1 1]);
     % end
     
+    % following block only for progress measurement (waitbar or stdout)
     if mod(track_i,mod_step)==0
         mod_step          = 100;
         t_elapsed_track   = etime(clock,t0)/track_i;
@@ -288,6 +297,88 @@ if isfield(centroids,'admin0_name'),hazard.admin0_name=centroids.admin0_name;end
 if isfield(centroids,'admin0_ISO3'),hazard.ADM0_A3=centroids.admin0_ISO3;end
 if isfield(centroids,'admin1_name'),hazard.admin1_name=centroids.admin1_name;end
 if isfield(centroids,'admin1_code'),hazard.admin1_code=centroids.admin1_code;end
+
+if create_yearset
+    
+    % the beginner does not need to understand whats happening here ;-)
+    % see climada_EDS2YDS
+    t0       = clock;
+    n_tracks = length(tc_track);
+    msgstr   = sprintf('yearset: processing %i tracks',n_tracks);
+    mod_step = 10; % first time estimate after 10 tracks, then every 100
+    if climada_global.waitbar
+        fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
+        h        = waitbar(0,msgstr);
+        set(h,'Name','Hazard TC: tropical cyclones yearset');
+    else
+        fprintf('%s (waitbar suppressed)\n',msgstr);
+        format_str='%s';
+    end
+    
+    year_i=1; % init
+    active_year=tc_track(1).yyyy(1); % first year
+    event_index=[];event_count=0; % init
+    
+    for track_i=1:n_tracks
+        
+        if tc_track(track_i).yyyy(1)==active_year
+            if tc_track(track_i).orig_event_flag
+                % same year, add if original track
+                event_count=event_count+1;
+                event_index=[event_index track_i];
+            end
+        else
+            % new year, save last year
+            hazard.orig_yearset(year_i).yyyy=active_year;
+            hazard.orig_yearset(year_i).event_count=event_count;
+            hazard.orig_yearset(year_i).event_index=event_index;
+            year_i=year_i+1;
+            % reset for next year
+            active_year=tc_track(track_i).yyyy(1);
+            if tc_track(track_i).orig_event_flag
+                % same year, add if original track
+                event_count=1;
+                event_index=track_i;
+            end
+        end
+        
+        % following block only for progress measurement (waitbar or stdout)
+        if mod(track_i,mod_step)==0
+            mod_step          = 100;
+            t_elapsed_track   = etime(clock,t0)/track_i;
+            tracks_remaining  = n_tracks-track_i;
+            t_projected_sec   = t_elapsed_track*tracks_remaining;
+            if t_projected_sec<60
+                msgstr = sprintf('est. %3.0f sec left (%i/%i tracks)',t_projected_sec,   track_i,n_tracks);
+            else
+                msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
+            end
+            if climada_global.waitbar
+                waitbar(track_i/n_tracks,h,msgstr); % update waitbar
+            else
+                fprintf(format_str,msgstr);
+                format_str=[repmat('\b',1,length(msgstr)) '%s'];
+            end
+        end
+        
+    end % track_i
+    
+    % save last year
+    hazard.orig_yearset(year_i).yyyy=active_year;
+    hazard.orig_yearset(year_i).event_count=event_count;
+    hazard.orig_yearset(year_i).event_index=event_index;
+
+    if climada_global.waitbar
+        close(h) % dispose waitbar
+    else
+        fprintf(format_str,''); % move carriage to begin of line
+    end
+    
+    t_elapsed = etime(clock,t0);
+    msgstr    = sprintf('generating yearset took %3.2f sec',t_elapsed);
+    fprintf('%s\n',msgstr);
+    
+end % create_yearset
 
 fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
 save(hazard_set_file,'hazard')
