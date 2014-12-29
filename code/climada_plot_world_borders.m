@@ -101,6 +101,14 @@ end
 shapes=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
 
 for shape_i = 1:length(shapes)
+    if isfield(shapes(shape_i),'X_ALL') 
+        % special case since we had to restrict to domestic
+        % see climada_shaperead, SYSTEM_ADMIN0 and special_shape
+        if ~isempty(shapes(shape_i).X_ALL)
+            shapes(shape_i).X=shapes(shape_i).X_ALL;
+            shapes(shape_i).Y=shapes(shape_i).Y_ALL;
+        end
+    end
     plot(shapes(shape_i).X,shapes(shape_i).Y, 'color',border_color,'LineWidth',linewidth);
     hold on
 end % shape_i
