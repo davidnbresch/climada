@@ -69,6 +69,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20141103, entity.damagefunctions.peril_ID
 % David N. Bresch, david.bresch@gmail.com, 20141127, force_re_encode
 % David N. Bresch, david.bresch@gmail.com, 20141218, Cover checks added
+% David N. Bresch, david.bresch@gmail.com, 20141230, only assets.Value>0 prcocessed for speedup
 %-
 
 global climada_global
@@ -181,10 +182,14 @@ end
 % THIS CODE MIGHT NEED FUTURE OPTIMIZATION
 % see also climada_code_optimizer, which removes all slowing code...
 
+% only process Value>0, since otherwise no damage anyway
+valid_assets_pos=find(entity.assets.Value>0);
+nn_assets=length(valid_assets_pos);
+
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
-msgstr=sprintf('processing %i assets and %i events, ',n_assets,length(hazard.frequency));
+msgstr=sprintf('processing %i assets (>0) and %i events, ',nn_assets,length(hazard.frequency));
 
 if climada_global.waitbar % CLIMADA_OPT
     fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
@@ -196,7 +201,9 @@ end % CLIMADA_OPT
 
 mod_step=2; % first time estimate after 2 calcs, then every 100
 
-for asset_i=1:n_assets
+for asset_ii=1:nn_assets
+    
+    asset_i=valid_assets_pos(asset_ii);
     
     % the index of the centroid for given asset in the hazard set
     asset_hazard_pos = entity.assets.centroid_index(asset_i);
