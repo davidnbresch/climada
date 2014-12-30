@@ -1,4 +1,4 @@
-function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_mode)
+function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_mode,misdat_value)
 % climada excel data import read
 % NAME:
 %   climada_xlsread
@@ -65,6 +65,9 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 %   excel_file: the Excel file to read
 %   in_excel_sheet: the Excel sheet to read in the excel_file
 %   silent_mode: if =1, do not write messages to stdout, default=0, means writing
+%   misdat_value: a missing date value, all numeric data of exatly this
+%       value are ste to NaN, default is no missing data treatment, i.e.
+%       misdat_value=[].
 % OUTPUTS:
 %   res: a structure holding the data from the selected Excel sheet
 % RESTRICTIONS:
@@ -72,6 +75,7 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20020901, 20080924
 % Lea Mueller, muellele@gmail.com, 20120730, if ~isempty(NUMERIC) also possible
+% David N. Bresch, david.bresch@gmail.com, 20141230, misdat_value added
 %-
 
 
@@ -79,6 +83,7 @@ if ~exist('interactive_mode','var'),interactive_mode=[];end
 if ~exist('excel_file','var'),excel_file=[];end
 if ~exist('in_excel_sheet','var'),in_excel_sheet=[];end
 if ~exist('silent_mode','var'),silent_mode=[];end
+if ~exist('misdat_value','var'),misdat_value=[];end
 
 if isempty(interactive_mode),interactive_mode='interactive';end
 if isempty(silent_mode),silent_mode=0;end
@@ -118,7 +123,7 @@ if length(sheet_names)>1
         if ~isempty(in_excel_sheet) % first try user-requested sheet
             excel_sheet=strmatch(in_excel_sheet,char(sheet_names),'exact');
         end
-        if length(excel_sheet)>0
+        if ~isempty(excel_sheet)
             excel_sheet=char(sheet_names(excel_sheet));
         else
             excel_sheet=char(sheet_names(1)); % third try first sheet
@@ -202,7 +207,7 @@ for header_i=1:size(RAW,2)
     header_tag=deblank(header_tag);
     arr_values=[];
     
-    if length(RAW{header_pos+1,header_i})>0
+    if ~isempty(RAW{header_pos+1,header_i})
         if ~silent_mode,fprintf(' - processing %s\n',header_tag);end
         
         if isfield(res,header_tag)
@@ -216,9 +221,12 @@ for header_i=1:size(RAW,2)
                 end % element_i
                 if ~silent_mode,fprintf('   -> converted to numeric\n');end
                 arr_values=temp;
+                if ~isempty(misdat_value)
+                    arr_values(arr_values==misdat_value)=NaN; % replace misssing data with NaN
+                end
             end
             
-            if length(header_tag) > 0
+            if ~isempty(header_tag)
                 % counter = 0;
                 % while isfield(res,header_tag)
                 %     %if ~silent_mode, fprintf('WARNING: (empty) header/column %i skipped\n',header_i);end

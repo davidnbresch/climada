@@ -1,4 +1,4 @@
-function climada_assets_encode_check(assets)
+function climada_assets_encode_check(assets,hazard)
 % climada assets encode
 % NAME:
 %   climada_assets_encode_check
@@ -17,10 +17,15 @@ function climada_assets_encode_check(assets)
 %       > prompted for if empty (promting for an entity, the assets within
 %       are then taken)
 % OPTIONAL INPUT PARAMETERS:
+%   hazard: a hazard to check against (optional, since the code tries to
+%       use the hazard as specified in assets.hazard.filename). If hazard
+%       is passed, assets.hazard.filename is ignored
+%       Default is no hazard on input, using assets.hazard.filename
 % OUTPUTS:
 %   a plot, showing the encoding
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141219, initial
+% David N. Bresch, david.bresch@gmail.com, 20141230, hazard as input option added
 %-
 
 global climada_global
@@ -28,6 +33,7 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('assets','var'),assets=[];end
+if ~exist('hazard','var'),hazard=[];end
 
 % PARAMETERS
 %
@@ -54,15 +60,17 @@ end
 
 if ~isfield(entity.assets,'hazard')
     fprintf('Note: entity not encoded yet, aborted. Consider climada_assets_encode\n');
-    return
+else
+    if exist(entity.assets.hazard.filename,'file')
+        fprintf('loading %s\n',entity.assets.hazard.filename);
+        load(entity.assets.hazard.filename) % contains a hazard set
+    else
+        if isempty(hazard)
+            fprintf('Error: no hazard found, aborted (%s)\n',entity.assets.hazard.filename);
+            return
+        end
+    end
 end
-
-if ~exist(entity.assets.hazard.filename,'file')
-    fprintf('Error: hazard not found, aborted (%s)\n',entity.assets.hazard.filename);
-    return
-end
-
-load(entity.assets.hazard.filename)
 
 n_assets=length(assets.Longitude);
 
@@ -71,11 +79,19 @@ hold on
 axis equal
 plot(hazard.lon,hazard.lat,'xb','MarkerSize',MarkerSize);
 legend({'assets','centroids'})
-for asset_i=1:n_assets
+
+nonencoded_pos=find(entity.assets.centroid_index<=0);
+if ~isempty(nonencoded_pos),fprintf('Warning: %i asset snot encoded\n',length(nonencoded_pos));end
+entity.assets.centroid_index=entity.assets.centroid_index(entity.assets.centroid_index>0);
+entity.assets.Longitude     =entity.assets.Longitude(entity.assets.centroid_index>0);
+entity.assets.Latitude      =entity.assets.Latitude(entity.assets.centroid_index>0);
+
+for asset_i=1:length(entity.assets.centroid_index)
     plot([entity.assets.Longitude(asset_i) hazard.lon(entity.assets.centroid_index(asset_i))],...
         [entity.assets.Latitude(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
 end % asset_i
 
 climada_plot_world_borders(2,'','',1);
+set(gcf,'Color',[1 1 1])
 
 end

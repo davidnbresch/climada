@@ -138,7 +138,7 @@ cmp_correction=EDS(1).Value/EL_cmp_TIV;
 if abs(cmp_correction-1)>0.01
     fprintf('NOTE: DFC damages multiplied by %f\n',cmp_correction);
     DFC_cmp.Loss=DFC_cmp.Loss*cmp_correction;
-    scenario_cmp.Expected_Loss=scenario_cmp.Expected_Loss*cmp_correction;
+    if scenario_comparison_flag,scenario_cmp.Expected_Loss=scenario_cmp.Expected_Loss*cmp_correction;end
 end
 
 % add the comparison to the figure

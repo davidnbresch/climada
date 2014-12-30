@@ -1,9 +1,9 @@
-function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,hazard)
+function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % climada assets read import
 % NAME:
 %   climada_entity_read
 % PURPOSE:
-%   read the file with the assets, vulnerabilities, measures etc.
+%   read the file with the assets, damage functions, measures etc.
 %   climada_assets_encode is automatically invoked
 %
 %   read also the damagefunctions sheet, if it exists (and run some checks)
@@ -27,12 +27,13 @@ function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,
 %   Please consider climada_damagefunction_read in case you would like to
 %   read damagefunctions separately.
 %
+%   next step: likely climada_ELS_calc
 % CALLING SEQUENCE:
-%   entity=climada_entity_read(entity_filename,hazard)
+%   [entity,entity_save_file]=climada_entity_read(entity_filename,hazard)
 % EXAMPLE:
 %   entity=climada_entity_read;
 % INPUTS:
-%   entity_filename: the filename of the Excel file with the assets
+%   entity_filename: the filename of the Excel (or .ods) file with the assets
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
@@ -60,6 +61,7 @@ function [entity,hazard,entity_save_file] = climada_entity_read(entity_filename,
 % David N. Bresch, david.bresch@gmail.com, 20141029, entity_save_file added as output
 % David N. Bresch, david.bresch@gmail.com, 20141121, hint to climada_damagefunction_read added
 % David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed and NOENCODE added
+% David N. Bresch, david.bresch@gmail.com, 20141230, cleanup
 %-
 
 global climada_global
@@ -109,7 +111,7 @@ else
         fprintf('Note: assets not encoded\n')
     else
         % encode assets
-        [entity.assets,hazard] = climada_assets_encode(assets,hazard);
+        entity.assets = climada_assets_encode(assets,hazard);
     end
     
     % figure out the file type

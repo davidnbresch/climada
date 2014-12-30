@@ -130,12 +130,12 @@ end
 % encode assets of entity once more, just to be sure
 if ~isfield(entity.assets,'centroid_index')
     fprintf('Encoding entity assets to hazard... ')
-    [entity.assets,hazard] = climada_assets_encode(entity.assets,hazard);
+    entity = climada_assets_encode(entity,hazard);
     fprintf('done\n')
     force_re_encode=0;
 elseif ~all(diff(entity.assets.centroid_index) == 1) && climada_global.re_check_encoding
     fprintf('Encode entity assets once more...')
-    [entity.assets,hazard] = climada_assets_encode(entity.assets,hazard);
+    entity = climada_assets_encode(entity,hazard);
     fprintf('done\n')
     force_re_encode=0;
 end
