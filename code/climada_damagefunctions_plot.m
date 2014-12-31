@@ -93,7 +93,7 @@ if ~((N_n_plots*n_N_plots)>n_plots),n_N_plots=N_n_plots;end
 
 for ID_i=1:length(unique_IDs)
     subplot(N_n_plots,n_N_plots,ID_i);
-    dmf_pos=strmatch(unique_IDs(ID_i),unique_ID);
+    dmf_pos=strmatch(unique_IDs{ID_i},unique_ID);
     if ~isempty(dmf_pos)
         fprintf('plot %i: %s\n',ID_i,char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_ID_sel)
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on

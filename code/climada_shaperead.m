@@ -459,8 +459,22 @@ else
     if ~silent_mode,fprintf('reading shapes from %s\n',shape_filename);end
     shapes=shaperead(shape_filename);
     
+    % get rid of non-ASCII portions of UTF characters
+    % following code bit does NOT work, since ? is not 'seen'
+    % only works as strrep('Saint-Barth??lemy','?','?') on command window
+    %     field_names = fieldnames(shapes);
+    %     for field_i=1:length(field_names)
+    %         if ischar(field_names{field_i})
+    %             fprintf('treating %s\n',field_names{field_i});
+    %             for shape_i=1:length(shapes)
+    %                 shapes(shape_i).(field_names{field_i})=strrep(shapes(shape_i).(field_names{field_i}),'?','?');
+    %             end % shape_i
+    %         end
+    %     end % field_i
+    
     % following switched OFF, since it doubles the size of the .mat file
     % but plotting world borders only takes 0.4 sec compared to 0.25 sec.
+    % -> see climada module GDP_entity and climada_load_world_borders
     %
     %     if create_world_borders
     %
@@ -481,7 +495,7 @@ else
     %         whole_world_borders=[];
     %     end
     %
-    % see also commented line below
+    % see also commented line in if mat_save_flag below
     
     if SYSTEM_ADMIN0
         

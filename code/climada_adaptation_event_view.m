@@ -61,7 +61,7 @@ if ~isstruct(measures_impact)
 end
 
 title_str=measures_impact.title_str;
-fprintf('%s :\n',title_str);
+%fprintf('%s\n',title_str);
 
 % construct the DFC for each EDS, store at pre-defined points
 n_EDS=length(measures_impact.EDS);

@@ -49,6 +49,8 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 global climada_global
 if ~climada_init_vars,return;end;
 
+%if climada_global.octave_mode,return % BUG FIX for TEST
+
 if ~exist('linewidth'       , 'var'), linewidth        = 1;  end
 if ~exist('check_country'   , 'var'), check_country    = []; end
 if ~exist('map_shape_file'  , 'var'), map_shape_file   = ''; end

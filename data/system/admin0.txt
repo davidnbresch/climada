@@ -8,4 +8,6 @@ Please note that the following countries needed to be restricted to their domest
 
 See climada code climada_country_name
 
+Note for Octave users: Octave stores its own version, admin0_oct.mat, see climada_octave
+
 copyright (c) 2014, David N. Bresch, david.bresch@gmail.com all rights reserved.

@@ -145,7 +145,7 @@ for EDS_i=1:length(EDS)
 end % EDS_i
 
 set(gca,'fontsize',12)
-if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','nw');end % add legend
+if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
 grid on; % show grid
 xlabel('Return period (years)')
 if Percentage_Of_Value_Flag

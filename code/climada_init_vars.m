@@ -3,7 +3,7 @@ function ok=climada_init_vars(reset_flag)
 % NAME:
 %	climada_init_vars
 % PURPOSE:
-%	initialize path and filenames 
+%	initialize path and filenames
 %
 % CALLING SEQUENCE:
 %	ok=climada_init_vars(reset_flag)
@@ -22,6 +22,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20141018, switch to modules instead of climada_additional
 % David N. Bresch, david.bresch@gmail.com, 20141225, climada_global.coastline_file added
 % David N. Bresch, david.bresch@gmail.com, 20141226, update to be in line with manual
+% David N. Bresch, david.bresch@gmail.com, 20141231, octave compatibility
 %-
 
 global climada_global
@@ -50,29 +51,29 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     climada_LOCAL_ROOT_DIR=getenv('climada_LOCAL_ROOT_DIR'); % get operating system's environment variable
     climada_LOCAL_ROOT_DIR=strrep(climada_LOCAL_ROOT_DIR,'"','');
-
+    
     if exist(climada_LOCAL_ROOT_DIR,'dir')
         % if the environment variable exists, it overrides all other settings
         climada_global.root_dir=climada_LOCAL_ROOT_DIR;
         fprintf('local root dir %s (from environment variable climada_LOCAL_ROOT_DIR)\n',climada_global.root_dir);
     else
-
+        
         % directory settings
         % -------------------
-
+        
         % next code bit to access already defined root directory (by startup.m)
         if ~exist('climada_global','var')
             climada_global.root_dir='';
         elseif ~isfield(climada_global,'root_dir')
             climada_global.root_dir='';
         end
-
+        
         if ~exist(climada_global.root_dir,'dir')
             climada_global.root_dir=['C:' filesep 'Documents and Settings' filesep 'All Users' filesep 'Documents' filesep 'climada'];
         end
-
+        
         if ~exist(climada_global.root_dir,'dir')
-              climada_global.root_dir=['D:' filesep 'Data' filesep 'climada'];
+            climada_global.root_dir=['D:' filesep 'Data' filesep 'climada'];
         end
         
     end % climada_LOCAL_ROOT_DIR
@@ -102,7 +103,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % the global coastline file
     % (see the short documentation in climada_global.system_dir/coastline.txt)
     climada_global.coastline_file=[climada_global.system_dir filesep 'coastline.mat'];
-
+    
     % the default spreadsheet type, either '.xls' (default) or '.ods'
     % the user can always select from 'All Files', the default is only
     % used to compose the default filename.
@@ -141,7 +142,16 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.re_check_encoding = 0; % default =0
     
     climada_vars_initialised=1; % indicate we have initialized all vars
-
+    
+    % whether we run on Octave
+    climada_global.octave_mode=0; % default=0
+    
+    % last but not least, check for Octave (instead of MATLAB)
+    if climada_octave
+        climada_global.octave_mode=1;
+        fprintf('Note: running on Octave\n')
+    end
+    
 end
 
 return

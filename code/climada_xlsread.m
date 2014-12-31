@@ -92,7 +92,7 @@ res=[]; % init
 
 if isempty(excel_file)
     [filename, pathname] = uigetfile('*.xls', 'Select an Excel file:');
-    if isequal(filename,0) | isequal(pathname,0)
+    if isequal(filename,0) || isequal(pathname,0)
         return; % Cancel pressed
     else
         excel_file=fullfile(pathname, filename);

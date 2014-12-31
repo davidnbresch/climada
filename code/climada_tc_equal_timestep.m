@@ -25,6 +25,7 @@ function tc_track_out=climada_tc_equal_timestep(tc_track,default_min_TimeStep)
 % Mathias Hauser, 20120507
 % Lea Mueller, 20121203
 % David N. Bresch, david_bresch@gmail.com, 20040911, new version of MATLAB does not like adding empty stuff
+% David N. Bresch, david_bresch@gmail.com, 20141231, datevecmx replaced
 %-
 
 % init global variables
@@ -97,11 +98,17 @@ if size(unique(n_steps_in_between),2) == 1
         tc_track_out.nodetime_mat=[];
     end
     tc_track_out.nodetime_mat = climada_tc_interp(tc_track.nodetime_mat, n_steps_in_between-1);
-    DateVector        = datevecmx(tc_track_out.nodetime_mat);
-    tc_track_out.yyyy = DateVector(:,1)';
-    tc_track_out.mm   = DateVector(:,2)';
-    tc_track_out.dd   = DateVector(:,3)';
-    tc_track_out.hh   = DateVector(:,4)';
+    
+    tc_track_out.yyyy=str2num(datestr(tc_track_out.nodetime_mat,'yyyy'));
+    tc_track_out.mm  =str2num(datestr(tc_track_out.nodetime_mat,'mm'));
+    tc_track_out.dd  =str2num(datestr(tc_track_out.nodetime_mat,'dd'));
+    tc_track_out.hh  =str2num(datestr(tc_track_out.nodetime_mat,'HH'));
+    % until 20141231:
+    %     DateVector        = datevecmx(tc_track_out.nodetime_mat);
+    %     tc_track_out.yyyy = DateVector(:,1)';
+    %     tc_track_out.mm   = DateVector(:,2)';
+    %     tc_track_out.dd   = DateVector(:,3)';
+    %     tc_track_out.hh   = DateVector(:,4)';
     tc_track_out.TimeStep = round(diff(tc_track_out.nodetime_mat)*24);
 else
     for node_i=1:length(tc_track.lat)-1
@@ -129,12 +136,18 @@ else
                 tc_track_out.forecast=[tc_track_out.forecast d_forecast(1:end-1)]; % add
             end
             datenums = tc_track.datenum(node_i)+(0:n_steps_in_between-1)*min_TimeStep/24;
-            DateVector = datevecmx(datenums);
-            yyyy     = DateVector(:,1);
-            mm       = DateVector(:,2);
-            dd       = DateVector(:,3);
-            %hhs      = datestr(datenums,15);
-            hhs      = DateVector(:,4);
+            
+            yyyy=str2num(datestr(datenums,'yyyy'));
+            mm  =str2num(datestr(datenums,'mm'));
+            dd  =str2num(datestr(datenums,'dd'));
+            hhs =str2num(datestr(datenums,'HH'));
+            % until 20141231:
+            %             DateVector = datevecmx(datenums);
+            %             yyyy     = DateVector(:,1);
+            %             mm       = DateVector(:,2);
+            %             dd       = DateVector(:,3);
+            %             %hhs      = datestr(datenums,15);
+            %             hhs      = DateVector(:,4);
             tc_track_out.yyyy = [tc_track_out.yyyy yyyy'];
             tc_track_out.mm   = [tc_track_out.mm mm'];
             tc_track_out.dd   = [tc_track_out.dd dd'];
@@ -146,7 +159,7 @@ else
             if isfield(tc_track,'MaxSustainedWind'),
                 tc_track_out.MaxSustainedWind = [tc_track_out.MaxSustainedWind tc_track.MaxSustainedWind(node_i)];
             end
-            if isfield(tc_track,'CentralPressure') 
+            if isfield(tc_track,'CentralPressure')
                 tc_track_out.CentralPressure  = [tc_track_out.CentralPressure tc_track.CentralPressure(node_i)];
             end
             if isfield(tc_track,'SaffSimp') && length(tc_track.SaffSimp)>1
@@ -167,7 +180,7 @@ else
     if isfield(tc_track,'MaxSustainedWind')
         tc_track_out.MaxSustainedWind = [tc_track_out.MaxSustainedWind tc_track.MaxSustainedWind(end)];
     end
-    if isfield(tc_track,'CentralPressure') 
+    if isfield(tc_track,'CentralPressure')
         tc_track_out.CentralPressure  = [tc_track_out.CentralPressure tc_track.CentralPressure(end)];
     end
     if isfield(tc_track,'SaffSimp') && length(tc_track.SaffSimp)>1
@@ -185,7 +198,7 @@ else
     % if length(pos_24)>0,tc_track_out.hh(pos_24)=0;end
     tc_track_out.TimeStep     = tc_track_out.lat(1:end-1)*0+min_TimeStep;
     tc_track_out.nodetime_mat = datenum(tc_track_out.yyyy,tc_track_out.mm,tc_track_out.dd)+tc_track_out.hh/24;
-end 
+end
 
 
 if isfield(tc_track_out,'on_land')

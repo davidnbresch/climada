@@ -138,7 +138,7 @@ end
 tc_track_raw_file=[fP filesep fN '_raw.mat'];
 tc_track_proc_file=[fP filesep fN '_proc.mat'];
 
-if strfind(unisys_file,'she') | strfind(unisys_file,'bsh') %findstr(unisys_file,'bsh')
+if ~isempty(strfind(unisys_file,'she')) || ~isempty(strfind(unisys_file,'bsh')) %findstr(unisys_file,'bsh')
     convert_latitude = 'convert2South'; % Southern Hemisphere
     fprintf('abbreviation ''she'' or ''bsh'' found in UNISYS filename, hence SouthernHemisphere assumed\n');
 end

@@ -38,7 +38,7 @@ function climada_color_plot(values,lon,lat,figure_name,title_str,plot_method,int
 %-
 
 % set defaults
-global climada_global
+%global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 if ~exist('figure_name','var'),figure_name=[];end
 if ~exist('title_str','var'),title_str=[];end
@@ -47,7 +47,7 @@ if ~exist('interp_method','var'),interp_method=[];end
 if ~exist('npoints','var'),npoints=[];end
 if ~exist('plot_centroids','var'),plot_centroids=[];end
 if ~exist('caxis_range','var'),caxis_range=[];end
-if ~exist('stencil_ext'),stencil_ext=[];end
+if ~exist('stencil_ext','var'),stencil_ext=[];end
 
 % PARAMETERS
 %
@@ -87,8 +87,8 @@ else
     mask=X+NaN; % mask points by setting them to NaN
 
     for ii=1:length(lon)
-        [mm,ix]=min(abs(xx-lon(ii)));
-        [mm,iy]=min(abs(yy-lat(ii)));
+        [~,ix]=min(abs(xx-lon(ii)));
+        [~,iy]=min(abs(yy-lat(ii)));
         mask(ystencil+iy,xstencil+ix)=0; % make center and surrounding points visible
         %     yyy=ystencil+iy;
         %     xxx=xstencil+ix;
@@ -102,8 +102,6 @@ end % no_mask
 gridded_VALUE=griddata(lon,lat,values,X,Y,interp_method)+mask; % interpolate to grid 'linear'
 switch plot_method
     case 'contour'
-        %load ([climada_global.data_dir '\results\mozambique\colormap_gray_red_90'])
-        %colormap(gray_red)
         contourf(X,Y,full(gridded_VALUE));hold on;axis equal; % filled contour plot
     otherwise
         pcolor(X,Y,gridded_VALUE);hold on;shading flat;axis equal;

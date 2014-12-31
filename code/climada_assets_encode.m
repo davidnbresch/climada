@@ -133,7 +133,7 @@ mod_step = 10; % first time estimate after 10 assets, then every 100
 if climada_global.waitbar
     fprintf('%s (updating waitbar with estimation of time remaining every 100th asset)\n',msgstr);
     h        = waitbar(0,msgstr);
-    set(h,'Name','Event loop');
+    set(h,'Name','Encoding assets');
 else
     fprintf('%s (waitbar suppressed)\n',msgstr);
     format_str='%s';

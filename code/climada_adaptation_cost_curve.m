@@ -48,6 +48,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20130316 compatibility for both direct call as well as via climada_demo_gui
 % Gilles Stassen gillesstassen@hotmail.com 20141212 fixed the arrow issue; changed labeling of total climate risk to USD x m rounded to 2 s.f.
 % David N. Bresch, david.bresch@gmail.com, 20141213 plot_arrows=0 by default and climada_demo option cleaned up
+% David N. Bresch, david.bresch@gmail.com, 20141231 subaxis removed (not clean, troubles in Octave)
 %-
 
 global climada_global
@@ -212,9 +213,13 @@ if called_from_climada_demo
     plot([0,xmax],[ymax,ymax],'.w'); hold on
     set(gca,'FontSize',fontsize_);
 else
-    climada_figuresize(0.5,0.7);
-    subaxis(1,1,1,'Mb',0.18)
-    set(subaxis(1),'FontSize',fontsize_);hold on
+    plot([0,xmax],[ymax,ymax],'.w'); hold on
+    set(gcf,'Color',[1 1 1])
+    set(gca,'FontSize',fontsize_);
+    %     % until 20141231, but subaxis not clean
+    %     climada_figuresize(0.5,0.7);
+    %     subaxis(1,1,1,'Mb',0.18)
+    %     set(subaxis(1),'FontSize',fontsize_);hold on
 end
 xlabel(xlabel_str,'fontsize',fontsize_+1)
 if reverse_cb
@@ -405,7 +410,8 @@ xlim([0 xmax*1.1])
 if called_from_climada_demo
     set(gca,'layer','top')
 else
-    set(subaxis(1),'layer','top')
+    %    % until 20141231, but subaxis not clean
+    %    set(subaxis(1),'layer','top')
 end
 
 box off
