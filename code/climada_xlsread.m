@@ -11,6 +11,13 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 %   NOTE: for older MATLAB versions, only the array-type input works, not
 %   the single variables (header) etc.
 %
+%   OCTAVE: Please install the io package first, ether directly from source
+%   forge with: pkg install -forge io -auto
+%   or, (e.g. in case this fails, get the io package first from Octave
+%   source forge and then install from the downloaded package:
+%   pkg install {local_path}/io-2.2.5.tar -auto
+%   Note that it looks like Octave prefers .xlsx files
+%
 %   The sheet might contain as many single variables (a header)
 %   and in the second part (data) as many columns as you like.
 %   % preceedes rows used for comment
@@ -76,6 +83,7 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 % David N. Bresch, david.bresch@gmail.com, 20020901, 20080924
 % Lea Mueller, muellele@gmail.com, 20120730, if ~isempty(NUMERIC) also possible
 % David N. Bresch, david.bresch@gmail.com, 20141230, misdat_value added
+% David N. Bresch, david.bresch@gmail.com, 20150101, simplified if file and sheet provied (no check for sheet to exist)
 %-
 
 
@@ -103,36 +111,41 @@ res.filename = excel_file;
 
 % read excel sheet
 % ----------------
-% check file content and ask user to select sheet (if more than one in file)
-[sheet_type,sheet_names]=xlsfinfo(excel_file);
-if not(strcmp(sheet_type,'Microsoft Excel Spreadsheet')),fprintf(' - WARNING: %s (not Excel?)\n',sheet_type);end
-if length(sheet_names)>1
-    if strcmp(interactive_mode,'interactive')
-        % we have more than one sheet in the file -> allow to select
-        % the portfolio (the treaty has always to be named 'treaty')
-        [selection,ok] = listdlg('Name','climada Excel import','PromptString','Select sheet:',...
-            'SelectionMode','single','ListString',sheet_names,'ListSize',[200 100]);
-        if ok
-            excel_sheet=char(sheet_names(selection));
+if strcmp(interactive_mode,'no') && ~isempty(in_excel_sheet)
+    % simple, force try reading the sheet as specified on input
+    excel_sheet=in_excel_sheet;
+else
+    % check file content and ask user to select sheet (if more than one in file)
+    [sheet_type,sheet_names]=xlsfinfo(excel_file);
+    if not(strcmp(sheet_type,'Microsoft Excel Spreadsheet')),fprintf(' - WARNING: %s (not Excel?)\n',sheet_type);end
+    if length(sheet_names)>1
+        if strcmp(interactive_mode,'interactive')
+            % we have more than one sheet in the file -> allow to select
+            % the portfolio (the treaty has always to be named 'treaty')
+            [selection,ok] = listdlg('Name','climada Excel import','PromptString','Select sheet:',...
+                'SelectionMode','single','ListString',sheet_names,'ListSize',[200 100]);
+            if ok
+                excel_sheet=char(sheet_names(selection));
+            else
+                if ~silent_mode,fprintf(' - WARNING: first sheet (%s) used\n',char(sheet_names)); end
+                excel_sheet=char(sheet_names(1));
+            end
         else
-            if ~silent_mode,fprintf(' - WARNING: first sheet (%s) used\n',char(sheet_names)); end
-            excel_sheet=char(sheet_names(1));
+            excel_sheet=[]; % init
+            if ~isempty(in_excel_sheet) % first try user-requested sheet
+                excel_sheet=strmatch(in_excel_sheet,char(sheet_names),'exact');
+            end
+            if ~isempty(excel_sheet)
+                excel_sheet=char(sheet_names(excel_sheet));
+            else
+                excel_sheet=char(sheet_names(1)); % third try first sheet
+                if ~silent_mode, fprintf(' - WARNING: first sheet (%s) used\n',char(sheet_names'));end
+            end
         end
     else
-        excel_sheet=[]; % init
-        if ~isempty(in_excel_sheet) % first try user-requested sheet
-            excel_sheet=strmatch(in_excel_sheet,char(sheet_names),'exact');
-        end
-        if ~isempty(excel_sheet)
-            excel_sheet=char(sheet_names(excel_sheet));
-        else
-            excel_sheet=char(sheet_names(1)); % third try first sheet
-            if ~silent_mode, fprintf(' - WARNING: first sheet (%s) used\n',char(sheet_names'));end
-        end
+        % there is only one sheet - assume it to be a portfolio
+        excel_sheet=char(sheet_names(1));
     end
-else
-    % there is only one sheet - assume it to be a portfolio
-    excel_sheet=char(sheet_names(1));
 end
 
 if ~silent_mode,fprintf('reading sheet %s from %s\n',excel_sheet,excel_file);end

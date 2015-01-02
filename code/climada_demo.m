@@ -23,7 +23,7 @@ if ~climada_init_vars,return;end % init/import global variables
 waitbar_status=climada_global.waitbar; % store configuration
 climada_global.waitbar=0; % substantial speedup
 
-close all force
+close all hidden
 climada_demo_gui
 
 climada_global.waitbar=waitbar_status; % set back

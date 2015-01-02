@@ -70,6 +70,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20140509, risk premium calc added
 % David N. Bresch, david.bresch@gmail.com, 20140510, risk premium map added
 % David N. Bresch, david.bresch@gmail.com, 20141220, re-encoding check added
+% David N. Bresch, david.bresch@gmail.com, 20150101, cleanup
 %-
 
 global climada_global
@@ -198,15 +199,16 @@ end
 if ~isfield(entity.assets,'hazard')
     force_re_encode=1; % entity not encoded yet
 else
-    force_re_encode=0; % entity encoded
-end
-
-if ~strcmp(entity.assets.hazard.filename,hazard.filename)
-    % not the same hazard set, force re-encoding to be on the safe side
-    % (it's likely that the climate scenario hazard event set is valid at
-    % the exact same centroids, but encoding is much faster than any later
-    % troubleshooting ;-) 
-    force_re_encode=1;
+    % assets have been encoded, check whether for same hazard
+    if ~strcmp(entity.assets.hazard.filename,hazard.filename)
+        % not the same hazard set, force re-encoding to be on the safe side
+        % (it's likely that the climate scenario hazard event set is valid at
+        % the exact same centroids, but encoding is much faster than any later
+        % troubleshooting ;-)
+        force_re_encode=1;
+    else
+        force_re_encode=0; % entity encoded
+    end
 end
 
 if force_re_encode
@@ -253,7 +255,7 @@ for measure_i = 1:n_measures+1 % last with no measures
                 if ~exist(measures_hazard_set_name,'file')
                     % only filename given in measures tab, add path:
                     if exist(hazard_file,'var')
-                        [hazard_dir,fN] = fileparts(hazard_file);
+                        [hazard_dir] = fileparts(hazard_file);
                     else
                         hazard_dir = [climada_global.data_dir filesep 'hazards']; % default
                     end
@@ -296,7 +298,7 @@ for measure_i = 1:n_measures+1 % last with no measures
         
         for map_i = 1:length(measures.damagefunctions_mapping(measure_i).map_from)
             % damagefunctions mapping
-            pos = find(orig_assets_DamageFunID==measures.damagefunctions_mapping(measure_i).map_from(map_i));
+            pos = orig_assets_DamageFunID==measures.damagefunctions_mapping(measure_i).map_from(map_i);
             entity.assets.DamageFunID(pos) = measures.damagefunctions_mapping(measure_i).map_to(map_i);
             %fprintf('mapping DamageFunID %i to %i ',...
             %    measures.damagefunctions_mapping(measure_i).map_from(map_i),...
@@ -318,12 +320,12 @@ for measure_i = 1:n_measures+1 % last with no measures
         
         if measures.hazard_high_frequency_cutoff(measure_i)>0
             % apply frequency cutoff
-            [sorted_damage,exceedence_freq,cumulative_probability,sorted_freq,event_index_out] =...
+            [~,exceedence_freq,~,~,event_index_out] =...
                 climada_damage_exceedence(EDS(measure_i).damage,EDS(measure_i).frequency,EDS(measure_i).event_ID);
-            cutoff_pos      = find(exceedence_freq>measures.hazard_high_frequency_cutoff(measure_i));
+            cutoff_pos      = exceedence_freq>measures.hazard_high_frequency_cutoff(measure_i);
             event_index_out = event_index_out(cutoff_pos);
             %%fprintf('cutoff %i events\n',length(event_index_out));
-            [tf,pos] = ismember(event_index_out,EDS(measure_i).event_ID);
+            [~,pos] = ismember(event_index_out,EDS(measure_i).event_ID);
             EDS(measure_i).damage(pos) = 0;
             % previous two lines do the same as (but much faster)
             % for index_i=1:length(event_index_out)
@@ -380,8 +382,10 @@ for measure_i = 1:n_measures
     
     % first, calculate the ED (exepected damage) perspective
     ED(measure_i)          = full(sum(EDS(measure_i).damage .* EDS(measure_i).frequency)); % calculate annual expected damage
-    DFC(measure_i,:)       = climada_EDS_DFC_report(EDS(measure_i),0,'lean');
     ED_benefit(measure_i)  = ED(end) - ED(measure_i);
+    
+    % store damage frequency curve (DFC), for information only
+    DFC(measure_i,:)       = climada_EDS_DFC_report(EDS(measure_i),0,'lean');
     
     % costs are costs as in measures table plus expected damage (for risk transfer only)
     ED_cb_ratio(measure_i) = (measures.cost(measure_i) + ED_risk_transfer(measure_i)) /ED_benefit(measure_i);
@@ -440,7 +444,7 @@ end
 
 % store in measures
 measures_impact.ED               = ED;
-measures_impact.DFC              = DFC;
+measures_impact.DFC              = DFC; % info only
 measures_impact.ED_benefit       = benefit;
 measures_impact.ED_risk_transfer = ED_risk_transfer;
 measures_impact.ED_cb_ratio      = cb_ratio;
@@ -452,9 +456,9 @@ measures_impact.peril_ID         = hazard.peril_ID;
 measures_impact.measures         = measures; % store measures into res, so we have a complete set
 
 % prepare annotation
-[fP,hazard_name]   = fileparts(EDS(1).hazard.filename);
-[fP,assets_name]   = fileparts(EDS(1).assets.filename);
-[fP,measures_name] = fileparts(measures.filename);
+[~,hazard_name]   = fileparts(EDS(1).hazard.filename);
+[~,assets_name]   = fileparts(EDS(1).assets.filename);
+[~,measures_name] = fileparts(measures.filename);
 if strcmp(measures_name,assets_name),measures_name='m';end
 measures_impact.title_str = sprintf('%s @ %s | %s',measures_name,assets_name,hazard_name);
 
@@ -471,7 +475,7 @@ measures_impact.risk_premium_fgu=measures_impact.NPV_total_climate_risk/measures
 fprintf('total climate risk premium (fgu - only a proxy):        %f%%\n',...
     measures_impact.risk_premium_fgu*100);
 measures_impact.risk_premium_net=(measures_impact.NPV_total_climate_risk-...
-    sum(measures_impact.ED_benefit(find(measures_impact.cb_ratio<1))))/measures_impact.EDS(1).Value;
+    sum(measures_impact.ED_benefit(measures_impact.cb_ratio<1)))/measures_impact.EDS(1).Value;
 fprintf('total climate risk premium (net of effective measures): %f%%\n',...
     measures_impact.risk_premium_net*100);
 fprintf('total climate risk premium reduction (relative)        %2.2f%%\n',...

@@ -27,6 +27,13 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 %   Please consider climada_damagefunction_read in case you would like to
 %   read damagefunctions separately.
 %
+%   OCTAVE: Please install the io package first, ether directly from source
+%   forge with: pkg install -forge io -auto
+%   or, (e.g. in case this fails, get the io package first from Octave
+%   source forge and then install from the downloaded package:
+%   pkg install {local_path}/io-2.2.5.tar -auto
+%   Note that it looks like Octave prefers .xlsx files
+%
 %   next step: likely climada_ELS_calc
 % CALLING SEQUENCE:
 %   [entity,entity_save_file]=climada_entity_read(entity_filename,hazard)
@@ -62,6 +69,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141121, hint to climada_damagefunction_read added
 % David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed and NOENCODE added
 % David N. Bresch, david.bresch@gmail.com, 20141230, cleanup
+% David N. Bresch, david.bresch@gmail.com, 20150101, Octave compatibility (at least for .xlsx)
 %-
 
 global climada_global
@@ -90,7 +98,7 @@ if isempty(entity_filename) % local GUI
     end
 end
 
-[fP,fN] = fileparts(entity_filename);
+[fP,fN,fE] = fileparts(entity_filename);
 entity_save_file=[fP filesep fN '.mat'];
 if climada_check_matfile(entity_filename,entity_save_file)
     % there is a .mat file more recent than the Excel
@@ -100,6 +108,14 @@ else
     % read assets
     % -----------
     assets                   = climada_spreadsheet_read('no',entity_filename,'assets',1);
+    
+    if ~isfield(assets,'Value')
+        fprintf('Error: no Value column in assets tab, aborted\n')
+        if strcmp(fE,'.ods') && climada_global.octave_mode
+            fprintf('> make sure there are no cell comments in the .ods file, as they trouble odsread\n');
+        end
+        return
+    end
     
     % check for OLD naming convention, VulnCurveID -> DamageFunID
     if isfield(assets,'VulnCurveID')
@@ -117,8 +133,9 @@ else
     % figure out the file type
     [~,~,fE]=fileparts(entity_filename);
     
-    if strcmp(fE,'.ods')
+    if strcmp(fE,'.ods') || climada_global.octave_mode
         % hard-wired sheet names for files of type .ods
+        % alos hard-wired since troubles with xlsfinfo in Octave
         sheet_names={'damagefunctions','measures','discount'};
     else
         % inquire sheet names from .xls

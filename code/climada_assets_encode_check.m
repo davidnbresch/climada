@@ -66,8 +66,22 @@ else
         load(entity.assets.hazard.filename) % contains a hazard set
     else
         if isempty(hazard)
-            fprintf('Error: no hazard found, aborted (%s)\n',entity.assets.hazard.filename);
-            return
+            % try to find a matching hazard event set
+            hazard_filename=entity.assets.hazard.filename;
+            if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
+                hazard_filename = strrep(hazard_filename,'\',filesep); % switch filesep
+            elseif strfind(computer,'PCWIN')
+                hazard_filename = strrep(hazard_filename,'/',filesep); % switch filesep
+            end
+            [~,fN,fE]=fileparts(strrep(hazard_filename,'...',''));
+            hazard_filename=[climada_global.data_dir filesep 'hazards' filesep fN fE];
+            if exist(hazard_filename,'file')
+                fprintf('loading %s (note: in default path)\n',hazard_filename);
+                load(hazard_filename) % contains a hazard set
+            else
+                fprintf('Error: no hazard found, aborted (%s)\n',entity.assets.hazard.filename);
+                return
+            end
         end
     end
 end

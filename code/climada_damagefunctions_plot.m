@@ -110,6 +110,6 @@ for ID_i=1:length(unique_IDs)
     end
 end
 set(gcf,'Color',[1 1 1]);
-set(gcf,'Name','damagefunctions plot');
+set(gcf,'Name','damagefunctions');
 
 end

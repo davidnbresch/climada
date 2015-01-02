@@ -47,7 +47,7 @@ else
     [fP,fN,fE]=fileparts(spreadsheet_file);
 end
 
-if strcmp(fE,'.xls')
+if strcmp(fE,'.xls') || strcmp(fE,'.xlsx')
     res=climada_xlsread(interactive_mode,spreadsheet_file,spreadsheet_sheet,silent_mode);
 elseif strcmp(fE,'.ods')
     res=climada_odsread(interactive_mode,spreadsheet_file,spreadsheet_sheet,silent_mode);

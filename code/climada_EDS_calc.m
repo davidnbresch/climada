@@ -70,6 +70,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20141127, force_re_encode
 % David N. Bresch, david.bresch@gmail.com, 20141218, Cover checks added
 % David N. Bresch, david.bresch@gmail.com, 20141230, only assets.Value>0 prcocessed for speedup
+% David N. Bresch, david.bresch@gmail.com, 20150101, annotation check for 'MAC' and 'APPLE'
 %-
 
 global climada_global
@@ -298,7 +299,7 @@ msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_e
 %fprintf('%s\n',msgstr);
 EDS.comment         = msgstr;
 EDS.hazard.filename = hazard.filename;
-if strfind(computer,'MAC')
+if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
     EDS.hazard.filename = strrep(EDS.hazard.filename,'\',filesep); % switch filesep
 elseif strfind(computer,'PCWIN')
     EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % switch filesep

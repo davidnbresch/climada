@@ -141,11 +141,12 @@ for EDS_i=1:length(EDS)
     end
     hold on
     ii = ii+1; if ii>length(marker_), ii=1; end
-    if isfield(EDS(EDS_i),'annotation_name'), legend_str{EDS_i}=EDS(EDS_i).annotation_name; end
+    if isfield(EDS(EDS_i),'annotation_name'),legend_str{EDS_i}=strrep(EDS(EDS_i).annotation_name,'_',' '); end
 end % EDS_i
 
 set(gca,'fontsize',12)
-if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
+if ~isempty(legend_str),legend(legend_str,'Location','NorthWest');end % add legend
+%if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
 grid on; % show grid
 xlabel('Return period (years)')
 if Percentage_Of_Value_Flag
@@ -205,7 +206,7 @@ if ~isempty(EDS_comparison)
         plot(return_period, sorted_damage, marker_(ii,:), 'color',color_(ii,:), 'LineWidth',1.2, 'markersize',msize);
         hold on
         ii = ii+1; if ii>length(marker_), ii=1; end
-        if isfield(EDS(EDS_i),'annotation_name'), legend_str{end+1} = EDS(EDS_i).annotation_name; end
+        if isfield(EDS(EDS_i),'annotation_name'), legend_str{EDS_i}=strrep(EDS(EDS_i).annotation_name,'_',' '); end
         % add title
         [~,hazard_name]    = fileparts(EDS(EDS_i).hazard.filename);
         [~,assets_name]    = fileparts(EDS(EDS_i).assets.filename);
@@ -213,7 +214,8 @@ if ~isempty(EDS_comparison)
         title_strs{EDS_i+1} = strrep(strrep(title_str_comp,'_',' '),'|','\otimes'); % since title is LaTEX format
         
     end % EDS_i
-    if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','nw');end % add legend
+    if ~isempty(legend_str),legend(legend_str,'Location','NorthWest');end % add legend
+    %if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
     title_strs{1}    = title_str;
     title(title_strs,'FontSize',12);
     hold off

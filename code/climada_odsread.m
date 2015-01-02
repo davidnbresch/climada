@@ -72,7 +72,12 @@ end
 
 % read raw ods data
 options.sheet_name=ods_sheet;
-RAW = loadods(ods_file,options); % call the raw routine by Alex Marten
+
+if climada_global.octave_mode
+    [NUMARR,TXTARR,RAW,LIMITS]=odsread(ods_file,ods_sheet); % from Octave io
+else
+    RAW = loadods(ods_file,options); % call the raw routine by Alex Marten
+end
 
 if isempty(RAW)
     if ~silent_mode,fprintf('ERROR reading sheet %s from %s, failed\n',ods_sheet,ods_file);end
