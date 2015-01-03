@@ -71,6 +71,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20141218, Cover checks added
 % David N. Bresch, david.bresch@gmail.com, 20141230, only assets.Value>0 prcocessed for speedup
 % David N. Bresch, david.bresch@gmail.com, 20150101, annotation check for 'MAC' and 'APPLE'
+% David N. Bresch, david.bresch@gmail.com, 20150103, check Octave compatibility of (large) hazard event sets
 %-
 
 global climada_global
@@ -122,6 +123,16 @@ if ~isstruct(hazard)
     load(hazard_file);
 end
 
+if climada_global.octave_mode && numel(hazard.intensity)==1
+    fprintf('ERROR: hazard.intensity corrupted, save in MATLAB again (use ''-v7'', not ''-v7.3'')\n')
+    % since in such a case, hazard.intenisity contains sub-fields,
+    % something ike the following line might work (but did no
+    % immediately - hence just save in MATLAB again)
+    %intensity=sparse(hazard.intensity.ir,hazard.intensity.jc,...
+    %    hazard.intensity.data,hazard.event_count,length(hazard.lon));
+    return
+end
+
 % check for consistency of entity and the hazard set it has been encoded to
 % but: one might have used the same centroids for different hazard sets, so
 % it's only a WARNING, not an error
@@ -170,7 +181,7 @@ EDS.ED_at_centroid   = zeros(n_assets,1); % expected damage per centroid
 EDS.Value             = 0;
 EDS.frequency         = hazard.frequency;
 EDS.orig_event_flag   = hazard.orig_event_flag;
-EDS.hazard.peril_ID   = hazard.peril_ID;
+EDS.hazard.peril_ID   = char(hazard.peril_ID);
 if climada_global.EDS_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
@@ -212,14 +223,14 @@ for asset_ii=1:nn_assets
     % find the damagefunctions for the asset under consideration
     asset_damfun_pos = find(entity.damagefunctions.DamageFunID == entity.assets.DamageFunID(asset_i));
     if isfield(entity.damagefunctions,'peril_ID') % refine for peril
-        asset_damfun_pos=asset_damfun_pos(strcmp(entity.damagefunctions.peril_ID(asset_damfun_pos),hazard.peril_ID(1:2)));
-    end
-    
+        asset_damfun_pos=asset_damfun_pos(strcmp(entity.damagefunctions.peril_ID(asset_damfun_pos),char(hazard.peril_ID(1:2))));
+    end    
+        
     if ~isempty(asset_damfun_pos)
         % convert hazard intensity into MDD
         % we need a trick to apply interp1 to the SPARSE hazard matrix: we evaluate only at non-zero elements, but therefore need a function handle
         interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp        
+        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp 
         MDD            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
         % OPTIMIZATION HINT: see climada_sparse_interp, would interp_x_table be uniformly spaced...
         
@@ -298,13 +309,13 @@ t_elapsed = etime(clock,t0);
 msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
 %fprintf('%s\n',msgstr);
 EDS.comment         = msgstr;
-EDS.hazard.filename = hazard.filename;
+EDS.hazard.filename = char(hazard.filename);
 if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
     EDS.hazard.filename = strrep(EDS.hazard.filename,'\',filesep); % switch filesep
 elseif strfind(computer,'PCWIN')
     EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % switch filesep
 end
-EDS.hazard.comment  = hazard.comment;
+EDS.hazard.comment  = char(hazard.comment);
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.Latitude = entity.assets.Latitude;
 EDS.assets.Longitude = entity.assets.Longitude;

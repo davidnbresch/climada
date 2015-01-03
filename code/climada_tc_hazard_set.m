@@ -66,6 +66,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 % David N. Bresch, david.bresch@gmail.com, 20130506, centroids filename handling improved
 % David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
 % David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
+% David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
 %-
 
 hazard=[]; % init
@@ -82,6 +83,7 @@ if ~exist('centroids','var'),centroids=[];end
 % PARAMETERS
 %
 check_plot=0; % only for few tracks, please
+% check_plot commented out here and in climada_tc_windfield for speedup, see code
 %
 % since we store the hazard as sparse array, we need an a-priory estimation
 % of it's density
@@ -202,7 +204,7 @@ hazard.orig_event_flag  = zeros(1,hazard.event_count);
 hazard.yyyy             = zeros(1,hazard.event_count);
 hazard.mm               = zeros(1,hazard.event_count);
 hazard.dd               = zeros(1,hazard.event_count);
-hazard.nodetime_mat     = zeros(1,hazard.event_count);
+hazard.datenum     = zeros(1,hazard.event_count);
 
 % allocate the hazard array (sparse, to manage memory)
 hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
@@ -221,19 +223,22 @@ else
     format_str='%s';
 end
 
+tc_track=climada_tc_equal_timestep(tc_track); % make equal timesteps
+    
 for track_i=1:n_tracks
     
     % calculate wind for every centroids, equal timestep within this routine
-    res                             = climada_tc_windfield(tc_track(track_i),centroids,1,1,check_plot);
-    %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,1,1,check_plot);
-    hazard.intensity(track_i,:)           = res.gust;
+    res                             = climada_tc_windfield(tc_track(track_i),centroids,0,1,check_plot);
+    %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,0,1,check_plot);
+    
+    hazard.intensity(track_i,:)     = res.gust;
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
     hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag;
     
     hazard.yyyy(track_i)            = tc_track(track_i).yyyy(1);
     hazard.mm(track_i)              = tc_track(track_i).mm(1);
     hazard.dd(track_i)              = tc_track(track_i).dd(1);
-    hazard.nodetime_mat(track_i)    = tc_track(track_i).nodetime_mat(1);
+    hazard.datenum(track_i)    = tc_track(track_i).datenum(1);
     hazard.name{track_i}            = tc_track(track_i).name;
     
     % if check_plot
@@ -367,7 +372,7 @@ if create_yearset
     hazard.orig_yearset(year_i).yyyy=active_year;
     hazard.orig_yearset(year_i).event_count=event_count;
     hazard.orig_yearset(year_i).event_index=event_index;
-
+    
     if climada_global.waitbar
         close(h) % dispose waitbar
     else

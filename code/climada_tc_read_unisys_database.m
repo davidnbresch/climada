@@ -52,7 +52,7 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file,che
 %       tc_track(i).mm: month, optional
 %       tc_track(i).dd: day, optional
 %       tc_track(i).hh: hours
-%       tc_track(i).nodetime_mat:  matlab notation for dat: yyyy,mm,dd,hh
+%       tc_track(i).datenum:  matlab notation for date and time (see function datestr)
 %       tc_track(i).TimeStep(j)=time step [h] from this to next node
 %       tc_track(i).ID_no: unique ID, optional
 %       tc_track(i).name: name, optional
@@ -383,12 +383,12 @@ if ~climada_check_matfile(unisys_file,tc_track_proc_file)
                 tc_track(next_track).yyyy(last_fy_timestep+1:end)=tc_track(next_track).yyyy(1)+1;
             end
             
-            tc_track(next_track).nodetime_mat=datenum(tc_track(next_track).yyyy,tc_track(next_track).mm,tc_track(next_track).dd,tc_track(next_track).hh,0,0) ;
+            tc_track(next_track).datenum=datenum(tc_track(next_track).yyyy,tc_track(next_track).mm,tc_track(next_track).dd,tc_track(next_track).hh,0,0) ;
             
             % re-calculate timestep
             tc_track(next_track).TimeStep=tc_track(next_track).lon*0.0; % init
-            for time_i=1:length(tc_track(next_track).nodetime_mat)-1
-                d_hours=(tc_track(next_track).nodetime_mat(time_i+1)-tc_track(next_track).nodetime_mat(time_i))*24; % [h]
+            for time_i=1:length(tc_track(next_track).datenum)-1
+                d_hours=(tc_track(next_track).datenum(time_i+1)-tc_track(next_track).datenum(time_i))*24; % [h]
                 if abs(d_hours)>6
                     d_hours;
                 end

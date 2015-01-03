@@ -249,10 +249,10 @@ tc_track_out.CentralPressureUnit  = tc_track.CentralPressureUnit;
 
 
 %--Lea,5.5.2011--
-tc_track.nodetime_mat = datenum(tc_track.yyyy,tc_track.mm,tc_track.dd,tc_track.hh,0,0);
+tc_track.datenum = datenum(tc_track.yyyy,tc_track.mm,tc_track.dd,tc_track.hh,0,0);
 
 % find and delete duplicate entries
-index_sametime = find(diff(tc_track.nodetime_mat)==0)+1;
+index_sametime = find(diff(tc_track.datenum)==0)+1;
 
 tc_track.lon             (index_sametime) = [];
 tc_track.lat             (index_sametime) = [];
@@ -262,14 +262,14 @@ tc_track.yyyy            (index_sametime) = [];
 tc_track.mm              (index_sametime) = [];
 tc_track.dd              (index_sametime) = [];
 tc_track.hh              (index_sametime) = [];
-tc_track.nodetime_mat    (index_sametime) = [];
+tc_track.datenum    (index_sametime) = [];
 
 % calculate timestep between measurement and the following measurement in
 % hours
-for timestep_i = 1:length(tc_track.nodetime_mat)-1
-    tc_track.TimeStep(timestep_i) = (tc_track.nodetime_mat(timestep_i+1) - tc_track.nodetime_mat(timestep_i))*24; %[h]
+for timestep_i = 1:length(tc_track.datenum)-1
+    tc_track.TimeStep(timestep_i) = (tc_track.datenum(timestep_i+1) - tc_track.datenum(timestep_i))*24; %[h]
 end
-tc_track.TimeStep(length(tc_track.nodetime_mat)) = tc_track.TimeStep(length(tc_track.nodetime_mat)-1);
+tc_track.TimeStep(length(tc_track.datenum)) = tc_track.TimeStep(length(tc_track.datenum)-1);
 %------
   
 
@@ -288,7 +288,7 @@ tc_track_out.dd                   = tc_track.dd;
 tc_track_out.hh                   = tc_track.hh;
 tc_track_out.ID_no                = tc_track.ID_no;
 tc_track_out.orig_event_flag      = 1;
-tc_track_out.nodetime_mat         = tc_track.nodetime_mat;
+tc_track_out.datenum         = tc_track.datenum;
 tc_track_out.extratrop            = ''; % dummy
 tc_track_out.name                 = tc_track.name;
 

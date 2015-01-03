@@ -115,14 +115,14 @@ tc_track.yyyy             = tc_track.yyyy(1:aggregation:end);
 tc_track.mm               = tc_track.mm(1:aggregation:end);
 tc_track.dd               = tc_track.dd(1:aggregation:end);
 tc_track.hh               = tc_track.hh(1:aggregation:end);
-tc_track.nodetime_mat     = tc_track.nodetime_mat(1:aggregation:end);
+tc_track.datenum          = tc_track.datenum(1:aggregation:end);
 
 fprintf('Calculating windfield for required timestep (takes some time with a lot of centroids)...')
 equal_timestep = 0;
 res  = climada_tc_windfield_timestep(tc_track,centroids,equal_timestep); 
 res.gust_aggr = res.gust;
 fprintf(' done.\n')
-stormdate = tc_track.nodetime_mat(1);
+stormdate = tc_track.datenum(1);
 stormname = tc_track.name;
 stormname(stormname == '_') = ' ';
 

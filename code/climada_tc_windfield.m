@@ -50,7 +50,11 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 % OPTIONAL INPUT PARAMETERS:
 %   equal_timestep: if set=1 (default), first interpolate the track to a common
 %       timestep, if set=0, no equalization of TC track data (not recommended)
+%       BUT: for speedup, run climada_tc_equal_timestep for ALL tracks
+%       prior to calling climada_tc_windfield (see e.g. climada_tc_hazard_set) 
+%       and then set equal_timestep=0 in calling climada_tc_windfield 
 %   silent_mode: if =1, do not write to stdout unless severe warning
+%   check_plot: disabled, see code, commented out for speedup
 % OUTPUTS:
 %   res: the output strcuture, with fields
 %       gust(i): the windfield [m/s] at all centroids i
@@ -72,7 +76,7 @@ if ~exist('tc_track'      , 'var'), tc_track       = []; end
 if ~exist('centroids'     , 'var'), centroids      = []; end
 if ~exist('equal_timestep', 'var'), equal_timestep = 1; end
 if ~exist('silent_mode'   , 'var'), silent_mode    = 0; end
-if ~exist('check_plot'    , 'var'), check_plot     = 0; end
+if ~exist('check_plot'    , 'var'), check_plot     = 0; end % check_plot commented out for speedup
 
 % PARAMETERS
 %
@@ -140,7 +144,10 @@ if ~isstruct(centroids)
     end
 end
 
-tc_track_ori = tc_track;
+% if check_plot
+% to store original track for plotting, see below
+%     tc_track_ori = tc_track; 
+% end 
 
 if equal_timestep
     if ~silent_mode,fprintf('NOTE: tc_track refined (1 hour timestep) prior to windfield calculation\n');end
@@ -349,90 +356,90 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
     end % D<10*R
 end % centroid_i
 
-title_str = [tc_track.name ', ' datestr(tc_track.nodetime_mat(1))];
+title_str = [tc_track.name ', ' datestr(tc_track.datenum(1))];
 if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
 
 
 %--------------
 % FIGURE
 %--------------
-if check_plot
-    fprintf('preparing footprint plot\n')
-
-        
-    %scale figure according to range of longitude and latitude
-    scale  = max(centroids.Longitude) - min(centroids.Longitude);
-    scale2 =(max(centroids.Longitude) - min(centroids.Longitude))/...
-            (min(max(centroids.Latitude),60)-max(min(centroids.Latitude),-50));
-    height = 0.5;
-    if height*scale2 > 1.2; height = 1.2/scale2; end
-    fig = climada_figuresize(height,height*scale2+0.15);
-    
-    % create gridded values
-    [X, Y, gridded_VALUE] = climada_gridded_VALUE(res.gust, centroids);
-    gridded_max       = max(max(gridded_VALUE));
-    gridded_max_round = 90;
-        
-    contourf(X, Y, full(gridded_VALUE),...
-             0:10:gridded_max_round,'edgecolor','none')
-    hold on
-    climada_plot_world_borders(0.7)
-    climada_plot_tc_track_stormcategory(tc_track_ori);
-    
-    %centroids?
-    plot(centroids.Longitude, centroids.Latitude, '+r','MarkerSize',0.8,'linewidth',0.1)
-    
-    axis equal
-    axis([min(centroids.Longitude)-scale/30  max(centroids.Longitude)+scale/30 ...
-          max(min(centroids.Latitude),-50)-scale/30  min(max(centroids.Latitude),60)+scale/30])
-      
-    caxis([0 gridded_max_round])
- 
-    
-    cmap_=...
-  [1.0000    1.0000    1.0000;
-    0.8100    0.8100    0.8100;
-    0.6300    0.6300    0.6300;
-    1.0000    0.8000    0.2000;
-    0.9420    0.6667    0.1600;
-    0.8839    0.5333    0.1200;
-    0.8259    0.4000    0.0800;
-    0.7678    0.2667    0.0400;
-    0.7098    0.1333         0];
-    
-    colormap(cmap_)
-    
-    
-    colorbartick           = [0:10:gridded_max_round round(gridded_max)];
-    colorbarticklabel      = num2cell(colorbartick);
-    colorbarticklabel{end} = [num2str(gridded_max,'%10.2f') 'max'];
-    colorbarticklabel{end} = [int2str(gridded_max)          'max'];
-    t = colorbar('YTick',colorbartick,'yticklabel',colorbarticklabel);
-    set(get(t,'ylabel'),'String', 'Wind speed (m s^{-1})','fontsize',8);
-    xlabel('Longitude','fontsize',8)
-    ylabel('Latitude','fontsize',8)
-    
-    title(title_str,'interpreter','none','fontsize',8)
-  
-    set(gca,'fontsize',8) 
-
-    choice = questdlg('print?','print');
-    switch choice
-    case 'Yes'
-        check_printplot = 1;
-    case 'No'
-        check_printplot = 0;
-    case 'Cancel'
-        return
-    end
-
-    if check_printplot %(>=1)   
-        foldername = [filesep 'results' filesep 'footprint_' tc_track.name '.pdf'];
-        print(fig,'-dpdf',[climada_global.data_dir foldername])
-        %close
-        fprintf('saved 1 FIGURE in folder %s \n', foldername);
-    end
-end
+% if check_plot
+%     fprintf('preparing footprint plot\n')
+% 
+%         
+%     %scale figure according to range of longitude and latitude
+%     scale  = max(centroids.Longitude) - min(centroids.Longitude);
+%     scale2 =(max(centroids.Longitude) - min(centroids.Longitude))/...
+%             (min(max(centroids.Latitude),60)-max(min(centroids.Latitude),-50));
+%     height = 0.5;
+%     if height*scale2 > 1.2; height = 1.2/scale2; end
+%     fig = climada_figuresize(height,height*scale2+0.15);
+%     
+%     % create gridded values
+%     [X, Y, gridded_VALUE] = climada_gridded_VALUE(res.gust, centroids);
+%     gridded_max       = max(max(gridded_VALUE));
+%     gridded_max_round = 90;
+%         
+%     contourf(X, Y, full(gridded_VALUE),...
+%              0:10:gridded_max_round,'edgecolor','none')
+%     hold on
+%     climada_plot_world_borders(0.7)
+%     climada_plot_tc_track_stormcategory(tc_track_ori);
+%     
+%     %centroids?
+%     plot(centroids.Longitude, centroids.Latitude, '+r','MarkerSize',0.8,'linewidth',0.1)
+%     
+%     axis equal
+%     axis([min(centroids.Longitude)-scale/30  max(centroids.Longitude)+scale/30 ...
+%           max(min(centroids.Latitude),-50)-scale/30  min(max(centroids.Latitude),60)+scale/30])
+%       
+%     caxis([0 gridded_max_round])
+%  
+%     
+%     cmap_=...
+%   [1.0000    1.0000    1.0000;
+%     0.8100    0.8100    0.8100;
+%     0.6300    0.6300    0.6300;
+%     1.0000    0.8000    0.2000;
+%     0.9420    0.6667    0.1600;
+%     0.8839    0.5333    0.1200;
+%     0.8259    0.4000    0.0800;
+%     0.7678    0.2667    0.0400;
+%     0.7098    0.1333         0];
+%     
+%     colormap(cmap_)
+%     
+%     
+%     colorbartick           = [0:10:gridded_max_round round(gridded_max)];
+%     colorbarticklabel      = num2cell(colorbartick);
+%     colorbarticklabel{end} = [num2str(gridded_max,'%10.2f') 'max'];
+%     colorbarticklabel{end} = [int2str(gridded_max)          'max'];
+%     t = colorbar('YTick',colorbartick,'yticklabel',colorbarticklabel);
+%     set(get(t,'ylabel'),'String', 'Wind speed (m s^{-1})','fontsize',8);
+%     xlabel('Longitude','fontsize',8)
+%     ylabel('Latitude','fontsize',8)
+%     
+%     title(title_str,'interpreter','none','fontsize',8)
+%   
+%     set(gca,'fontsize',8) 
+% 
+%     choice = questdlg('print?','print');
+%     switch choice
+%     case 'Yes'
+%         check_printplot = 1;
+%     case 'No'
+%         check_printplot = 0;
+%     case 'Cancel'
+%         return
+%     end
+% 
+%     if check_printplot %(>=1)   
+%         foldername = [filesep 'results' filesep 'footprint_' tc_track.name '.pdf'];
+%         print(fig,'-dpdf',[climada_global.data_dir foldername])
+%         %close
+%         fprintf('saved 1 FIGURE in folder %s \n', foldername);
+%     end
+% end
  
 end
     

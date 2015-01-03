@@ -27,13 +27,20 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 %   measures_impact=climada(entity,entitiy_future,hazard_today_file,hazard_future_file)
 % EXAMPLE:
 %   measures_impact=climada % all prompted for
+%   measures_impact=climada('TEST_CLIMADA'); % TEST mode
 % INPUTS:
 %   entity_today_file: entity (assets, damagefunctions and measures) today
-%       a climada entity structure (see climada_entity_read)
+%       a climada entity file, either an Excel (.xls or .xlsx) or Open
+%       Office (.ods file) or an already encoded .mat file. Note that in
+%       case a .mat file is provided, the code does not notice if the
+%       original .xls or .ods got changed - hence preferable select the
+%       source, i.e. .xls or .ods).   
 %       > prompted for if empty
+%       ='TEST_CLIMADA': special test mode, the code uses the test files
+%       (as used in climada_demo and climada_demo_step_by_step)
 %   entity_future_file: future entity (assets, damagefunctions and measures) to
 %       represent projected economic growth, a climada entity structure
-%       (see climada_entity_read)
+%       (see climada_entity_read, same remark as above)
 %       > prompted for if empty
 %   hazard_today_file: a climada hazard event set for today
 %       > promted for if not given
@@ -44,7 +51,7 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 %       damagefunctions)
 %       =0: no plots (default)
 %       =1: show plots
-%       The code also switches to ask for plotthis if it needs to prompt
+%       The code also switches to ask for plot if it needs to prompt
 %       for filenames, i.e. operates in interactive mode.
 % OUTPUTS:
 %   measures_impact: the same output as climada_measures_impact
@@ -82,6 +89,18 @@ if ~exist('check_plots','var'),       check_plots       =0;end
 % if not all inputs parameters are provided, i.e. we prompt for filenames,
 % we also will show the questdlg (see code).
 show_questdlg=0; % default=0
+%
+% the files for TEST mode
+if strcmpi(entity_today_file,'TEST_CLIMADA')
+    entity_today_file =[climada_global.data_dir filesep 'entities' filesep 'demo_today' climada_global.spreadsheet_ext];
+    entity_future_file=[climada_global.data_dir filesep 'entities' filesep 'demo_today' climada_global.spreadsheet_ext];
+    hazard_today_file =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
+    hazard_future_file=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
+    check_plots=1;
+    show_questdlg=0;
+    fprintf('SPECIAL climada TEST mode\n')
+end
+
 
 % prompt for entity_today_file if not given
 if isempty(entity_today_file) % local GUI
@@ -209,11 +228,13 @@ if check_plots
             entity_today.assets.Longitude,entity_today.assets.Latitude)
     end
     figure;climada_damagefunctions_plot(entity_today,hazard.peril_ID);
+    drawnow % flush the event queue and update the figure window
 end % check_plots
 
 % before calling climada_measures_impact, force re-encoding by removing
 % hazard from entity.assets
-entity_today.assets=rmfield(entity_today.assets,'hazard');
+if isfield(entity_today.assets,'hazard'),
+    entity_today.assets=rmfield(entity_today.assets,'hazard');end
 % calculate today's measures impact, for reference
 measures_impact_today=climada_measures_impact(entity_today,hazard,'no');
 
@@ -235,12 +256,14 @@ end % check_plots
 
 % before calling climada_measures_impact, force re-encoding by removing
 % hazard from entity.assets
-entity_future.assets=rmfield(entity_future.assets,'hazard');
+if isfield(entity_today.assets,'hazard'),
+    entity_future.assets=rmfield(entity_future.assets,'hazard');end
 % calculate future measures impact, discount to today - the final calculation
 measures_impact=climada_measures_impact(entity_future,hazard,measures_impact_today); % hazard contains future hazard
 
 % show adaptation cost curve and event view
 figure('Name','adaptation event view');climada_adaptation_event_view(measures_impact); % 2nd last to
 figure('Name','adaptation cost curve');climada_adaptation_cost_curve(measures_impact); % to be best visible
+drawnow % flush the event queue and update the figure window
 
 end

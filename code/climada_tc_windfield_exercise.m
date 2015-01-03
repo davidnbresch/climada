@@ -323,7 +323,7 @@ for centroid_i=1:centroid_count % now loop over all centroids
     end % D<10*R
 end % centroid_i
 
-title_str = [tc_track.name ', ' datestr(tc_track.nodetime_mat(1))];
+title_str = [tc_track.name ', ' datestr(tc_track.datenum(1))];
 if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
 
 
