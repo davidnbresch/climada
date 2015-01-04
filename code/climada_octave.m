@@ -55,16 +55,18 @@ if ~isempty(which('OCTAVE_VERSION'))
     end
     climada_global.map_border_file=map_border_file_oct;
     
-    % plus, for speedup, set the coastline file as map border file
-    %fprintf('Octave: map_boder_file set to coastline_file for speedup\n');
-    %climada_global.map_border_file=climada_global.coastline_file;
-    
     % Octave's io package works properly with .xlsx (on Mac), therefore, we
     % set the default spreadsheet extension accordingly:
     climada_global.spreadsheet_ext='.xlsx';
     % One better converts other Excel files (.xls) into .xlsx then to try
     % fix such Excel-related backward compatibility issues
 
+    %more off % no pagination of output, just let if flow
+    % this way, Octave behaves like MATLAB - the experienced user might indeed 
+    % prefer paged output, but we set everything to as close as MATLAB to start with  
+    page_screen_output(0)
+    page_output_immediately(1)
+    
     ok=1; % yes, we're running on Octave
     
 end
