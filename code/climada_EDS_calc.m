@@ -72,6 +72,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20141230, only assets.Value>0 prcocessed for speedup
 % David N. Bresch, david.bresch@gmail.com, 20150101, annotation check for 'MAC' and 'APPLE'
 % David N. Bresch, david.bresch@gmail.com, 20150103, check Octave compatibility of (large) hazard event sets
+% David N. Bresch, david.bresch@gmail.com, 20150105, filesep conversion (from either PC or MAC) solved
 %-
 
 global climada_global
@@ -309,12 +310,10 @@ t_elapsed = etime(clock,t0);
 msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
 %fprintf('%s\n',msgstr);
 EDS.comment         = msgstr;
-EDS.hazard.filename = char(hazard.filename);
-if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
-    EDS.hazard.filename = strrep(EDS.hazard.filename,'\',filesep); % switch filesep
-elseif strfind(computer,'PCWIN')
-    EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % switch filesep
-end
+% since a hazard event set might have been created on another Machine, make
+% sure it can later be referenced (with filesep and hence fileparts):
+EDS.hazard.filename = strrep(char(hazard.filename),'\',filesep); % from PC
+EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % from MAC
 EDS.hazard.comment  = char(hazard.comment);
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.Latitude = entity.assets.Latitude;
