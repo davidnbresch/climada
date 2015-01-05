@@ -67,19 +67,22 @@ function [h,yy,zz] = climada_arrow(varargin)
 % http://www.usc.edu/civil_eng/johnsone/
 %-
 
+global climada_global
+if climada_global.octave_mode==1,return;end % give up if Octave
+
 % global variable initialization
 global ARROW_PERSP_WARN ARROW_STRETCH_WARN ARROW_AXLIMITS
 if isempty(ARROW_PERSP_WARN  ), ARROW_PERSP_WARN  =1; end;
 if isempty(ARROW_STRETCH_WARN), ARROW_STRETCH_WARN=1; end;
 
 % Handle callbacks
-if (nargin>0 & isstr(varargin{1}) & strcmp(lower(varargin{1}),'callback')),
+if (nargin>0 && isstr(varargin{1}) && strcmp(lower(varargin{1}),'callback')),
 	arrow_callback(varargin{2:end}); return;
 end;
 
 % Are we doing the demo?
 c = sprintf('\n');
-if (nargin==1 & isstr(varargin{1})),
+if (nargin==1 && isstr(varargin{1})),
 	arg1 = lower(varargin{1});
 	if strncmp(arg1,'prop',4), arrow_props;
 	elseif strncmp(arg1,'demo',4)
@@ -114,7 +117,7 @@ lastnumeric = firstprop-1;
 if (firstprop<=nargin),
 	for k=firstprop:2:nargin,
 		curarg = varargin{k};
-		if ~isstr(curarg) | sum(size(curarg)>1)>1,
+		if ~isstr(curarg) || sum(size(curarg)>1)>1,
 			error([upper(mfilename) ' requires that a property name be a single string.']);
 		end;
 	end;
@@ -221,12 +224,12 @@ oldh      = arrow_defcheck(oldh     ,[]          ,'ObjectHandles');
 ispatch   = arrow_defcheck(ispatch  ,defispatch  ,''             );
 
 % check transpose on arguments
-[m,n]=size(start   );   if any(m==[2 3])&(n==1|n>3),   start    = start';      end;
-[m,n]=size(stop    );   if any(m==[2 3])&(n==1|n>3),   stop     = stop';       end;
-[m,n]=size(crossdir);   if any(m==[2 3])&(n==1|n>3),   crossdir = crossdir';   end;
+[m,n]=size(start   );   if any(m==[2 3])&&(n==1|n>3),   start    = start';      end;
+[m,n]=size(stop    );   if any(m==[2 3])&&(n==1|n>3),   stop     = stop';       end;
+[m,n]=size(crossdir);   if any(m==[2 3])&&(n==1|n>3),   crossdir = crossdir';   end;
 
 % convert strings to numbers
-if ~isempty(ends) & isstr(ends),
+if ~isempty(ends) && isstr(ends),
 	endsorig = ends;
 	[m,n] = size(ends);
 	col = lower([ends(:,1:min(3,n)) ones(m,max(0,3-n))*' ']);
@@ -243,7 +246,7 @@ if ~isempty(ends) & isstr(ends),
 else,
 	ends = ends(:);
 end;
-if ~isempty(ispatch) & isstr(ispatch),
+if ~isempty(ispatch) && isstr(ispatch),
 	col = lower(ispatch(:,1));
 	patchchar='p'; linechar='l'; defchar=' ';
 	mask = col~=patchchar & col~=linechar & col~=defchar;
@@ -302,7 +305,7 @@ if (narrows<=0), narrows=1; end;
 ii = find((argsizes~=0)&(argsizes~=1)&(argsizes~=narrows));
 if ~isempty(ii),
 	s = args(ii',:);
-	while ((size(s,2)>1)&((abs(s(:,size(s,2)))==0)|(abs(s(:,size(s,2)))==abs(' ')))),
+	while ((size(s,2)>1)&&((abs(s(:,size(s,2)))==0)||(abs(s(:,size(s,2)))==abs(' ')))),
 		s = s(:,1:size(s,2)-1);
 	end;
 	s = [ones(length(ii),1)*[upper(mfilename) ' requires that  '] s ...
@@ -390,7 +393,7 @@ if ~isempty(oldh),
 			if (isinf(crossdir(k,2))),    crossdir(k,2) = ud(13);   end;
 			if (isinf(crossdir(k,3))),    crossdir(k,3) = ud(14);   end;
 			if (isinf(ends(k))),          ends(k)       = ud(15);   end;
-		elseif strcmp(ohtype,'line')|strcmp(ohtype,'patch'), % it's a non-arrow line or patch
+		elseif strcmp(ohtype,'line')||strcmp(ohtype,'patch'), % it's a non-arrow line or patch
 			convLineToPatch = 1; %set to make arrow patches when converting from lines.
 			if isinf(ispatch(k)), ispatch(k)=convLineToPatch|strcmp(ohtype,'patch'); end;
 			x=get(oh,'XData');  x=x(~isnan(x(:)));  if isempty(x), x=NaN; end;
@@ -482,7 +485,7 @@ while (any(axnotdone)),
 	manualcamera = strcmp(get(curax,str_camera),'manual');
 	if ~arrow_WarpToFill(notstretched,manualcamera,curax),
 		% give a warning that this has not been thoroughly tested
-		if 0 & ARROW_STRETCH_WARN,
+		if 0 && ARROW_STRETCH_WARN,
 			ARROW_STRETCH_WARN = 0;
 			strs = {str_stretch{1:2},str_camera{:}};
 			strs = [char(ones(length(strs),1)*sprintf('\n    ')) char(strs)]';
@@ -509,7 +512,7 @@ while (any(axnotdone)),
 			curap = [curap(1:2)+(curap(3:4)-textpos)/2 textpos];
 		end;
 	end;
-	if ARROW_PERSP_WARN & ~strcmp(get(curax,'Projection'),'orthographic'),
+	if ARROW_PERSP_WARN && ~strcmp(get(curax,'Projection'),'orthographic'),
 		ARROW_PERSP_WARN = 0;
 		warning([upper(mfilename) ' does not yet work right for 3-D perspective projection.']);
 	end;
@@ -534,7 +537,8 @@ while (any(axnotdone)),
 		axl(ii,[1 2])=-axl(ii,[2 1]);
 	end;
 	% compute the range of 2-D values
-	curT = get(curax,'Xform');
+	%curT = get(curax,'Xform'); % 20150105, david.bresch@gmail.com
+	curT = get(gca,'Xform');
 	lim = curT*[0 1 0 1 0 1 0 1;0 0 1 1 0 0 1 1;0 0 0 0 1 1 1 1;1 1 1 1 1 1 1 1];
 	lim = lim(1:2,:)./([1;1]*lim(4,:));
 	curlimmin = min(lim')';
@@ -867,7 +871,7 @@ if (nargout<=1),
 	if isempty(oldh), H=zeros(narrows,1); else, H=oldh; end;
 %	% make or modify the arrows
 	for k=1:narrows,
-		if all(isnan(ud(k,[3 6])))&arrow_is2DXY(ax(k)), zz=[]; else, zz=z(:,k); end;
+		if all(isnan(ud(k,[3 6])))&&arrow_is2DXY(ax(k)), zz=[]; else, zz=z(:,k); end;
 		xx=x(:,k); yy=y(:,k);
 		if (0), % this fix didn't work, so let's not use it -- 8/26/03
 			% try to work around a MATLAB 6.x OpenGL bug -- 7/28/02
@@ -876,7 +880,7 @@ if (nargout<=1),
 		end;
 		% plot the patch or line
 		xyz = {'XData',xx,'YData',yy,'ZData',zz,'Tag',ArrowTag};
-		if newpatch(k)|newline(k),
+		if newpatch(k)||newline(k),
 			if newpatch(k),
 				H(k) = patch(xyz{:});
 			else,
@@ -924,7 +928,7 @@ function out = arrow_defcheck(in,def,prop)
 % check if we got 'default' values
 	out = in;
 	if ~isstr(in), return; end;
-	if size(in,1)==1 & strncmp(lower(in),'def',3),
+	if size(in,1)==1 && strncmp(lower(in),'def',3),
 		out = def;
 	elseif ~isempty(prop),
 		error([upper(mfilename) ' does not recognize ''' in(:)' ''' as a valid ''' prop ''' string.']);
@@ -935,7 +939,7 @@ function out = arrow_defcheck(in,def,prop)
 function [H,oldaxlims,errstr] = arrow_clicks(H,ud,x,y,z,ax,oldaxlims)
 % handle choosing arrow Start and/or Stop locations if necessary
 	errstr = '';
-	if isempty(H)|isempty(ud)|isempty(x), return; end;
+	if isempty(H)||isempty(ud)||isempty(x), return; end;
 	% determine which (if any) need Start and/or Stop
 	needStart = all(isnan(ud(:,1:3)'))';
 	needStop  = all(isnan(ud(:,4:6)'))';
@@ -992,7 +996,7 @@ function [wasInterrupted,errstr] = arrow_click(lockStart,H,prop,ax)
 	% wait for the button to be pressed
 	[wasKeyPress,wasInterrupted,errstr] = arrow_wfbdown(fig);
 	% if we wanted to click-drag, set the Start point
-	if lockStart & ~wasInterrupted,
+	if lockStart && ~wasInterrupted,
 		pt = arrow_point(ARROW_CLICK_AX,ARROW_CLICK_USE_Z);
 		feval(mfilename,H,'Start',pt,'Stop',pt);
 		set(H,'Visible','on');
@@ -1102,9 +1106,9 @@ function arrow_fixlimits(axlimits)
 
 function out = arrow_WarpToFill(notstretched,manualcamera,curax)
 % check if we are in "WarpToFill" mode.
-	out = strcmp(get(curax,'WarpToFill'),'on');
+	%out = strcmp(get(curax,'WarpToFill'),'on');
 	% 'WarpToFill' is undocumented, so may need to replace this by
-	% out = ~( any(notstretched) & any(manualcamera) );
+	out = ~( any(notstretched) & any(manualcamera) );
 
 
 

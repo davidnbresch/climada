@@ -321,8 +321,11 @@ text(3-stretch, damage(1)-max(damage)*0.02, {'Incremental increase';'from climat
 text(4-stretch, damage(1)-max(damage)*0.02, {[num2str(climada_global.future_reference_year) ', total'];'expected damage'},    'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
 
 %Legend
-L = legend(h,legend_str(index),'location','NorthOutside','fontsize',fontsize_2);
+%L = legend(h,legend_str(index),'location','NorthOutside','fontsize',fontsize_2);
+%set(L,'Box', 'off')
+L=legend(h, legend_str(index),'Location','NorthEast');
 set(L,'Box', 'off')
+set(L,'Fontsize',fontsize_2)
 
 
 if isempty(check_printplot)

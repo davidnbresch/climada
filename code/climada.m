@@ -231,14 +231,24 @@ if check_plots
     drawnow % flush the event queue and update the figure window
 end % check_plots
 
-% before calling climada_measures_impact, force re-encoding by removing
-% hazard from entity.assets
-if isfield(entity_today.assets,'hazard'),
-    entity_today.assets=rmfield(entity_today.assets,'hazard');end
+% force encode to today's hazard
+entity_today=climada_assets_encode(entity_today,hazard);
+
+% calculate EDS today    
+EDS_today=climada_EDS_calc(entity_today,hazard);
+    
 % calculate today's measures impact, for reference
 measures_impact_today=climada_measures_impact(entity_today,hazard,'no');
 
-clear entity % redundant, to be on the safe side
+% read future entity
+entity_future=climada_entity_read(entity_future_file,hazard); % hazard contains still today's hazard
+
+% force encode to today's hazard
+entity_future=climada_assets_encode(entity_future,hazard); % hazard contains still today's hazard
+
+% calculate EDS with today's hazard to see economic growth impact    
+EDS_future_econ=climada_EDS_calc(entity_future,hazard); % hazard contains still today's hazard
+
 clear hazard % redundant, to be on the safe side
 
 if exist(hazard_future_file,'file')
@@ -247,17 +257,16 @@ else
     fprintf('Error: hazard future not found (%s)\n',hazard_future_file)
     return
 end
-entity_future=climada_entity_read(entity_today_file,hazard); % hazard contains future hazard
 
-if check_plots
-    % later, show delta assets
-    
-end % check_plots
+% force encode to future hazard
+entity_future=climada_assets_encode(entity_future,hazard); % hazard contains future hazard
 
-% before calling climada_measures_impact, force re-encoding by removing
-% hazard from entity.assets
-if isfield(entity_today.assets,'hazard'),
-    entity_future.assets=rmfield(entity_future.assets,'hazard');end
+% calculate EDS with future hazard to see economic growth and climate change impact    
+EDS_future_econ_clim=climada_EDS_calc(entity_future,hazard); % hazard contains future hazard
+
+% display waterfall graph
+climada_waterfall_graph(EDS_today,EDS_future_econ,EDS_future_econ_clim,'AED');
+
 % calculate future measures impact, discount to today - the final calculation
 measures_impact=climada_measures_impact(entity_future,hazard,measures_impact_today); % hazard contains future hazard
 
