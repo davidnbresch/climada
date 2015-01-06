@@ -1,6 +1,8 @@
 this folder contains the entities (assets, damage functions, measures)
 
-entity_template.xl is THE reference entity template to start from (it shall always contain all possible features an entity file does provide)
+entity_template.xls is THE reference entity template to start from (it shall always contain all possible features an entity file does provide), read it with climada_entity_read. 
+
+The file entity_template.mat is provided to start with right in MATLAB (use climada_entity_load) and the file entity_template.ods is provided as a template for Open Office (read it with climada_entity_read, see climada_global.spreadsheet_ext (in climada_init_vars) and consider to switch to ‘.ods’ in case that’s your default spreadsheet form).
 
 the file demo_today.xls is used for the demo (also serves as a template)
 the file demo_today.mat can be generated from demo_today.xls with climada_entity_read, but is provided for those users with difficulties to read Excel to get started.

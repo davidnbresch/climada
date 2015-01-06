@@ -42,7 +42,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 %           assets)
 %       ED_at_centroid(centroid_i): expected damage at each centroid
 %       Value: the sum of all Values used in the calculation (to e.g.
-%           express damages in percentage of total Value) 
+%           express damages in percentage of total Value)
 %       frequency(event_i): the per occurrence event frequency for each event_i
 %       orig_event_flag(event_i): whether an original event (=1) or a
 %           probabilistic one (=0)
@@ -60,7 +60,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 %       assets.admin1_name: the admin1_name of the assets (optional)
 %       assets.admin1_code: the admin1_code of the assets (optional)
 %       damagefunctions.filename: the filename of the damagefunctions
-%       annotation_name: a kind of default title (sometimes empty)                 
+%       annotation_name: a kind of default title (sometimes empty)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091228
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
@@ -73,6 +73,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20150101, annotation check for 'MAC' and 'APPLE'
 % David N. Bresch, david.bresch@gmail.com, 20150103, check Octave compatibility of (large) hazard event sets
 % David N. Bresch, david.bresch@gmail.com, 20150105, filesep conversion (from either PC or MAC) solved
+% David N. Bresch, david.bresch@gmail.com, 20150106, add Cover and/or Deductible if missing
 %-
 
 global climada_global
@@ -160,9 +161,16 @@ if force_re_encode % re-encode entity to hazard
     fprintf('done\n')
 end
 
-if sum(entity.assets.Cover)==0
+if ~isfield(entity.assets,'Deductible'),...
+        entity.assets.Deductible=entity.assets.Value*0;end
+
+if isfield(entity.assets,'Cover')
+    if sum(entity.assets.Cover)==0
+        entity.assets.Cover=entity.assets.Value;
+        fprintf('Warning: Cover was zero for all assets, ignored\n')
+    end
+else
     entity.assets.Cover=entity.assets.Value;
-    fprintf('Warning: Cover was zero for all assets, ignored\n')
 end
 
 if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
@@ -225,13 +233,13 @@ for asset_ii=1:nn_assets
     asset_damfun_pos = find(entity.damagefunctions.DamageFunID == entity.assets.DamageFunID(asset_i));
     if isfield(entity.damagefunctions,'peril_ID') % refine for peril
         asset_damfun_pos=asset_damfun_pos(strcmp(entity.damagefunctions.peril_ID(asset_damfun_pos),char(hazard.peril_ID(1:2))));
-    end    
-        
+    end
+    
     if ~isempty(asset_damfun_pos)
         % convert hazard intensity into MDD
         % we need a trick to apply interp1 to the SPARSE hazard matrix: we evaluate only at non-zero elements, but therefore need a function handle
         interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
-        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp 
+        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
         MDD            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
         % OPTIMIZATION HINT: see climada_sparse_interp, would interp_x_table be uniformly spaced...
         
@@ -245,7 +253,7 @@ for asset_ii=1:nn_assets
         interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
         PAA            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
         
-   
+        
         % figure
         % plot(interp_x_table, interp_y_table,':k')
         % hold on

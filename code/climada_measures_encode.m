@@ -32,11 +32,16 @@ if ~exist('measures','var'),measures=[];return;end
 %
 
 % make sure measures are well-defined (to fix an issue with .ods sometimes
-% reading more than the 'popupated' rows) 
+% reading more than the 'popupated' rows)
 measures.name=measures.name(1:length(measures.cost));
 measures.color=measures.color(1:length(measures.cost));
-measures.hazard_event_set=measures.hazard_event_set(1:length(measures.cost));
+if isfield(measures,'hazard_event_set')
+    measures.hazard_event_set=measures.hazard_event_set(1:length(measures.cost));
+end
 measures.damagefunctions_map=measures.damagefunctions_map(1:length(measures.cost));
+if isfield(measures,'peril_ID')
+    measures.peril_ID=measures.peril_ID(1:length(measures.cost));
+end
 
 if isfield(measures,'color')
     color_warning=0;
@@ -82,5 +87,12 @@ if isfield(measures,'damagefunctions_map')
         end % ~nil
     end % measure_i
 end
+
+% clean up peril_ID
+for peril_i=1:length(measures.peril_ID)
+    if ~ischar(measures.peril_ID{peril_i})
+        measures.peril_ID{peril_i}=''; % from [NaN]
+    end
+end % peril_i
 
 return

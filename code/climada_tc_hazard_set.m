@@ -196,6 +196,7 @@ hazard.reference_year   = hazard_reference_year;
 hazard.lon              = centroids.Longitude;
 hazard.lat              = centroids.Latitude;
 hazard.centroid_ID      = centroids.centroid_ID;
+if isfield(centroids,'elevation_m'),hazard.elevation_m=centroids.elevation_m;end
 hazard.orig_years       = orig_years;
 hazard.orig_event_count = 0; % init
 hazard.event_count      = length(tc_track);
@@ -204,7 +205,7 @@ hazard.orig_event_flag  = zeros(1,hazard.event_count);
 hazard.yyyy             = zeros(1,hazard.event_count);
 hazard.mm               = zeros(1,hazard.event_count);
 hazard.dd               = zeros(1,hazard.event_count);
-hazard.datenum     = zeros(1,hazard.event_count);
+hazard.datenum          = zeros(1,hazard.event_count);
 
 % allocate the hazard array (sparse, to manage memory)
 hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
