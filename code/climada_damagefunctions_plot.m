@@ -99,7 +99,7 @@ for ID_i=1:length(unique_IDs)
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b');
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),'-g');
-        legend('MDR','MDD','PAA');
+        legend('MDR','MDD','PAA','Location','NorthWest');
         xlabel('Intensity','FontSize',9);
         ylabel('MDR')
         title(unique_IDs{ID_i});
