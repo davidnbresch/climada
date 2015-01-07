@@ -17,7 +17,7 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 %       if ='ALL' or empty, write all country names and the corresponding
 %       ISO3 codes to stdout and return the full name, ISO and index list
 %       if ='all', as 'ALL', but do not write the list to stdout
-%       if ='SINGLE' or 'MULTIPLE', select single country or multiple
+%       if ='Single' or 'Multiple', select single country or multiple
 %       countries from a list dialog
 % OUTPUTS:
 %   country_name: country name(s), empty string if no match
@@ -73,7 +73,7 @@ if strcmpi(input_name,'ALL')
     shape_index =1:length(country_NAMEs);
     return
     
-elseif strcmp(input_name,'SINGLE') || strcmp(input_name,'MULTIPLE') 
+elseif strcmpi(input_name,'SINGLE') || strcmpi(input_name,'MULTIPLE') 
     % prompt country (one or many)
     
     country_NAMEs={};country_ISO3s={}; % init
