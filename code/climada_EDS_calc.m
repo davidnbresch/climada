@@ -74,6 +74,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20150103, check Octave compatibility of (large) hazard event sets
 % David N. Bresch, david.bresch@gmail.com, 20150105, filesep conversion (from either PC or MAC) solved
 % David N. Bresch, david.bresch@gmail.com, 20150106, add Cover and/or Deductible if missing
+% David N. Bresch, david.bresch@gmail.com, 20150106, Octave issue with hazard saved as -v7.3 solved
 %-
 
 global climada_global
@@ -125,14 +126,23 @@ if ~isstruct(hazard)
     load(hazard_file);
 end
 
-if climada_global.octave_mode && numel(hazard.intensity)==1
-    fprintf('ERROR: hazard.intensity corrupted, save in MATLAB again (use ''-v7'', not ''-v7.3'')\n')
-    % since in such a case, hazard.intenisity contains sub-fields,
-    % something ike the following line might work (but did no
-    % immediately - hence just save in MATLAB again)
-    %intensity=sparse(hazard.intensity.ir,hazard.intensity.jc,...
-    %    hazard.intensity.data,hazard.event_count,length(hazard.lon));
-    return
+if isfield(hazard.intensity,'data')
+    fprintf('Note: hazard.intensity saved in MATLAB using ''-v7.3'', converting ...')
+    % in such a case, hazard.intensity contains sub-fields jc, ir and data
+    % Likely to occurr in Octave. There might be a more elegant way, but
+    % the present one is explicit.
+    sparse_i=hazard.intensity.data*0; % init
+    sparse_j=hazard.intensity.data*0; % init
+    for j=1:length(hazard.intensity.jc)-1
+        for i=hazard.intensity.jc(j)+1:hazard.intensity.jc(j+1)
+            sparse_i(i)=hazard.intensity.ir(i)+1;
+            sparse_j(i)=j;
+        end
+    end
+    sparse_data=hazard.intensity.data;
+    hazard=rmfield(hazard,'intensity');
+    hazard.intensity=sparse(sparse_i,sparse_j,sparse_data,floor(hazard.event_count),length(hazard.lon));
+    fprintf(' done\n');
 end
 
 % check for consistency of entity and the hazard set it has been encoded to

@@ -58,10 +58,10 @@ end
 
 if exist(source_filename,'file')
     
-    D_source = dir(source_filename);
+    D_source = dir(char(source_filename));
     datenum_source=datenum(D_source.date); % date of source
     
-    [fP,fN]=fileparts(source_filename);
+    [fP,fN]=fileparts(char(source_filename));
     
     if isempty(mat_filename),mat_filename=[fP filesep fN '.mat'];end
     

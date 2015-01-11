@@ -441,7 +441,7 @@ else
     SYSTEM_COASTLINE=0; % default
 end
 
-[fP,fN] = fileparts(shape_filename);
+[fP,fN] = fileparts(char(shape_filename)); % to be on the safe side
 shape_mat_filename=[fP filesep fN '.mat'];
 
 if climada_check_matfile(shape_filename,shape_mat_filename) && ~force_reread
