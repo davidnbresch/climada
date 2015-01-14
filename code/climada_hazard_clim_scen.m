@@ -78,6 +78,7 @@ if ~isstruct(hazard)
     load(hazard_file);
 end
 
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % modify the hazard event set
 

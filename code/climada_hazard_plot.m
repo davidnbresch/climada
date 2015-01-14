@@ -31,6 +31,7 @@ function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_rang
 %   X, Y and gridded_VALUE are the values as shown
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140302
+% David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
 %-
 
 global climada_global
@@ -44,6 +45,8 @@ if ~exist('caxis_range','var'),caxis_range=[];end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
 if isempty(hazard),return;end
+
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);

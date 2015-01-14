@@ -75,6 +75,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 % David N. Bresch, david.bresch@gmail.com, 20150105, filesep conversion (from either PC or MAC) solved
 % David N. Bresch, david.bresch@gmail.com, 20150106, add Cover and/or Deductible if missing
 % David N. Bresch, david.bresch@gmail.com, 20150106, Octave issue with hazard saved as -v7.3 solved
+% David N. Bresch, david.bresch@gmail.com, 20150114, EDS.peril_ID (was EDS.hazard.peril_ID)
 %-
 
 global climada_global
@@ -126,24 +127,7 @@ if ~isstruct(hazard)
     load(hazard_file);
 end
 
-if isfield(hazard.intensity,'data')
-    fprintf('Note: hazard.intensity saved in MATLAB using ''-v7.3'', converting ...')
-    % in such a case, hazard.intensity contains sub-fields jc, ir and data
-    % Likely to occurr in Octave. There might be a more elegant way, but
-    % the present one is explicit.
-    sparse_i=hazard.intensity.data*0; % init
-    sparse_j=hazard.intensity.data*0; % init
-    for j=1:length(hazard.intensity.jc)-1
-        for i=hazard.intensity.jc(j)+1:hazard.intensity.jc(j+1)
-            sparse_i(i)=hazard.intensity.ir(i)+1;
-            sparse_j(i)=j;
-        end
-    end
-    sparse_data=hazard.intensity.data;
-    hazard=rmfield(hazard,'intensity');
-    hazard.intensity=sparse(sparse_i,sparse_j,sparse_data,floor(hazard.event_count),length(hazard.lon));
-    fprintf(' done\n');
-end
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % check for consistency of entity and the hazard set it has been encoded to
 % but: one might have used the same centroids for different hazard sets, so
@@ -196,11 +180,12 @@ end
 EDS.event_ID          = hazard.event_ID;
 EDS.damage            = zeros(1,size(hazard.intensity,1));
 n_assets              = length(entity.assets.centroid_index);
-EDS.ED_at_centroid   = zeros(n_assets,1); % expected damage per centroid
+EDS.ED_at_centroid    = zeros(n_assets,1); % expected damage per centroid
 EDS.Value             = 0;
 EDS.frequency         = hazard.frequency;
 EDS.orig_event_flag   = hazard.orig_event_flag;
-EDS.hazard.peril_ID   = char(hazard.peril_ID);
+EDS.peril_ID          = char(hazard.peril_ID);
+EDS.hazard.peril_ID   = EDS.peril_ID; % backward compatibility
 if climada_global.EDS_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)

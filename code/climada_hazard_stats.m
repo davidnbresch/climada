@@ -46,6 +46,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,peril_ID
 % Lea Mueller, 20110623
 % David N. Bresch, david.bresch@gmail.com, 20130317 cleanup
 % David N. Bresch, david.bresch@gmail.com, 20140411 fixed some non-TC issues
+% David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
 %-
 
 % init global variables
@@ -75,6 +76,8 @@ if ~isstruct(hazard)
     hazard_file = hazard;hazard=[];
     load(hazard_file);
 end
+
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % check if based on probabilistic tc track set
 if isfield(hazard,'orig_event_count')

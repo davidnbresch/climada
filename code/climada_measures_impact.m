@@ -128,7 +128,7 @@ if ~isstruct(hazard)
         clear (vars.name)
     end
 end
-
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % prompt for reference result if not given
 if isempty(measures_impact_reference)
@@ -284,9 +284,10 @@ for measure_i = 1:n_measures+1 % last with no measures
                         % if array dimension do not match, above check fails
                         fprintf('WARNING: hazard might not at all be compatible with encoded assets\n');
                     end % try
-                    if abs(numel(hazard.intensity)-numel(hazard.intensity))
-                        fprintf('WARNING: hazard might not be fully compatible with EDS\n');
-                    end
+                    % hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
+                    % if abs(numel(hazard.intensity)-numel(hazard.intensity))
+                    %     fprintf('WARNING: hazard might not be fully compatible with EDS\n');
+                    % end
                 else
                     fprintf('ERROR: measure %i, hazard NOT switched, hazard set %s not found\n',measure_i,measures_hazard_file);
                 end

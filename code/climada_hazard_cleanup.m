@@ -52,6 +52,7 @@ if isempty(hazard_file) % local GUI
 end
 
 load(hazard_file); % loads hazard
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % switch from hazard.arr to hazard.intensity
 if isfield(hazard,'arr')
@@ -132,7 +133,8 @@ if ~isfield(hazard,'reference_year'),hazard.reference_year=climada_global.presen
 hazard.filename=hazard_file;
 
 fprintf('saving hazard as %s\n',hazard_file);
-save(hazard_file,'hazard','-v6'); % -v6 for speed-up(no compression)
+save(hazard_file,'hazard'); % for normal hazard sets
+%save(hazard_file,'hazard','-v7.3'); % for large hazard sets
 
 if show_hazard
     hazard % ok to show to stdout

@@ -15,8 +15,9 @@ function hazard=climada_hazard2octave(hazard)
 %   too.
 %
 %   Calling the code in MATLAB has most likely (almost certainly) no effect
+%   and does take a few femptoseconds ;-)
 %
-%   called from climada_EDS_calc
+%   called from e.g. climada_EDS_calc
 % CALLING SEQUENCE:
 %   hazard=climada_hazard2octave(hazard)
 % EXAMPLE:
@@ -30,25 +31,30 @@ function hazard=climada_hazard2octave(hazard)
 %       sparse array
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150112, initial
+% David N. Bresch, david.bresch@gmail.com, 20150114, speedup
 %-
 
 if isfield(hazard.intensity,'data')
-    fprintf('Note: hazard.intensity saved in MATLAB using ''-v7.3'', converting ...')
+    %fprintf('Note: hazard.intensity saved in MATLAB using ''-v7.3'', converting ...')
     % in such a case, hazard.intensity contains sub-fields jc, ir and data
     % Likely to occurr in Octave. There might be a more elegant way, but
     % the present one is explicit.
     sparse_i=hazard.intensity.data*0; % init
     sparse_j=hazard.intensity.data*0; % init
     for j=1:length(hazard.intensity.jc)-1
-        for i=hazard.intensity.jc(j)+1:hazard.intensity.jc(j+1)
-            sparse_i(i)=hazard.intensity.ir(i)+1;
-            sparse_j(i)=j;
-        end
+        i=hazard.intensity.jc(j)+1:hazard.intensity.jc(j+1);
+        sparse_j(i)=j;
+        sparse_i(i)=hazard.intensity.ir(i)+1;
+        % % explicit for illustration (instead of above three lines, >100 times slower)
+        % for i=hazard.intensity.jc(j)+1:hazard.intensity.jc(j+1)
+        %     sparse_i(i)=hazard.intensity.ir(i)+1;
+        %     sparse_j(i)=j;
+        % end
     end
     sparse_data=hazard.intensity.data;
     hazard=rmfield(hazard,'intensity');
     hazard.intensity=sparse(sparse_i,sparse_j,sparse_data,floor(hazard.event_count),length(hazard.lon));
-    fprintf(' done\n');
+    %fprintf(' done\n');
 end
 
 end
