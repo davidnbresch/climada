@@ -29,16 +29,20 @@ function YDS=climada_EDS2YDS(EDS,hazard)
 %       > prompted for if not given
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
-%   YDS: the year damage set (YDS), a struct with many fields as EDS (such
-%       as Value, ED, ...) plus:
+%   YDS: the year damage set (YDS), a struct with same fields as EDS (such
+%       as Value, ED, ...) plus yyyy and orig_year_flag. All fields same
+%       content as in EDS, except:
 %       yyyy(i): the year i
 %       damage(i): the sum of damage for year(i). Note that for a
 %           probabilitic hazard event set, there are ens_size+1 same years, 
 %           the first instance being the original year.
 %       frequency(i): the annual frequency, =1
 %       orig_year_flag(i): =1 if year i is an original year, =0 else
+%       Hint: if you want to staore a YDS back into an EDS, note that there
+%       are two more fields in YDS than EDS: yyyy and orig_year_flag
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141226, initial
+% David N. Bresch, david.bresch@gmail.com, 20150116, YDS fields same order as in EDS
 %-
 
 YDS=[]; % init output
@@ -94,13 +98,19 @@ end
 
 % copy some fields from EDS to YDS:
 YDS.reference_year=EDS.reference_year;
+YDS.event_ID=[]; % to indicate not by event any more
+YDS.damage=[]; % init, see below
+YDS.ED_at_centroid=EDS.ED_at_centroid;
 YDS.Value=EDS.Value;
-YDS.ED=EDS.ED;
+YDS.frequency=[]; % init, see below
+YDS.orig_event_flag=[]; % to indicate not by event any more
+YDS.peril_ID=EDS.peril_ID;
+YDS.hazard=EDS.hazard;
+YDS.comment=EDS.comment;
+YDS.assets=EDS.assets;
 YDS.damagefunctions=EDS.damagefunctions;
 YDS.annotation_name=EDS.annotation_name;
-YDS.ED_at_centroid=EDS.ED_at_centroid;
-YDS.hazard=EDS.hazard;
-YDS.assets=EDS.assets;
+YDS.ED=EDS.ED;
 
 % template for-loop with waitbar or progress to stdout
 t0       = clock;
