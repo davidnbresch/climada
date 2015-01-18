@@ -14,7 +14,7 @@ function match100fact=climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,
 %   of the Excel) is peril-independent. If troubles with .xls, save as
 %   Excel95.
 %
-%   See also climada_EDS_calc and climada_EDS_DFC
+%   See also climada_EDS_calc, climada_EDS_DFC and climada_EDS_DFC_match
 % CALLING SEQUENCE:
 %   climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog)
 % EXAMPLE:

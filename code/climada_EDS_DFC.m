@@ -4,6 +4,8 @@ function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_
 %   climada_EDS_DFC
 % PURPOSE:
 %   plot occurrence Damage exceedence Frequency Curve (DFC)
+%
+%   See also: climada_EDS_DFC_match and climada_DFC_compare
 % CALLING SEQUENCE:
 %   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag)
 % EXAMPLE:
