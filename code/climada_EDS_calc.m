@@ -1,4 +1,4 @@
-function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
+function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode)
 % climada calculate event damage set
 % NAME:
 %   climada_EDS_calc
@@ -33,6 +33,9 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode)
 %   force_re_encode: if =1, force re-encoding (either to be on the safe
 %       side, or if the entity has been encoded t a different hazard event
 %       set). Default=0
+%   silent_mode: suppress any output to stdout (useful i.e. if called many times)
+%       defult=0 (output to stdout), =1: no output and no waitbar at all
+%       (neither to stdout nor as progress bar)
 % OUTPUTS:
 %   EDS, the event damage set with:
 %       ED: the total expected annual damage (=EDS.damage*EDS.frequency')
@@ -91,6 +94,7 @@ if ~exist('entity','var'),entity=[];end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('annotation_name','var'),annotation_name='';end
 if ~exist('force_re_encode','var'),force_re_encode=0;end
+if ~exist('silent_mode','var'),silent_mode=0;end
 
 % PARAMETERS
 %
@@ -138,21 +142,21 @@ hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % encode assets of entity once more, just to be sure
 if ~isfield(entity.assets,'centroid_index')
-    fprintf('Encoding entity assets to hazard... ')
+    if ~silent_mode,fprintf('Encoding entity assets to hazard... ');end
     entity = climada_assets_encode(entity,hazard);
-    fprintf('done\n')
+    if ~silent_mode,fprintf('done\n');end
     force_re_encode=0;
 elseif ~all(diff(entity.assets.centroid_index) == 1) && climada_global.re_check_encoding
-    fprintf('Encode entity assets once more...')
+    if ~silent_mode,fprintf('Encode entity assets once more...');end
     entity = climada_assets_encode(entity,hazard);
-    fprintf('done\n')
+    if ~silent_mode,fprintf('done\n');end
     force_re_encode=0;
 end
 
 if force_re_encode % re-encode entity to hazard
-    fprintf('Encoding (forced) entity assets to hazard... ')
+    if ~silent_mode,fprintf('Encoding (forced) entity assets to hazard... ');end
     entity = climada_assets_encode(entity,hazard);
-    fprintf('done\n')
+    if ~silent_mode,fprintf('done\n');end
 end
 
 if ~isfield(entity.assets,'Deductible'),...
@@ -161,14 +165,14 @@ if ~isfield(entity.assets,'Deductible'),...
 if isfield(entity.assets,'Cover')
     if sum(entity.assets.Cover)==0
         entity.assets.Cover=entity.assets.Value;
-        fprintf('Warning: Cover was zero for all assets, ignored\n')
+        if ~silent_mode,fprintf('Warning: Cover was zero for all assets, ignored\n');end
     end
 else
     entity.assets.Cover=entity.assets.Value;
 end
 
 if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
-    fprintf('Note: At least some assets have Cover limiting the damage\n')
+    if ~silent_mode,fprintf('Note: At least some assets have Cover limiting the damage\n');end
 end
 
 % initialize the event damage set (EDS)
@@ -207,12 +211,14 @@ nn_assets=length(valid_assets_pos);
 t0 = clock;
 msgstr=sprintf('processing %i assets (>0) and %i events, ',nn_assets,length(hazard.frequency));
 
-if climada_global.waitbar % CLIMADA_OPT
-    fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
-    h = waitbar(0,msgstr,'Name',sprintf('Calculating %s damage for assets',hazard.peril_ID)); % CLIMADA_OPT
-else % CLIMADA_OPT
-    fprintf('%s (waitbar suppressed)\n',msgstr); % CLIMADA_OPT
-    format_str='%s'; % CLIMADA_OPT
+if ~silent_mode % CLIMADA_OPT
+    if climada_global.waitbar % CLIMADA_OPT
+        fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
+        h = waitbar(0,msgstr,'Name',sprintf('Calculating %s damage for assets',hazard.peril_ID)); % CLIMADA_OPT
+    else % CLIMADA_OPT
+        fprintf('%s (waitbar suppressed)\n',msgstr); % CLIMADA_OPT
+        format_str='%s'; % CLIMADA_OPT
+    end % CLIMADA_OPT
 end % CLIMADA_OPT
 
 mod_step=2; % first time estimate after 2 calcs, then every 100
@@ -284,29 +290,33 @@ for asset_ii=1:nn_assets
         % TEST output
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
-        if mod(asset_i,mod_step)==0 % CLIMADA_OPT
-            mod_step         = 100; % CLIMADA_OPT
-            t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
-            calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
-            t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-            msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
-            
-            if climada_global.waitbar % CLIMADA_OPT
-                waitbar(asset_i/n_assets,h,msgstr); % update waitbar % CLIMADA_OPT
-            else % CLIMADA_OPT
-                fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
-                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
+        if ~silent_mode % CLIMADA_OPT
+            if mod(asset_i,mod_step)==0 % CLIMADA_OPT
+                mod_step         = 100; % CLIMADA_OPT
+                t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
+                calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
+                t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
+                msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
+                
+                if climada_global.waitbar % CLIMADA_OPT
+                    waitbar(asset_i/n_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+                else % CLIMADA_OPT
+                    fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
+                    format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
+                end % CLIMADA_OPT
+                
             end % CLIMADA_OPT
-            
         end % CLIMADA_OPT
         
     end % ~isempty(asset_damfun_pos)
     
 end % asset_i
-if climada_global.waitbar % CLIMADA_OPT
-    close(h) % dispose waitbar % CLIMADA_OPT
-else % CLIMADA_OPT
-    fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
+if ~silent_mode % CLIMADA_OPT
+    if climada_global.waitbar % CLIMADA_OPT
+        close(h) % dispose waitbar % CLIMADA_OPT
+    else % CLIMADA_OPT
+        fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
+    end % CLIMADA_OPT
 end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);

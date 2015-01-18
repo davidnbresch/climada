@@ -1,4 +1,4 @@
-function climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog,scenario_comparison_flag,EDS_multiplier)
+function match100fact=climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog,scenario_comparison_flag,EDS_multiplier)
 % climada
 % NAME:
 %   climada_DFC_compare
@@ -6,7 +6,7 @@ function climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog,s
 %   compare climada results (Event damage set, EDS) and the resulting
 %   damage frequency curve (DFC) with DFC from file, e.g. to compare with
 %   other models. Purely visual inspection (as the eye of the beholder
-%   integrates sch complex information far better than any code...)
+%   integrates such complex information far better than any code...)
 %
 %   Instead of a lengthy description of the exact content of the Excel
 %   file, see the one example (climada_DFC_compare_file.xls) in the
@@ -33,6 +33,8 @@ function climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog,s
 %       frequency_screw)),'',0,0,1,EDS_multiplier)
 % INPUTS:
 %   EDS: a climada EDS, as produced by climada_EDS_calc
+%       Only EDS(1) is used for comparison, further EDSs are plotted, but
+%       not compared.
 %   DFC_file: an Excel file with a DFC (currently only one single DFC
 %       supported).If troubles with .xls, save as Excel95 first.
 %       > promted for if not given
@@ -49,10 +51,15 @@ function climada_DFC_compare(EDS,DFC_file,Percentage_Of_Value_Flag,plot_loglog,s
 %       experiment with a correction factor, highly EXPERIMENTAL
 %       (default=1, obviously)
 % OUTPUTS:
+%   match100fact: the multiplier to match the 100yr damage
+%       Note that EDS_multiplier is applied before, hence total suggested
+%       correction to match 100yr damage = EDS_multiplier*match100fact
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141206, initial 'Samichlaus'
 % David N. Bresch, david.bresch@gmail.com, 20141212, minor edits
 %-
+
+match100fact=[];
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -136,7 +143,7 @@ fprintf('Value (TIV) of EDS= %g, comparison=%g, EDS/cmp=%g\n',...
 
 cmp_correction=EDS(1).Value/EL_cmp_TIV;
 if abs(cmp_correction-1)>0.01
-    fprintf('NOTE: DFC damages multiplied by %f\n',cmp_correction);
+    fprintf('NOTE: DFC damages (from file) multiplied by %f\n',cmp_correction);
     DFC_cmp.Loss=DFC_cmp.Loss*cmp_correction;
     if scenario_comparison_flag,scenario_cmp.Expected_Loss=scenario_cmp.Expected_Loss*cmp_correction;end
 end
@@ -171,7 +178,13 @@ fprintf('ret per:');fprintf('%g\t\t',climada_global.DFC_return_periods);fprintf(
 fprintf('EDS:    ');fprintf('%g\t',DFC_damage);                         fprintf('\n');
 fprintf('cmp:    ');fprintf('%g\t',cmp_damage);                         fprintf('\n');
 cmp_damage(cmp_damage==0)=NaN; % avoid division by zero
-fprintf('EDS/cmp:');fprintf('%g\t\t',DFC_damage./cmp_damage);           fprintf('\n');
+fprintf('EDS/cmp:');fprintf('%g\t',DFC_damage./cmp_damage);           fprintf('\n');
+
+try
+    match100fact=DFC_damage(climada_global.DFC_return_periods==100)./cmp_damage(climada_global.DFC_return_periods==100);
+catch
+    match100fact=[];
+end
 
 if scenario_comparison_flag
     

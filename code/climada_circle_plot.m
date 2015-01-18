@@ -39,8 +39,9 @@ function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,
 %global climada_global
 if ~climada_init_vars,return;end; % init/import global variables
 
-values=full(values);
-
+if ~exist('values','var'),return;end;
+if ~exist('lon','var'),return;end;
+if ~exist('lat','var'),return;end;
 if ~exist('title_str','var'),title_str='';end;
 if ~exist('circle_diam','var'),circle_diam=[];end;
 if ~exist('circle_format','var'),circle_format=[];end;
@@ -49,6 +50,8 @@ if ~exist('marker_format','var'),marker_format=[];end;
 if ~exist('overlay_plot','var'),overlay_plot=[];end;
 if ~exist('axis_range','var'),axis_range=[];end;
 if ~exist('max_value','var'),max_value=[];end;
+
+values=full(values);
 
 % PARAMETERS
 %

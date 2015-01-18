@@ -1,4 +1,3 @@
-
 function climada_tc_windfield_animation(tc_track,centroids,aggregation,check_avi)                                
 % plot animation of windfield for a specific historical or
 % probabilistic storm

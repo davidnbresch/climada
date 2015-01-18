@@ -155,9 +155,9 @@ for asset_i=1:n_assets
         events_remaining  = n_assets-asset_i;
         t_projected_sec   = t_elapsed_event*events_remaining;
         if t_projected_sec<60
-            msgstr = sprintf('est. %3.0f sec left (%i/%i events)',t_projected_sec,   asset_i,n_assets);
+            msgstr = sprintf('est. %3.0f sec left (%i/%i assets)',t_projected_sec,asset_i,n_assets);
         else
-            msgstr = sprintf('est. %3.1f min left (%i/%i events)',t_projected_sec/60,asset_i,n_assets);
+            msgstr = sprintf('est. %3.1f min left (%i/%i assets)',t_projected_sec/60,asset_i,n_assets);
         end
         if climada_global.waitbar
             waitbar(asset_i/n_assets,h,msgstr); % update waitbar

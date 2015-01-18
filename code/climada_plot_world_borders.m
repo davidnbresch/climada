@@ -20,6 +20,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %   climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color);
 % EXAMPLE:
 %   climada_plot_world_borders
+%   climada_plot_world_borders(1,'','',1) % most often used that way
 %   climada_plot_world_borders(0.8,'United States (USA)')
 %   climada_plot_world_borders(0.8,{'Canada' 'Germany'})
 %   climada_plot_world_borders(1,'','ASK') % prompt for shape file
