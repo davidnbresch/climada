@@ -110,12 +110,12 @@ min_node=[];max_node=[]; % if empty, automatically determined
 % entity=climada_entity_load(entity_file);
 %
 %
-% TEST for nio (Sidr)
-tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
-[tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
-tc_track=tc_track(173);min_node=114;max_node=139; % Sidr
-entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
-entity=climada_entity_load(entity_file);
+% % TEST for nio (Sidr)
+% tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
+% [tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
+% tc_track=tc_track(173);min_node=114;max_node=139; % Sidr
+% entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
+% entity=climada_entity_load(entity_file);
 %
 % the file to store all information for nicer animation plots
 % currently set to a default, but could also be prompted for (see below)
@@ -146,6 +146,7 @@ if length(tc_track)>1
     
     % figure which tracks are in the focus region
     [fP,fN]=fileparts(tc_track_mat);
+    fN=strrep(fN,'_proc','');
     tc_track_nodes_file=[fP filesep fN '_nodes.mat'];
     
     if ~exist(tc_track_nodes_file,'file')

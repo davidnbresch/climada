@@ -69,8 +69,8 @@ circle_linewidth=3;
 dX=1;dY=1; % default=1
 %
 % TEST
-animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
-animation_avi_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.avi'];
+%animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
+%animation_avi_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.avi'];
 %
 
 % prompt for animation_data_file if not given
