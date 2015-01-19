@@ -75,8 +75,11 @@ for track_i=1:length(tc_track)
     % define the target datenum (datenum is in days, hence /24
     datenum_target=datenum_source(1):default_min_TimeStep/24:datenum_source(end);
     
-    tc_track(track_i).lon=interp1(datenum_source,tc_track(track_i).lon,datenum_target,'linear','extrap');
-    tc_track(track_i).lat=interp1(datenum_source,tc_track(track_i).lat,datenum_target,'linear','extrap');
+%     tc_track(track_i).lon=interp1(datenum_source,tc_track(track_i).lon,datenum_target,'linear','extrap');
+%     tc_track(track_i).lat=interp1(datenum_source,tc_track(track_i).lat,datenum_target,'linear','extrap');
+    tc_track(track_i).lon=interp1(datenum_source,tc_track(track_i).lon,datenum_target,'spline','extrap');
+    tc_track(track_i).lat=interp1(datenum_source,tc_track(track_i).lat,datenum_target,'spline','extrap');
+
     tc_track(track_i).MaxSustainedWind=interp1(datenum_source,tc_track(track_i).MaxSustainedWind,datenum_target,'linear','extrap');
     tc_track(track_i).CentralPressure=interp1(datenum_source,tc_track(track_i).CentralPressure,datenum_target,'linear','extrap');
     tc_track(track_i).yyyy=interp1(datenum_source,tc_track(track_i).yyyy,datenum_target,'linear','extrap');

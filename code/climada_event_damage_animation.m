@@ -56,6 +56,10 @@ module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 % the rect to plot (default is are as in hazard.lon/lat, =[], in which case it is automatically determined)
 focus_region=[];
 %
+% load colormap
+colormap_file=[climada_global.data_dir filesep 'system' filesep 'colormap_gray_blue.mat'];
+if exist(colormap_file,'file'),load(colormap_file);end
+%
 % intensity plot parameters
 npoints=199;
 interp_method='linear';
@@ -66,7 +70,8 @@ circle_format='or';
 circle_linewidth=3;
 %
 % the range (in degree) around the tc_track (to show a bit a wider area in plots)
-dX=1;dY=1; % default=1
+%dX=1;dY=1; % default=1
+dX=0;dY=0; % default=1
 %
 % TEST
 %animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
@@ -146,18 +151,30 @@ damage_max_value=full(max(max(hazard.damage)));
 max_damage_str=sprintf('%g',damage_max_value);
 damage_max_value=sqrt(damage_max_value); % to scale, see below
 
-if make_avi,mov = avifile(animation_avi_file,'compression','none','fps',2,'quality',100);end
+% Prepare the new file
+if make_avi
+    %mov = avifile(animation_avi_file,'compression','none','fps',2,'quality',100);end
+    vidObj = VideoWriter(animation_avi_file,'Uncompressed AVI'); % 'Archival', 'Indexed AVI'
+    open(vidObj);
+end
 
+max_damage_at_centroid=[]; % init
 for step_i=1:n_steps
-%for step_i=15:20
+    
+    hold off
+    
+    % plot assets
+    % -----------
     
     % plot hazard intensity
     % ---------------------
     values=full(hazard.intensity(step_i,:));
-    %values(values<intensity_caxis_range(1))=0; % mask low intensities
+    values(values<10)=NaN; % mask low intensities
     
     gridded_VALUE=griddata(hazard.lon,hazard.lat,values,X,Y,interp_method); % interpolate to grid 'linear'
-    pcolor(X,Y,gridded_VALUE);hold on;shading flat;axis equal
+    pcolor(X,Y,gridded_VALUE);
+    if exist('gray_blue','var'),colormap(gray_blue);end
+    hold on;shading flat;axis equal
     caxis(intensity_caxis_range);axis off
     climada_plot_world_borders(1);
     axis(focus_region);
@@ -167,7 +184,7 @@ for step_i=1:n_steps
         if isfield(hazard,'tc_track_node') % title
             node_i=hazard.tc_track_node(step_i);
             title_str=sprintf('%s %s',strrep(char(hazard.tc_track.name),'_',' '),datestr(hazard.tc_track.datenum(node_i),0));
-            plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
+%             plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
         else
             title_str=sprintf('%s',strrep(char(hazard.tc_track.name),'_',' '));
         end
@@ -175,7 +192,12 @@ for step_i=1:n_steps
     
     % plot damage
     % -----------
-    values=full(hazard.damage(step_i,:));
+    if isempty(max_damage_at_centroid)
+        max_damage_at_centroid=full(hazard.damage(step_i,:));
+    else
+        max_damage_at_centroid=max(max_damage_at_centroid,full(hazard.damage(step_i,:)));
+    end
+    values=max_damage_at_centroid;
     
     MarkerSizes=sqrt(abs(values-damage_min_value))/(damage_max_value-damage_min_value)*circle_diam;
     MarkerSizes(isnan(MarkerSizes))=0;
@@ -194,8 +216,9 @@ for step_i=1:n_steps
     drawnow
     
     if make_avi
-        F   = getframe(gcf);
-        mov = addframe(mov,F);
+        currFrame   = getframe(gcf);
+        %mov = addframe(mov,currFrame);
+        writeVideo(vidObj,currFrame);
     end
     
     % the progress management
@@ -213,7 +236,8 @@ end % step_i
 fprintf(format_str,''); % move carriage to begin of line
 
 if make_avi
-    mov = close(mov);
+    %mov = close(mov);
+    close(vidObj);
     fprintf('movie saved in %s\n', animation_avi_file)
 end
 

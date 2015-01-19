@@ -83,6 +83,9 @@ if ~exist('check_plots','var'),check_plots=1;end
 
 % PARAMETERS
 %
+% whether we show single steps (=0, default) or the footprint (=1)
+show_footprint=0; % default=0
+%
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
 damage_scale=1/100;
 %
@@ -97,7 +100,7 @@ label_track_nodes=0; % default=0
 %
 % a grid to show windfield (as the entity might only contain points on land)
 grid_add=1; % default=1, =0 if centroids cover eg water points already
-grid_delta=0.5; % grid spacing in degree, default=1
+grid_delta=0.2; % grid spacing in degree, default=1
 %
 % the nodes we're interested in
 min_node=[];max_node=[]; % if empty, automatically determined
@@ -110,12 +113,13 @@ min_node=[];max_node=[]; % if empty, automatically determined
 % entity=climada_entity_load(entity_file);
 %
 %
-% % TEST for nio (Sidr)
-% tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
-% [tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
-% tc_track=tc_track(173);min_node=114;max_node=139; % Sidr
-% entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
-% entity=climada_entity_load(entity_file);
+% TEST for nio (Sidr)
+tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
+[tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
+tc_track=tc_track(173);min_node=114;max_node=139; % Sidr
+entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
+entity=climada_entity_load(entity_file);
+add_surge=0;
 %
 % the file to store all information for nicer animation plots
 % currently set to a default, but could also be prompted for (see below)
@@ -289,15 +293,20 @@ format_str='%s';
 
 %for step_i=2:length(tc_track.lon)
 for step_i=min_node:max_node
+    if show_footprint
+        step0=1;
+    else
+        step0=max(1,step_i-1);
+    end
     tc_track_segment.MaxSustainedWindUnit=tc_track.MaxSustainedWindUnit;
     tc_track_segment.CentralPressureUnit =tc_track.CentralPressureUnit;
-    tc_track_segment.TimeStep=tc_track.TimeStep(1:step_i);
-    tc_track_segment.lon=tc_track.lon(1:step_i);
-    tc_track_segment.lat=tc_track.lat(1:step_i);
-    tc_track_segment.MaxSustainedWind=tc_track.MaxSustainedWind(1:step_i);
-    tc_track_segment.CentralPressure=tc_track.CentralPressure(1:step_i);
+    tc_track_segment.TimeStep=tc_track.TimeStep(step0:step_i);
+    tc_track_segment.lon=tc_track.lon(step0:step_i);
+    tc_track_segment.lat=tc_track.lat(step0:step_i);
+    tc_track_segment.MaxSustainedWind=tc_track.MaxSustainedWind(step0:step_i);
+    tc_track_segment.CentralPressure=tc_track.CentralPressure(step0:step_i);
     tc_track_segment.name=tc_track.name;
-    tc_track_segment.datenum=tc_track.datenum(1:step_i);
+    tc_track_segment.datenum=tc_track.datenum(step0:step_i);
     if check_plots
         plot(tc_track_segment.lon,tc_track_segment.lat,'xg');hold on
         if label_track_nodes,text(tc_track_segment.lon(end),tc_track_segment.lat(end),sprintf('%i',step_i),'FontSize',9,'Color','g');end
@@ -326,7 +335,7 @@ for step_i=min_node:max_node
     if check_plots
         LOCAL_circle_plot(hazard.lon,hazard.lat,max_damage_at_centroid,...
             max(entity.assets.Value)*damage_scale,20,'or',3); % damage red circles
-        title(sprintf('%s %s',strrep(char(tc_track_segment.name),'_',' '),datestr(tc_track_segment.datenum(step_i))));
+        title(sprintf('%s %s',strrep(char(tc_track_segment.name),'_',' '),datestr(tc_track_segment.datenum(end))));
         drawnow
     end
     
