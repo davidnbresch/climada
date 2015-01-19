@@ -86,6 +86,9 @@ if ~exist('check_plots','var'),check_plots=1;end
 % whether we show single steps (=0, default) or the footprint (=1)
 show_footprint=0; % default=0
 %
+% the timestep (in hours or fractions thereof) between nodes
+tc_track_timestep=0.1; % 0.1 means 6 min
+%
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
 damage_scale=1/100;
 %
@@ -113,13 +116,13 @@ min_node=[];max_node=[]; % if empty, automatically determined
 % entity=climada_entity_load(entity_file);
 %
 %
-% TEST for nio (Sidr)
-tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
-[tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
-tc_track=tc_track(173);min_node=114;max_node=139; % Sidr
-entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
-entity=climada_entity_load(entity_file);
-add_surge=0;
+% % TEST for nio (Sidr)
+% tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
+% [tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
+% tc_track=tc_track(173);%min_node=114;max_node=139; % Sidr
+% entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
+% entity=climada_entity_load(entity_file);
+% add_surge=0;
 %
 % the file to store all information for nicer animation plots
 % currently set to a default, but could also be prompted for (see below)
@@ -215,7 +218,7 @@ end
 
 tc_track=tc_track(track_i);
 
-tc_track=climada_tc_equal_timestep(tc_track,1); % interpolage to 1h
+tc_track=climada_tc_equal_timestep(tc_track,tc_track_timestep);
 
 % prepare entity and centroids
 centroids.Longitude=entity.assets.Longitude;
@@ -244,6 +247,7 @@ if check_plots
     climada_plot_world_borders(1,'','',1);
 end
 
+d_nodes=10/tc_track_timestep; % 10 if track in hours, 100 if track in 6 min
 if isempty(max_node) || isempty(min_node)
     % check for track nodes within focus_region
     edges_x = [focus_region(1),focus_region(1),focus_region(2),focus_region(2),focus_region(1)];
@@ -251,8 +255,8 @@ if isempty(max_node) || isempty(min_node)
     in_track_poly = inpolygon(tc_track.lon,tc_track.lat,edges_x,edges_y);
     node_no=1:length(tc_track.lon);
     node_no=node_no(in_track_poly);
-    if isempty(max_node),max_node=min(max(node_no)+10,length(tc_track.lon));end
-    if isempty(min_node),min_node=max(min(node_no)-10,2);end
+    if isempty(max_node),max_node=min(max(node_no)+d_nodes,length(tc_track.lon));end
+    if isempty(min_node),min_node=max(min(node_no)-d_nodes,2);end
 end
 min_node=max(min_node,2); % avoid 1 since windfield needs at least two nodes
 

@@ -32,6 +32,7 @@ function tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep)
 % David N. Bresch, david_bresch@gmail.com, 20040911, new version of MATLAB does not like adding empty stuff
 % David N. Bresch, david_bresch@gmail.com, 20141231, datevecmx replaced
 % David N. Bresch, david_bresch@gmail.com, 20150103, simplified (a lot) and about five times faster
+% David N. Bresch, david_bresch@gmail.com, 20150119, lat/lon interpolation switched to spline
 %-
 
 % init global variables
@@ -87,7 +88,7 @@ for track_i=1:length(tc_track)
     tc_track(track_i).dd=interp1(datenum_source,tc_track(track_i).dd,datenum_target,'linear','extrap');
     tc_track(track_i).hh=interp1(datenum_source,tc_track(track_i).hh,datenum_target,'linear','extrap');
     
-    tc_track(track_i).datenum=datenum_target;
+    tc_track(track_i).datenum=datenum_target; 
     tc_track(track_i).TimeStep=tc_track(track_i).lon*0+default_min_TimeStep; % by definition
     
 %     % check plot even commented out for speedup

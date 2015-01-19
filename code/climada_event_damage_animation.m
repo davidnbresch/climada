@@ -34,6 +34,7 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150118, initial
+% David N. Bresch, david.bresch@gmail.com, 20150119, hazard translucent, entity blue, damage red
 %-
 
 res=[]; % init output
@@ -47,11 +48,11 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('animation_data_file','var'),animation_data_file='';end
 if ~exist('animation_avi_file','var'),animation_avi_file  ='';end
 
-% locate the module's (or this code's) data folder (usually  afolder
-% 'parallel' to the code folder, i.e. in the same level as code folder)
-module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 
 % PARAMETERS
+%
+% the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
+damage_scale=1/2;
 %
 % the rect to plot (default is are as in hazard.lon/lat, =[], in which case it is automatically determined)
 focus_region=[];
@@ -136,7 +137,7 @@ n_steps=hazard.event_count;
 % template for-loop with waitbar or progress to stdout
 t0       = clock;
 msgstr   = sprintf('processing %i steps',n_steps);
-mod_step = 10; % first time estimate after 10 events, then every 100
+mod_step = 2; % first time estimate after 10 events, then every 100
 fprintf('%s\n',msgstr);
 format_str='%s';
 
@@ -147,9 +148,8 @@ yy=linspace(min(hazard.lat)-dY, max(hazard.lat)+dY, npoints);
 [X,Y]=meshgrid(xx,yy); % construct regular grid
 
 damage_min_value=full(min(min(hazard.damage(hazard.damage>0))));
-damage_max_value=full(max(max(hazard.damage)));
+damage_max_value=full(max(max(hazard.damage)))*damage_scale;
 max_damage_str=sprintf('%g',damage_max_value);
-damage_max_value=sqrt(damage_max_value); % to scale, see below
 
 % Prepare the new file
 if make_avi
@@ -159,13 +159,26 @@ if make_avi
 end
 
 max_damage_at_centroid=[]; % init
-for step_i=1:n_steps
+%for step_i=1:n_steps
+for step_i=20:n_steps
     
     hold off
     
     % plot assets
     % -----------
-    
+    values=hazard.assets.Value;
+    min_value=min(values(values>0));
+    max_value=max(values);
+    MarkerSizes=(abs(values-min_value))/(max_value-min_value)*circle_diam;    
+    MarkerSizes(isnan(MarkerSizes))=0;
+    MarkerSizes(MarkerSizes<1)=0;
+    ok_points_pos=find(MarkerSizes>0);
+    for ii=1:length(ok_points_pos)
+        i=ok_points_pos(ii);
+        plot(hazard.assets.Longitude(i),hazard.assets.Latitude(i),'ob','MarkerSize',...
+            MarkerSizes(i),'LineWidth',1);hold on;
+    end
+        
     % plot hazard intensity
     % ---------------------
     values=full(hazard.intensity(step_i,:));
@@ -199,7 +212,7 @@ for step_i=1:n_steps
     end
     values=max_damage_at_centroid;
     
-    MarkerSizes=sqrt(abs(values-damage_min_value))/(damage_max_value-damage_min_value)*circle_diam;
+    MarkerSizes=sqrt(abs(values-damage_min_value))/sqrt(damage_max_value-damage_min_value)*circle_diam;
     MarkerSizes(isnan(MarkerSizes))=0;
     MarkerSizes(MarkerSizes<1)=0;
     ok_points_pos=find(MarkerSizes>0);
@@ -223,7 +236,7 @@ for step_i=1:n_steps
     
     % the progress management
     if mod(step_i,mod_step)==0
-        mod_step          = 100;
+        mod_step          = 10;
         t_elapsed_event   = etime(clock,t0)/step_i;
         steps_remaining  = n_steps-step_i;
         t_projected_sec   = t_elapsed_event*steps_remaining;
