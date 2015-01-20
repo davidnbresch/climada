@@ -17,6 +17,10 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 %   more than one ocean basin's tracks hitting the centroids, the user has
 %   to select the track file).
 %
+%   Note that this code does not (yet) run in Octave, as video support is
+%   limited (see <http://octave.sf.net/video/>) and the present code uses
+%   latest MATLAB videowriter (better performance than avifile...).
+%
 %   prior calls: climada_event_damage_data_tc or similar to prepare the
 %   event damage information
 % CALLING SEQUENCE:
