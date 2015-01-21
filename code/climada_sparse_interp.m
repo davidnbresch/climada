@@ -1,4 +1,4 @@
-function res = climada_sparse_interp(matrix);
+function res = climada_sparse_interp(matrix)
 % climada event damage hazard probabilistic stochastic damagefunctions
 % NAME:
 %   climada_sparse_interp
