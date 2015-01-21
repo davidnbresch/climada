@@ -89,10 +89,12 @@ if isfield(measures,'damagefunctions_map')
 end
 
 % clean up peril_ID
-for peril_i=1:length(measures.peril_ID)
-    if ~ischar(measures.peril_ID{peril_i})
-        measures.peril_ID{peril_i}=''; % from [NaN]
-    end
-end % peril_i
+if isfield(measures,'peril_ID')
+    for peril_i=1:length(measures.peril_ID)
+        if ~ischar(measures.peril_ID{peril_i})
+            measures.peril_ID{peril_i}=''; % from [NaN]
+        end
+    end % peril_i
+end
 
 return

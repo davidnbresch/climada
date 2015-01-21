@@ -209,14 +209,14 @@ nn_assets=length(valid_assets_pos);
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
-msgstr=sprintf('processing %i assets (>0) and %i events, ',nn_assets,length(hazard.frequency));
+msgstr=sprintf('processing %i assets (>0) and %i events ',nn_assets,length(hazard.frequency));
 
 if ~silent_mode % CLIMADA_OPT
     if climada_global.waitbar % CLIMADA_OPT
         fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
         h = waitbar(0,msgstr,'Name',sprintf('Calculating %s damage for assets',hazard.peril_ID)); % CLIMADA_OPT
     else % CLIMADA_OPT
-        fprintf('%s (waitbar suppressed)\n',msgstr); % CLIMADA_OPT
+        fprintf('%s\n',msgstr); % CLIMADA_OPT
         format_str='%s'; % CLIMADA_OPT
     end % CLIMADA_OPT
 end % CLIMADA_OPT
