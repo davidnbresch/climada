@@ -10,6 +10,12 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %   climada_tc_windfield) - this speeds up calculation for large countries
 %   considerably.
 %
+%   Special: the hazard event set is stored every 100 tracks in order to
+%   allow for interruption of the hazard set generation. Just re-start the
+%   calculation by calling climada_tc_hazard_set with exactly the same
+%   input parameters (the last track calculated is stored in hazard.track_i
+%   and the field track_i is removed in the final complete hazard event set).  
+%
 %   previous: likely climada_random_walk
 %   next: diverse
 % CALLING SEQUENCE:
@@ -220,16 +226,28 @@ if climada_global.waitbar
     h        = waitbar(0,msgstr);
     set(h,'Name','Hazard TC: tropical cyclones wind');
 else
-    fprintf('%s (waitbar suppressed)\n',msgstr);
+    fprintf('%s\n',msgstr);
     format_str='%s';
 end
 
-tc_track=climada_tc_equal_timestep(tc_track); % make equal timesteps
-    
-for track_i=1:n_tracks
+if n_tracks>10000
+    default_min_TimeStep=2; % speeds up calculation by factor 2
+else
+    default_min_TimeStep=climada_global.tc.default_min_TimeStep;
+end
+tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep); % make equal timesteps
+
+track0=1;
+if exist(hazard_set_file,'file');
+    load(hazard_set_file); % restore from intermediate save
+    if isfield(hazard,'track_i'),track0=hazard.track_i;end
+    fprintf('picking up at track %i from %s\n',track0,hazard_set_file);
+end
+
+for track_i=track0:n_tracks
     
     % calculate wind for every centroids, equal timestep within this routine
-    res                             = climada_tc_windfield(tc_track(track_i),centroids,0,1,check_plot);
+    res                             = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
     %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,0,1,check_plot);
     
     hazard.intensity(track_i,:)     = res.gust;
@@ -254,7 +272,7 @@ for track_i=1:n_tracks
     % following block only for progress measurement (waitbar or stdout)
     if mod(track_i,mod_step)==0
         mod_step          = 100;
-        t_elapsed_track   = etime(clock,t0)/track_i;
+        t_elapsed_track   = etime(clock,t0)/(track_i-track0+1); % time per track
         tracks_remaining  = n_tracks-track_i;
         t_projected_sec   = t_elapsed_track*tracks_remaining;
         if t_projected_sec<60
@@ -262,6 +280,8 @@ for track_i=1:n_tracks
         else
             msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
         end
+        hazard.track_i=track_i;
+        save(hazard_set_file,'hazard'); % intermediate save
         if climada_global.waitbar
             waitbar(track_i/n_tracks,h,msgstr); % update waitbar
         else
@@ -269,7 +289,7 @@ for track_i=1:n_tracks
             format_str=[repmat('\b',1,length(msgstr)) '%s'];
         end
     end
-    
+        
 end %track_i
 if climada_global.waitbar
     close(h) % dispose waitbar
@@ -281,6 +301,7 @@ t_elapsed = etime(clock,t0);
 msgstr    = sprintf('generating %i windfields took %3.2f min (%3.2f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
 fprintf('%s\n',msgstr);
 
+if isfield(hazard,'track_i'),hazard=rmfield(hazard,'track_i');end
 
 % number of derived tracks per original one
 ens_size        = hazard.event_count/hazard.orig_event_count-1;

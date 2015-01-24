@@ -291,15 +291,15 @@ for asset_ii=1:nn_assets
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
         if ~silent_mode % CLIMADA_OPT
-            if mod(asset_i,mod_step)==0 % CLIMADA_OPT
+            if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
                 mod_step         = 100; % CLIMADA_OPT
-                t_elapsed_calc   = etime(clock,t0)/asset_i; % CLIMADA_OPT
-                calcs_remaining  = n_assets-asset_i; % CLIMADA_OPT
+                t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
+                calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
                 t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-                msgstr           = sprintf('est. %i seconds left (%i/%i assets)',ceil(t_projected_calc),asset_i,n_assets); % CLIMADA_OPT
+                msgstr           = sprintf('est. %i seconds left (%i/%i assets>0)',ceil(t_projected_calc),asset_ii,nn_assets); % CLIMADA_OPT
                 
                 if climada_global.waitbar % CLIMADA_OPT
-                    waitbar(asset_i/n_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+                    waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
                 else % CLIMADA_OPT
                     fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
                     format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
@@ -310,7 +310,7 @@ for asset_ii=1:nn_assets
         
     end % ~isempty(asset_damfun_pos)
     
-end % asset_i
+end % asset_ii
 if ~silent_mode % CLIMADA_OPT
     if climada_global.waitbar % CLIMADA_OPT
         close(h) % dispose waitbar % CLIMADA_OPT

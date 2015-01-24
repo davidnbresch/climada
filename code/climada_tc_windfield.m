@@ -65,6 +65,7 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090728
 % David N. Bresch, david.bresch@gmail.com, 20141227, centroids.distance2coast_km treatment added
+% David N. Bresch, david.bresch@gmail.com, 20150124, wind_threshold=15 (was 0), coastal_range_km=375 (was 300)
 %-
 
 res = []; % init output
@@ -72,77 +73,25 @@ res = []; % init output
 global climada_global
 if ~climada_init_vars, return; end
 
-if ~exist('tc_track'      , 'var'), tc_track       = []; end
-if ~exist('centroids'     , 'var'), centroids      = []; end
+if ~exist('tc_track'      , 'var'),  return; end
+if ~exist('centroids'      , 'var'), return; end
 if ~exist('equal_timestep', 'var'), equal_timestep = 1; end
 if ~exist('silent_mode'   , 'var'), silent_mode    = 0; end
-if ~exist('check_plot'    , 'var'), check_plot     = 0; end % check_plot commented out for speedup
+%if ~exist('check_plot'    , 'var'), check_plot     = 0; end % check_plot commented out for speedup
 
 % PARAMETERS
 %
 % threshold above which we calculate the windfield
-wind_threshold = 0; % in m/s, default=0
+wind_threshold=15; % in m/s, default=0 until 20150124
 %
 % treat the extratropical transition celerity exceeding vmax problem
-treat_extratropical_transition = 0; % default=0, since non-standard iro Holland
+% an issue e.g. for Northern US, where this should be set=1
+treat_extratropical_transition=0; % default=0, since non-standard iro Holland
 %
 % for speed, up only process centroids within a coastal range (on/offshore)
-coastal_range_km=300;
+coastal_range_km=375; % in km, 300 until 20150124, 5*75=375 (see D<5*R below)
 %
 
-% prompt for tc_track if not given
-if isempty(tc_track)
-    tc_track             = [climada_global.data_dir filesep 'tc_tracks' filesep '*.mat'];
-    [filename, pathname] = uigetfile(tc_track, 'Select tc track (set):');
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        tc_track = fullfile(pathname,filename);
-    end
-end
-
-% load the tc track set, if a filename has been passed
-if ~isstruct(tc_track)
-    tc_track_file = tc_track;
-    tc_track      = [];
-    vars = whos('-file', tc_track_file);
-    load(tc_track_file);
-    if ~strcmp(vars.name,'tc_track')
-        tc_track = eval(vars.name);
-        clear (vars.name)
-    end
-    prompt   ='Type specific No. of track to print windfield [e.g. 1, 10, 34, 1011]:';
-    name     =' No. of track';
-    defaultanswer = {'1011'};
-    answer = inputdlg(prompt,name,1,defaultanswer);
-    track_no = str2double(answer{1});
-    tc_track = tc_track(track_no);
-    check_plot = 1;
-end
-
-% prompt for centroids if not given
-if isempty(centroids)
-    centroids            = [climada_global.system_dir filesep '*.mat'];
-    centroids_default    = [climada_global.system_dir filesep 'Select centroids .mat'];
-    [filename, pathname] = uigetfile(centroids, 'Select centroids:',centroids_default);
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        centroids = fullfile(pathname,filename);
-    end
-end
-
-% load the centroids, if a filename has been passed
-if ~isstruct(centroids)
-    centroids_file = centroids;
-    centroids      = [];
-    vars = whos('-file', centroids_file);
-    load(centroids_file);
-    if ~strcmp(vars.name,'centroids')
-        centroids = eval(vars.name);
-        clear (vars.name)
-    end
-end
 
 % if check_plot
 % to store original track for plotting, see below
@@ -150,7 +99,8 @@ end
 % end 
 
 if equal_timestep
-    if ~silent_mode,fprintf('NOTE: tc_track refined (1 hour timestep) prior to windfield calculation\n');end
+    if ~silent_mode,...
+            fprintf('NOTE: tc_track refined (%i hour timestep) prior to windfield calculation\n',climada_global.tc.default_min_TimeStep);end
     tc_track=climada_tc_equal_timestep(tc_track); % make equal timesteps
 end
 
@@ -265,7 +215,6 @@ res.lat = centroids.Latitude;
 res.lon = centroids.Longitude;
 
 % add further fields (for climada use)
-if isfield(centroids,'OBJECTID')   ,res.OBJECTID    = centroids.OBJECTID;    end
 if isfield(centroids,'centroid_ID'),res.ID          = centroids.centroid_ID; end
 if isfield(centroids,'elevation_m'),res.elevation_m = centroids.elevation_m; end
 
@@ -284,34 +233,30 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
     
     centroid_i=valid_centroid_pos(centroid_ii);
     
-    % the single-character variables refer to the Pioneer offering circular
-    % that's why we kept these short names (so one can copy the OC for documentation)
-
     % find closest node
-    dd=((tc_track.lon-res.lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track.lat-res.lat(centroid_i)).^2; % in km
+    dd=((tc_track.lon-res.lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track.lat-res.lat(centroid_i)).^2; % in km^2
 
-    [min_dd,pos] = min(dd);
-    %dd=sqrt(dd(pos))*111.12; % if one would need the real distance in km
+    [~,pos] = min(dd);
 
-    node_i       = pos(1); % take first if more than one
-
-    res.node_lat (centroid_i) = tc_track.lat(node_i);
-    res.node_lon (centroid_i) = tc_track.lon(node_i);
-    res.node_id  (centroid_i) = node_i;
-    res.dist_node(centroid_i) = sqrt(min_dd(1))*111.12;
-  
+    node_i  = pos(1); % take first if more than one
     D = sqrt(dd(node_i))*111.12; % now in km
+        
+    node_lat = tc_track.lat(node_i);
+    node_lon = tc_track.lon(node_i);
+    
+    R = 30; % radius of max wind (in km)
+    if abs(node_lat) > 42
+        R = 75;
+    elseif abs(node_lat) > 24
+        R = 30+2.5*(abs(node_lat)-24);
+    end
 
-    R = 30; % radius of max wind
-    if abs(res.node_lat(centroid_i)) > 24, R = 30+2.5*(abs(res.node_lat(centroid_i))-24); end
-    if abs(res.node_lat(centroid_i)) > 42, R = 75; end
-
-    if D<10*R % close enough to have an impact
-        %%if D<5*R % faster method for non-Pioneer applications
+    %if D<10*R % close enough to have an impact
+    if D<5*R % focus on the radius that really has an impact
 
         % calculate angle to node to determine left/right of track
-        ddx          = (res.lon(centroid_i)-res.node_lon(centroid_i))*cos(res.node_lat(centroid_i)/180*pi);
-        ddy          = (res.lat(centroid_i)-res.node_lat(centroid_i));
+        ddx          = (res.lon(centroid_i)-node_lon)*cos(node_lat/180*pi);
+        ddy          = (res.lat(centroid_i)-node_lat);
         node_Azimuth = atan2(ddy,ddx)*180/pi; % in degree
         node_Azimuth = mod(-node_Azimuth+90,360); % convert wind such that N is 0, E is 90, S is 180, W is 270
         res.node_Azimuth(centroid_i) = node_Azimuth; % to store
@@ -323,20 +268,21 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
         else
             % left of track
             T = -tc_track.Celerity(node_i);
-        end;
+        end
         % switch sign for Southern Hemisphere
-        if res.node_lat(centroid_i)<0
-            T = -T;
-        end 
+        if node_lat<0,T = -T;end 
 
         if treat_extratropical_transition
             % special to avoid unrealistic celerity after extratropical transition
             max_T_fact=0.0;
-            T_fact=1.0; % init
-            if abs(node_lat) > 35, T_fact=1.0+(max_T_fact-1.0)*(abs(node_lat)-35)/(42-35);end;
-            if abs(node_lat) > 42, T_fact=max_T_fact; end;
-            T=sign(T)*min(abs(T),abs(M)); % first, T never exceeds M
-            T=T*T_fact; % reduce T influence by latitude
+            if abs(node_lat) > 42
+                T_fact=max_T_fact;
+            elseif abs(node_lat) > 35
+                T_fact=1.0+(max_T_fact-1.0)*(abs(node_lat)-35)/(42-35);
+            else
+                T_fact=1.0;
+            end
+            T=sign(T)*min(abs(T),abs(M))*T_fact; % T never exceeds M
         end;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -353,8 +299,10 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         res.gust(centroid_i) = max((S/3.6)*1.27,0); % G now in m/s, peak gust
-    end % D<10*R
-end % centroid_i
+        
+    end % D<5*R
+    
+end % centroid_ii
 
 title_str = [tc_track.name ', ' datestr(tc_track.datenum(1))];
 if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
