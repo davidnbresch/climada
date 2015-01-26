@@ -205,7 +205,13 @@ for file_i = 1:length(D_entity_mat)
             if verbose_mode,fprintf('sum(value) after scaling: %g\n',sum(entity.assets.Value));end
 
             % for consistency, update Cover
-            entity.assets.Cover=entity.assets.Cover*scale_up_factor*future_factor;
+            if isfield(entity.assets,'Cover')
+                entity.assets.Cover=entity.assets.Cover*scale_up_factor*future_factor;
+                Cover_pct=entity.assets.Cover./entity.assets.Value;
+                if max(Cover_pct)<0.01
+                    fprintf('Warning: max Cover less than 1%% of Value -> consider to adjust Cover\n');
+                end
+            end
 
             % save entity
             entity_adjusted = entity;

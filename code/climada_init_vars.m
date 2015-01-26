@@ -23,6 +23,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20141225, climada_global.coastline_file added
 % David N. Bresch, david.bresch@gmail.com, 20141226, update to be in line with manual
 % David N. Bresch, david.bresch@gmail.com, 20141231, octave compatibility
+% David N. Bresch, david.bresch@gmail.com, 20150126, csv_delimiter depends on computer
 %-
 
 global climada_global
@@ -111,6 +112,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     % country-specific csv delimiter (to read and convert to Excel properly)
     climada_global.csv_delimiter=';'; % ';' default
+    if strfind(computer,'MAC'),climada_global.csv_delimiter=',';end
     
     % tropical cyclone (TC) specific parameters
     climada_global.tc.default_min_TimeStep=1; % 1 hour

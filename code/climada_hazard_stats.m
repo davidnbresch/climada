@@ -148,8 +148,14 @@ if calc
     t0       = clock;
     mod_step = 10; % first time estimate after 10 tracks, then every 100
     msgstr   = sprintf('processing %i centroids',n_centroids);
-    fprintf('%s (updating waitbar with estimation of time remaining every 100th centroid)\n',msgstr);
-    if climada_global.waitbar,h        = waitbar(0,msgstr);end
+    if climada_global.waitbar
+        fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr);
+        h        = waitbar(0,msgstr);
+        set(h,'Name','Event loop');
+    else
+        fprintf('%s (waitbar suppressed)\n',msgstr);
+        format_str='%s';
+    end
     
     for centroid_i = 1:n_centroids
         
@@ -227,12 +233,22 @@ if calc
             else
                 msgstr = sprintf('est. %3.1f min left (%i/%i centroids)',t_projected_sec/60, centroid_i, n_centroids);
             end
-            waitbar(centroid_i/n_centroids,h,msgstr); % update waitbar
+            
+            if climada_global.waitbar
+                waitbar(centroid_i/n_centroids,h,msgstr); % update waitbar
+            else
+                fprintf(format_str,msgstr); % write progress to stdout
+                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
+            end
         end
         
     end % centroid_i
     
-    if climada_global.waitbar,close(h);end % dispose waitbar
+    if climada_global.waitbar
+        close(h) % dispose waitbar
+    else
+        fprintf(format_str,''); % move carriage to begin of line
+    end
     
     % save hazard file with stats
     [fP,fN]=fileparts(hazard.filename);

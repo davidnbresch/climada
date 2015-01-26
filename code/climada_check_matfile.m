@@ -11,7 +11,7 @@ function ok=climada_check_matfile(source_filename,mat_filename)
 %   and the .mat file might contain more than the raw content of the source
 %   file
 % CALLING SEQUENCE:
-%   ok=climada_check_matfile(source_filename)
+%   ok=climada_check_matfile(source_filename,mat_filename)
 % EXAMPLE:
 %   ok=climada_check_matfile
 % INPUTS:
