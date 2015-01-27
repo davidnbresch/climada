@@ -18,6 +18,19 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verb
 %   adjustment (this way, the code does not scale _future entities back to
 %   today).
 %
+%   The entities' asset values are first normalized and then
+%   multiplied by a factor that depends on a country's income group (low,
+%   lower middle, upper middle, or high). The choice of this factor is
+%   based on a comparison of climada entities to estimates for total asset
+%   values in countries where such data are available. This comparison
+%   showed that in general, adjusting the Climada asset values requires a
+%   higher multiplication factor the wealthier a country is. Thus, as a
+%   rule of thumb, the value of all assets in a country can be estimated by
+%       Total_asset_value = GDP * (1+income_group_factor) 
+%   where GDP is the country's gross domestic product, and
+%   income_group_factor ranges from 2 for low income countries to 5 for
+%   high income countries.             
+%
 %   Caution: as soon as the entity has a field entity.assets.admin0_ISO3 or
 %   entity.assets.admin0_name, it is adjusted, unless there are non-empty
 %   fields entity.assets.admin1_name or entity.assets.admin1_code, in which
