@@ -163,8 +163,7 @@ if make_avi
 end
 
 max_damage_at_centroid=[]; % init
-%for step_i=1:n_steps
-for step_i=20:n_steps
+for step_i=1:n_steps
     
     hold off
     
