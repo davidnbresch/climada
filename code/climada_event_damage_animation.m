@@ -56,10 +56,10 @@ if ~exist('animation_avi_file','var'),animation_avi_file  ='';end
 % PARAMETERS
 %
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
-damage_scale=1/2;
+damage_scale=1/3; % defaul =1/2
 %
 % the rect to plot (default is are as in hazard.lon/lat, =[], in which case it is automatically determined)
-focus_region=[];
+focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
 %
 % load colormap
 colormap_file=[climada_global.data_dir filesep 'system' filesep 'colormap_gray_blue.mat'];
@@ -70,7 +70,7 @@ npoints=199;
 interp_method='linear';
 %
 % damage plot parameters
-circle_diam=20;
+circle_diam=5; % default=20
 circle_format='or';
 circle_linewidth=3;
 %
