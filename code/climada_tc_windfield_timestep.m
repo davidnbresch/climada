@@ -202,13 +202,24 @@ res.gust         = sparse(node_count,centroid_count);
 if isfield(centroids,'OBJECTID')   , res.OBJECTID = centroids.OBJECTID;    end
 if isfield(centroids,'centroid_ID'), res.ID       = centroids.centroid_ID; end
 
-res.lat     = centroids.Latitude';
-res.lon     = centroids.Longitude';
+[c_i c_j] = size(centroids.Latitude);
+if c_i == 1
+    res.lat = centroids.Latitude';
+    res.lon = centroids.Longitude';
+else
+    res.lat = centroids.Latitude;
+    res.lon = centroids.Longitude;
+end
 
 % find closest track node to every centroid, and calculate distance in km
-C_lonlat = [centroids.Longitude' centroids.Latitude']; 
-C_coslat = cos(centroids.Latitude'/180*pi);
-T_lonlat = [tc_track.lon' tc_track.lat']; 
+C_lonlat = [res.lon res.lat]; %[centroids.Longitude centroids.Latitude]; 
+C_coslat = cos(res.lat/180*pi); %cos(centroids.Latitude/180*pi);
+[t_i t_j] = size(tc_track.lon);
+if t_i == 1
+    T_lonlat = [tc_track.lon' tc_track.lat'];
+else
+    T_lonlat = [tc_track.lon  tc_track.lat];
+end
 % cos_tc_track_lat = cos(tc_track.lat/180*pi);
 
 %loop over all track nodes
