@@ -89,6 +89,7 @@ if ~exist('entity','var'),entity=[];end
 if ~exist('animation_data_file','var'),animation_data_file=[];end
 if ~exist('add_surge','var'),add_surge=0;end
 if ~exist('check_mode','var'),check_mode=2;end
+if ~exist('tc_track_mat','var'),tc_track_mat='';end
 
 % PARAMETERS
 %
@@ -140,7 +141,7 @@ min_node=[];max_node=[]; % by default empty, automatically determined
 % currently set to a default, but could also be prompted for (see below)
 if isempty(animation_data_file),animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
 
-% prompt for infputs, if not provided:
+% prompt for inputs, if not provided:
 if isempty(tc_track),[tc_track,tc_track_mat]=climada_tc_read_unisys_database;end % get tc_track
 if isempty(entity),entity=climada_entity_load;end                                % get entity
 % if isempty(animation_data_file)                                                  % get output filename
@@ -163,8 +164,34 @@ end
 
 if length(tc_track)>1
     
+<<<<<<< HEAD
     % obtain tc_track nodes
     tc_track_nodes=climada_tc_track_nodes(tc_track_mat);
+=======
+    if isempty(tc_track_mat)
+        tc_track_mat = [climada_global.data_dir filesep 'tc_tracks' filesep 'unknown_tracks'];
+    end
+    % figure which tracks are in the focus region
+    [fP,fN]=fileparts(tc_track_mat);
+    fN=strrep(fN,'_proc','');
+    tc_track_nodes_file=[fP filesep fN '_nodes.mat'];
+    
+    if ~exist(tc_track_nodes_file,'file')
+        tc_track_nodes.lon=[];
+        tc_track_nodes.lat=[];
+        tc_track_nodes.track_no=[];
+        fprintf('collecting all nodes for %i TC tracks\n',length(tc_track));
+        for track_i=1:length(tc_track)
+            tc_track_nodes.lon=[tc_track_nodes.lon tc_track(track_i).lon];
+            tc_track_nodes.lat=[tc_track_nodes.lat tc_track(track_i).lat];
+            tc_track_nodes.track_no=[tc_track_nodes.track_no (tc_track(track_i).lat)*0+track_i];
+        end % track_i
+        fprintf('saving TC track nodes as %s\n',tc_track_nodes_file);
+        save(tc_track_nodes_file,'tc_track_nodes');
+    else
+        load(tc_track_nodes_file);
+    end
+>>>>>>> FETCH_HEAD
     
     % check for track nodes within focus_region
     edges_x = [focus_region(1),focus_region(1),focus_region(2),focus_region(2),focus_region(1)];

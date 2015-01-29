@@ -1,8 +1,6 @@
 
 
 function climada_plot_probabilistic_wind_speed_map(tc_track, track_req)
-
-
 % plot historical tc track (Longitude, Latitude) in world map according to
 % saffir-simpson hurrican scale. Add plot of probabilistic generated sister
 % storms. Historical tracks has black lines around markers to identify as
@@ -10,7 +8,7 @@ function climada_plot_probabilistic_wind_speed_map(tc_track, track_req)
 % NAME:
 %   climada_plot_probabilistic_wind_speed_map
 % PURPOSE:
-%   analyse visuallly historical tc track and its generated probabilistic
+%   analyse visually historical tc track and its generated probabilistic
 %   sister storms. Check Longitude, Latitude and wind speed category
 %   (saffir-simpson hurricane scale) 
 % CALLING SEQUENCE:
@@ -76,7 +74,11 @@ no_hist      = sum([tc_track.orig_event_flag]);
 no_generated = length(tc_track)/no_hist;
 ens_size     = no_generated-1;
 
-%check if track_req is a historical track, round to nearest historial track
+if track_req>length(tc_track)
+    track_req = length(tc_track);
+end
+
+%check if track_req is a historical track, otherwise round to nearest historial track
 if track_req
     track_req = round((track_req-1)/(ens_size+1))*(ens_size+1)+1;
 end
