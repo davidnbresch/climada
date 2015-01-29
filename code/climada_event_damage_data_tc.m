@@ -41,6 +41,10 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %   entity: a climada entity, see climada_entity_read (skip hazard set
 %       selection to encode to) or climada_entity_load
 %       > promted for if not given
+%       Note: for speedup, consider creating an entity covering only the
+%       region you'd like to focus on, e.g. avoid full contiguous US if
+%       you'd like to animate a TC hittiung Floriday, i.e consider
+%       entity=climada_nightlight_entity('USA','Florida')
 %   animation_data_file: the file where animation data is stored (not the
 %       animation itself). If not provided, set to ../results/animation_data.mat
 % OPTIONAL INPUT PARAMETERS:
@@ -104,7 +108,7 @@ damage_scale=1/100;
 dX=1;dY=1; % default=1
 %
 % the rect to plot (default is track's full coverage, =[], in which case it is automatically determined)
-focus_region=[];
+focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
 %
 % label track nodes along track
 label_track_nodes=0; % default=0
@@ -255,6 +259,7 @@ if check_mode
     % plot overview and get decent plot region (o cover whole track)
     plot(tc_track.lon,tc_track.lat,'-g');hold on
     set(gcf,'Color',[1 1 1]) % white background
+    axis equal
     axis(focus_region);
     climada_plot_world_borders(1,'','',1);
 end
