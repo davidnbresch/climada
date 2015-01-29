@@ -219,7 +219,7 @@ for file_i = 1:length(D_entity_mat)
 
             % for consistency, update Cover
             if isfield(entity.assets,'Cover')
-                entity.assets.Cover=entity.assets.Cover*scale_up_factor*future_factor;
+                entity.assets.Cover=entity.assets.Cover*GDP_today*scale_up_factor*future_factor;
                 Cover_pct=entity.assets.Cover./entity.assets.Value;
                 if max(Cover_pct)<0.01
                     fprintf('Warning: max Cover less than 1%% of Value -> consider to adjust Cover\n');

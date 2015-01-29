@@ -70,6 +70,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 % David N. Bresch, david.bresch@gmail.com, 20150117, intial
 % David N. Bresch, david.bresch@gmail.com, 20150118, TS added
 % David N. Bresch, david.bresch@gmail.com, 20150120, check_mode added
+% David N. Bresch, david.bresch@gmail.com, 20150128, climada_tc_track_nodes
 %-
 
 hazard=[]; % init output
@@ -162,26 +163,8 @@ end
 
 if length(tc_track)>1
     
-    % figure which tracks are in the focus region
-    [fP,fN]=fileparts(tc_track_mat);
-    fN=strrep(fN,'_proc','');
-    tc_track_nodes_file=[fP filesep fN '_nodes.mat'];
-    
-    if ~exist(tc_track_nodes_file,'file')
-        tc_track_nodes.lon=[];
-        tc_track_nodes.lat=[];
-        tc_track_nodes.track_no=[];
-        fprintf('collecting all nodes for %i TC tracks\n',length(tc_track));
-        for track_i=1:length(tc_track)
-            tc_track_nodes.lon=[tc_track_nodes.lon tc_track(track_i).lon];
-            tc_track_nodes.lat=[tc_track_nodes.lat tc_track(track_i).lat];
-            tc_track_nodes.track_no=[tc_track_nodes.track_no (tc_track(track_i).lat)*0+track_i];
-        end % track_i
-        fprintf('saving TC track nodes as %s\n',tc_track_nodes_file);
-        save(tc_track_nodes_file,'tc_track_nodes');
-    else
-        load(tc_track_nodes_file);
-    end
+    % obtain tc_track nodes
+    tc_track_nodes=climada_tc_track_nodes(tc_track_mat);
     
     % check for track nodes within focus_region
     edges_x = [focus_region(1),focus_region(1),focus_region(2),focus_region(2),focus_region(1)];
