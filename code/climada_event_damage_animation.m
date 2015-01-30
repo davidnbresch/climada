@@ -116,16 +116,11 @@ if ~isempty(hazard_TS)
 end
 
 % color range for hazard intensity
-switch char(hazard.peril_ID)
-    case 'TC'
-        intensity_caxis_range=[20 100];
-    case 'TS'
-        intensity_caxis_range=[ 1  10];
-    case 'WS'
-        intensity_caxis_range=[20  80];
-    otherwise
-        intensity_caxis_range=[0 full(max(max(hazard.intensity)))];
+[cmap c_ax]= climada_colormap(hazard.peril_ID);
+if isempty (c_ax)
+    c_ax = [0 full(max(max(hazard.intensity)))];
 end
+    
 intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end
 
@@ -189,9 +184,9 @@ for step_i=1:n_steps
     
     gridded_VALUE=griddata(hazard.lon,hazard.lat,values,X,Y,interp_method); % interpolate to grid 'linear'
     pcolor(X,Y,gridded_VALUE);
-    if exist('gray_blue','var'),colormap(gray_blue);end
+    colormap(cmap)
     hold on;shading flat;axis equal
-    caxis(intensity_caxis_range);axis off
+    caxis(c_ax);axis off
     climada_plot_world_borders(1);
     axis(focus_region);
     colorbar;

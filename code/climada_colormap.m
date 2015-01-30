@@ -70,7 +70,23 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [[1 1 1];cmap1; cmap2];   
+        cmap = [[1 1 1];cmap1; cmap2]; 
+        
+    case 'WS'
+        % create colormap for wind storm:
+        c_ax = [0 80];
+        cmap =[  1.0000    1.0000    1.0000;
+            %0.8100    0.8100    0.8100;
+            0.6300    0.6300    0.6300;
+            1.0000    0.8000    0.2000;
+            %0.9420    0.6667    0.1600;
+            0.8839    0.5333    0.1200;
+            0.8259    0.4000    0.0800;
+            %0.7678    0.2667    0.0400;
+            0.7098    0.1333         0;
+            0.5412    0.1020         0;
+            0.4078    0.1333    0.5451;
+            0.3333    0.1020    0.5451];    
         
     case 'damage'
         % create colormap for surge
@@ -84,4 +100,8 @@ switch peril_ID
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
         cmap = [cmap1; cmap2];       
+end
+
+if isempty(cmap)
+    cmap = jet(15);
 end
