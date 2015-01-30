@@ -49,6 +49,7 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verb
 %       entity_file_regexp=[climada_global.data_dir filesep 'entities' filesep '*.mat']
 % OPTIONAL INPUT PARAMETERS:
 %   verbose_mode: =1, print step-by-step to stdout, =0, not (default)
+%       If =2, do not care for Value_today, just adjust to GDP*income_group_factors
 % OUTPUTS:
 %   entity_adjusted: entity with adjusted asset values, also stored as .mat
 %       file (only last netity if entity_file_regexp covers more than one)
@@ -169,6 +170,8 @@ for file_i = 1:length(D_entity_mat)
                 sum_Value_future=sum(entity.assets.Value);
                 future_factor=sum_Value_future/sum_Value_today;
                 
+                if verbose_mode==2,future_factor=1.0;end
+
                 if abs(future_factor-1)>0.051; % 5 percent tolerance
                     % if factor equals one, do it silenty
                     if isempty(strfind(D_entity_mat(file_i).name,'_future'))
@@ -186,7 +189,7 @@ for file_i = 1:length(D_entity_mat)
             else
                 future_factor=1;
             end
-            
+                        
             scale_up_factor = income_group_factors(econ_master_data.income_group(country_index));
             
             if verbose_mode,fprintf('sum(value) as on file: %g\n',sum(entity.assets.Value));end
