@@ -17,8 +17,7 @@ function res=climada_template(param1,param2)
 %   param2: as an example
 % OUTPUTS:
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20141206
-% David N. Bresch, david.bresch@gmail.com, 20141226, waitbar added
+% David N. Bresch, david.bresch@gmail.com, 20150128
 %-
 
 res=[]; % init output

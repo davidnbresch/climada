@@ -1,4 +1,4 @@
-function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file,check_plot)
+function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_file,check_plot)
 % TC event set track database UNISYS
 % NAME:
 %   climada_tc_read_unisys_database
@@ -17,10 +17,10 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file,che
 %     Hemipshere datasets, if the unisys_file contains 'she' or 'bsh' in the filename
 %     (see parameter  convert_latitude, she: southern hemisphere, bsh: best track southern hemisphere)
 %
-%   NOTE: if the binary file (see tc_track_proc_file) containing tc_track
+%   NOTE: if the binary file (see tc_track_hist_file) containing tc_track
 %   exists, the code just returns tc_track. This allows for recurent calls
 %   to the code and results in substantial speed-up.
-%   if the binary file (see tc_track_raw_file) exists, reading of raw
+%   If the binary file (see tc_track_raw_file) exists, reading of raw
 %   data is skipped. This allows faster iteration iro filtering (as often
 %   required, since raw data contains missing and errors).
 %   One needs to delete the binary files to re-read the raw ASCII data.
@@ -58,14 +58,13 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file,che
 %       tc_track(i).name: name, optional
 %       tc_track(i).orig_event_flag: whether it is an mother(=1) or daugther(=0) storm
 %
-%   Please note that a binary file of raw_data is stored (in the
-%   background), not of tc_track. Save tc_track manually (using save) if
-%   needed. The raw_data is stored to ease (and speedup) re-reading the
-%   data. To really start from the raw text file again, please delete the
-%   binary file (*_bin.mat).
+%       Please note that a binary file of raw_data is stored (in the
+%       background). The raw_data is stored to ease (and speedup) re-reading the
+%       data. To really start from the raw text file again, please delete the
+%       binary file (*_raw.mat).
 %
-%   also return tc_track_mat, the filename with path to the binary file
-%   tc_track is stored in (see NOTE above)
+%   tc_track_hist_file: the filename with path to the binary file
+%       tc_track is stored in (see NOTE above)
 %
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
@@ -75,11 +74,12 @@ function [tc_track,tc_track_mat]=climada_tc_read_unisys_database(unisys_file,che
 % Lea Mueller, 20120813, added overview of years in plot and codewort 'she'
 % for southern hemisphere filename
 % David N. Bresch, david.bresch@gmail.com, 20140221, world border plotted on top of tracks
-% David N. Bresch, david.bresch@gmail.com, 20140922 (over the Atlantic, LX016), tc_track_mat as output added and storing processed as mat
+% David N. Bresch, david.bresch@gmail.com, 20140922 (over the Atlantic, LX016), tc_track_hist_file as output added and storing processed as mat
 %-
 
 % init output
-tc_track=[];tc_track_mat='';
+tc_track=[];
+tc_track_hist_file='';
 
 % init global variables
 global climada_global
@@ -136,7 +136,7 @@ end
 % construct the binary file names
 [fP,fN]=fileparts(unisys_file);
 tc_track_raw_file=[fP filesep fN '_raw.mat'];
-tc_track_proc_file=[fP filesep fN '_proc.mat'];
+tc_track_hist_file=[fP filesep fN '_hist.mat'];
 
 if ~isempty(strfind(unisys_file,'she')) || ~isempty(strfind(unisys_file,'bsh')) %findstr(unisys_file,'bsh')
     convert_latitude = 'convert2South'; % Southern Hemisphere
@@ -148,7 +148,7 @@ tc_track.MaxSustainedWindUnit = 'kn';
 tc_track.CentralPressureUnit  = 'mb';
 tc_track.TimeStep             = 6; % check!
 
-if ~climada_check_matfile(unisys_file,tc_track_proc_file)
+if ~climada_check_matfile(unisys_file,tc_track_hist_file)
     
     if ~climada_check_matfile(unisys_file,tc_track_raw_file)
         
@@ -419,8 +419,8 @@ if ~climada_check_matfile(unisys_file,tc_track_proc_file)
     clear raw_data % to save space
     
     % store raw data (so following filtering setps can be repeated faster)
-    fprintf('writing processed file %s\n',tc_track_proc_file);
-    save(tc_track_proc_file,'tc_track');
+    fprintf('writing processed file %s\n',tc_track_hist_file);
+    save(tc_track_hist_file,'tc_track');
     
     
     if check_plot
@@ -439,11 +439,9 @@ if ~climada_check_matfile(unisys_file,tc_track_proc_file)
     end
     
 else
-    fprintf('reading processed file %s\n',tc_track_proc_file);
+    fprintf('reading processed file %s\n',tc_track_hist_file);
     %fprintf('> please delete this file to read data from raw file again\n');
-    load(tc_track_proc_file);
+    load(tc_track_hist_file);
 end
-
-tc_track_mat=tc_track_proc_file;
 
 return

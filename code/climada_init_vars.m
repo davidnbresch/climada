@@ -115,7 +115,11 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     if strfind(computer,'MAC'),climada_global.csv_delimiter=',';end
     
     % tropical cyclone (TC) specific parameters
-    climada_global.tc.default_min_TimeStep=1; % 1 hour
+    climada_global.tc.default_min_TimeStep=1; % 1 hour, see climada_tc_equal_timestep
+    % the file extension of the raw TC track data files, see centroids_generate_hazard_sets
+    % '.txt' for UNISYS files (http://weather.unisys.com/hurricane/index.html)
+    % '.nc' for netCDF files
+    climada_global.tc.default_raw_data_ext='.txt'; % default '.txt'
     
     % evaluation and NPV (net present value) specific parameters
     climada_global.present_reference_year = 2014; % yyyy

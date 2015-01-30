@@ -70,6 +70,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 % David N. Bresch, david.bresch@gmail.com, 20150117, intial
 % David N. Bresch, david.bresch@gmail.com, 20150118, TS added
 % David N. Bresch, david.bresch@gmail.com, 20150120, check_mode added
+% David N. Bresch, david.bresch@gmail.com, 20150128, climada_tc_track_nodes
 %-
 
 hazard=[]; % init output
@@ -163,6 +164,10 @@ end
 
 if length(tc_track)>1
     
+<<<<<<< HEAD
+    % obtain tc_track nodes
+    tc_track_nodes=climada_tc_track_nodes(tc_track_mat);
+=======
     if isempty(tc_track_mat)
         tc_track_mat = [climada_global.data_dir filesep 'tc_tracks' filesep 'unknown_tracks'];
     end
@@ -186,6 +191,7 @@ if length(tc_track)>1
     else
         load(tc_track_nodes_file);
     end
+>>>>>>> FETCH_HEAD
     
     % check for track nodes within focus_region
     edges_x = [focus_region(1),focus_region(1),focus_region(2),focus_region(2),focus_region(1)];
