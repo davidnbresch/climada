@@ -52,12 +52,13 @@ if ~climada_init_vars,return;end;
 
 %if climada_global.octave_mode,return % BUG FIX for TEST
 
-if ~exist('linewidth'       , 'var'), linewidth        = 1;  end
+if ~exist('linewidth'       , 'var'), linewidth        = []; end
 if ~exist('check_country'   , 'var'), check_country    = []; end
 if ~exist('map_shape_file'  , 'var'), map_shape_file   = ''; end
 if ~exist('keep_boundary'   , 'var'), keep_boundary    = 0;  end
 if ~exist('country_color'   , 'var'), country_color    = []; end
-
+if isempty(linewidth), linewidth = 1; end
+    
 % PARAMETERS
 %
 border_color =                           [81  81  81 ]/255;    % dark gray

@@ -43,7 +43,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %       > promted for if not given
 %       Note: for speedup, consider creating an entity covering only the
 %       region you'd like to focus on, e.g. avoid full contiguous US if
-%       you'd like to animate a TC hittiung Floriday, i.e consider
+%       you'd like to animate a TC hitting Floriday, i.e consider
 %       entity=climada_nightlight_entity('USA','Florida')
 %   animation_data_file: the file where animation data is stored (not the
 %       animation itself). If not provided, set to ../results/animation_data.mat

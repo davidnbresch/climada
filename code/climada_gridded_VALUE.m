@@ -43,9 +43,22 @@ if isempty(stencil_ext   ), stencil_ext   =  0          ;end
 %
 % to avoid masking areas far away from CalcUnits
 no_mask = 0;
+X = [];
+Y = [];
+gridded_VALUE = [];
 
-lon = centroids.Longitude;
-lat = centroids.Latitude;
+if isfield(centroids,'Longitude')
+    lon = centroids.Longitude;
+    lat = centroids.Latitude;
+elseif isfield(centroids,'lon')
+    lon = centroids.lon;
+    lat = centroids.lat;
+else
+    fprintf('Longitude, latitude not gitven. Unable to proceed.\n');
+    return
+end
+
+
 
 % define grid if not existing or if npoints>0
 npoints = abs(npoints); % force positive
