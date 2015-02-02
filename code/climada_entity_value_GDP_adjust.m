@@ -52,7 +52,7 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verb
 %       If =2, do not care for Value_today, just adjust to GDP*income_group_factors
 % OUTPUTS:
 %   entity_adjusted: entity with adjusted asset values, also stored as .mat
-%       file (only last netity if entity_file_regexp covers more than one)
+%       file (only last entity if entity_file_regexp covers more than one)
 % MODIFICATION HISTORY:
 % Melanie Bieli, melanie.bieli@bluewin.ch, 20150121, initial
 % David N. Bresch, david.bresch@gmail.com, 20150121, cleanup

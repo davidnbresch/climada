@@ -117,6 +117,7 @@ end
 
 % color range for hazard intensity
 [cmap c_ax]= climada_colormap(hazard.peril_ID);
+cmap = brighten(cmap,0.5);
 if isempty (c_ax)
     c_ax = [0 full(max(max(hazard.intensity)))];
 end
