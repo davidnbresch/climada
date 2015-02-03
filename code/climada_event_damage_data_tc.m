@@ -307,8 +307,8 @@ max_damage_at_centroid=[]; % init
 hazard.units='m/s';
 
 %lea, 20150131
-% entity=climada_assets_encode(entity,hazard); % to be on the safe side
-entity.assets.centroid_index = 1:length(entity.assets.Longitude);
+entity=climada_assets_encode(entity,hazard); % to be on the safe side
+% entity.assets.centroid_index = 1:length(entity.assets.Longitude);
 
 
 % for-loop progress to stdout

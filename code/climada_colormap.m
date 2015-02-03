@@ -23,7 +23,7 @@ c_ax    = []; %init output
 if ~climada_init_vars, return; end
 
 % poor man's version to check arguments
-if ~exist('peril_ID', 'var'), peril_ID = []; end
+if ~exist('peril_ID', 'var'), peril_ID = ''; end
 
 steps10 = 10;
 cmap1   = [];
@@ -99,7 +99,19 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [cmap1; cmap2];       
+        cmap = [cmap1; cmap2]; 
+        
+    case 'schematic'
+        % create schematic colormap (gray red)
+        c_ax = [ ];
+        startcolor   = [244 244 244 ]/255; %sgi gray 96
+        middlecolor1 = [193 193 193 ]/255; %sgi gray 76
+        middlecolor2 = [255 114  86]/255; %coral 1
+        endcolor    = [205   0   0]/255; %red 3
+        cmap1 = makeColorMap(startcolor, middlecolor1,10);
+        cmap2 = makeColorMap(middlecolor1, middlecolor2,10);
+        cmap3 = makeColorMap(middlecolor2, endcolor,10);
+        cmap = [cmap1; cmap2; cmap3];        
 end
 
 if isempty(cmap)

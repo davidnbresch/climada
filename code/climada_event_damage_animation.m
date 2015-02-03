@@ -1,4 +1,4 @@
-function res=climada_event_damage_animation(animation_data_file,animation_avi_file)
+function res=climada_event_damage_animation(animation_data_file,animation_avi_file,schematic_tag)
 % climada template
 % MODULE:
 %   module name
@@ -35,11 +35,14 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 %       > promted for if not given (if cancel pressed, the movie frames are
 %       not written to file - useful for test)
 % OPTIONAL INPUT PARAMETERS:
+%   schematic_tag: set to 1 if schematic plot (no colorbar, indicative
+%   colorscale). if set to 0, e.g. tc wind color scale is yellow
+%   (20-30 m/s), orange (30-40 m/s), dark orange (40-50 m/s), etc...
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150118, initial
 % David N. Bresch, david.bresch@gmail.com, 20150119, hazard translucent, entity blue, damage red
-%-
+% Lea Mueller, muellele@gmail.com, 20150202, schematic tag, exponential circle size for assets
 
 res=[]; % init output
 close all % not really necessary, but speeds things up
@@ -51,7 +54,8 @@ if ~climada_init_vars,return;end % init/import global variables
 % and to set default value where  appropriate
 if ~exist('animation_data_file','var'),animation_data_file='';end
 if ~exist('animation_avi_file','var'),animation_avi_file  ='';end
-
+if ~exist('schematic_tag','var'),schematic_tag  ='';end
+if isempty(schematic_tag), schematic_tag = 1; end
 
 % PARAMETERS
 %
@@ -61,19 +65,23 @@ damage_scale=1/3; % defaul =1/2
 % the rect to plot (default is are as in hazard.lon/lat, =[], in which case it is automatically determined)
 focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
 %
-% load colormap
-colormap_file=[climada_global.data_dir filesep 'system' filesep 'colormap_gray_blue.mat'];
-if exist(colormap_file,'file'),load(colormap_file);end
+% % load colormap
+% colormap_file=[climada_global.data_dir filesep 'system' filesep 'colormap_gray_blue.mat'];
+% if exist(colormap_file,'file'),load(colormap_file);end
 %
 % intensity plot parameters
 npoints=199;
 interp_method='linear';
 %
 % damage plot parameters
-circle_diam=5; % default=20
+circle_diam=8; %5; % default=20
 circle_format='or';
 circle_linewidth=3;
-%
+asset_color  = [199 21 133 ]/255; %mediumvioletred
+asset_color2 = [255 130 171]/255; %palevioletred 1
+% asset_color = [255 97 3 ]/255; %cadmiumorange
+% asset_color = [250 128 114 ]/255; %salmon
+
 % the range (in degree) around the tc_track (to show a bit a wider area in plots)
 %dX=1;dY=1; % default=1
 dX=0;dY=0; % default=1
@@ -115,13 +123,24 @@ if ~isempty(hazard_TS)
     %hazard=hazard_TS;
 end
 
-% color range for hazard intensity
-[cmap c_ax]= climada_colormap(hazard.peril_ID);
-cmap = brighten(cmap,0.5);
+c_ax = []; %init
+if schematic_tag
+    % create schematic colormap (gray red)
+    [cmap c_ax]= climada_colormap('schematic');
+    %if exist([climada_global.system_dir filesep 'colormap_gray_red.mat'],'file')
+        %load([climada_global.system_dir filesep 'colormap_gray_red'])
+        %cmap = gray_red;
+        %%colormap(cmap)        
+    %end
+else
+    % color range for hazard intensity
+    [cmap c_ax]= climada_colormap(hazard.peril_ID);
+    cmap = brighten(cmap,0.2);
+end
 if isempty (c_ax)
     c_ax = [0 full(max(max(hazard.intensity)))];
 end
-    
+
 intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end
 
@@ -130,6 +149,7 @@ if isempty(focus_region) % define the focus region based on entity
     focus_region(2)=max(hazard.assets.Longitude)+dX;
     focus_region(3)=min(hazard.assets.Latitude)-dY;
     focus_region(4)=max(hazard.assets.Latitude)+dY;
+    focus_region(4)=focus_region(4) + diff(focus_region(3:4))*0.2;
 end
 
 n_steps=hazard.event_count;
@@ -159,16 +179,35 @@ if make_avi
 end
 
 max_damage_at_centroid=[]; % init
+% fig = figure('visible','off');
+% fig = figure;
+
+% start loop    
 for step_i=1:n_steps
     
     hold off
-    
+
+    % prepare legend entries
+    h = [];
+    h(1) = plot(1,1,'ob','MarkerSize',circle_diam-2,'LineWidth',circle_linewidth-1);
+    hold on
+    h(2) = plot(1,2,'o','MarkerSize',circle_diam-2,'LineWidth',2,...
+        'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
+    legend(h,'Asset value (relative to circle size)','Damaged asset','location','northeast');
+    %legend('boxoff')
+
+
     % plot assets
-    % -----------
-    values=hazard.assets.Value;
+    % -----------  
+    asset_values = hazard.assets.Value;
+    values = log10(asset_values);
+    values(isinf(values)) = 0;
+    values(isnan(values)) = 0;
     min_value=min(values(values>0));
     max_value=max(values);
-    MarkerSizes=(abs(values-min_value))/(max_value-min_value)*circle_diam;    
+    diam_ = [1:1:circle_diam];
+    MarkerSizes = interp1(linspace(min_value, max_value,numel(diam_)),[1:1:circle_diam],values,'linear');
+    %MarkerSizes=(abs(values-min_value))/(max_value-min_value)*circle_diam;    
     MarkerSizes(isnan(MarkerSizes))=0;
     MarkerSizes(MarkerSizes<1)=0;
     ok_points_pos=find(MarkerSizes>0);
@@ -177,60 +216,73 @@ for step_i=1:n_steps
         plot(hazard.assets.Longitude(i),hazard.assets.Latitude(i),'ob','MarkerSize',...
             MarkerSizes(i),'LineWidth',1);hold on;
     end
-        
+
+
+    %delete(p)
     % plot hazard intensity
     % ---------------------
-    values=full(hazard.intensity(step_i,:));
-    values(values<10)=NaN; % mask low intensities
-    
-    gridded_VALUE=griddata(hazard.lon,hazard.lat,values,X,Y,interp_method); % interpolate to grid 'linear'
+    int_values = full(hazard.intensity(step_i,:));
+    int_values(int_values<10)=NaN; % mask low intensities
+    gridded_VALUE = griddata(hazard.lon,hazard.lat,int_values,X,Y,interp_method); % interpolate to grid 'linear'
     pcolor(X,Y,gridded_VALUE);
+    %p = pcolor(X,Y,gridded_VALUE);
     colormap(cmap)
     hold on;shading flat;axis equal
     caxis(c_ax);axis off
     climada_plot_world_borders(1);
     axis(focus_region);
-    colorbar;
-    
+    if ~schematic_tag
+        colorbar;
+    end
+
     if isfield(hazard,'tc_track') % add some track information
         if isfield(hazard,'tc_track_node') % title
             node_i=hazard.tc_track_node(step_i);
-            title_str=sprintf('%s %s',strrep(char(hazard.tc_track.name),'_',' '),datestr(hazard.tc_track.datenum(node_i),0));
-%             plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
+            title_str=sprintf('%s %s',strrep(char(hazard.tc_track.name),'_',' '),datestr(hazard.tc_track.datenum(node_i),'dd-mmm-yyyy HH:MM'));
+            %plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
         else
             title_str=sprintf('%s',strrep(char(hazard.tc_track.name),'_',' '));
         end
     end
+
     
     % plot damage
     % -----------
+    %values = hazard.assets.Value;
     if isempty(max_damage_at_centroid)
         max_damage_at_centroid=full(hazard.damage(step_i,:));
     else
         max_damage_at_centroid=max(max_damage_at_centroid,full(hazard.damage(step_i,:)));
     end
-    values=max_damage_at_centroid;
+    damage_values = max_damage_at_centroid;
+    damage_values = damage_values(hazard.assets.centroid_index);
     
-    MarkerSizes=sqrt(abs(values-damage_min_value))/sqrt(damage_max_value-damage_min_value)*circle_diam;
-    MarkerSizes(isnan(MarkerSizes))=0;
-    MarkerSizes(MarkerSizes<1)=0;
-    ok_points_pos=find(MarkerSizes>0);
+    %MarkerSizes=sqrt(abs(values-damage_min_value))/sqrt(damage_max_value-damage_min_value)*circle_diam;
+    %MarkerSizes=sqrt(abs(values-min_value))/sqrt(max_value-min_value)*circle_diam;
+    %MarkerSizes=(abs(values-min_value))/(max_value-min_value)*circle_diam;    
+    %MarkerSizes(isnan(MarkerSizes))=0;
+    %MarkerSizes(MarkerSizes<1)=0;
+    ok_points_pos= find(MarkerSizes>0 & damage_values>0);
     for ii=1:length(ok_points_pos)
         i=ok_points_pos(ii);
-        plot(hazard.lon(i),hazard.lat(i),circle_format,'MarkerSize',...
-            MarkerSizes(i),'LineWidth',circle_linewidth);
+        plot(hazard.assets.Longitude(i),hazard.assets.Latitude(i),circle_format,'MarkerSize',MarkerSizes(i),...
+            'LineWidth',2,'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
+        %plot(hazard.lon(i),hazard.lat(i),circle_format,'MarkerSize',...
+        %    MarkerSizes(i),'LineWidth',circle_linewidth,'markerfacecolor','r');
     end
     
-    bottom_label_str=['color:' intensity_units ', damage: red circles (max ' max_damage_str ')'];
     title(title_str,'FontSize',9);
-    xlabel(bottom_label_str,'FontSize',9);
-    
+    % bottom_label_str=['color:' intensity_units ', damage: red circles (max ' max_damage_str ')'];
+    % xlabel(bottom_label_str,'FontSize',9);
     drawnow
-    
+        
     if make_avi
         currFrame   = getframe(gcf);
-        %mov = addframe(mov,currFrame);
+        %%mov = addframe(mov,currFrame);
         writeVideo(vidObj,currFrame);
+        %currFrame   = getframe(fig);
+        %writeVideo(vidObj,fig);
+        %mov = addframe(mov,fig);
     end
     
     % the progress management
