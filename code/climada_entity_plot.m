@@ -37,10 +37,10 @@ if ~exist('plot_centroids','var'),plot_centroids=0;end
 
 % PARAMETERS
 %
-% the plot is zommed to the domain of the assets, plus d degress around
+% the plot is zoomed to the domain of the assets, plus d degress around
 d = 1; % degree
 
-% prompt for param1 if not given
+% prompt for entity if not given
 if isempty(entity),entity=climada_entity_load;end
 if isempty(entity),return;end
 
@@ -58,13 +58,8 @@ cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 y
 cmap  = [cmap1; cmap2; cmap3];
 
 % plot the assets
-
-% do not create a figure, as we might want to sue this in a subplot etc.
-%fig = climada_figuresize(0.5,0.8);
-%climada_plot_world_borders(0.7);
-
-x_range = [min(entity.assets.Longitude)-d max(entity.assets.Longitude)+d];
-y_range = [min(entity.assets.Latitude)-d max(entity.assets.Latitude)+d];
+x_range = [min(entity.assets.lon)-d max(entity.assets.lon)+d];
+y_range = [min(entity.assets.lat)-d max(entity.assets.lat)+d];
 set(gca,'xlim',x_range,'ylim',y_range)
 
 if isempty(markersize)
@@ -74,7 +69,7 @@ if isempty(markersize)
 end
 
 mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
-[cbar,asset_handle]= plotclr(entity.assets.Longitude, entity.assets.Latitude, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
+[cbar,asset_handle]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
 hold on
 axis equal
 xlabel('Longitude')
@@ -84,7 +79,7 @@ set(gca,'layer','top')
 set(get(cbar,'ylabel'),'string','Values','fontsize',12)
 climada_plot_world_borders(0.7);
 set(gca,'xlim',x_range,'ylim',y_range)
-if plot_centroids,plot(entity.assets.Longitude, entity.assets.Latitude,'.r','MarkerSize',1);end
+if plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
 
 set(gcf,'Color',[1 1 1])
 
@@ -116,7 +111,7 @@ return
 % end
 
 % for r_i = 1:length(region_str)
-%     [cbar asset_handles{r_i}]= plotclr(assets(r_i).Longitude, assets(r_i).Latitude, assets(r_i).Value, 's',markersize, 0,0,[],cmap,1,0);
+%     [cbar asset_handles{r_i}]= plotclr(assets(r_i).lon, assets(r_i).lat, assets(r_i).Value, 's',markersize, 0,0,[],cmap,1,0);
 %     miv(r_i) = min(assets(r_i).Value);
 %     mav(r_i) = max(assets(r_i).Value);
 % end

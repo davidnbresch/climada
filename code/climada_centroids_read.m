@@ -58,30 +58,33 @@ end
 
 centroids  = climada_xlsread('no',centroids_filename,'centroids');
 
-if ~isfield(centroids,'Longitude'),fprintf('ERROR: Longitude needed\n');end
-if ~isfield(centroids,'Latitude'),fprintf('ERROR: Latitude needed\n');end
+if isfield(centroids,'Longitude'),centroids.lon=centroids.Longitude;centroids=rmfield(centroids,'Longitude');end
+if isfield(centroids,'Latitude'), centroids.lat=centroids.Latitude; centroids=rmfield(centroids,'Latitude');end
+
+if ~isfield(centroids,'lon'),fprintf('ERROR: Longitude (or lon) needed\n');end
+if ~isfield(centroids,'lat'),fprintf('ERROR: Latitude (or lat) needed\n');end
 if ~isfield(centroids,'centroid_ID')
     fprintf('WARNING: centroid_ID added\n');
-    centroids.centroid_ID=1:length(centroids.Longitude);
+    centroids.centroid_ID=1:length(centroids.lon);
 end
 
 if add_regular_grid
     % now, add a coarse grid around, such that the windfields are nicely displayed
     
-    minlon = min(centroids.Longitude);
-    maxlon = max(centroids.Longitude);
-    minlat = min(centroids.Latitude);
-    maxlat = max(centroids.Latitude);
+    minlon = min(centroids.lon);
+    maxlon = max(centroids.lon);
+    minlat = min(centroids.lat);
+    maxlat = max(centroids.lat);
     
     fprintf('adding regular grid [%2.0f - %2.0f x %2.0f - %2.0f] ... ',...
         minlon-grid_extent,maxlon+grid_extent,minlat-grid_extent,maxlat+grid_extent);
     
-    ii=length(centroids.Longitude);
+    ii=length(centroids.lon);
     for lon_i=minlon-grid_extent:grid_resolution:maxlon+grid_extent
         for lat_i=minlat-grid_extent:grid_resolution:maxlat+grid_extent
             ii=ii+1;
-            centroids.Longitude  (ii) = lon_i;
-            centroids.Latitude   (ii) = lat_i;
+            centroids.lon  (ii) = lon_i;
+            centroids.lat   (ii) = lat_i;
             centroids.centroid_ID(ii) = centroids.centroid_ID(ii-1)+1;
             if isfield(centroids,'VALUE'),centroids.VALUE(ii)=0;end
         end
@@ -90,13 +93,13 @@ if add_regular_grid
 end
 
 % up to 20130318, vectors were transposed, no need to do so
-% centroids.Longitude=centroids.Longitude';
-% centroids.Latitude=centroids.Latitude';
+% centroids.lon=centroids.lon';
+% centroids.lat=centroids.lat';
 % centroids.centroid_ID=centroids.centroid_ID';
 % if isfield(centroids,'VALUE'),centroids.VALUE=centroids.VALUE';end
 
 if visualize
-    climada_circle_plot(centroids.VALUE,centroids.Longitude,centroids.Latitude)
+    climada_circle_plot(centroids.VALUE,centroids.lon,centroids.lat)
     set(gca,'PlotBoxAspectRatio',[(maxlat-minlat)/(maxlon-minlon) 1 1],'layer','top')
     xlabel('Longitude'); ylabel('Latitude')
 end

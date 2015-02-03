@@ -48,8 +48,8 @@ Y = [];
 gridded_VALUE = [];
 
 if isfield(centroids,'Longitude')
-    lon = centroids.Longitude;
-    lat = centroids.Latitude;
+    lon = centroids.lon;
+    lat = centroids.lat;
 elseif isfield(centroids,'lon')
     lon = centroids.lon;
     lat = centroids.lat;

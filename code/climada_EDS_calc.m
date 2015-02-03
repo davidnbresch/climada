@@ -53,8 +53,8 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       hazard: itself a structure, with:
 %           filename: the filename of the hazard event set
 %           comment: a free comment
-%       assets.Latitude(asset_i): the latitude of each asset_i
-%       assets.Longitude(asset_i): the longitude of each asset_i
+%       assets.lat(asset_i): the latitude of each asset_i
+%       assets.lon(asset_i): the longitude of each asset_i
 %       assets.Value(asset_i): the Value of asset_i, i.e. used to show
 %           ED_at_centroid in percentage of asset value.
 %       assets.filename: the filename of the assets
@@ -329,8 +329,8 @@ EDS.hazard.filename = strrep(char(hazard.filename),'\',filesep); % from PC
 EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % from MAC
 EDS.hazard.comment  = char(hazard.comment);
 EDS.assets.filename = entity.assets.filename;
-EDS.assets.Latitude = entity.assets.Latitude;
-EDS.assets.Longitude = entity.assets.Longitude;
+EDS.assets.lat = entity.assets.lat;
+EDS.assets.lon = entity.assets.lon;
 EDS.assets.Value     = entity.assets.Value; % note EDS.Value is sum of...
 if isfield(entity.assets,'admin0_name'),EDS.assets.admin0_name=entity.assets.admin0_name;end
 if isfield(entity.assets,'admin0_ISO3'),EDS.assets.admin0_ISO3=entity.assets.admin0_ISO3;end

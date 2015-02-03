@@ -227,11 +227,11 @@ legend([h g],legendstr,'location','se')
 
 subaxis(5)
 climada_plot_world_borders
-plot(centroids.Longitude, centroids.Latitude,'.','markersize',3)
-plot(centroids.Longitude(important_centroid), centroids.Latitude(important_centroid),'or')
-%text(centroids.Longitude(important_centroid)+0.1, centroids.Latitude(important_centroid),int2str(important_centroid),'fontsize',12,'color','r')
-set(subaxis(5),'xlim',[min(centroids.Longitude(important_centroid))-6*0.6 max(centroids.Longitude(important_centroid))+6*0.6],...
-    'ylim',[min(centroids.Latitude(important_centroid))-6      max(centroids.Latitude(important_centroid))+6     ],...
+plot(centroids.lon, centroids.lat,'.','markersize',3)
+plot(centroids.lon(important_centroid), centroids.lat(important_centroid),'or')
+%text(centroids.lon(important_centroid)+0.1, centroids.lat(important_centroid),int2str(important_centroid),'fontsize',12,'color','r')
+set(subaxis(5),'xlim',[min(centroids.lon(important_centroid))-6*0.6 max(centroids.lon(important_centroid))+6*0.6],...
+    'ylim',[min(centroids.lat(important_centroid))-6      max(centroids.lat(important_centroid))+6     ],...
     'DataAspectRatio',[1 1 1])
 c_str = sprintf('%d, ',important_centroid);
 c_str(end-1:end) = [];

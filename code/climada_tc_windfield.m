@@ -39,8 +39,8 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 %       tc_track.name: name, optional
 %       tc_track.SaffSimp: Saffir-Simpson intensity, optional
 %   centroids: a structure with the centroids information
-%       centroids.Latitude: the latitude of the centroids
-%       centroids.Longitude: the longitude of the centroids
+%       centroids.lat: the latitude of the centroids
+%       centroids.lon: the longitude of the centroids
 %       If centroids.distance2coast_km exists, the hazard intensity is only
 %       calculated in the coastal_range_km (usually 300km, see PARAMETERS) -
 %       this speeds up calculation for large countries considerably. To switch
@@ -205,14 +205,14 @@ if ~isempty(pos)
 end
 
 cos_tc_track_lat = cos(tc_track.lat/180*pi);
-centroid_count   = length(centroids.Latitude);
+centroid_count   = length(centroids.lat);
 res.gust         = zeros(1,centroid_count);
 res.node_Azimuth = zeros(1,centroid_count);
 res.node_lat     = zeros(1,centroid_count);
 res.node_lon     = zeros(1,centroid_count);
                 
-res.lat = centroids.Latitude;
-res.lon = centroids.Longitude;
+res.lat = centroids.lat;
+res.lon = centroids.lon;
 
 % add further fields (for climada use)
 if isfield(centroids,'centroid_ID'),res.ID          = centroids.centroid_ID; end
@@ -224,7 +224,7 @@ if isfield(centroids,'distance2coast_km')
     valid_centroid_pos=find(centroids.distance2coast_km<coastal_range_km); 
     res.distance2coast_km=centroids.distance2coast_km;
 else
-    valid_centroid_pos=1:length(centroids.Latitude);
+    valid_centroid_pos=1:length(centroids.lat);
 end
 
 centroid_count=length(valid_centroid_pos);
@@ -316,9 +316,9 @@ if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
 % 
 %         
 %     %scale figure according to range of longitude and latitude
-%     scale  = max(centroids.Longitude) - min(centroids.Longitude);
-%     scale2 =(max(centroids.Longitude) - min(centroids.Longitude))/...
-%             (min(max(centroids.Latitude),60)-max(min(centroids.Latitude),-50));
+%     scale  = max(centroids.lon) - min(centroids.lon);
+%     scale2 =(max(centroids.lon) - min(centroids.lon))/...
+%             (min(max(centroids.lat),60)-max(min(centroids.lat),-50));
 %     height = 0.5;
 %     if height*scale2 > 1.2; height = 1.2/scale2; end
 %     fig = climada_figuresize(height,height*scale2+0.15);
@@ -335,11 +335,11 @@ if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
 %     climada_plot_tc_track_stormcategory(tc_track_ori);
 %     
 %     %centroids?
-%     plot(centroids.Longitude, centroids.Latitude, '+r','MarkerSize',0.8,'linewidth',0.1)
+%     plot(centroids.lon, centroids.lat, '+r','MarkerSize',0.8,'linewidth',0.1)
 %     
 %     axis equal
-%     axis([min(centroids.Longitude)-scale/30  max(centroids.Longitude)+scale/30 ...
-%           max(min(centroids.Latitude),-50)-scale/30  min(max(centroids.Latitude),60)+scale/30])
+%     axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
+%           max(min(centroids.lat),-50)-scale/30  min(max(centroids.lat),60)+scale/30])
 %       
 %     caxis([0 gridded_max_round])
 %  

@@ -86,9 +86,9 @@ else
     end
 end
 
-n_assets=length(assets.Longitude);
+n_assets=length(assets.lon);
 
-plot(entity.assets.Longitude,entity.assets.Latitude,'or','MarkerSize',MarkerSize);
+plot(entity.assets.lon,entity.assets.lat,'or','MarkerSize',MarkerSize);
 hold on
 axis equal
 plot(hazard.lon,hazard.lat,'xb','MarkerSize',MarkerSize);
@@ -97,12 +97,12 @@ legend({'assets','centroids'})
 nonencoded_pos=find(entity.assets.centroid_index<=0);
 if ~isempty(nonencoded_pos),fprintf('Warning: %i asset snot encoded\n',length(nonencoded_pos));end
 entity.assets.centroid_index=entity.assets.centroid_index(entity.assets.centroid_index>0);
-entity.assets.Longitude     =entity.assets.Longitude(entity.assets.centroid_index>0);
-entity.assets.Latitude      =entity.assets.Latitude(entity.assets.centroid_index>0);
+entity.assets.lon     =entity.assets.lon(entity.assets.centroid_index>0);
+entity.assets.lat      =entity.assets.lat(entity.assets.centroid_index>0);
 
 for asset_i=1:length(entity.assets.centroid_index)
-    plot([entity.assets.Longitude(asset_i) hazard.lon(entity.assets.centroid_index(asset_i))],...
-        [entity.assets.Latitude(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
+    plot([entity.assets.lon(asset_i) hazard.lon(entity.assets.centroid_index(asset_i))],...
+        [entity.assets.lat(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
 end % asset_i
 
 climada_plot_world_borders(2,'','',1);
