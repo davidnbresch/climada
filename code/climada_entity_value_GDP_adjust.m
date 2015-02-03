@@ -1,4 +1,4 @@
-function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verbose_mode)
+function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,mode_selector)
 % scale up asset values
 % MODULE:
 %   country_risk
@@ -36,10 +36,12 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verb
 %   fields entity.assets.admin1_name or entity.assets.admin1_code, in which
 %   case it skips adjustment. 
 %
+%   Note: to avoid any troubles, Cover is set equal to Value.
+%
 %   Prior calls: e.g. climada_nightlight_entity, country_risk_calc
 %   Next calls: e.g. country_risk_calc
 % CALLING SEQUENCE:
-%   entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verbose_mode)
+%   entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,mode_selector)
 % EXAMPLE:
 %   entity_adjusted=climada_entity_value_GDP_adjust('../data/*.mat') % put .. in
 %   entity_adjusted=climada_entity_value_GDP_adjust('BEL_Belgium_entity.mat')
@@ -48,15 +50,19 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,verb
 %       or a regexp expression, e.g. for all entities:
 %       entity_file_regexp=[climada_global.data_dir filesep 'entities' filesep '*.mat']
 % OPTIONAL INPUT PARAMETERS:
-%   verbose_mode: =1, print step-by-step to stdout, =0, not (default)
+%   mode_selector: =1, print step-by-step to stdout, =0, not (default)
 %       If =2, do not care for Value_today, just adjust to GDP*income_group_factors
+%       If =3, use GDP_future instead of GDP_today (if this column is in
+%       the economic_indicators_mastertable.xls, otherwise throw an error).
+%       In this case, ignore Value_today, just scale with GDP_future.
 % OUTPUTS:
 %   entity_adjusted: entity with adjusted asset values, also stored as .mat
 %       file (only last entity if entity_file_regexp covers more than one)
 % MODIFICATION HISTORY:
 % Melanie Bieli, melanie.bieli@bluewin.ch, 20150121, initial
 % David N. Bresch, david.bresch@gmail.com, 20150121, cleanup
-% David N. Bresch, david.bresch@gmail.com, 20150122, verbose_mode
+% David N. Bresch, david.bresch@gmail.com, 20150122, mode_selector added
+% David N. Bresch, david.bresch@gmail.com, 20150122, mode_selector=3 added
 %-
 
 % initialize output
@@ -68,7 +74,7 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % check input
 if ~exist('entity_file_regexp','var'),entity_file_regexp='';end
-if ~exist('verbose_mode','var'),      verbose_mode      =0;end
+if ~exist('mode_selector','var'),      mode_selector      =0;end
 
 
 % PARAMETERS
@@ -126,6 +132,7 @@ for file_i = 1:length(D_entity_mat)
     
     try
         load(entity_file_i)
+        entity_adjusted=entity; % to start with
     catch
         fprintf('skipped (invalid entity): %s\n',D_entity_mat(file_i).name);
         entity.assets=[]; % dummy
@@ -170,7 +177,7 @@ for file_i = 1:length(D_entity_mat)
                 sum_Value_future=sum(entity.assets.Value);
                 future_factor=sum_Value_future/sum_Value_today;
                 
-                if verbose_mode==2,future_factor=1.0;end
+                if mode_selector>1,future_factor=1.0;end
 
                 if abs(future_factor-1)>0.051; % 5 percent tolerance
                     % if factor equals one, do it silenty
@@ -184,7 +191,7 @@ for file_i = 1:length(D_entity_mat)
                     future_factor=1.0; % force the same, as we ignore up to 5% difference
                 end
                 
-                if verbose_mode,fprintf('future_factor: %f (likely a future entity or substantial annual growth)\n',future_factor);end
+                if mode_selector,fprintf('future_factor: %f\n',future_factor);end
 
             else
                 future_factor=1;
@@ -192,22 +199,32 @@ for file_i = 1:length(D_entity_mat)
                         
             scale_up_factor = income_group_factors(econ_master_data.income_group(country_index));
             
-            if verbose_mode,fprintf('sum(value) as on file: %g\n',sum(entity.assets.Value));end
+            if mode_selector,fprintf('sum(value) as on file: %g\n',sum(entity.assets.Value));end
             
             % normalize assets
             entity.assets.Value = entity.assets.Value/sum(entity.assets.Value);
             
-            GDP_today=econ_master_data.GDP_today(country_index);
-            if isnan(GDP_today)
-                GDP_today=1.0;
+            if mode_selector==3
+                if ~isfield(econ_master_data,'GDP_future')
+                    fprintf('Error: no GDP_future in %s, aborted\n',economic_data_file);
+                    return
+                else
+                    GDP_value=econ_master_data.GDP_future(country_index);
+                end
+            else
+                GDP_value=econ_master_data.GDP_today(country_index);
+            end
+            
+            if isnan(GDP_value)
+                GDP_value=1.0;
                 scale_up_factor=1.0; % in this case makes also no sense
                 fprintf('Warning: GDP=NaN, not applied\n');
             else
-                if verbose_mode,fprintf('GDP: %g, scale_up_factor: %f\n',GDP_today,scale_up_factor);end
+                if mode_selector,fprintf('GDP: %g, scale_up_factor: %f\n',GDP_value,scale_up_factor);end
             end
             
             % multiply with GDP
-            entity.assets.Value = entity.assets.Value*GDP_today;
+            entity.assets.Value = entity.assets.Value*GDP_value;
             
             % multiply with scale-up factor
             entity.assets.Value = entity.assets.Value*scale_up_factor;
@@ -218,16 +235,17 @@ for file_i = 1:length(D_entity_mat)
             % and finally apply future factor (in case it's a _future entity)
             entity.assets.Value = entity.assets.Value*future_factor;
             
-            if verbose_mode,fprintf('sum(value) after scaling: %g\n',sum(entity.assets.Value));end
+            if mode_selector,fprintf('sum(value) after scaling: %g\n',sum(entity.assets.Value));end
 
             % for consistency, update Cover
-            if isfield(entity.assets,'Cover')
-                entity.assets.Cover=entity.assets.Cover*GDP_today*scale_up_factor*future_factor;
-                Cover_pct=entity.assets.Cover./entity.assets.Value;
-                if max(Cover_pct)<0.01
-                    fprintf('Warning: max Cover less than 1%% of Value -> consider to adjust Cover\n');
-                end
-            end
+            if isfield(entity.assets,'Cover'),entity.assets.Cover=entity.assets.Value;end
+%             if isfield(entity.assets,'Cover')
+%                 entity.assets.Cover=entity.assets.Cover*GDP_value*scale_up_factor*future_factor;
+%                 Cover_pct=entity.assets.Cover./entity.assets.Value;
+%                 if max(Cover_pct)<0.01
+%                     fprintf('Warning: max Cover less than 1%% of Value -> consider to adjust Cover\n');
+%                 end
+%             end
 
             % save entity
             entity_adjusted = entity;

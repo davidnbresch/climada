@@ -1,7 +1,7 @@
 function EDS=climada_EDS_combine(EDS1,EDS2)
-% climada template
+% climada EDS combine
 % MODULE:
-%   module name
+%   core
 % NAME:
 %   climada_EDS_combine
 % PURPOSE:
@@ -11,6 +11,8 @@ function EDS=climada_EDS_combine(EDS1,EDS2)
 %   in EDS1 (e.g. TC in EDS1, TS in EDS2).
 %
 %   call before: climada_EDS_calc
+%   see also: country_risk_EDS_combine, which also allows to calculate the
+%       maximally combined EDS
 % CALLING SEQUENCE:
 %   EDS=climada_EDS_combine(EDS1,EDS2)
 % EXAMPLE:

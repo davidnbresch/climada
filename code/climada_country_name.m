@@ -37,7 +37,11 @@ global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 if ~exist('input_name','var'),input_name = ''; end
 
-
+% PARAMETERS
+%
+% whether we write simply the country names or also ISO3 and shape index
+simple_form_STDOUT=0; % default=0, i.e. with ISO3 and shape index
+%
 % prepare country list (based on the climada core admin0 shapes)
 shapes=climada_shaperead(climada_global.map_border_file);
 if isempty(shapes)
@@ -64,7 +68,11 @@ if strcmpi(input_name,'ALL')
     if strcmp(input_name,'ALL') % to stdout only if UPPERCASE
         for shape_i=1:length(sort_index)
             eff_shape_i=sort_index(shape_i);
-            fprintf('%s|%s (shape %i)\n',country_NAMEs{eff_shape_i},country_ISO3s{eff_shape_i},eff_shape_i);
+            if simple_form_STDOUT
+                fprintf('''%s''\n',country_NAMEs{eff_shape_i});
+            else
+                fprintf('%s|%s (shape %i)\n',country_NAMEs{eff_shape_i},country_ISO3s{eff_shape_i},eff_shape_i);
+            end
         end % shape_i
     end
     

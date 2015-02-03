@@ -25,9 +25,8 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 %       returned in 'assets')
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a
 %       struct) or a centroid struct (as returned by climada_centroids_load or
-%       climada_centroids_read. hazard needs to have fields hazard.lon and
-%       hazard.lat, centroids fields centroids.lon and
-%       centroids.lat  
+%       climada_centroids_read). hazard needs to have fields hazard.lon and
+%       hazard.lat, centroids fields centroids.lon and centroids.lat  
 %       > promted for if not given (select either a hazard event set or a
 %       centroids .mat file)
 %       if set to 'SKIP', do not encode, return original assets (used for
@@ -106,13 +105,15 @@ else
 end
 % now, assets contain assets indeed
 
-if isfield(hazard,'lon')
+if isfield(hazard,'intensity')
     % hazard does indeed contain a hazard structure
+    % hence we do not need all fields
     centroids.lon=hazard.lon;
-    centroids.lat =hazard.lat;
-    centroids.filename =hazard.filename;
-elseif isfield(hazard,'Longitude')
-    % hazard is in fact a centroids struct
+    centroids.lat=hazard.lat;
+    if isfield(hazard,'filename'),centroids.filename =hazard.filename;end
+    if isfield(hazard,'comment'), centroids.comment  =hazard.comment;end
+else
+    % hazard does contain centroids
     centroids=hazard; clear hazard
 end
 % now, centroids are centroids indeed
