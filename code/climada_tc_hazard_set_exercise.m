@@ -126,8 +126,8 @@ if isempty(centroids) % local GUI
         for lon_i=-100:1:-50
             for lat_i=20:1:50
                 ii=ii+1;
-                centroids.Longitude(ii)=lon_i;        
-                centroids.Latitude(ii)=lat_i;
+                centroids.lon(ii)=lon_i;        
+                centroids.lat(ii)=lat_i;
             end
         end
         centroids.centroid_ID=1:length(centroids.lon);
@@ -145,8 +145,8 @@ min_year=tc_track(1).yyyy(1);
 max_year=tc_track(end).yyyy(end);
 orig_years=max_year-min_year+1;
 
-hazard.lon=centroids.Longitude;
-hazard.lat=centroids.Latitude;
+hazard.lon=centroids.lon;
+hazard.lat=centroids.lat;
 hazard.centroid_ID=centroids.centroid_ID;
 hazard.peril_ID='TC';
 hazard.comment=sprintf('TCNA hazard event set, generated %s',datestr(now));

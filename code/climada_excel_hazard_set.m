@@ -113,11 +113,11 @@ if ~isfield(centroids,'Longitude'),fprintf('ERROR: Longitude needed\n');end
 if ~isfield(centroids,'Latitude'),fprintf('ERROR: Latitude needed\n');end
 if ~isfield(centroids,'centroid_ID')
     fprintf('WARNING: centroid_ID added\n');
-    centroids.centroid_ID=1:length(centroids.Longitude);
+    centroids.centroid_ID=1:length(centroids.lon);
 end
 
 if visualize
-    plot(centroids.Longitude,centroids.Latitude,'.r');hold on
+    plot(centroids.lon,centroids.lat,'.r');hold on
     climada_plot_world_borders;
 end
 
@@ -125,8 +125,8 @@ fprintf('reading intensity table from Excel file...\n');
 hazard_intensity=climada_xlsread('no',excel_file,'hazard_intensity',1);
 hazard_frequency=climada_xlsread('no',excel_file,'hazard_frequency',1);
 
-hazard.lon=centroids.Longitude;
-hazard.lat=centroids.Latitude;
+hazard.lon=centroids.lon;
+hazard.lat=centroids.lat;
 hazard.centroid_ID=centroids.centroid_ID;
 hazard.peril_ID='XX';
 hazard.comment=sprintf('hazard event set from Excel, generated %s',datestr(now));

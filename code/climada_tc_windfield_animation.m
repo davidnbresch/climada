@@ -144,9 +144,9 @@ stormname(stormname == '_') = ' ';
 replay    = 1;
 
 %scale figure according to range of longitude and latitude
-scale  = max(centroids.Longitude) - min(centroids.Longitude);
-scale2 =(max(centroids.Longitude) - min(centroids.Longitude))/...
-        (min(max(centroids.Latitude),60)-max(min(centroids.Latitude),-50));
+scale  = max(centroids.lon) - min(centroids.lon);
+scale2 =(max(centroids.lon) - min(centroids.lon))/...
+        (min(max(centroids.lat),60)-max(min(centroids.lat),-50));
 height = 0.5;
 if height*scale2 > 1.2; height = 1.2/scale2; end
 fig = climada_figuresize(height,height*scale2+0.15);
@@ -158,12 +158,12 @@ hold on
 climada_plot_tc_track_stormcategory(tc_track);
 
 % centroids
-% plot(centroids.Longitude, centroids.Latitude, '+r','MarkerSize',0.8,'linewidth',0.1)
+% plot(centroids.lon, centroids.lat, '+r','MarkerSize',0.8,'linewidth',0.1)
   
 % scale for specific extract of world map
 axis equal
-axis([min(centroids.Longitude)-scale/30  max(centroids.Longitude)+scale/30 ...
-      max(min(centroids.Latitude),-50)-scale/30  min(max(centroids.Latitude),60)+scale/30])
+axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
+      max(min(centroids.lat),-50)-scale/30  min(max(centroids.lat),60)+scale/30])
   
 % colormap, constant color range
 cmap_= [1.0000    1.0000    1.0000;
@@ -199,7 +199,7 @@ while replay == 1
         if sum(gridded_VALUE(:)>1)>0
             [c,h] = contourf(X, Y, full(gridded_VALUE),[0:10:max_wind],'edgecolor','none');
             climada_plot_tc_track_stormcategory(tc_track);
-            plot(centroids.Longitude(1), centroids.Latitude(1), '+r','MarkerSize',0.8,'linewidth',0.1)
+            plot(centroids.lon(1), centroids.lat(1), '+r','MarkerSize',0.8,'linewidth',0.1)
             climada_plot_world_borders(0.7, '', '', 1)
             drawnow
             time_ = stormdate + (agg_i-1)*aggregation/24;
@@ -232,7 +232,7 @@ while replay == 1
     else
         time_ = stormdate;
     end
-    plot(centroids.Longitude(1), centroids.Latitude(1), '+r','MarkerSize',0.8,'linewidth',0.1)
+    plot(centroids.lon(1), centroids.lat(1), '+r','MarkerSize',0.8,'linewidth',0.1)
     climada_plot_world_borders(0.8, '', '', 1)
     title([stormname ', '  datestr(time_,'dd-mmm-yy HHh')])
 

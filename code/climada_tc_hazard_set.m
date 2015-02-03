@@ -38,7 +38,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %       climada_centroids_read) or the filename of an Excel file (the original
 %       input to climada_centroids_read) which holds the centroids, in
 %       which case climada_centroids_read is called.
-%       OR: an entity, in which case the entity.assets.Latitude and
+%       OR: an entity, in which case the entity.assets.lat and
 %       Longitude are used as centroids.
 %       > promted for .mat or .xls filename if not given
 %       NOTE: if you then select Cancel, a regular default grid is used, see hard-wired definition in code
@@ -153,11 +153,11 @@ if isempty(centroids) % local GUI
         for lon_i=-100:1:-50
             for lat_i=20:1:50
                 ii=ii+1;
-                centroids.Longitude(ii)=lon_i;
-                centroids.Latitude(ii)=lat_i;
+                centroids.lon(ii)=lon_i;
+                centroids.lat(ii)=lat_i;
             end
         end
-        centroids.centroid_ID=1:length(centroids.Longitude);
+        centroids.centroid_ID=1:length(centroids.lon);
     else
         centroids_file=fullfile(pathname,filename);
         [~,~,fE]=fileparts(centroids_file);
@@ -174,9 +174,9 @@ end
 if isfield(centroids,'assets')
     % centroids contains in fact an entity
     entity=centroids; centroids=[]; % silly switch, but fastest
-    centroids.Latitude =entity.assets.Latitude;
-    centroids.Longitude=entity.assets.Longitude;
-    centroids.centroid_ID=1:length(entity.assets.Longitude);
+    centroids.lat =entity.assets.lat;
+    centroids.lon=entity.assets.lon;
+    centroids.centroid_ID=1:length(entity.assets.lon);
     % treat optional fields
     if isfield(entity.assets,'distance2coast_km'),centroids.distance2coast_km=entity.assets.distance2coast_km;end
     if isfield(entity.assets,'elevation_m'),centroids.elevation_m=entity.assets.elevation_m;end
@@ -199,8 +199,8 @@ max_year   = tc_track(end).yyyy(1); % start time of track, as we otherwise might
 orig_years = max_year - min_year+1;
 % fill the hazard structure
 hazard.reference_year   = hazard_reference_year;
-hazard.lon              = centroids.Longitude;
-hazard.lat              = centroids.Latitude;
+hazard.lon              = centroids.lon;
+hazard.lat              = centroids.lat;
 hazard.centroid_ID      = centroids.centroid_ID;
 if isfield(centroids,'elevation_m'),hazard.elevation_m=centroids.elevation_m;end
 hazard.orig_years       = orig_years;

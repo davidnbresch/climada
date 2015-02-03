@@ -156,10 +156,10 @@ if isempty(entity),entity=climada_entity_load;end                               
 
 
 if isempty(focus_region) % define the focus region based on entity
-    focus_region(1)=min(entity.assets.Longitude)-dX;
-    focus_region(2)=max(entity.assets.Longitude)+dX;
-    focus_region(3)=min(entity.assets.Latitude)-dY;
-    focus_region(4)=max(entity.assets.Latitude)+dY;
+    focus_region(1)=min(entity.assets.lon)-dX;
+    focus_region(2)=max(entity.assets.lon)+dX;
+    focus_region(3)=min(entity.assets.lat)-dY;
+    focus_region(4)=max(entity.assets.lat)+dY;
 end
 
 if length(tc_track)>1
@@ -240,8 +240,8 @@ tc_track=tc_track(track_i);
 tc_track=climada_tc_equal_timestep(tc_track,tc_track_timestep);
 
 % prepare entity and centroids
-centroids.Longitude=entity.assets.Longitude;
-centroids.Latitude =entity.assets.Latitude;
+centroids.lon=entity.assets.lon;
+centroids.lat =entity.assets.lat;
 
 if grid_add
     if isempty(focus_region)
@@ -251,12 +251,12 @@ if grid_add
     end
     for i=grid_region(1):grid_delta:grid_region(2)
         for j=grid_region(3):grid_delta:grid_region(4)
-            centroids.Longitude(end+1)=i;
-            centroids.Latitude(end+1)=j;
+            centroids.lon(end+1)=i;
+            centroids.lat(end+1)=j;
         end
     end
 end
-centroids.centroid_ID=1:length(centroids.Longitude);
+centroids.centroid_ID=1:length(centroids.lon);
 
 if check_mode
     % plot overview and get decent plot region (o cover whole track)
@@ -283,8 +283,8 @@ min_node=max(min_node,2); % avoid 1 since windfield needs at least two nodes
 n_steps=max_node-min_node+1;
 
 % init hazard structure
-hazard.lon=centroids.Longitude;
-hazard.lat=centroids.Latitude;
+hazard.lon=centroids.lon;
+hazard.lat=centroids.lat;
 hazard.centroid_ID=centroids.centroid_ID;
 hazard.peril_ID='TC';
 hazard.orig_years=1;

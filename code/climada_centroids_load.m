@@ -46,9 +46,9 @@ end
 load(centroids_file) % contains centroids
 
 if exist('entity','var') % the file contains an entity, not centroids
-    centroids.Latitude =entity.assets.Latitude;
-    centroids.Longitude=entity.assets.Longitude;
-    centroids.centroid_ID=1:length(centroids.Longitude);
+    centroids.lat=entity.assets.lat;
+    centroids.lon=entity.assets.lon;
+    centroids.centroid_ID=1:length(centroids.lon);
     if isfield(entity.assets,'country_name'),centroids.country_name{1}=entity.assets.country_name;end
     if isfield(entity.assets,'admin0_name'),centroids.admin0_name{1}=entity.assets.admin0_name;end
     if isfield(entity.assets,'admin0_ISO3'),centroids.admin0_ISO3{1}=entity.assets.admin0_ISO3;end

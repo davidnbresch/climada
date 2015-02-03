@@ -24,6 +24,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20141226, update to be in line with manual
 % David N. Bresch, david.bresch@gmail.com, 20141231, octave compatibility
 % David N. Bresch, david.bresch@gmail.com, 20150126, csv_delimiter depends on computer
+% David N. Bresch, david.bresch@gmail.com, 20150203, climada_lonlat_cleanup
 %-
 
 global climada_global
@@ -157,6 +158,20 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
         climada_global.octave_mode=1;
         fprintf('Note: running on Octave\n')
     end
+    
+    % !!!!!!!!!!!!!!!!!!!!!!!!!
+    % a temporary cleanup item (to be removed summer 2015 latest)
+    cleanup_check_file=[climada_global.system_dir filesep 'climada_lonlat_cleanup_done.txt'];
+    if ~exist(cleanup_check_file,'file')
+        if climada_lonlat_cleanup
+            fid=fopen(cleanup_check_file,'w');
+            fprintf(fid,'climada_lonlat_cleanup run at %s\n',datestr(now));
+            fclose(fid);
+        end
+    else
+        fprintf('OK: migrated to lon/lat instead of Longitude/Latitude\n');
+    end
+    % !!!!!!!!!!!!!!!!!!!!!!!!!
     
 end
 

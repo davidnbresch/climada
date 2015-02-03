@@ -93,8 +93,8 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     %fig = climada_figuresize(height,height*scale2+0.15);
     %set(fig,'Name',hazard.peril_ID);
     
-    centroids.Longitude=hazard.lon; % as the gridding routine needs centroids
-    centroids.Latitude=hazard.lat;
+    centroids.lon=hazard.lon; % as the gridding routine needs centroids
+    centroids.lat=hazard.lat;
     [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
     contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
     hold on

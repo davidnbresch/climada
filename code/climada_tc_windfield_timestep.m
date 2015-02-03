@@ -1,6 +1,4 @@
-
 function res = climada_tc_windfield_timestep(tc_track, centroids, equal_timestep)
-
 % TC windfield calculation for every timestep
 % NAME:
 %   climada_tc_windfield_timestep
@@ -32,8 +30,8 @@ function res = climada_tc_windfield_timestep(tc_track, centroids, equal_timestep
 %       tc_track.name: name, optional
 %       tc_track.SaffSimp: Saffir-Simpson intensity, optional
 %   centroids: a structure with the centroids information
-%       centroids.Latitude: the latitude of the centroids
-%       centroids.Longitude: the longitude of the centroids
+%       centroids.lat: the latitude of the centroids
+%       centroids.lon: the longitude of the centroids
 % OPTIONAL INPUT PARAMETERS:
 %   equal_timestep: if set=1 (default), first interpolate the track to a common
 %       timestep, if set=0, no equalization of TC track data (not
@@ -182,7 +180,7 @@ if length(pos) > 0
 end
 
 cos_tc_track_lat = cos(tc_track.lat/180*pi);
-centroid_count   = length(centroids.Latitude);
+centroid_count   = length(centroids.lat);
 res.gust         = spalloc(centroid_count,1,ceil(centroid_count*0.1));
 
 % % radius of max wind (km)
@@ -202,18 +200,18 @@ res.gust         = sparse(node_count,centroid_count);
 if isfield(centroids,'OBJECTID')   , res.OBJECTID = centroids.OBJECTID;    end
 if isfield(centroids,'centroid_ID'), res.ID       = centroids.centroid_ID; end
 
-[c_i c_j] = size(centroids.Latitude);
+[c_i c_j] = size(centroids.lat);
 if c_i == 1
-    res.lat = centroids.Latitude';
-    res.lon = centroids.Longitude';
+    res.lat = centroids.lat';
+    res.lon = centroids.lon';
 else
-    res.lat = centroids.Latitude;
-    res.lon = centroids.Longitude;
+    res.lat = centroids.lat;
+    res.lon = centroids.lon;
 end
 
 % find closest track node to every centroid, and calculate distance in km
-C_lonlat = [res.lon res.lat]; %[centroids.Longitude centroids.Latitude]; 
-C_coslat = cos(res.lat/180*pi); %cos(centroids.Latitude/180*pi);
+C_lonlat = [res.lon res.lat]; %[centroids.lon centroids.lat]; 
+C_coslat = cos(res.lat/180*pi); %cos(centroids.lat/180*pi);
 [t_i t_j] = size(tc_track.lon);
 if t_i == 1
     T_lonlat = [tc_track.lon' tc_track.lat'];
@@ -239,7 +237,7 @@ for node_i =1:node_count % now loop over all track nodes
                    res.lat < (tc_track.lat(node_i) + impact_radius);
      
     if any(close_enough)
-        %fprintf('%i centroids within plus minus 5° of node %i \n',sum(inreach(:)),node_i)
+        %fprintf('%i centroids within plus minus 5? of node %i \n',sum(inreach(:)),node_i)
         
         % calculate distance to centroids
         % cos_tc_track_lat
@@ -262,7 +260,7 @@ for node_i =1:node_count % now loop over all track nodes
         
         M            = tc_track.MaxSustainedWind(node_i);
 
-        % calculate T for every centroid withing +- 5° (inreach)
+        % calculate T for every centroid withing +- 5? (inreach)
         right       = mod(node_Azimuth-tc_track.Azimuth(node_i)+360,360)<180;
         if any(right)
             T(right ,1) =  tc_track.Celerity(node_i);

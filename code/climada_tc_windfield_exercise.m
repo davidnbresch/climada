@@ -34,8 +34,8 @@ function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_
 %       tc_track.name: name, optional
 %       tc_track.SaffSimp: Saffir-Simpson intensity, optional
 %   centroids: a structure with the centroids information
-%       centroids.Latitude: the latitude of the centroids
-%       centroids.Longitude: the longitude of the centroids
+%       centroids.lat: the latitude of the centroids
+%       centroids.lon: the longitude of the centroids
 % OPTIONAL INPUT PARAMETERS:
 %   equal_timestep: if set=1 (default), first interpolate the track to a common
 %       timestep, if set=0, no equalization of TC track data (not recommended)
@@ -239,7 +239,7 @@ if length(pos) > 0
 end
 
 cos_tc_track_lat = cos(tc_track.lat/180*pi);
-centroid_count   = length(centroids.Latitude);
+centroid_count   = length(centroids.lat);
 res.gust         = zeros(1,centroid_count);
 res.node_Azimuth = zeros(1,centroid_count);
 res.node_lat     = zeros(1,centroid_count);
@@ -249,8 +249,8 @@ res.node_lon     = zeros(1,centroid_count);
 if isfield(centroids,'OBJECTID')   , res.OBJECTID = centroids.OBJECTID;    end
 if isfield(centroids,'centroid_ID'), res.ID       = centroids.centroid_ID; end
 
-res.lat = centroids.Latitude;
-res.lon = centroids.Longitude;
+res.lat = centroids.lat;
+res.lon = centroids.lon;
 
 
 tic;
@@ -335,9 +335,9 @@ if check_plot
 
         
     %scale figure according to range of longitude and latitude
-    scale  = max(centroids.Longitude) - min(centroids.Longitude);
-    scale2 =(max(centroids.Longitude) - min(centroids.Longitude))/...
-            (min(max(centroids.Latitude),60)-max(min(centroids.Latitude),-50));
+    scale  = max(centroids.lon) - min(centroids.lon);
+    scale2 =(max(centroids.lon) - min(centroids.lon))/...
+            (min(max(centroids.lat),60)-max(min(centroids.lat),-50));
     height = 0.5;
     if height*scale2 > 1.2; height = 1.2/scale2; end
     fig = climada_figuresize(height,height*scale2+0.15);
@@ -354,11 +354,11 @@ if check_plot
     climada_plot_tc_track_stormcategory(tc_track_ori);
     
     %centroids?
-    plot(centroids.Longitude, centroids.Latitude, '+r','MarkerSize',0.8,'linewidth',0.1)
+    plot(centroids.lon, centroids.lat, '+r','MarkerSize',0.8,'linewidth',0.1)
     
     axis equal
-    axis([min(centroids.Longitude)-scale/30  max(centroids.Longitude)+scale/30 ...
-          max(min(centroids.Latitude),-50)-scale/30  min(max(centroids.Latitude),60)+scale/30])
+    axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
+          max(min(centroids.lat),-50)-scale/30  min(max(centroids.lat),60)+scale/30])
       
     caxis([0 gridded_max_round])
  

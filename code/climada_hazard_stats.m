@@ -294,11 +294,11 @@ if check_plot
      
     fprintf('Preparing intensity vs return periods maps\n')
     
-    centroids.Longitude = hazard.lon;
-    centroids.Latitude  = hazard.lat;
-    scale = max(centroids.Longitude)-min(centroids.Longitude);
-    scale2= (max(centroids.Longitude)-min(centroids.Longitude)+scale*2/30)...
-        /(max(centroids.Latitude )-min(centroids.Latitude )+scale*2/30);
+    centroids.lon = hazard.lon;
+    centroids.lat  = hazard.lat;
+    scale = max(centroids.lon)-min(centroids.lon);
+    scale2= (max(centroids.lon)-min(centroids.lon)+scale*2/30)...
+        /(max(centroids.lat )-min(centroids.lat )+scale*2/30);
     
     %------------------
     % probabilistic map
@@ -344,16 +344,16 @@ if check_plot
             gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
             contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
         else
-            text(mean([min(centroids.Longitude) max(centroids.Longitude)]),...
-                mean([min(centroids.Latitude ) max(centroids.Latitude )]),...
+            text(mean([min(centroids.lon) max(centroids.lon)]),...
+                mean([min(centroids.lat ) max(centroids.lat )]),...
                 'no data for this return period available','fontsize',8,...
                 'HorizontalAlignment','center')
         end
         hold on
         climada_plot_world_borders(0.7)
         title([int2str(hazard.R_fit(fit_index)) ' yr intensity'],'fontsize',fontsize);
-        axis([min(centroids.Longitude)-scale/30  max(centroids.Longitude)+scale/30 ...
-            min(centroids.Latitude )-scale/30  max(centroids.Latitude )+scale/30])
+        axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
+            min(centroids.lat )-scale/30  max(centroids.lat )+scale/30])
         % do not display xticks, nor yticks
         set(subaxis(i),'xtick',[],'ytick',[],'DataAspectRatio',[1 1 1])
         caxis([0 caxis_max])

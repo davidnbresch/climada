@@ -109,6 +109,10 @@ else
     % -----------
     assets                   = climada_spreadsheet_read('no',entity_filename,'assets',1);
     
+    if isfield(assets,'Longitude'),assets.lon=assets.Longitude;assets=rmfield(assets,'Longitude');end
+    if isfield(assets,'Latitude'), assets.lat=assets.Latitude; assets=rmfield(assets,'Latitude');end
+   % if isfield(assets,'Value'),    assets.value=assets.Value; assets=rmfield(assets,'Value');end
+    
     if ~isfield(assets,'Value')
         fprintf('Error: no Value column in assets tab, aborted\n')
         if strcmp(fE,'.ods') && climada_global.octave_mode

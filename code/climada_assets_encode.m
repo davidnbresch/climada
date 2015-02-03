@@ -26,8 +26,8 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a
 %       struct) or a centroid struct (as returned by climada_centroids_load or
 %       climada_centroids_read. hazard needs to have fields hazard.lon and
-%       hazard.lat, centroids fields centroids.Longitude and
-%       centroids.Latitude  
+%       hazard.lat, centroids fields centroids.lon and
+%       centroids.lat  
 %       > promted for if not given (select either a hazard event set or a
 %       centroids .mat file)
 %       if set to 'SKIP', do not encode, return original assets (used for
@@ -108,8 +108,8 @@ end
 
 if isfield(hazard,'lon')
     % hazard does indeed contain a hazard structure
-    centroids.Longitude=hazard.lon;
-    centroids.Latitude =hazard.lat;
+    centroids.lon=hazard.lon;
+    centroids.lat =hazard.lat;
     centroids.filename =hazard.filename;
 elseif isfield(hazard,'Longitude')
     % hazard is in fact a centroids struct
@@ -119,8 +119,8 @@ end
 
 % omit flagged centroids (those with centroid_ID<0)
 if isfield(centroids,'centroid_ID')
-    centroids.Longitude=centroids.Longitude(centroids.centroid_ID>0);
-    centroids.Latitude=centroids.Latitude(centroids.centroid_ID>0);
+    centroids.lon=centroids.lon(centroids.centroid_ID>0);
+    centroids.lat=centroids.lat(centroids.centroid_ID>0);
 end
 
 % start encoding
@@ -142,11 +142,11 @@ end
 for asset_i=1:n_assets
     if climada_global.waitbar,waitbar(asset_i/n_assets,h);end
     
-    dist_m=climada_geo_distance(assets.Longitude(asset_i),assets.Latitude(asset_i),centroids.Longitude,centroids.Latitude);
+    dist_m=climada_geo_distance(assets.lon(asset_i),assets.lat(asset_i),centroids.lon,centroids.lat);
     [min_dist,min_dist_index] = min(dist_m);
     assets.centroid_index(asset_i)=min_dist_index;
     
-    %if verbose,fprintf('%f/%f --> %f/%f\n',assets.Longitude(asset_i),assets.Latitude(asset_i),centroids.Longitude(min_dist_index),centroids.Latitude(min_dist_index));end
+    %if verbose,fprintf('%f/%f --> %f/%f\n',assets.lon(asset_i),assets.lat(asset_i),centroids.lon(min_dist_index),centroids.lat(min_dist_index));end
     
     % the progress management
     if mod(asset_i,mod_step)==0

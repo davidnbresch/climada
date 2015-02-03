@@ -53,16 +53,16 @@ climada_plot_world_borders(2,'','',1) % plot world borders (for orientation)
 % in order to calculate the windfield of this particular single track,
 % generate a series of points on which to evaluate the windfield, we call
 % these points centroids
-centroids.Longitude=[];centroids.Latitude=[]; % init
+centroids.lon=[];centroids.lat=[]; % init
 next_centroid=1; % ugly code, but explicit
 for i=1:10
     for j=1:10
-        centroids.Longitude(next_centroid)=i+(-85);
-        centroids.Latitude(next_centroid) =j+  20;
+        centroids.lon(next_centroid)=i+(-85);
+        centroids.lat(next_centroid) =j+  20;
         next_centroid=next_centroid+1;
     end % j
 end % i
-centroids.centroid_ID=1:length(centroids.Latitude); % we later needs this, just numbering the centroids
+centroids.centroid_ID=1:length(centroids.lat); % we later needs this, just numbering the centroids
 
 % next, calculate the windfield for this single track
 res = climada_tc_windfield(tc_track(demo_track_number),centroids);
@@ -83,7 +83,7 @@ if ~climada_global.octave_mode
     % matrix)
     figure; subplot(2,1,1)
     climada_color_plot(full(hazard.intensity(demo_track_number,:)),hazard.lon,hazard.lat,'none'); % plot the windfield again
-    hold on;plot(-81,26,'Og');plot(centroids.Longitude(36),centroids.Latitude(36),'Og','MarkerSize',10);
+    hold on;plot(-81,26,'Og');plot(centroids.lon(36),centroids.lat(36),'Og','MarkerSize',10);
     
     % or, instead, we can plot all hazard intensities at a given point (green circle), e.g.
     subplot(2,1,2)
@@ -157,7 +157,7 @@ entity=climada_entity_read(entity_excel_filename,hazard);
 % contains the asset, damage function and adaptation measures information,
 % the tabs in Excel are named accordingly, and so are the elements of the
 % imported structure . In the asset sub-structure, we find
-% entity.assets.Latitude(k) and entity.assets.Longitude(k), the
+% entity.assets.lat(k) and entity.assets.lon(k), the
 % geographical position of asset k (does not need to be the same geographic
 % location as centroid I, since assets are encoded to the hazard )
 % entity.assets.Value(k) contains the Value of asset k. Please note that

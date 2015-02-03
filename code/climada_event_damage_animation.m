@@ -145,10 +145,10 @@ intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end
 
 if isempty(focus_region) % define the focus region based on entity
-    focus_region(1)=min(hazard.assets.Longitude)-dX;
-    focus_region(2)=max(hazard.assets.Longitude)+dX;
-    focus_region(3)=min(hazard.assets.Latitude)-dY;
-    focus_region(4)=max(hazard.assets.Latitude)+dY;
+    focus_region(1)=min(hazard.assets.lon)-dX;
+    focus_region(2)=max(hazard.assets.lon)+dX;
+    focus_region(3)=min(hazard.assets.lat)-dY;
+    focus_region(4)=max(hazard.assets.lat)+dY;
     focus_region(4)=focus_region(4) + diff(focus_region(3:4))*0.2;
 end
 
@@ -213,7 +213,7 @@ for step_i=1:n_steps
     ok_points_pos=find(MarkerSizes>0);
     for ii=1:length(ok_points_pos)
         i=ok_points_pos(ii);
-        plot(hazard.assets.Longitude(i),hazard.assets.Latitude(i),'ob','MarkerSize',...
+        plot(hazard.assets.lon(i),hazard.assets.lat(i),'ob','MarkerSize',...
             MarkerSizes(i),'LineWidth',1);hold on;
     end
 
@@ -265,7 +265,7 @@ for step_i=1:n_steps
     ok_points_pos= find(MarkerSizes>0 & damage_values>0);
     for ii=1:length(ok_points_pos)
         i=ok_points_pos(ii);
-        plot(hazard.assets.Longitude(i),hazard.assets.Latitude(i),circle_format,'MarkerSize',MarkerSizes(i),...
+        plot(hazard.assets.lon(i),hazard.assets.lat(i),circle_format,'MarkerSize',MarkerSizes(i),...
             'LineWidth',2,'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
         %plot(hazard.lon(i),hazard.lat(i),circle_format,'MarkerSize',...
         %    MarkerSizes(i),'LineWidth',circle_linewidth,'markerfacecolor','r');

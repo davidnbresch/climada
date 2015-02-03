@@ -225,7 +225,7 @@ if check_plots
         climada_entity_plot(entity_today);
     else
         climada_circle_plot(entity_today.assets.Value,...
-            entity_today.assets.Longitude,entity_today.assets.Latitude)
+            entity_today.assets.lon,entity_today.assets.lat)
     end
     figure;climada_damagefunctions_plot(entity_today,hazard.peril_ID);
     drawnow % flush the event queue and update the figure window
