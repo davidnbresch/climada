@@ -20,14 +20,17 @@ function YDS=climada_EDS2YDS(EDS,hazard)
 % EXAMPLE:
 %   YDS=climada_EDS2YDS(climada_EDS_calc('',hazard),hazard)
 % INPUTS:
-%   EDS: an event damage set (EDS), as produced by climada_EDS_calc (see
-%       there)
+%   EDS: an event damage set (EDS), as produced by climada_EDS_calc 
+%       (see there)
+% OPTIONAL INPUT PARAMETERS:
 %   hazard: a hazard event set (either a struct or a full filename with
 %       path) which contains a yearset in hazard.orig_yearset
 %       Note that for TS and TR, the TC hazard event set contains
 %       hazard.orig_yearset, not each sub-peril hazard event set
-%       > prompted for if not given
-% OPTIONAL INPUT PARAMETERS:
+%       If empty, the hazard event set is inferred from
+%       EDS.annotation_name, which often contains the filename (without
+%       path) of the hazard event set. If this is the case, this hazard is
+%       used, if not, the function prompts for the hazard event set to use.
 % OUTPUTS:
 %   YDS: the year damage set (YDS), a struct with same fields as EDS (such
 %       as Value, ED, ...) plus yyyy and orig_year_flag. All fields same
@@ -43,6 +46,7 @@ function YDS=climada_EDS2YDS(EDS,hazard)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141226, initial
 % David N. Bresch, david.bresch@gmail.com, 20150116, YDS fields same order as in EDS
+% David N. Bresch, david.bresch@gmail.com, 20150204, automatic hazard set detection
 %-
 
 YDS=[]; % init output
@@ -59,6 +63,11 @@ if ~exist('hazard','var'),hazard=[];end
 
 % PARAMETERS
 %
+
+if isempty(hazard) % try to infer from EDS
+    hazard_file=[climada_global.data_dir filesep 'hazards' filesep strtok(EDS.annotation_name) '.mat'];
+    if exist(hazard_file,'file'),load(hazard_file);end % if it fails, hazard remains empty
+end % isempty(hazard)
 
 % prompt for hazard if not given
 if isempty(hazard) % local GUI
@@ -100,15 +109,15 @@ end
 YDS.reference_year=EDS.reference_year;
 YDS.event_ID=[]; % to indicate not by event any more
 YDS.damage=[]; % init, see below
-YDS.ED_at_centroid=EDS.ED_at_centroid;
+if isfield(EDS,'ED_at_centroid'),YDS.ED_at_centroid=EDS.ED_at_centroid;end
 YDS.Value=EDS.Value;
 YDS.frequency=[]; % init, see below
 YDS.orig_event_flag=[]; % to indicate not by event any more
 YDS.peril_ID=EDS.peril_ID;
 YDS.hazard=EDS.hazard;
 YDS.comment=EDS.comment;
-YDS.assets=EDS.assets;
-YDS.damagefunctions=EDS.damagefunctions;
+if isfield(EDS,'assets'),YDS.assets=EDS.assets;end
+if isfield(EDS,'damagefunctions'),YDS.damagefunctions=EDS.damagefunctions;end
 YDS.annotation_name=EDS.annotation_name;
 YDS.ED=EDS.ED;
 

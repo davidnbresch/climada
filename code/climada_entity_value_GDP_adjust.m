@@ -26,15 +26,15 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,mode
 %   showed that in general, adjusting the Climada asset values requires a
 %   higher multiplication factor the wealthier a country is. Thus, as a
 %   rule of thumb, the value of all assets in a country can be estimated by
-%       Total_asset_value = GDP * (1+income_group_factor) 
+%       Total_asset_value = GDP * (1+income_group_factor)
 %   where GDP is the country's gross domestic product, and
 %   income_group_factor ranges from 2 for low income countries to 5 for
-%   high income countries.             
+%   high income countries.
 %
 %   Caution: as soon as the entity has a field entity.assets.admin0_ISO3 or
 %   entity.assets.admin0_name, it is adjusted, unless there are non-empty
 %   fields entity.assets.admin1_name or entity.assets.admin1_code, in which
-%   case it skips adjustment. 
+%   case it skips adjustment.
 %
 %   Note: to avoid any troubles, Cover is set equal to Value.
 %
@@ -63,6 +63,7 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,mode
 % David N. Bresch, david.bresch@gmail.com, 20150121, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20150122, mode_selector added
 % David N. Bresch, david.bresch@gmail.com, 20150122, mode_selector=3 added
+% David N. Bresch, david.bresch@gmail.com, 20150204, processing moved to climada_entity_value_GDP_adjust_one
 %-
 
 % initialize output
@@ -79,7 +80,7 @@ if ~exist('mode_selector','var'),      mode_selector      =0;end
 
 % PARAMETERS
 %
-% the table with global GDP etc info (per country) 
+% the table with global GDP etc info (per country)
 economic_data_file=[climada_global.data_dir filesep 'system' filesep 'economic_indicators_mastertable.xls'];
 %
 % missing data indicator (any missing in Excel has this entry)
@@ -92,7 +93,7 @@ misdat_value=-999;
 income_group_factors = [2 3 4 5];
 
 
-% template to prompt for filename if not given
+% prompt for entity_file_regexp if not given
 if isempty(entity_file_regexp) % local GUI
     entity_file_regexp=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
     [filename, pathname] = uigetfile(entity_file_regexp, 'Select entity:');
@@ -103,159 +104,27 @@ if isempty(entity_file_regexp) % local GUI
     end
 end
 
+
 % find the desired entity / entities
+fP = fileparts(entity_file_regexp);
 D_entity_mat = dir(entity_file_regexp);
 
-% Check if economic data file is available
-if ~exist(economic_data_file,'file')
-    fprintf('Error: economic_indicators_mastertable.xls is missing.\n')
-    fprintf('Please download it from the <a href="https://github.com/davidnbresch/climada_module_country_risk/tree/master/data">Climada country risk repository on Github\n</a>');
-    return;
-end
-
-% Read economic data
-[fP,fN]=fileparts(economic_data_file);
-economic_data_file_mat=[fP filesep fN '.mat'];
-if ~climada_check_matfile(economic_data_file,economic_data_file_mat)
-    econ_master_data = climada_xlsread('no',economic_data_file,[],1,misdat_value);
-    fprintf('saving economic master data as %s\n',economic_data_file_mat);
-    save(economic_data_file_mat,'econ_master_data');
-else
-    load(economic_data_file_mat);
-end
-
-% loop over entities and adjust asset values
-fP = fileparts(entity_file_regexp);
-for file_i = 1:length(D_entity_mat)
+% loop over entity files and adjust asset values
+for file_i=1:length(D_entity_mat)
     
-    entity_file_i = [fP, filesep D_entity_mat(file_i).name];
-    
+    entity_file_i = [fP filesep D_entity_mat(file_i).name];
     try
         load(entity_file_i)
-        entity_adjusted=entity; % to start with
+        entity_adjusted=climada_entity_value_GDP_adjust_one(entity,mode_selector);
+        
+        fprintf('saved %s in %s (by %s)\n',D_entity_mat(file_i).name,fP,mfilename)
+        save(entity_file_i,'entity')
+        
     catch
         fprintf('skipped (invalid entity): %s\n',D_entity_mat(file_i).name);
         entity.assets=[]; % dummy
     end
     
-    if isfield(entity.assets,'admin0_ISO3')
-        country_index = find(strcmp(econ_master_data.ISO3,char(entity.assets.admin0_ISO3)));
-        if isempty(country_index),fprintf('skipped (no admin0_ISO3 match): %s\n',D_entity_mat(file_i).name);end
-    elseif isfield(entity.assets,'admin0_name')
-        country_index = find(strcmp(econ_master_data.Country,char(entity.assets.admin0_name)));
-        if isempty(country_index),fprintf('skipped (no admin0_name match): %s\n',D_entity_mat(file_i).name);end
-    else
-        fprintf('skipped (no admin0_ISO3 nor admin0_name): %s\n',D_entity_mat(file_i).name);
-        country_index=[];
-    end
-    
-    if ~isempty(country_index)
-        % avoid treating entities on admin1 level
-        admin1_message=1; % to suppress 2nd message in case both admin1_name and admin1_code are non-empty
-        if isfield(entity.assets,'admin1_name')
-            if ~isempty(entity.assets.admin1_name)
-                country_index=[];
-                fprintf('skipped (admin1_name not empty): %s\n',D_entity_mat(file_i).name);
-                admin1_message=0;
-            end
-        end
-        if isfield(entity.assets,'admin1_code')
-            if ~isempty(entity.assets.admin1_code)
-                country_index=[];
-                if admin1_message,fprintf('skipped (admin1_code not empty): %s\n',D_entity_mat(file_i).name);end
-            end
-        end
-    end % ~isempty(country_index)
-    
-    if ~isempty(country_index)
-        
-        if ~isnan(econ_master_data.income_group(country_index))
-            
-            if isfield(entity.assets,'Value_today')
-                % aha, it's a _future entity
-                sum_Value_today =sum(entity.assets.Value_today);
-                sum_Value_future=sum(entity.assets.Value);
-                future_factor=sum_Value_future/sum_Value_today;
-                
-                if mode_selector>1,future_factor=1.0;end
+end % ~isempty(country_index)
 
-                if abs(future_factor-1)>0.051; % 5 percent tolerance
-                    % if factor equals one, do it silenty
-                    if isempty(strfind(D_entity_mat(file_i).name,'_future'))
-                        fprintf('HINT: you might append _future to the entity filename (%s) - or it has high annual growth\n',...
-                            D_entity_mat(file_i).name);
-                    end
-                    fprintf('%s: future values scaled up by %f*today (it has Value_today)\n',...
-                        strrep(D_entity_mat(file_i).name,'.mat',''),future_factor);
-                else
-                    future_factor=1.0; % force the same, as we ignore up to 5% difference
-                end
-                
-                if mode_selector,fprintf('future_factor: %f\n',future_factor);end
-
-            else
-                future_factor=1;
-            end
-                        
-            scale_up_factor = income_group_factors(econ_master_data.income_group(country_index));
-            
-            if mode_selector,fprintf('sum(value) as on file: %g\n',sum(entity.assets.Value));end
-            
-            % normalize assets
-            entity.assets.Value = entity.assets.Value/sum(entity.assets.Value);
-            
-            if mode_selector==3
-                if ~isfield(econ_master_data,'GDP_future')
-                    fprintf('Error: no GDP_future in %s, aborted\n',economic_data_file);
-                    return
-                else
-                    GDP_value=econ_master_data.GDP_future(country_index);
-                end
-            else
-                GDP_value=econ_master_data.GDP_today(country_index);
-            end
-            
-            if isnan(GDP_value)
-                GDP_value=1.0;
-                scale_up_factor=1.0; % in this case makes also no sense
-                fprintf('Warning: GDP=NaN, not applied\n');
-            else
-                if mode_selector,fprintf('GDP: %g, scale_up_factor: %f\n',GDP_value,scale_up_factor);end
-            end
-            
-            % multiply with GDP
-            entity.assets.Value = entity.assets.Value*GDP_value;
-            
-            % multiply with scale-up factor
-            entity.assets.Value = entity.assets.Value*scale_up_factor;
-            
-            % special treatment for future entities
-            if isfield(entity.assets,'Value_today'),entity.assets.Value_today=entity.assets.Value;end
-            
-            % and finally apply future factor (in case it's a _future entity)
-            entity.assets.Value = entity.assets.Value*future_factor;
-            
-            if mode_selector,fprintf('sum(value) after scaling: %g\n',sum(entity.assets.Value));end
-
-            % for consistency, update Cover
-            if isfield(entity.assets,'Cover'),entity.assets.Cover=entity.assets.Value;end
-%             if isfield(entity.assets,'Cover')
-%                 entity.assets.Cover=entity.assets.Cover*GDP_value*scale_up_factor*future_factor;
-%                 Cover_pct=entity.assets.Cover./entity.assets.Value;
-%                 if max(Cover_pct)<0.01
-%                     fprintf('Warning: max Cover less than 1%% of Value -> consider to adjust Cover\n');
-%                 end
-%             end
-
-            % save entity
-            entity_adjusted = entity;
-            fprintf('saved %s in %s (by %s)\n',D_entity_mat(file_i).name,fP,mfilename)
-            save(entity_file_i,'entity')
-            
-        else
-            fprintf('skipped (no income group info): %s\n',D_entity_mat(file_i).name);
-        end
-        
-    end % ~isempty(country_index)
-    
-end
+end % climada_entity_value_GDP_adjust

@@ -31,6 +31,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %       countries, e.g. 'Germany' or {'Germany' 'Ghana'},that will be gray
 %       shaded in the world plot, default is no shading of countries.
 %       Note that 'United States (USA)' is used, hence both 'United States' and 'USA' work.
+%       ='LABEL': label all countries, but do NOT use for coloring
 %   map_shape_file: filename and path to a *.shp shapes file
 %       if set to 'ASK', prompt for the .shp file. If empty, set to the
 %       file as defined in climada_global.map_border_file (default).
@@ -115,9 +116,13 @@ for shape_i = 1:length(shapes)
     end
     plot(shapes(shape_i).X,shapes(shape_i).Y, 'color',border_color,'LineWidth',linewidth);
     hold on
+    if strcmp(check_country,'LABEL')
+        ok_pos=~isnan(shapes(shape_i).X);
+        text(mean(shapes(shape_i).X(ok_pos)),mean(shapes(shape_i).Y(ok_pos)),char(shapes(shape_i).NAME));
+    end
 end % shape_i
 
-hold on
+if strcmp(check_country,'LABEL'),check_country='';end
 
 if ~isempty(check_country) && isfield(shapes,'NAME') % shade selected country (only *.gen)
     for shape_i = 1:length(shapes)
