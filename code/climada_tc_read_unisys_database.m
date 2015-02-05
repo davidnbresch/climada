@@ -25,6 +25,14 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 %   required, since raw data contains missing and errors).
 %   One needs to delete the binary files to re-read the raw ASCII data.
 %
+%   Wind = Maximum sustained (1 minute) surface (10m) windspeed in knots
+%       (in general, these are to the nearest 5 knots). 
+%   Pressure = Central surface pressure of storm in mb (if available).
+%       Since 1979, central pressures are given everytime even if a
+%       satellite estimation is needed.  
+%
+%   More info: http://weather.unisys.com/hurricane/atlantic/tracks_atl_readme.txt
+%
 %   previous step: see climada_tc_get_unisys_databases
 %   next step: see climada_tc_random_walk
 % CALLING SEQUENCE:
