@@ -16,17 +16,20 @@ function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,
 % EXAMPLE:
 %   climada_circle_plot('Test',lon,lat,values,10)
 % INPUTS:
+%   values(i): the values to display
+%   lon(i),lat(i): the coordinates of the values (same length as values)
 %   title_str: plot title
-%   lon,lat,values: arrays of same size
 % OPTIONAL INPUT PARAMETERS:
-%   circle_diam: max diameter of the circles
-%   circle_format: like 'or' for red circles
-%   marker_size: size of markers denoting centers
-%   marker_format: like '+b'
-%   overlay_plot: if set to 1, only do an overlay, no country borders...
-%   axis: if set [min(lon) max(lon) min(lat) max(lat)], otherwise
-%   determined in the function
-%   max_value: if set, use this value to scale circle diameters
+%   circle_diam: max diameter of the circles, default=10
+%   circle_format: format as in plot, like 'or' for red circles, default='or'
+%   marker_size: size of markers denoting centers, default=2
+%   marker_format: format as in plot, default='+b'
+%   overlay_plot: if set to 1, only do an overlay, no country borders...,
+%       default=0
+%   axis_range: if set [min(lon) max(lon) min(lat) max(lat)], otherwise
+%       determined in the function
+%   max_value: if set, use this value to scale circle diameters, otherwise
+%       max(values) is used
 % OUTPUTS:
 %   figure
 % RESTRICTIONS:
@@ -34,6 +37,7 @@ function climada_circle_plot(values,lon,lat,title_str,circle_diam,circle_format,
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20120430
 % David N. Bresch, david.bresch@gmail.com, 20141213, plot zooms to relevant area
+% David N. Bresch, david.bresch@gmail.com, 20150206, cleanup
 %-
 
 %global climada_global
@@ -66,10 +70,6 @@ if isempty(max_value),max_value=max(values);end; % default
 
 circle_linewidth=1; % default=1
 
-% if ~strcmp(title_str,'none') & ~overlay_plot
-%     figure('Name',title_str,'NumberTitle','off','Color',[1 1 1]); % change BG color to white
-% end;
-
 minval=0.0;maxval=sqrt(abs(max_value)); % not minval=sqrt(abs(min(values)))
 if maxval-minval~=0.0
     % establish plot
@@ -94,7 +94,6 @@ if maxval-minval~=0.0
 
 else
     fprintf('all locations have the same value - nothing plotted\n');
-    %%msgbox('all locations have the same value - nothing plotted','plot warning');
 end
 
-return
+end % climada_circle_plot

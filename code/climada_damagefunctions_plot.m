@@ -1,4 +1,4 @@
-function climada_damagefunctions_plot(entity,unique_ID_sel)
+function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % climada
 % NAME:
 %   climada_damagefunctions_plot
@@ -30,11 +30,17 @@ function climada_damagefunctions_plot(entity,unique_ID_sel)
 %       unique_ID_sel='TC'     % print all TC curves
 % OUTPUTS:
 %   a figure
+%   res: a structure with the last (and only the last) damagefunction, with
+%       fields Intensity, MDD, PAA, MDR for further use. Hence res only
+%       make sense when called with one unique ID.
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE
 % David N. Bresch, david.bresch@gmail.com, 20141214, unique_ID_sel added
 % David N. Bresch, david.bresch@gmail.com, 20141221, MDR calculated locally and unique_ID_sel improved
+% David N. Bresch, david.bresch@gmail.com, 20150206, res returned
 %-
+
+res=[]; % init
 
 %global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -99,6 +105,13 @@ for ID_i=1:length(unique_IDs)
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b');
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),'-g');
+        % store latest plot
+        res.Intensity=damagefunctions.Intensity(dmf_pos);
+        res.MDD=damagefunctions.MDD(dmf_pos);
+        res.PAA=damagefunctions.PAA(dmf_pos);
+        res.MDR=damagefunctions.MDR(dmf_pos);
+        axis tight
+        set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
         legend('MDR','MDD','PAA','Location','NorthWest');
         xlabel('Intensity','FontSize',9);
         ylabel('MDR')

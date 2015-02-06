@@ -15,8 +15,8 @@ function climada_color_plot(values,lon,lat,figure_name,title_str,plot_method,int
 % EXAMPLE:
 %   climada_color_plot(mean(hazard.intensity,2),hazard.lon,hazard.lat)
 % INPUTS:
-%   values: values at zone centroids
-%   lon,lat: zone centroids
+%   values(i): values
+%   lon(i),lat(i): coordinates of values, same length as values
 %   interactive_mode: 'interactive' allows for GUIs
 % OPTIONAL INPUT PARAMETERS:
 %   figure_name: name of the figure window, if set to 'none', no figure is opened
