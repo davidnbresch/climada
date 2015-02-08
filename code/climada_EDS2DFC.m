@@ -99,7 +99,9 @@ for EDS_i=1:length(EDS)
     DFC(EDS_i).return_period   = return_period;
     % simply interpolate to the standard return periods
     DFC(EDS_i).damage          = interp1(EDS_return_period,sorted_damage,return_period);
-    DFC(EDS_i).damage_of_value = DFC(EDS_i).damage/DFC(EDS_i).value;
+    if ~isempty(DFC(EDS_i).value)
+        DFC(EDS_i).damage_of_value = DFC(EDS_i).damage/DFC(EDS_i).value;
+    end
     
     if isfield(EDS(EDS_i),'annotation_name')
         DFC(EDS_i).annotation_name=EDS(EDS_i).annotation_name;
