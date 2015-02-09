@@ -15,3 +15,9 @@ data/results/m_demotoday_TCNA2030medsmall
 data/results/m_demotoday_TCNAtodaysmall
 
 data/system/admin0_oct.mat
+
+data/system/*_centroids.mat
+
+data/entities/*_entities*.mat
+
+data/hazards
