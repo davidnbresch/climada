@@ -115,9 +115,8 @@ for file_i=1:length(D_entity_mat)
     entity_file_i = [fP filesep D_entity_mat(file_i).name];
     try
         load(entity_file_i)
-        entity_adjusted=climada_entity_value_GDP_adjust_one(entity,mode_selector);
-        
-        fprintf('saved %s in %s (by %s)\n',D_entity_mat(file_i).name,fP,mfilename)
+        entity=climada_entity_value_GDP_adjust_one(entity,mode_selector);
+        fprintf('saving %s in %s (by %s)\n',D_entity_mat(file_i).name,fP,mfilename)
         save(entity_file_i,'entity')
         
     catch
