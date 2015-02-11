@@ -25,6 +25,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20141231, octave compatibility
 % David N. Bresch, david.bresch@gmail.com, 20150126, csv_delimiter depends on computer
 % David N. Bresch, david.bresch@gmail.com, 20150203, climada_lonlat_cleanup
+% David N. Bresch, david.bresch@gmail.com, 20150211, global_CAGR added
 %-
 
 global climada_global
@@ -129,6 +130,8 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % >1 concave (eg 2: cubic), <1 for convex (eg 1/2: like quare root)
     % concave means: damage increases slowly first (see climada_measures_impact)
     climada_global.impact_time_dependence = 1; % 1 for linear
+    % define the default global compound annual growth rate (CAGR)
+    climada_global.global_CAGR=0.02; % default 0.02 for 2%
     
     % standard return periods for DFC report
     climada_global.DFC_return_periods=[1 5 10 20 25 30 35 40 45 50 75 100 125 150 175 200 250 300 400 500 1000];
