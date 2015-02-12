@@ -6,7 +6,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 %   Plot the damage functions within entity (if a damagefunctions struct is
 %   passed, it works, too).
 %
-%   See also climada_damagefunctions_read
+%   See also climada_damagefunctions_read and climada_damagefunction_generate
 % CALLING SEQUENCE:
 %   climada_damagefunctions_plot(entity,unique_ID_sel)
 %   climada_damagefunctions_plot(climada_damagefunctions_read)
@@ -103,8 +103,8 @@ for ID_i=1:length(unique_IDs)
     if ~isempty(dmf_pos)
         fprintf('plot %i: %s\n',ID_i,char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_ID_sel)
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
-        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b');
-        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),'-g');
+        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b','LineWidth',2);
+        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),':g','LineWidth',2);
         % store latest plot
         res.Intensity=damagefunctions.Intensity(dmf_pos);
         res.MDD=damagefunctions.MDD(dmf_pos);
