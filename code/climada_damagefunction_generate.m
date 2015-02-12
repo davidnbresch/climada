@@ -11,7 +11,7 @@ function [damagefunction,dmf_info_str]=climada_damagefunction_generate(intensity
 % CALLING SEQUENCE:
 %   damagefunction=climada_damagefunction_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
 % EXAMPLE:
-%   damagefunction=climada_damagefunction_generate(0:10:120,20,3,'exp','TC')
+%   damagefunction=climada_damagefunction_generate(0:10:120,20,3,1,'exp','TC')
 %   damagefunction=climada_damagefunction_generate([],20,1,0.5,'s-shape','TC',1)
 % INPUTS:
 %   intensity: the hazard intensity scale, i.e. the horizontal axis of the
@@ -76,23 +76,14 @@ if isempty(check_plot),check_plot=1;end
 
 dmf_info_str=sprintf('%s %s %2.2f*(i-%i)**%2.2f',peril_ID,dmf_shape,dmf_max,dmf_min_intens,dmf_exp);
 
+if size(intensity,1)<size(intensity,2),intensity=intensity';end
+
 damagefunction.filename=mfilename;
 damagefunction.Intensity=intensity;
 damagefunction.DamageFunID=damagefunction.Intensity*0+1;
 damagefunction.peril_ID=cellstr(repmat(peril_ID,length(damagefunction.Intensity),1));
 
 switch dmf_shape
-    case 'TC_atl_default'
-        damagefunction.MDD=[0 0 0.0219 0.0359 0.0540 0.1035 0.1804 0.4108 0.4108];
-        damagefunction.PAA=[0 0.0050 0.0420 0.1600 0.3985 0.6570 1.0000 1.0000 1.0000];
-        damagefunction.DamageFunID=ones(1,length(damagefunction.Intensity));
-    case 'TC_wpa_default'
-        damagefunction.MDD=[0 0 0.0219 0.0359 0.0540 0.1035 0.1804 0.4108 0.4108];
-        damagefunction.PAA=[0 0.0050 0.0420 0.1600 0.3985 0.6570 1.0000 1.0000 1.0000];
-        damagefunction.DamageFunID=ones(1,length(damagefunction.Intensity));
-        % first CRUDE correction for wpa
-        damagefunction.MDD=damagefunction.MDD/5;
-        damagefunction.PAA=damagefunction.PAA/5;
     case 'exp'
         % polynomial damage function
         damagefunction.MDD=max(damagefunction.Intensity-dmf_min_intens,0).^dmf_exp;
@@ -111,7 +102,7 @@ switch dmf_shape
         damagefunction.MDD=dmf_max*(damagefunction.MDD.^dmf_exp);
         damagefunction.PAA=(damagefunction.PAA.^dmf_exp);
     otherwise
-        fprintf('Error: %s not implemented yet\n')
+        fprintf('Error: %s not implemented yet\n',dmf_shape)
         return
 end % switch dmf_shape
 

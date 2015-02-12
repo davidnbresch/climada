@@ -19,6 +19,7 @@ function entity=climada_damagefunctions_map(entity,damagefunctions,damagefunctio
 %   the same assets with different perils).
 %
 %   See also climada_damagefunctions_read and climada_damagefunctions_plot
+%   and climada_damagefunctions_replace
 % CALLING SEQUENCE:
 %   entity=climada_damagefunctions_map(entity,damagefunctions,damagefunctions_map)
 % EXAMPLE:
