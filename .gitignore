@@ -16,8 +16,19 @@ data/results/m_demotoday_TCNAtodaysmall
 
 data/system/admin0_oct.mat
 
-data/system/*_centroids.mat
-
 data/entities/*_entities*.mat
 
+data/entities/*_entity_future.mat
+
+data/entities/*_entity.mat
+
+data/system/*_centroids.mat
+
+data/results/*
+
 data/hazards
+
+data/system/*.txt
+
+
+
