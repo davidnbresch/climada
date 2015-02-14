@@ -11,7 +11,11 @@ function entity=climada_damagefunctions_replace(entity,damagefunctions)
 %   DamageFunID=1 and damagefunctions also contains a damage function with
 %   peril_ID 'TC' and DamageFunID=1, the damage function in damagefunctions
 %   is added to entity damagefunctions and the previous damagefunction
-%   TC_001 is moved to TC_nnn, where nnn is a not yet used DamageFunID
+%   TC_001 is moved to TC_nnn, where nnn is a not yet used DamageFunID. But
+%   in case all MDD and PAA values of the existing damagefunction are
+%   exactly the same, the curve is NOT replaced (ensures we do not
+%   endlessly increase the number of damagefunctions on subsequent calls
+%   unnecessarily).
 %
 %   See also climada_damagefunctions_read, climada_damagefunctions_generate
 %   and climada_damagefunctions_plot
@@ -76,15 +80,40 @@ for ID_i=1:length(unique_IDs)
             old_peril_ID_pos=strcmp(entity.damagefunctions.peril_ID(old_DamageFunID_pos),damagefunctions.peril_ID{dmf_pos(1)});
             old_DamageFunID_pos=old_DamageFunID_pos(old_peril_ID_pos);
         end
-        if ~isempty(old_DamageFunID_pos) % replace with new ID
-            entity.damagefunctions.DamageFunID(old_DamageFunID_pos)=next_ID;next_ID=next_ID+1;
+        
+        % check whether replacement is needed (unless the existing curve is
+        % exactly the same)
+        replace_it=1; % assume we replace, now check for reasons why not
+        
+        old_MDD=entity.damagefunctions.MDD(old_DamageFunID_pos);
+        new_MDD=damagefunctions.MDD(dmf_pos);
+        if length(old_MDD)==length(new_MDD)
+            if abs(sum(new_MDD-old_MDD))<10*eps,replace_it=0;end
         end
-        % append
-        entity.damagefunctions.Intensity=[entity.damagefunctions.Intensity;damagefunctions.Intensity(dmf_pos)];
-        entity.damagefunctions.DamageFunID=[entity.damagefunctions.DamageFunID;damagefunctions.DamageFunID(dmf_pos)];
-        entity.damagefunctions.MDD=[entity.damagefunctions.MDD;damagefunctions.MDD(dmf_pos)];
-        entity.damagefunctions.PAA=[entity.damagefunctions.PAA;damagefunctions.PAA(dmf_pos)];
-        entity.damagefunctions.peril_ID=[entity.damagefunctions.peril_ID;damagefunctions.peril_ID(dmf_pos)];
+        old_PAA=entity.damagefunctions.PAA(old_DamageFunID_pos);
+        new_PAA=damagefunctions.PAA(dmf_pos);
+        if length(old_PAA)==length(new_PAA)
+            if abs(sum(new_PAA-old_PAA))<10*eps,replace_it=0;end
+        end
+        old_INT=entity.damagefunctions.Intensity(old_DamageFunID_pos);
+        new_INT=damagefunctions.Intensity(dmf_pos);
+        if length(old_INT)==length(new_INT)
+            if abs(sum(new_INT-old_INT))<10*eps,replace_it=0;end
+        end
+        
+        if replace_it
+            if ~isempty(old_DamageFunID_pos) % replace with new ID
+                entity.damagefunctions.DamageFunID(old_DamageFunID_pos)=next_ID;next_ID=next_ID+1;
+            end
+            % append
+            entity.damagefunctions.Intensity=[entity.damagefunctions.Intensity;damagefunctions.Intensity(dmf_pos)];
+            entity.damagefunctions.DamageFunID=[entity.damagefunctions.DamageFunID;damagefunctions.DamageFunID(dmf_pos)];
+            entity.damagefunctions.MDD=[entity.damagefunctions.MDD;damagefunctions.MDD(dmf_pos)];
+            entity.damagefunctions.PAA=[entity.damagefunctions.PAA;damagefunctions.PAA(dmf_pos)];
+            entity.damagefunctions.peril_ID=[entity.damagefunctions.peril_ID;damagefunctions.peril_ID(dmf_pos)];
+        else
+            fprintf('%s not replaced (exists already)\n',char(unique_IDs{ID_i}));
+        end
     end
 end % ID_i
 
