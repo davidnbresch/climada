@@ -57,7 +57,7 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor1(i);
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [cmap1; cmap2];
+        cmap = [1.0 1.0 1.0; cmap1; cmap2];
         
     case 'TS'
         % create colormap for surge
