@@ -1,4 +1,4 @@
-function res=climada_event_damage_animation(animation_data_file,animation_avi_file,schematic_tag)
+function res=climada_event_damage_animation(animation_data_file,animation_avi_file,schematic_tag,show_plots,focus_region)
 % climada template
 % MODULE:
 %   module name
@@ -36,13 +36,22 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 %       not written to file - useful for test)
 % OPTIONAL INPUT PARAMETERS:
 %   schematic_tag: set to 1 if schematic plot (no colorbar, indicative
-%   colorscale). if set to 0, e.g. tc wind color scale is yellow
-%   (20-30 m/s), orange (30-40 m/s), dark orange (40-50 m/s), etc...
+%       colorscale). if set to 0, e.g. tc wind color scale is yellow
+%       (20-30 m/s), orange (30-40 m/s), dark orange (40-50 m/s), etc...
+%   show_plots: =1, show single plots (frames) during animation creation,
+%       =0 do not show (default)
+%   focus_region: the region we're going to show [minlon maxlon minlat maxlat]
+%       if empty, automatically determined by area of entity lat/lon, i.e.
+%       hazard.assets.lat/lon
+%       Default: use the region as stored in hazard.focus_region
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150118, initial
 % David N. Bresch, david.bresch@gmail.com, 20150119, hazard translucent, entity blue, damage red
 % Lea Mueller, muellele@gmail.com, 20150202, schematic tag, exponential circle size for assets
+% David N. Bresch, david.bresch@gmail.com, 20150220, show_plots added
+% David N. Bresch, david.bresch@gmail.com, 20150220, focus_region added
+%-
 
 res=[]; % init output
 close all % not really necessary, but speeds things up
@@ -52,18 +61,17 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 % and to set default value where  appropriate
-if ~exist('animation_data_file','var'),animation_data_file='';end
-if ~exist('animation_avi_file','var'),animation_avi_file  ='';end
-if ~exist('schematic_tag','var'),schematic_tag  ='';end
+if ~exist('animation_data_file','var'),animation_data_file = '';end
+if ~exist('animation_avi_file','var'), animation_avi_file  = '';end
+if ~exist('schematic_tag','var'),      schematic_tag       = [];end
+if ~exist('show_plots','var'),         show_plots          =  0;end
+if ~exist('focus_region','var'),       focus_region        = [];end
 if isempty(schematic_tag), schematic_tag = 1; end
 
 % PARAMETERS
 %
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
 damage_scale=1/3; % defaul =1/2
-%
-% the rect to plot (default is are as in hazard.lon/lat, =[], in which case it is automatically determined)
-focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
 %
 % % load colormap
 % colormap_file=[climada_global.data_dir filesep 'system' filesep 'colormap_gray_blue.mat'];
@@ -123,10 +131,13 @@ if ~isempty(hazard_TS)
     %hazard=hazard_TS;
 end
 
+if show_plots,fig_visible='on';else fig_visible='off';end
+fig_handle = figure('Name','animation','visible',fig_visible,'Color',[1 1 1],'Position',[430 20 920 650]);
+
 c_ax = []; %init
 if schematic_tag
     % create schematic colormap (gray red)
-    [cmap c_ax]= climada_colormap('schematic');
+    [cmap,c_ax]= climada_colormap('schematic');
     %if exist([climada_global.system_dir filesep 'colormap_gray_red.mat'],'file')
         %load([climada_global.system_dir filesep 'colormap_gray_red'])
         %cmap = gray_red;
@@ -134,7 +145,7 @@ if schematic_tag
     %end
 else
     % color range for hazard intensity
-    [cmap c_ax]= climada_colormap(hazard.peril_ID);
+    [cmap,c_ax]= climada_colormap(hazard.peril_ID);
     cmap = brighten(cmap,0.2);
 end
 if isempty (c_ax)
@@ -145,16 +156,19 @@ intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end
 
 if isempty(focus_region) % define the focus region based on entity
-    focus_region(1)=min(hazard.assets.lon)-dX;
-    focus_region(2)=max(hazard.assets.lon)+dX;
-    focus_region(3)=min(hazard.assets.lat)-dY;
-    focus_region(4)=max(hazard.assets.lat)+dY;
-    focus_region(4)=focus_region(4) + diff(focus_region(3:4))*0.2;
+    if isfield(hazard,'focus_region')
+        focus_region=hazard.focus_region;
+    else
+        focus_region(1)=min(hazard.assets.lon)-dX;
+        focus_region(2)=max(hazard.assets.lon)+dX;
+        focus_region(3)=min(hazard.assets.lat)-dY;
+        focus_region(4)=max(hazard.assets.lat)+dY;
+        focus_region(4)=focus_region(4) + diff(focus_region(3:4))*0.2;
+    end
 end
 
 n_steps=hazard.event_count;
 
-% template for-loop with waitbar or progress to stdout
 t0       = clock;
 msgstr   = sprintf('processing %i steps',n_steps);
 mod_step = 2; % first time estimate after 10 events, then every 100
@@ -179,8 +193,6 @@ if make_avi
 end
 
 max_damage_at_centroid=[]; % init
-% fig = figure('visible','off');
-% fig = figure;
 
 % start loop    
 for step_i=1:n_steps
@@ -195,7 +207,6 @@ for step_i=1:n_steps
         'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
     legend(h,'Asset value (relative to circle size)','Damaged asset','location','northeast');
     %legend('boxoff')
-
 
     % plot assets
     % -----------  
@@ -217,8 +228,6 @@ for step_i=1:n_steps
             MarkerSizes(i),'LineWidth',1);hold on;
     end
 
-
-    %delete(p)
     % plot hazard intensity
     % ---------------------
     int_values = full(hazard.intensity(step_i,:));
@@ -274,10 +283,12 @@ for step_i=1:n_steps
     title(title_str,'FontSize',9);
     % bottom_label_str=['color:' intensity_units ', damage: red circles (max ' max_damage_str ')'];
     % xlabel(bottom_label_str,'FontSize',9);
-    drawnow
+    
+    %drawnow
         
     if make_avi
-        currFrame   = getframe(gcf);
+        %currFrame   = getframe(gcf);
+        currFrame   = getframe(fig_handle);
         %%mov = addframe(mov,currFrame);
         writeVideo(vidObj,currFrame);
         %currFrame   = getframe(fig);
@@ -304,5 +315,7 @@ if make_avi
     close(vidObj);
     fprintf('movie saved in %s\n', animation_avi_file)
 end
+
+if ~show_plots,delete(fig_handle);end
 
 end % climada_event_damage_animation
