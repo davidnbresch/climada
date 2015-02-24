@@ -315,6 +315,7 @@ hazard.peril_ID          = 'TC';
 hazard.filename          = hazard_set_file;
 hazard.comment           = sprintf('TCNA hazard event set, generated %s',datestr(now));
 hazard.date              = datestr(now);
+hazard.units             = 'm/s';
 
 % add optional fields
 if isfield(centroids,'distance2coast_km'),hazard.distance2coast_km=centroids.distance2coast_km;end

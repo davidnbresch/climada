@@ -1,4 +1,4 @@
-function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animation_data_file,add_surge,check_mode)
+function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animation_data_file,add_surge,check_mode,focus_region)
 % climada tc ts animation
 % MODULE:
 %   core
@@ -11,7 +11,15 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %   split. See climada_event_damage_animation for nice plots and movie
 %   generation.
 %
-%   The code asks for a tc track set and an entity and produces all the
+%   Instead of uisng a track from any of the ../data/tc_tracks databases,
+%   you might also just download a single track from
+%   weather.unisys.com/hurricane (click trough to a single track, then
+%   save the 'tracking information' as .dat file, i.e. right click and save
+%   as...) and then load with tc_track=climada_tc_read_unisys_track (in
+%   contrast to climada_tc_read_unisys_database, this reads one single
+%   track from a single track .dat file).
+%
+%   The code asks for a tc track and an entity and produces all the
 %   step-by-step data to produce a damage animation. Instead of single
 %   events, the resulting hazard event set contains single time steps of
 %   the one event and the corresponding damage is also stored as a field
@@ -29,7 +37,12 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 % CALLING SEQUENCE:
 %   [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animation_data_file,add_surge,check_mode)
 % EXAMPLE:
-%   hazard=climada_event_damage_data_tc;
+%   % save a single track file from weather.unisys.com/hurricane as .dat
+%   tc_track=climada_tc_read_unisys_track % read the single track file
+%   hazard=climada_event_damage_data_tc(tc_track,[],'',0,1); % prompts for entity, check
+%   hazard=climada_event_damage_data_tc(tc_track,[],'',0,0); % prompts for entity, high-res
+%   climada_event_damage_data_tc([],[],'',1); % TC and TS, check mode
+%
 %   [hazard,hazard_TS]=climada_event_damage_data_tc([],[],'',1); % TC and TS, check mode
 %   [hazard,hazard_TS]=climada_event_damage_data_tc([],[],'',0,0); % no TS, no plots
 % INPUTS:
@@ -54,6 +67,9 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %       pretty fast)
 %       =2: (default) show plots, use 2h timestep (fast check)
 %       <0: set timestep=check_mode and omit any plots (expert use)
+%   focus_region: the region we're going to show [minlon maxlon minlat maxlat]
+%       default=[], automatically determined by area of entity lat/lon
+%       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
 % OUTPUTS:
 %   hazard_plus: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -71,6 +87,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 % David N. Bresch, david.bresch@gmail.com, 20150118, TS added
 % David N. Bresch, david.bresch@gmail.com, 20150120, check_mode added
 % David N. Bresch, david.bresch@gmail.com, 20150128, climada_tc_track_nodes
+% David N. Bresch, david.bresch@gmail.com, 20150220, focus_region added
 %-
 
 hazard=[]; % init output
@@ -89,6 +106,7 @@ if ~exist('entity','var'),entity=[];end
 if ~exist('animation_data_file','var'),animation_data_file=[];end
 if ~exist('add_surge','var'),add_surge=0;end
 if ~exist('check_mode','var'),check_mode=2;end
+if ~exist('focus_region','var'),focus_region=[];end
 if ~exist('tc_track_mat','var'),tc_track_mat='';end
 
 % PARAMETERS
@@ -111,9 +129,9 @@ dX=1;dY=1; % default=1
 % the rect to plot (default is track's full coverage, =[], in which case it is automatically determined)
 focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
 %-- for Salvador, lea, 20150220
-focus_region = [-91.5 -86 12 15.5];
+% focus_region = [-91.5 -86 12 15.5];
 %------------------------------------------
-%
+
 % label track nodes along track
 label_track_nodes=0; % default=0
 %
@@ -147,6 +165,7 @@ if isempty(animation_data_file),animation_data_file=[climada_global.data_dir fil
 % prompt for inputs, if not provided:
 if isempty(tc_track),[tc_track,tc_track_mat]=climada_tc_read_unisys_database;end % get tc_track
 if isempty(entity),entity=climada_entity_load;end                                % get entity
+if isempty(entity),return;end                                                    % Cancel pressed
 % if isempty(animation_data_file)                                                  % get output filename
 %     animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
 %     [filename, pathname] = uiputfile(animation_data_file, 'Save animation data as:');
@@ -157,12 +176,14 @@ if isempty(entity),entity=climada_entity_load;end                               
 %     end
 % end
 
-
+focus_track_region=0;
+if focus_region(1)==1,focus_track_region=1;focus_region=[];end
 if isempty(focus_region) % define the focus region based on entity
     focus_region(1)=min(entity.assets.lon)-dX;
     focus_region(2)=max(entity.assets.lon)+dX;
     focus_region(3)=min(entity.assets.lat)-dY;
     focus_region(4)=max(entity.assets.lat)+dY;
+    focus_track_region=0;
 end
 
 if length(tc_track)>1
@@ -240,11 +261,19 @@ end
 
 tc_track=tc_track(track_i);
 
+if focus_track_region==1
+    % we focus on the whole track rather than the entity region
+    focus_region(1)=min(tc_track.lon)-dX;
+    focus_region(2)=max(tc_track.lon)+dX;
+    focus_region(3)=min(tc_track.lat)-dY;
+    focus_region(4)=max(tc_track.lat)+dY;
+end
+
 tc_track=climada_tc_equal_timestep(tc_track,tc_track_timestep);
 
 % prepare entity and centroids
 centroids.lon=entity.assets.lon;
-centroids.lat =entity.assets.lat;
+centroids.lat=entity.assets.lat;
 
 if grid_add
     if isempty(focus_region)
@@ -309,10 +338,10 @@ hazard.damage=hazard.intensity;
 max_damage_at_centroid=[]; % init
 hazard.units='m/s';
 
-%lea, 20150131
-entity=climada_assets_encode(entity,hazard); % to be on the safe side
-% entity.assets.centroid_index = 1:length(entity.assets.Longitude);
 
+%entity=climada_assets_encode(entity,hazard); % to be on the safe side, lea, 20150131
+% previous line not needed, since we create hazard.lat/lon from entity.lat/lon
+entity.assets.centroid_index = 1:length(entity.assets.lon);
 
 % for-loop progress to stdout
 t0       = clock;
@@ -426,12 +455,13 @@ if add_surge
     hazard_TS.tc_track=tc_track; % also store tc_track to hazard
     hazard_TS.assets=entity.assets; % also store assets to hazard
     hazard_TS.tc_track_node=hazard.tc_track_node;
-
+    hazard_TS.focus_region=focus_region;
 end
 
 % save all the relevant information for nicer plot options
 hazard.tc_track=tc_track; % also store tc_track to hazard
 hazard.assets=entity.assets; % also store assets to hazard
+hazard.focus_region=focus_region; % also add focus region
 fprintf('saving animation data in %s\n',animation_data_file);
 save(animation_data_file,'hazard','hazard_TS');
 

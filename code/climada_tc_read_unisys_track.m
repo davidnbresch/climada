@@ -7,6 +7,8 @@ function tc_track = climada_tc_read_unisys_track(track_filename)
 %   http://www.weather.unisys.com/hurricane/
 %   can be used to add to existing tc_track structure like:
 %   tc_track(end+1)=climada_tc_read_unisys_track
+%
+%   See also e.g. climada_event_damage_data_tc
 % CALLING SEQUENCE:
 %   tc_track=climada_tc_read_unisys_track(filename)
 % EXAMPLE:
@@ -19,10 +21,11 @@ function tc_track = climada_tc_read_unisys_track(track_filename)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20110429
 % Lea Mueller, 20110718
+% David N. Bresch, david.bresch@gmail.com, 20150220, init_vars reset removed
 %-
 
 global climada_global
-if not(climada_init_vars(1)),return;end; % init/import global variables
+if ~climada_init_vars,return;end; % init/import global variables
 
 if ~exist('track_filename','var'),track_filename=[];end
 

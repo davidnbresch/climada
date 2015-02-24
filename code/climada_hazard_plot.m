@@ -1,4 +1,4 @@
-function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_range)
+function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids)
 % climada plot single hazard event footprint
 % NAME:
 %   climada_hazard_plot
@@ -26,6 +26,7 @@ function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_rang
 %       name: the label itself, like 'gaga'
 %   caxis_range: [minval maxval], the range of the color axis, e.g. [20 40]
 %       to show colors for values brtween 20 and 40
+%   plot_centroids: =1, plot centroids, =0 no (default)
 % OUTPUTS:
 %   creates a figure
 %   X, Y and gridded_VALUE are the values as shown
@@ -42,6 +43,7 @@ if ~exist('hazard','var'),hazard=[];end
 if ~exist('event_i','var'),event_i=-1;end
 if ~exist('label','var'),label=[];end
 if ~exist('caxis_range','var'),caxis_range=[];end
+if ~exist('plot_centroids','var'),plot_centroids=0;end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
 if isempty(hazard),return;end
@@ -109,6 +111,8 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
 else
     fprintf('all intensities zero for event %i\n',event_i);
 end
+
+if plot_centroids,plot(hazard.lon,hazard.lat,'.b','MarkerSize',1);end
 
 if ~isempty(label)
     text(label.longitude,label.latitude,label.name)
