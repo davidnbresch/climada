@@ -5,9 +5,6 @@ function tc_track = climada_tc_read_unisys_track(track_filename)
 % PURPOSE:
 %   read a single track data file as downloaded from 
 %   http://www.weather.unisys.com/hurricane/
-%
-%    see also for windfields http://wrf-model.org/plots/showforecast_hurricane.php
-%
 %   can be used to add to existing tc_track structure like:
 %   tc_track(end+1)=climada_tc_read_unisys_track
 % CALLING SEQUENCE:

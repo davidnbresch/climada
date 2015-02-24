@@ -110,6 +110,9 @@ dX=1;dY=1; % default=1
 %
 % the rect to plot (default is track's full coverage, =[], in which case it is automatically determined)
 focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
+%-- for Salvador, lea, 20150220
+focus_region = [-91.5 -86 12 15.5];
+%------------------------------------------
 %
 % label track nodes along track
 label_track_nodes=0; % default=0

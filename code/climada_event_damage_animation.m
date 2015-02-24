@@ -63,7 +63,9 @@ if isempty(schematic_tag), schematic_tag = 1; end
 damage_scale=1/3; % defaul =1/2
 %
 % the rect to plot (default is are as in hazard.lon/lat, =[], in which case it is automatically determined)
-focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
+focus_region = []; % default=[], [minlon maxlon minlat maxlat]
+% for Salvador, lea, 20150220
+focus_region = [-91.5 -86 12 15.5];
 %
 % % load colormap
 % colormap_file=[climada_global.data_dir filesep 'system' filesep 'colormap_gray_blue.mat'];
@@ -200,25 +202,25 @@ for step_i=1:n_steps
     % plot assets
     % -----------  
     asset_values = hazard.assets.Value;
-    values = log10(asset_values);
+    values       = log10(asset_values);
     values(isinf(values)) = 0;
     values(isnan(values)) = 0;
-    min_value=min(values(values>0));
-    max_value=max(values);
+    min_value = min(values(values>0));
+    max_value = max(values);
     diam_ = [1:1:circle_diam];
     MarkerSizes = interp1(linspace(min_value, max_value,numel(diam_)),[1:1:circle_diam],values,'linear');
     %MarkerSizes=(abs(values-min_value))/(max_value-min_value)*circle_diam;    
     MarkerSizes(isnan(MarkerSizes))=0;
     MarkerSizes(MarkerSizes<1)=0;
-    ok_points_pos=find(MarkerSizes>0);
+    ok_points_pos = find(MarkerSizes>0);
     for ii=1:length(ok_points_pos)
-        i=ok_points_pos(ii);
+        i = ok_points_pos(ii);
         plot(hazard.assets.lon(i),hazard.assets.lat(i),'ob','MarkerSize',...
             MarkerSizes(i),'LineWidth',1);hold on;
     end
 
 
-    %delete(p)
+    % delete(p)
     % plot hazard intensity
     % ---------------------
     int_values = full(hazard.intensity(step_i,:));
@@ -227,6 +229,9 @@ for step_i=1:n_steps
     pcolor(X,Y,gridded_VALUE);
     %p = pcolor(X,Y,gridded_VALUE);
     colormap(cmap)
+    
+    
+    % set figure properties
     hold on;shading flat;axis equal
     caxis(c_ax);axis off
     climada_plot_world_borders(1);
@@ -256,17 +261,28 @@ for step_i=1:n_steps
     end
     damage_values = max_damage_at_centroid;
     damage_values = damage_values(hazard.assets.centroid_index);
+    %------- for Salvador, lea, 20150220
+    damage_values = damage_values/100;
+    %damage_values(damage_values<1000) = 0;
+    %-------------------
     
     %MarkerSizes=sqrt(abs(values-damage_min_value))/sqrt(damage_max_value-damage_min_value)*circle_diam;
     %MarkerSizes=sqrt(abs(values-min_value))/sqrt(max_value-min_value)*circle_diam;
     %MarkerSizes=(abs(values-min_value))/(max_value-min_value)*circle_diam;    
     %MarkerSizes(isnan(MarkerSizes))=0;
     %MarkerSizes(MarkerSizes<1)=0;
-    ok_points_pos= find(MarkerSizes>0 & damage_values>0);
+    % Salvador
+    ok_points_pos= find(MarkerSizes>1 & damage_values>10);
+    
+    %ok_points_pos= find(MarkerSizes>0 & damage_values>0);
     for ii=1:length(ok_points_pos)
         i=ok_points_pos(ii);
-        plot(hazard.assets.lon(i),hazard.assets.lat(i),circle_format,'MarkerSize',MarkerSizes(i),...
-            'LineWidth',2,'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
+        plot(hazard.assets.lon(i),hazard.assets.lat(i),circle_format,'MarkerSize',MarkerSizes(i)-1,...
+            'LineWidth',1,'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
+        
+        %plot(hazard.assets.lon(i),hazard.assets.lat(i),circle_format,'MarkerSize',MarkerSizes(i),...
+        %    'LineWidth',2,'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
+        
         %plot(hazard.lon(i),hazard.lat(i),circle_format,'MarkerSize',...
         %    MarkerSizes(i),'LineWidth',circle_linewidth,'markerfacecolor','r');
     end
