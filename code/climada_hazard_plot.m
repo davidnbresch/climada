@@ -1,4 +1,4 @@
-function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids)
+function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids)
 % climada plot single hazard event footprint
 % NAME:
 %   climada_hazard_plot
@@ -29,11 +29,14 @@ function [X,Y,gridded_VALUE]=climada_hazard_plot(hazard,event_i,label,caxis_rang
 %   plot_centroids: =1, plot centroids, =0 no (default)
 % OUTPUTS:
 %   creates a figure
-%   X, Y and gridded_VALUE are the values as shown
+%   res, a structure with the core data, i.e. X,Y and VALUE as shown
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140302
 % David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
+% David N. Bresch, david.bresch@gmail.com, 20150225, res instead of [X,Y,gridded_VALUE]
 %-
+
+res=[];
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -118,6 +121,10 @@ if ~isempty(label)
     text(label.longitude,label.latitude,label.name)
     plot(label.longitude,label.latitude,'xk');
 end
+
+res.X=X;
+res.Y=Y;
+res.VALUE=gridded_VALUE;
 
 set(gcf,'Color',[1 1 1])
  

@@ -38,6 +38,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % David N. Bresch, david.bresch@gmail.com, 20141214, unique_ID_sel added
 % David N. Bresch, david.bresch@gmail.com, 20141221, MDR calculated locally and unique_ID_sel improved
 % David N. Bresch, david.bresch@gmail.com, 20150206, res returned
+% David N. Bresch, david.bresch@gmail.com, 20150225, datenum added
 %-
 
 res=[]; % init
@@ -67,6 +68,9 @@ else
     % if not, we learn it the hard way as the code will fail ;-)
 end
 
+if ~isfield(damagefunctions,'datenum')
+    damagefunctions.datenum=damagefunctions.DamageFunID*0+now; % add datenum
+end
 
 if isfield(damagefunctions,'peril_ID')
     % since there might be the same DamageFunID for two different
@@ -110,6 +114,9 @@ for ID_i=1:length(unique_IDs)
         res.MDD=damagefunctions.MDD(dmf_pos);
         res.PAA=damagefunctions.PAA(dmf_pos);
         res.MDR=damagefunctions.MDR(dmf_pos);
+        res.DamageFunID=damagefunctions.DamageFunID(dmf_pos);
+        res.peril_ID=damagefunctions.peril_ID(dmf_pos);
+        res.datenum=damagefunctions.datenum(dmf_pos);
         axis tight
         set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
         legend('MDR','MDD','PAA','Location','NorthWest');
