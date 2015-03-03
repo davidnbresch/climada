@@ -113,6 +113,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     colorbar
 else
     fprintf('all intensities zero for event %i\n',event_i);
+    return
 end
 
 if plot_centroids,plot(hazard.lon,hazard.lat,'.b','MarkerSize',1);end
