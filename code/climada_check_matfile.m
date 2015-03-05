@@ -28,6 +28,8 @@ function ok=climada_check_matfile(source_filename,mat_filename)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141104
 % David N. Bresch, david.bresch@gmail.com, 20141208, datenum_mat-datenum_source>=0
+% Lea Mueller, muellele@gmail.com, 20150305, datenum taken automatically
+% from file (for source and mat_file), due to problems with German version
 %-
 
 ok=0; % init output
@@ -59,7 +61,10 @@ end
 if exist(source_filename,'file')
     
     D_source = dir(char(source_filename));
-    datenum_source=datenum(D_source.date); % date of source
+    %datenum_source=datenum(D_source.date); % date of source
+    % lea, 20150305, take datenum directly, the above line does not 
+    % work with date spelled our in german
+    datenum_source = D_source.datenum;
     
     [fP,fN]=fileparts(char(source_filename));
     
@@ -68,7 +73,9 @@ if exist(source_filename,'file')
     if exist(mat_filename,'file')
         
         D_mat = dir(mat_filename);
-        datenum_mat=datenum(D_mat.date); % date of .mat
+        %datenum_mat=datenum(D_mat.date); % date of .mat
+        % lea, 20150305, see above
+        datenum_mat = D_mat.datenum;
         
         if datenum_mat-datenum_source >=0
             ok=1; % only if .mat exists and is newer
