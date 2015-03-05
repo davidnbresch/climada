@@ -9,6 +9,11 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 %   climada. Only prerequisite: git installed locally (such that the system
 %   command 'git pull' is valied, see OPTIONAL INPUT git_pull_command)
 %
+%   On some machines, the MATLAB system command seems not to execute
+%   properly. In this case, the code writes a csh (C-Shell) script and
+%   tries to execute it. If that fails again, it leaves the script there
+%   and informs the user to execute it himself.
+%
 %   see also climada_code_copy
 % CALLING SEQUENCE:
 %   climada_git_pull_repositories(TEST_mode,git_pull_command)
@@ -73,6 +78,8 @@ if all_status>0
     fprintf('-- 2nd try, using a csh (C-Shell) script:\n');
     fid=fopen('LOCAL_git_update_script','w');
     fprintf(fid,'#! /bin/csh -f\n');
+    command_str=sprintf('cd %s ; %s',climada_global.root_dir,git_pull_command);
+    fprintf(fid,'%s\n',command_str);
     for repository_i=1:length(repository_list)
         command_str=sprintf('cd %s%s%s ; %s',climada_global.modules_dir,filesep,repository_list{repository_i},git_pull_command);
         fprintf(fid,'%s\n',command_str);
@@ -85,7 +92,7 @@ end
 
 if all_status>0
     fprintf('\nError: automatic git pull failed\n');
-    fprintf('> please execute <csh  LOCAL_git_update_script>\n');
+    fprintf('> please execute <csh  LOCAL_git_update_script> outside of MATLAB\n');
     fprintf('should this fail too, please execute <git pull> in each directory manually\n');
 end
 
