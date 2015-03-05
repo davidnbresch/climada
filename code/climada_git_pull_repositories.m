@@ -24,6 +24,7 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141102, initial
 % David N. Bresch, david.bresch@gmail.com, 20141107, TEST_mode added
+% David N. Bresch, david.bresch@gmail.com, 20150305, csh script option added
 %-
 
 global climada_global
@@ -77,13 +78,15 @@ if all_status>0
         fprintf(fid,'%s\n',command_str);
     end % repository_i
     all_status=system('csh LOCAL_git_update_script');
-%     if all_status==0
-%         delete('LOCAL_git_update_script')
-%     end
+    if all_status==0
+        delete('LOCAL_git_update_script')
+    end
 end
 
 if all_status>0
-    fprintf('Error: automatic update failed, please execute <git pull> in each directory manually\n');
+    fprintf('\nError: automatic git pull failed\n');
+    fprintf('> please execute <csh  LOCAL_git_update_script>\n');
+    fprintf('should this fail too, please execute <git pull> in each directory manually\n');
 end
 
 end % climada_git_pull_repositories
