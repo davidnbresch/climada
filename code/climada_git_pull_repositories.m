@@ -4,11 +4,11 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 %   climada_git_pull_repositories
 % PURPOSE:
 %   Execute a git pull on core climada and all repositories
-%   
+%
 %   Automatically updates all local repositories' code, including core
 %   climada. Only prerequisite: git installed locally (such that the system
 %   command 'git pull' is valied, see OPTIONAL INPUT git_pull_command)
-%   
+%
 %   see also climada_code_copy
 % CALLING SEQUENCE:
 %   climada_git_pull_repositories(TEST_mode,git_pull_command)
@@ -57,10 +57,33 @@ end % module_i
 
 % run the git pull for all local modules
 fprintf('-- processing climada modules:\n');
+all_status=0;
 for repository_i=1:length(repository_list)
     command_str=sprintf('cd %s%s%s ; %s',climada_global.modules_dir,filesep,repository_list{repository_i},git_pull_command);
     fprintf(' > %s\n',command_str)
-    if ~TEST_mode,system(command_str);end
+    if ~TEST_mode
+        status=system(command_str);
+        all_status=all_status+status;
+    end
 end % repository_i
 
-return
+if all_status>0
+    % try again, write a csh (C-Shell) script and execute it
+    fprintf('-- 2nd try, using a csh (C-Shell) script:\n');
+    fid=fopen('LOCAL_git_update_script','w');
+    fprintf(fid,'#! /bin/csh -f\n');
+    for repository_i=1:length(repository_list)
+        command_str=sprintf('cd %s%s%s ; %s',climada_global.modules_dir,filesep,repository_list{repository_i},git_pull_command);
+        fprintf(fid,'%s\n',command_str);
+    end % repository_i
+    all_status=system('csh LOCAL_git_update_script');
+%     if all_status==0
+%         delete('LOCAL_git_update_script')
+%     end
+end
+
+if all_status>0
+    fprintf('Error: automatic update failed, please execute <git pull> in each directory manually\n');
+end
+
+end % climada_git_pull_repositories
