@@ -76,7 +76,9 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 %       value are ste to NaN, default is no missing data treatment, i.e.
 %       misdat_value=[].
 % OUTPUTS:
-%   res: a structure holding the data from the selected Excel sheet
+%   res: a structure holding the data from the selected Excel sheet. Note
+%       that colunm headers that contain a number (xxx) are named VALxxx 
+%       in the structure
 % RESTRICTIONS:
 %   none
 % MODIFICATION HISTORY:
@@ -84,8 +86,8 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 % Lea Mueller, muellele@gmail.com, 20120730, if ~isempty(NUMERIC) also possible
 % David N. Bresch, david.bresch@gmail.com, 20141230, misdat_value added
 % David N. Bresch, david.bresch@gmail.com, 20150101, simplified if file and sheet provied (no check for sheet to exist)
+% David N. Bresch, david.bresch@gmail.com, 20150227, finally, column headers with numbers are named VALxxxx
 %-
-
 
 if ~exist('interactive_mode','var'),interactive_mode=[];end
 if ~exist('excel_file','var'),excel_file=[];end
@@ -194,7 +196,14 @@ header_pos=max(max(comment_pos),max(single_pos))+1;
 % process the array data
 % ----------------------
 for header_i=1:size(RAW,2)
-    header_tag=char(RAW{header_pos,header_i});
+    
+    header_tag=RAW{header_pos,header_i};
+    if isnumeric(header_tag)
+        header_tag=sprintf('VAL%i',header_tag);
+    else
+        header_tag=char(header_tag);
+    end
+    
     % purge from any special characters
     header_tag=strrep(header_tag,'(','');
     header_tag=strrep(header_tag,')','');
@@ -203,7 +212,7 @@ for header_i=1:size(RAW,2)
     header_tag=strrep(header_tag,'[','');
     header_tag=strrep(header_tag,']','');
     header_tag=strrep(header_tag,'?','');
-    %header_tag=strrep(header_tag,' ','');
+    %header_tag=strrep(header_tag,' ',''); % see below, replaced by '_'
     header_tag=strrep(header_tag,'=','');
     header_tag=strrep(header_tag,'+','');
     header_tag=strrep(header_tag,'-','');
@@ -218,6 +227,7 @@ for header_i=1:size(RAW,2)
     header_tag=strrep(header_tag,'__','_');
     header_tag=strrep(header_tag,'__','_');
     header_tag=deblank(header_tag);
+        
     arr_values=[];
     
     if ~isempty(RAW{header_pos+1,header_i})

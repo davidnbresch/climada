@@ -40,6 +40,7 @@ function entity=climada_damagefunctions_replace(entity,damagefunctions)
 %       previous - replaced - damage functions set to a new number)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150212, initial
+% David N. Bresch, david.bresch@gmail.com, 20150225, datenum added
 %-
 
 %global climada_global
@@ -63,9 +64,17 @@ if isfield(damagefunctions,'peril_ID')
         unique_ID{i}=sprintf('%s %3.3i',damagefunctions.peril_ID{i},damagefunctions.DamageFunID(i));
     end % i
 else
-    for i=1:length(entity.damagefunctions.DamageFunID)
+    for i=1:length(damagefunctions.DamageFunID)
         unique_ID{i}=sprintf('%3.3i',damagefunctions.DamageFunID(i));
     end % i
+end
+
+if ~isfield(entity.damagefunctions,'datenum')
+    entity.damagefunctions.datenum=entity.damagefunctions.DamageFunID*0+now; % add datenum
+end
+
+if ~isfield(damagefunctions,'datenum')
+    damagefunctions.datenum=damagefunctions.DamageFunID*0+now; % add datenum
 end
 
 unique_IDs=unique(unique_ID);
@@ -109,6 +118,7 @@ for ID_i=1:length(unique_IDs)
             % append
             entity.damagefunctions.Intensity=[entity.damagefunctions.Intensity;damagefunctions.Intensity(dmf_pos)];
             entity.damagefunctions.DamageFunID=[entity.damagefunctions.DamageFunID;damagefunctions.DamageFunID(dmf_pos)];
+            entity.damagefunctions.datenum=[entity.damagefunctions.datenum;damagefunctions.datenum(dmf_pos)];
             entity.damagefunctions.MDD=[entity.damagefunctions.MDD;damagefunctions.MDD(dmf_pos)];
             entity.damagefunctions.PAA=[entity.damagefunctions.PAA;damagefunctions.PAA(dmf_pos)];
             entity.damagefunctions.peril_ID=[entity.damagefunctions.peril_ID;damagefunctions.peril_ID(dmf_pos)];

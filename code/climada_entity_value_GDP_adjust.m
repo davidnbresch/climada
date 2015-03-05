@@ -38,6 +38,8 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,mode
 %
 %   Note: to avoid any troubles, Cover is set equal to Value.
 %
+%   Calls climada_entity_value_GDP_adjust_one
+%
 %   Prior calls: e.g. climada_nightlight_entity, country_risk_calc
 %   Next calls: e.g. country_risk_calc
 % CALLING SEQUENCE:
@@ -75,23 +77,11 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % check input
 if ~exist('entity_file_regexp','var'),entity_file_regexp='';end
-if ~exist('mode_selector','var'),      mode_selector      =0;end
+if ~exist('mode_selector','var'),     mode_selector     = 0;end
 
 
 % PARAMETERS
 %
-% the table with global GDP etc info (per country)
-economic_data_file=[climada_global.data_dir filesep 'system' filesep 'economic_indicators_mastertable.xls'];
-%
-% missing data indicator (any missing in Excel has this entry)
-misdat_value=-999;
-%
-% income group depending scale-up factors
-% we take the income group number (1..4) from the
-% economic_indicators_mastertable and use it as index to the
-% income_group_factors:
-income_group_factors = [2 3 4 5];
-
 
 % prompt for entity_file_regexp if not given
 if isempty(entity_file_regexp) % local GUI

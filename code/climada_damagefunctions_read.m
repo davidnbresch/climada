@@ -100,6 +100,8 @@ if isfield(damagefunctions,'VulnCurveID')
     damagefunctions=rmfield(damagefunctions,'VulnCurveID');
 end
 
+damagefunctions.datenum=damagefunctions.DamageFunID*0+now; % add datenum
+
 % remove MDR, since MDR=MDD*PAA and hence we better
 % re-calculate where needed (in climada_damagefunctions_plot)
 if isfield(damagefunctions,'MDR'),damagefunctions=rmfield(damagefunctions,'MDR');end

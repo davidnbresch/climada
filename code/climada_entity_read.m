@@ -177,6 +177,8 @@ else
             if length(find(tf))<length(tf)
                 fprintf('WARN: DamageFunIDs in assets might not all be defined in damagefunctions tab\n')
             end
+            
+            entity.damagefunctions.datenum=entity.damagefunctions.DamageFunID*0+now; % add datenum
         end
         
     catch ME
