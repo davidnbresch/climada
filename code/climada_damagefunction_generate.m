@@ -74,7 +74,7 @@ if isempty(peril_ID),peril_ID='TC';end
 if isempty(check_plot),check_plot=1;end
 
 
-dmf_info_str=sprintf('%s %s %2.2f*(i-%i)**%2.2f',peril_ID,dmf_shape,dmf_max,dmf_min_intens,dmf_exp);
+dmf_info_str=sprintf('%s %s %3.3f*(i-%i)**%2.2f',peril_ID,dmf_shape,dmf_max,dmf_min_intens,dmf_exp);
 
 if size(intensity,1)<size(intensity,2),intensity=intensity';end
 
