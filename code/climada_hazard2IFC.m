@@ -1,32 +1,37 @@
 function IFC = climada_hazard2IFC(hazard,geo_locations)
 % climada
 % NAME:
-%   climada_IFC_plot
-% PURPOSE:
-%   Plots the intensity frequency curve of a given hazard set. See
-%   climada_hazard2IFC to create the IFC structure to be plotted from a
-%   climada hazard set.
-% CALLING SEQUENCE:
-%   climada_IFC_plot(IFC, hist_check, prob_check,check_log,color_index)
-% EXAMPLE:
-%   climada_hazard2IFC(hazard, [23 94 51])
 %   climada_hazard2IFC
+% PURPOSE:
+%   Obtains the intensity frequency curve (IFC) of a given hazard set. 
+%   See climada_IFC_plot to plot the IFC structure.
+%
+%   Subsequent call: climada_IFC_plot
+% CALLING SEQUENCE:
+%   climada_hazard2IFC(hazard,geo_locations)
+% EXAMPLE:
+%   climada_hazard2IFC(hazard,[23 94 51])
+%   geo_locations.lon=14.426;geo_locations.lat=40.821;
+%   climada_hazard2IFC('',geo_locations)
 % INPUTS:
-%   hazard:       A climada hazard set.
+%   hazard: A climada hazard set.
 %   geo_location: Can be either: a 1xN vector of centroid_IDs; a 2xN array
-%                 of the form [lon lat] where the 1xN lon and 1xN lat 
-%                 vectors specify the longitude and latitude coords of N 
-%                 locations of interest; or a struct with fields .lon & .lat
+%       of the form [lon lat] where the 1xN lon and 1xN lat
+%       vectors specify the longitude and latitude coords of N
+%       locations of interest (N=1 does not work, as the code can then not
+%       distinguish from 2 centroid_IDs, in this case use a structure with
+%       fields .lon and .lat, i.e. geo_locations.lon=14.426;geo_locations.lat=40.821;
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
-%   IFC:          A structure to be used as input to climada_IFC_plot,
-%                 containing information about the intensity-frequency
-%                 properties of a given hazard
+%   IFC: A structure to be used as input to climada_IFC_plot,
+%       containing information about the intensity-frequency
+%       properties of a given hazard
 % MODIFICATION HISTORY:
-%   Gilles Stassen, gillesstassen@hotmail.com, 20150130
+% Gilles Stassen, gillesstassen@hotmail.com, 20150130
+% David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
 %-
 
-IFC = [];
+IFC = []; % init
 
 global climada_global
 if ~climada_init_vars                , return                 ; end % init/import global variables
@@ -35,8 +40,7 @@ if ~exist('geo_locations'     ,'var'), geo_locations      = []; end
 
 if isempty(hazard) % local GUI
     hazard               = [climada_global.data_dir filesep 'hazards' filesep '*.mat'];
-    default_hazard       = [climada_global.data_dir filesep 'hazards' filesep 'select hazard .mat'];
-    [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:',default_hazard);
+    [filename, pathname] = uigetfile(hazard, 'Select hazard event set for IFC calculation:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -84,10 +88,10 @@ else
         [~, poi_ndx] = sort(r);
         
         poi_ID = hazard.centroid_ID(r_min_ndx);
-    end    
+    end
 end
 
-no_generated             = hazard.event_count / hazard.orig_event_count;
+no_generated = hazard.event_count / hazard.orig_event_count;
 
 % calculate for each point of interest
 for poi_i = 1:numel(poi_ID)
@@ -95,19 +99,19 @@ for poi_i = 1:numel(poi_ID)
     IFC(poi_i).peril_ID = hazard.peril_ID;
     IFC(poi_i).centroid_ID = poi_ID(poi_i);
     %1: intensity
-    [IFC(poi_i).intensity(1,:),int_ndx]  =   sort(full(hazard.intensity(1:end,poi_ndx(poi_i))),'descend');
-    IFC(poi_i).orig_event_flag      =   hazard.orig_event_flag(int_ndx);
+    [IFC(poi_i).intensity(1,:),int_ndx] = sort(full(hazard.intensity(1:end,poi_ndx(poi_i))),'descend');
+    IFC(poi_i).orig_event_flag = hazard.orig_event_flag(int_ndx);
     
     %frequency
-    IFC(poi_i).cum_event_freq    = cumsum(hazard.frequency(int_ndx).*(no_generated+1));
+    IFC(poi_i).cum_event_freq = cumsum(hazard.frequency(int_ndx).*(no_generated+1));
     
     %2: fitted intensity
-    IFC(poi_i).polyfit      = polyfit(log(IFC(poi_i).cum_event_freq), IFC(poi_i).intensity, 1);
-    IFC(poi_i).polyval      = polyval(IFC(poi_i).polyfit, log(IFC(poi_i).cum_event_freq));
+    IFC(poi_i).polyfit = polyfit(log(IFC(poi_i).cum_event_freq), IFC(poi_i).intensity, 1);
+    IFC(poi_i).polyval = polyval(IFC(poi_i).polyfit, log(IFC(poi_i).cum_event_freq));
     
     % fit a Gumbel-distribution
     %8: exceedence frequency
-    IFC(poi_i).return_freq= 1./climada_global.DFC_return_periods;
+    IFC(poi_i).return_freq = 1./climada_global.DFC_return_periods;
     %6: intensity hist.
     IFC(poi_i).return_polyval = polyval(IFC(poi_i).polyfit, log(IFC(poi_i).return_freq));
     
@@ -115,3 +119,5 @@ for poi_i = 1:numel(poi_ID)
     IFC(poi_i).return_polyfit = polyfit(log(IFC(poi_i).cum_event_freq), IFC(poi_i).intensity, 1);
     IFC(poi_i).return_polyval = polyval(IFC(poi_i).return_polyfit, log(IFC(poi_i).return_freq));
 end
+
+end % climada_hazard2IFC

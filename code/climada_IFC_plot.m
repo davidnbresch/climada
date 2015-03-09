@@ -1,4 +1,4 @@
-function climada_IFC_plot(IFC, hist_check, prob_check,Gumbel_check, check_log,color_index)
+function climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color_index)
 % climada
 % NAME:
 %   climada_IFC_plot
@@ -6,35 +6,41 @@ function climada_IFC_plot(IFC, hist_check, prob_check,Gumbel_check, check_log,co
 %   Plots the intensity frequency curve of a given hazard set. See
 %   climada_hazard2IFC to create the IFC structure to be plotted from a
 %   climada hazard set.
+%
+%   Previous call: climada_hazard2IFC
 % CALLING SEQUENCE:
-%   climada_IFC_plot(IFC, hist_check, prob_check,check_log,color_index)
+%   climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color_index)
 % EXAMPLE:
-%   climada_IFC_plot(IFC, 1, 1,0,3)
-%   climada_IFC_plot(IFC)
+%   climada_IFC_plot(IFC,1,1,0,3)
+%   climada_IFC_plot(climada_hazard2IFC)
 % INPUTS:
 %   IFC:            A structure, created using climada_hazard2IFC.
 % OPTIONAL INPUT PARAMETERS:
-%   hist_check:     Whether to plot the historical data points  (default = 1)
-%   prob_check:     Whether to plot the probabilistic points    (default = 0)
-%   check_log:      Whether to use logarithmic x (return period) axis (default = 0)
-%   color_index:    Specify the color pair:
-%                   1:  Red/orange
-%                   2:  Blue/light blue
-%                   3:  Green/light green
-%                   4:  Violet/light violet
-%                   5:  Dark orange/golden
-%                   6:  Black/gray
+%   hist_check: Whether to plot the historical data points  (default = 1)
+%   prob_check: Whether to plot the probabilistic points    (default = 0)
+%   Gumbel_check: Whether to plot the Gumbel fit (default=1)
+%   check_log: Whether to use logarithmic x (return period) axis (default = 0)
+%   color_index: Specify the color pair:
+%       1:  Red/orange
+%       2:  Blue/light blue
+%       3:  Green/light green
+%       4:  Violet/light violet
+%       5:  Dark orange/golden
+%       6:  Black/gray
 % OUTPUTS:
 % MODIFICATION HISTORY:
-%   Gilles Stassen, gillesstassen@hotmail.com, 20150130
+% Gilles Stassen, gillesstassen@hotmail.com, 20150130
+% David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
 %-
-if ~exist('IFC',    'var'),
-    cprintf([1 0 0],'ERROR: must provide IFC struct as input. See climada_hazard2IFC \n');
-    return;
+
+if ~exist('IFC','var'),
+    fprintf('ERROR: provide IFC struct as input. See climada_hazard2IFC\n');
+    return
 end
 
 if ~exist('hist_check',     'var'), hist_check  = 1;    end
 if ~exist('prob_check',     'var'), prob_check  = 0;    end
+if ~exist('Gumbel_check',   'var'), Gumbel_check= 1;    end
 if ~exist('check_log',      'var'), check_log   = 0;    end
 if ~exist('color_index',    'var'), color_index = 1;    end
 
@@ -90,7 +96,7 @@ for poi_i = length(IFC):-1:1
             lgd_str{end+1} = sprintf('Prob. data %s smoothed', IFC(poi_i).peril_ID);
             lgd_hdl = [lgd_hdl h];
         else
-            cprintf([0.25 0.25 1],sprintf('NOTE: %s hazard set contains only historical data \n',IFC(poi_i).peril_ID))
+            fprintf(sprintf('NOTE: %s hazard set contains only historical data \n',IFC(poi_i).peril_ID))
         end
         
     end
@@ -119,18 +125,23 @@ set(gca,'YGrid','on')
 xlabel('Return period (years)')
 switch IFC.peril_ID
     case 'TC'
-        ylabel('Wind speed [m s^{-1}]')
+        ylabel('Wind speed [m/s]')
+    case 'WS'
+        ylabel('Wind speed [m/s]')
     case 'TS'
         ylabel('Surge height [m]')
-    case 'TR' 
+    case 'TR'
         ylabel('Rainfall [mm]')
-    case 'MA' 
+    case 'EQ'
+        ylabel('MMI')
+    case 'MA'
         ylabel('Rainfall [mm]')
     case 'TR_m'
         ylabel('Rainfall [mm]')
+    case 'VQ'
+        ylabel('Ash depth [cm]')
     otherwise
         ylabel('Hazard intensity')
 end
 
-return;
-
+end % climada_IFC_plot
