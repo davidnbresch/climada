@@ -3,11 +3,10 @@
 ####Welcome to ***climada***, the **_clim_**ate  **_ada_**ptation tool
 
 #####First steps
-* Go to the [wiki](../../wiki/Home) and read the [introduction](../../wiki/Home) and find out what _**climada**_ and ECA is.  
+* Go to the [wiki](../../wiki/Home) and read the [introduction](../../wiki/Home) and find out what _**climada**_ and ECA is. 
+* See an [example video](../../wiki/NatCat-modelling#example-hurricane-sidr-affects-bangladesh) of Hurricane Sidr affecting Bangladesh. 
 * Are you ready to start adapting? This wiki page helps you to [get started!](../../wiki/Getting-started)  
-* Read more on [natural catastrophe modelling](../../wiki/NatCat-modelling).
-* See an [example video of Hurricane Sidr affecting Bangladesh](../../wiki/NatCat-modelling#example-hurricane-sidr-affects-bangladesh).
-
+* Read more on [natural catastrophe modelling](../../wiki/NatCat-modelling) and look at the GUI that we have prepared for you.
 * Read the [***climada*** manual (PDF)](/docs/climada_manual.pdf?raw=true).
 
 
