@@ -1,6 +1,6 @@
 
 
-####Welcome to ***climada***, the _**clim**_ate **_ada_**ptation quantification tool
+####Welcome to ***climada***, the **_clim_**ate  **_ada_**ptation tool
 
 #####First steps
 * Go to the wiki and read the [introduction](Home) and find out what climada and ECA is.  
