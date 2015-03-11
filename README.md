@@ -1,8 +1,8 @@
 
 
-###Welcome to ***climada***, the _**clim**_ ate **_ada_** ptation quantification tool
+####Welcome to ***climada***, the _**clim**_ate **_ada_**ptation quantification tool
 
-####First steps
+#####First steps
 * Go to the wiki and read the [introduction](Home) and find out what climada and ECA is.  
 * Are you ready to start adapting? This wiki page helps you to [get started!](Getting-started)  
 * Read more on [natural catastrophe modelling](NatCat-modelling).
@@ -10,8 +10,8 @@
 
 
 <br>
-----
 
+#####Additional information
 climada core module (MATLAB), https://github.com/davidnbresch/climada
 
 This contains the full climada distribution. To get it all in one, click on the "Download ZIP" button on the lower right hand side of github, or just clone this repository. Works both if main folder renamed to 'climada' or left as 'climada-root', just source startup.m in MATLAB and test using climada_demo.
