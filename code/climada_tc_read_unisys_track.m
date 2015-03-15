@@ -1,4 +1,4 @@
-function tc_track = climada_tc_read_unisys_track(track_filename)
+function tc_track = climada_tc_read_unisys_track(track_filename,check_plot)
 % climada unisys TC track
 % NAME:
 %   climada_tc_read_unisys_track
@@ -10,13 +10,14 @@ function tc_track = climada_tc_read_unisys_track(track_filename)
 %
 %   See also e.g. climada_event_damage_data_tc
 % CALLING SEQUENCE:
-%   tc_track=climada_tc_read_unisys_track(filename)
+%   tc_track=climada_tc_read_unisys_track(filename,check_plot)
 % EXAMPLE:
 %   tc_track=climada_tc_read_unisys_track
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   filename: the filename with path of a UNISYS *.dat file
 %       > user gets prompted for if not specified
+%   check_plot: =1 show track on map, =0 not (default)
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20110429
@@ -28,6 +29,7 @@ global climada_global
 if ~climada_init_vars,return;end; % init/import global variables
 
 if ~exist('track_filename','var'),track_filename=[];end
+if ~exist('check_plot','var'),check_plot=0;end
 
 % PARAMETERS
 % whether we only warn (=0) or really delete pressure (=1) if forecast
@@ -294,6 +296,11 @@ tc_track_out.name                 = tc_track.name;
 
 tc_track = []; % reset
 tc_track = tc_track_out;
+
+if check_plot
+    plot(tc_track.lon,tc_track.lat);hold on
+    climada_plot_world_borders;
+end
 
 return
 

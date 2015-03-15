@@ -234,11 +234,6 @@ for step_i=1:n_steps
             MarkerSizes(i),'LineWidth',1);hold on;
     end
 
-<<<<<<< HEAD
-
-    % delete(p)
-=======
->>>>>>> 5f96af5b84b81a0bd01f6fa32864332100820e5e
     % plot hazard intensity
     % ---------------------
     int_values = full(hazard.intensity(step_i,:));

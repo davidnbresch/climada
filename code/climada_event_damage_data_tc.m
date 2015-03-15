@@ -177,7 +177,9 @@ if isempty(entity),return;end                                                   
 % end
 
 focus_track_region=0;
-if focus_region(1)==1,focus_track_region=1;focus_region=[];end
+if ~isempty(focus_region)
+    if focus_region(1)==1,focus_track_region=1;focus_region=[];end
+end
 if isempty(focus_region) % define the focus region based on entity
     focus_region(1)=min(entity.assets.lon)-dX;
     focus_region(2)=max(entity.assets.lon)+dX;
