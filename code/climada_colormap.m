@@ -72,6 +72,19 @@ switch peril_ID
         end
         cmap = [[1 1 1];cmap1; cmap2]; 
         
+    case 'FL'
+        % create colormap for flood
+        c_ax = [0.05 1.15];
+        startcolor   = [0.89	0.93	0.89];
+        middlecolor1 = [0.55	0.78	0.59];
+        middlecolor2 = [0.43	0.84	0.78];
+        endcolor     = [0.05	0.37	0.55];
+        for i=1:3
+            cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor1(i);
+            cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
+        end
+        cmap = [1.0 1.0 1.0; cmap1; cmap2];
+        
     case 'WS'
         % create colormap for wind storm:
         c_ax = [0 80];

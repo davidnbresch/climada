@@ -1,4 +1,4 @@
-function climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color_index)
+function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 % climada
 % NAME:
 %   climada_IFC_plot
@@ -6,7 +6,6 @@ function climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color
 %   Plots the intensity frequency curve of a given hazard set. See
 %   climada_hazard2IFC to create the IFC structure to be plotted from a
 %   climada hazard set.
-%
 %   Previous call: climada_hazard2IFC
 % CALLING SEQUENCE:
 %   climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color_index)
@@ -14,11 +13,9 @@ function climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color
 %   climada_IFC_plot(IFC,1,1,0,3)
 %   climada_IFC_plot(climada_hazard2IFC)
 % INPUTS:
-%   IFC:            A structure, created using climada_hazard2IFC.
+%   IFC:  A structure, created using climada_hazard2IFC.
 % OPTIONAL INPUT PARAMETERS:
 %   hist_check: Whether to plot the historical data points  (default = 1)
-%   prob_check: Whether to plot the probabilistic points    (default = 0)
-%   Gumbel_check: Whether to plot the Gumbel fit (default=1)
 %   check_log: Whether to use logarithmic x (return period) axis (default = 0)
 %   color_index: Specify the color pair:
 %       1:  Red/orange
@@ -31,6 +28,7 @@ function climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150130
 % David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
+% Lea Mueller, muellele@gmail.com, 20150318, changes according to hazard2IFC
 %-
 
 if ~exist('IFC','var'),
@@ -39,10 +37,9 @@ if ~exist('IFC','var'),
 end
 
 if ~exist('hist_check',     'var'), hist_check  = 1;    end
-if ~exist('prob_check',     'var'), prob_check  = 0;    end
-if ~exist('Gumbel_check',   'var'), Gumbel_check= 1;    end
 if ~exist('check_log',      'var'), check_log   = 0;    end
 if ~exist('color_index',    'var'), color_index = 1;    end
+% if ~exist('Gumbel_check',   'var'), Gumbel_check= 1;    end
 
 %set colors
 color1 = [255  122  0;... % orange
@@ -70,46 +67,45 @@ else
     lgd_str = {};
     lgd_hdl = [];
 end
-for poi_i = length(IFC):-1:1
-    
-    clr_mod = poi_i/length(IFC);
-    
-    %%historical data
-    if hist_check
-        h_ndx = IFC(poi_i).orig_event_flag == 1;
-        h(1) = plot(1./IFC(poi_i).cum_event_freq(h_ndx),  IFC(poi_i).intensity(h_ndx), '.' , 'markersize',8,'color',  clr_mod .* color1(color_index,:));
-        hold on
-        h(2) = plot(1./IFC(poi_i).cum_event_freq(h_ndx),  IFC(poi_i).polyval(h_ndx), '--', 'markersize',3,'color', clr_mod .* color1(color_index,:));
-        lgd_str{end+1} = sprintf('Hist. data %s centroid %i',IFC(poi_i).peril_ID,IFC(poi_i).centroid_ID);
-        lgd_str{end+1} = sprintf('Hist. data smoothed %s', IFC(poi_i).peril_ID);
-        lgd_hdl = [lgd_hdl h];
-    end
-    if prob_check
-        p_ndx = IFC(poi_i).orig_event_flag == 0;
+for poi_i = 1:numel(IFC.centroid_ID) 
         
-        if any(p_ndx)
-            h(1) = plot(1./IFC(poi_i).cum_event_freq(p_ndx),  IFC(poi_i).intensity(p_ndx), '.' , 'markersize',8,'color',  clr_mod .* color2(color_index,:));
-            hold on
-            h(2) = plot(1./IFC(poi_i).cum_event_freq(p_ndx),  IFC(poi_i).polyval(p_ndx), '--', 'markersize',3,'color', clr_mod .* color2(color_index,:));
-            
-            lgd_str{end+1} = sprintf('Prob. data %s centroid %i',IFC(poi_i).peril_ID,IFC(poi_i).centroid_ID);
-            lgd_str{end+1} = sprintf('Prob. data %s smoothed', IFC(poi_i).peril_ID);
-            lgd_hdl = [lgd_hdl h];
-        else
-            fprintf(sprintf('NOTE: %s hazard set contains only historical data \n',IFC(poi_i).peril_ID))
-        end
-        
-    end
-    if Gumbel_check
-        g = plot(1./IFC(poi_i).return_freq,  IFC(poi_i).return_polyval, 'o:', 'markersize',3,'color', clr_mod .* color2(color_index,:));
-        %lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %10.1f, \\sigma = %10.1f centroid %i \n',...
-        %    -IFC(poi_i).polyfit(1),-IFC(poi_i).polyfit(2),IFC(poi_i).centroid_ID)}];
-        lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %s, \\sigma = %s, %s centroid %i',...
-            num2str(-IFC(poi_i).polyfit(1),4),num2str(-IFC(poi_i).polyfit(2),4),IFC(poi_i).peril_ID,IFC(poi_i).centroid_ID)}];
+    % probabilistic data
+    %h_ndx = IFC(poi_i).orig_event_flag == 1;
+    pos_indx = IFC.intensity(poi_i,:)>0;
+    h(1) = plot(IFC.return_periods(poi_i,pos_indx),IFC.intensity(poi_i,pos_indx),'.' ,'markersize',10,'color',color2(color_index,:));
+    hold on
+    h(2) = plot(IFC.DFC_return_periods,IFC.intensity_fit(poi_i,:),'--','markersize',3,'color',color2(color_index,:));
+    lgd_str{end+1} = sprintf('%s intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
+    lgd_str{end+1} = sprintf('%s fitted intensity', IFC.peril_ID);
+    lgd_hdl = [lgd_hdl h(1:2)];
 
-        lgd_hdl = [lgd_hdl g];
+    
+    % historical data
+    if hist_check
+        pos_indx = IFC.hist_intensity(poi_i,:)>0;
+        h(3) = plot(IFC.hist_return_periods(poi_i,pos_indx),IFC.hist_intensity(poi_i,pos_indx),'*' ,'markersize',5,'color',color1(color_index,:));
+        lgd_str{end+1} = sprintf('%s historical intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
+        lgd_hdl = [lgd_hdl h(3)];
     end
+    
+    color_index = color_index+1;
+    if color_index>length(color1)
+        color_index=1;
+    end
+            
+
+%     if Gumbel_check
+%         g = plot(1./IFC(poi_i).return_freq,  IFC(poi_i).return_polyval, 'o:', 'markersize',3,'color', clr_mod .* color2(color_index,:));
+%         %lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %10.1f, \\sigma = %10.1f centroid %i \n',...
+%         %    -IFC(poi_i).polyfit(1),-IFC(poi_i).polyfit(2),IFC(poi_i).centroid_ID)}];
+%         lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %s, \\sigma = %s, %s centroid %i',...
+%             num2str(-IFC(poi_i).polyfit(1),4),num2str(-IFC(poi_i).polyfit(2),4),IFC(poi_i).peril_ID,IFC(poi_i).centroid_ID)}];
+% 
+%         lgd_hdl = [lgd_hdl g];
+%     end
 end
+
+
 
 legend('-DynamicLegend');
 if check_log
@@ -120,26 +116,31 @@ else
     set(gca,'XScale','linear');
 end
 
-set(gca,'XGrid','on')
-set(gca,'YGrid','on')
+% set axis
+max_rp  = max(max(IFC.return_periods))*1.1;
+max_int = max(max(IFC.intensity))*1.1;
+axis([0 max_rp 0 max_int])
+
+% set(gca,'XGrid','on')
+% set(gca,'YGrid','on')
 xlabel('Return period (years)')
 switch IFC.peril_ID
     case 'TC'
-        ylabel('Wind speed [m/s]')
+        ylabel('Wind speed (m/s)')
     case 'WS'
-        ylabel('Wind speed [m/s]')
+        ylabel('Wind speed (m/s)')
     case 'TS'
-        ylabel('Surge height [m]')
+        ylabel('Surge height (m)')
     case 'TR'
-        ylabel('Rainfall [mm]')
+        ylabel('Rainfall (mm)')
     case 'EQ'
         ylabel('MMI')
     case 'MA'
-        ylabel('Rainfall [mm]')
+        ylabel('Rainfall (mm)')
     case 'TR_m'
-        ylabel('Rainfall [mm]')
+        ylabel('Rainfall (mm)')
     case 'VQ'
-        ylabel('Ash depth [cm]')
+        ylabel('Ash depth (cm)')
     otherwise
         ylabel('Hazard intensity')
 end
