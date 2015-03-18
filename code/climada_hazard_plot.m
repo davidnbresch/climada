@@ -6,6 +6,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 %   plot hazard event as contour on a map, works for all perils
 %
 %   see also climada_plot_tc_footprint (works for TC only)
+%   and the high-resolution version climada_hazard_plot_hr
 % CALLING SEQUENCE:
 %   climada_hazard_plot(hazard,event_i,label)
 % EXAMPLE:
@@ -36,9 +37,9 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20150225, res instead of [X,Y,gridded_VALUE]
 %-
 
-res=[];
+res=[]; % init
 
-global climada_global
+%global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments

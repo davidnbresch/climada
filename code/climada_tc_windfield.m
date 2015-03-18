@@ -66,6 +66,7 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 % David N. Bresch, david.bresch@gmail.com, 20090728
 % David N. Bresch, david.bresch@gmail.com, 20141227, centroids.distance2coast_km treatment added
 % David N. Bresch, david.bresch@gmail.com, 20150124, wind_threshold=15 (was 0), coastal_range_km=375 (was 300)
+% David N. Bresch, david.bresch@gmail.com, 20150315, back to real Holland (core was 'filled')
 %-
 
 res = []; % init output
@@ -288,8 +289,11 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % start adding your code here
         
-        if D<=R, S = min(M, M+2*T*D/R); % in the inner core
-        elseif D<10*R % in the outer core
+        % Kind of 'bug', due to windfield plots used for animation:
+        % next two lines active until 20150315 (elseif instead of if)
+        %if D<=R, S = min(M, M+2*T*D/R); % in the inner core
+        %elseif D<10*R % in the outer core
+        if D<10*R % center to outer core
             S = max( (M-abs(T))*( R^1.5 * exp( 1-R^1.5/D^1.5 )/D^1.5) + T, 0);
         else
             S = 0; % well, see also check before, hence never reached
