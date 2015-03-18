@@ -51,6 +51,7 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 % Lea Mueller, muellele@gmail.com, 20150202, schematic tag, exponential circle size for assets
 % David N. Bresch, david.bresch@gmail.com, 20150220, show_plots added
 % David N. Bresch, david.bresch@gmail.com, 20150220, focus_region added
+% David N. Bresch, david.bresch@gmail.com, 20150318, save as text debugged
 %-
 
 res=[]; % init output
@@ -88,7 +89,7 @@ npoints=199;
 interp_method='linear';
 %
 % damage plot parameters
-circle_diam=8; %5; % default=20
+circle_diam=16; %5; % default=20
 circle_format='or';
 circle_linewidth=3;
 asset_color  = [199 21 133 ]/255; %mediumvioletred
@@ -121,7 +122,7 @@ end
 make_avi=1;
 if isempty(animation_avi_file) % local GUI
     animation_avi_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.avi'];
-    [filename, pathname] = uiputfile(animation_avi_file, 'Select animation data file:');
+    [filename, pathname] = uiputfile(animation_avi_file, 'Save animation as:');
     if isequal(filename,0) || isequal(pathname,0)
         make_avi=0;
         animation_avi_file='';
@@ -237,7 +238,7 @@ for step_i=1:n_steps
     % plot hazard intensity
     % ---------------------
     int_values = full(hazard.intensity(step_i,:));
-    int_values(int_values<10)=NaN; % mask low intensities
+    %int_values(int_values<10)=NaN; % mask low intensities
     gridded_VALUE = griddata(hazard.lon,hazard.lat,int_values,X,Y,interp_method); % interpolate to grid 'linear'
     pcolor(X,Y,gridded_VALUE);
     %p = pcolor(X,Y,gridded_VALUE);
