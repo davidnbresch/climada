@@ -145,4 +145,5 @@ switch IFC.peril_ID
         ylabel('Hazard intensity')
 end
 
+
 end % climada_IFC_plot

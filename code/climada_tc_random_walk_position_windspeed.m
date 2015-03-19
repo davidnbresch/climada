@@ -51,13 +51,13 @@ if ~exist('ens_size'       , 'var'), ens_size      = 9   ; end
 if isempty(ens_size)               , ens_size      = 9   ; end
 
 %amplitude of random walk wiggles in degree longitude for 'directed'
-if ~exist('ens_amp'        , 'var'), ens_amp  = 0.35; end
-if isempty(ens_amp)                , ens_amp  = 0.35; end
+if ~exist('ens_amp'        , 'var'), ens_amp  = 0.2; end % .35; end
+if isempty(ens_amp)                , ens_amp  = 0.2; end % .35; end
 
 % maximum angle of variation, =pi is like undirected, pi/4 means one
 % quadrant
-if ~exist('Maxangle'       , 'var'), Maxangle = pi/7; end
-if isempty(Maxangle)               , Maxangle = pi/7; end
+if ~exist('Maxangle'       , 'var'), Maxangle = pi/4; end %pi/7; end
+if isempty(Maxangle)               , Maxangle = pi/4; end %pi/7; end
 
 if ~exist('check_plot'     , 'var'), check_plot      = 1  ; end
 if ~exist('check_printplot', 'var'), check_printplot = 0  ; end
@@ -107,7 +107,7 @@ track_counter = 0;
 %% COORDINATES
 %  ensemble generation parameters
 %  amplitude of max random starting point shift degree longitude
-ens_amp0      = 1.5;
+ens_amp0      = 0.5; %1.5;
 % maximum latitudinal distance between consequent data points. if this
 % distance is larger than max_lat_dist, the storm is not
 % used (kind of second data cleaning)
