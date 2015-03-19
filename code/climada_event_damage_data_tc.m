@@ -88,6 +88,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 % David N. Bresch, david.bresch@gmail.com, 20150120, check_mode added
 % David N. Bresch, david.bresch@gmail.com, 20150128, climada_tc_track_nodes
 % David N. Bresch, david.bresch@gmail.com, 20150220, focus_region added
+% David N. Bresch, david.bresch@gmail.com, 20150318, low wind to NaN removed
 %-
 
 hazard=[]; % init output
