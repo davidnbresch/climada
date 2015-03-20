@@ -1,5 +1,3 @@
-
-
 function climada_plot_probabilistic_wind_speed_map(tc_track, track_req)
 % plot historical tc track (Longitude, Latitude) in world map according to
 % saffir-simpson hurrican scale. Add plot of probabilistic generated sister
@@ -31,7 +29,8 @@ function climada_plot_probabilistic_wind_speed_map(tc_track, track_req)
 %   figure, printout of figure if requested
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
-% Lea Mueller, 20110628
+% Lea Mueller, muellele@gmail.com, 20110628
+% Lea Mueller, muellele@gmail.com, 20150319, only every 6h a node
 %-
 
 
@@ -126,11 +125,23 @@ for track_i = 1:ens_size+1:track_count
     end
     h=[];
     for gen_i = 0:ens_size
-        h(:,gen_i+1) = climada_plot_tc_track_stormcategory(tc_track(track_i+gen_i),8,[]);
+        if diff(tc_track(track_i).hh(1:2))<=1.5
+            tc_track_1 = tc_track(track_i+gen_i);
+            tc_track_1.lon = tc_track_1.lon(1:6:end);
+            tc_track_1.lat = tc_track_1.lat(1:6:end);
+            tc_track_1.MaxSustainedWind = tc_track_1.MaxSustainedWind(1:6:end);
+            h(:,gen_i+1) = climada_plot_tc_track_stormcategory(tc_track_1,8,[]);
+        else
+            h(:,gen_i+1) = climada_plot_tc_track_stormcategory(tc_track(track_i+gen_i),8,[]);
+        end
     end
     %h(:,gen_i+1) = climada_plot_tc_track_stormcategory(tc_track(track_i),8,[]);
     %g           = plot(tc_track(track_i).lon,tc_track(track_i).lat,'.k','markersize',5);
-    g            = plot(tc_track(track_i).lon,tc_track(track_i).lat,'ok','markersize',3,'linewidth',0.7);
+    if diff(tc_track(track_i).hh(1:2))<=1.5
+        g = plot(tc_track(track_i).lon(1:6:end),tc_track(track_i).lat(1:6:end),'ok','markersize',2,'linewidth',0.7);
+    else
+        g = plot(tc_track(track_i).lon,tc_track(track_i).lat,'ok','markersize',3,'linewidth',0.7);
+    end
     title(['Historical track ' int2str(track_i) ' and its ' [int2str(ens_size)] ' probabilistic sister storms'])
     
     %%add legend, makes it quite slow
