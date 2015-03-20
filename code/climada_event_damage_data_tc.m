@@ -373,7 +373,12 @@ for step_i=min_node:max_node
         plot(tc_track_segment.lon,tc_track_segment.lat,'xg');hold on
         if label_track_nodes,text(tc_track_segment.lon(end),tc_track_segment.lat(end),sprintf('%i',step_i),'FontSize',9,'Color','g');end
     end
-    res=climada_tc_windfield(tc_track_segment,centroids,0,-1,0);
+    
+    if show_footprint
+        res=climada_tc_windfield(tc_track_segment,centroids,0,1,0);
+    else
+        res=climada_tc_windfield(tc_track_segment,centroids,0,-1,0);
+    end
     
     hazard.intensity(step_i-min_node+1,:)=res.gust;
     hazard.tc_track_node(step_i-min_node+1)=step_i;
