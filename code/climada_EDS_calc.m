@@ -225,7 +225,7 @@ end % CLIMADA_OPT
 
 mod_step=2; % first time estimate after 2 calcs, then every 100
 
-loop_mod_step=floor(nn_assets/20);
+loop_mod_step=max(ceil(nn_assets/20),100);
 
 for asset_ii=1:nn_assets
     
