@@ -3,6 +3,9 @@ function res = climada_sparse_interp(matrix)
 % NAME:
 %   climada_sparse_interp
 % PURPOSE:
+%
+%   SOON TO BE DECOMMISSIONED, only used in climada_EDS_calc_OLD
+%
 %   helper-function to allow for very efficient execution of the
 %   mapping from the hazard-array to the MDD-matrix
 %   since the hazard-array is sparse, we cannot directly apply interp1

@@ -1,8 +1,11 @@
-function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode)
+function EDS=climada_EDS_calc_OLD(entity,hazard,annotation_name,force_re_encode,silent_mode)
 % climada calculate event damage set
 % NAME:
-%   climada_EDS_calc
+%   climada_EDS_calc_OLD
 % PURPOSE:
+%
+%   SPECIAL: the OLD version of climada_EDS_calc_OLD using spfun
+%
 %   given an encoded entity (assets and damage functions) and a hazard
 %   event set, calculate the event damage set (EDS). The event damage set
 %   contains the event damage for each hazard event. In case you set
@@ -19,9 +22,9 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %
 %   next (likely): climada_EDS_DFC, climada_EDS_DFC_report
 % CALLING SEQUENCE:
-%   EDS=climada_EDS_calc(entity,hazard,annotation_name)
+%   EDS=climada_EDS_calc_OLD(entity,hazard,annotation_name)
 % EXAMPLE:
-%   EDS=climada_EDS_calc(climada_assets_encode(climada_assets_read))
+%   EDS=climada_EDS_calc_OLD(climada_assets_encode(climada_assets_read))
 % INPUTS:
 %   entity: a read and encoded assets file, see climada_assets_encode(climada_assets_read)
 %       > promted for if not given
@@ -79,11 +82,14 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150106, add Cover and/or Deductible if missing
 % David N. Bresch, david.bresch@gmail.com, 20150106, Octave issue with hazard saved as -v7.3 solved
 % David N. Bresch, david.bresch@gmail.com, 20150114, EDS.peril_ID (was EDS.hazard.peril_ID)
-% David N. Bresch, david.bresch@gmail.com, 20150320, spfun replaced with explicit call, turns out to be >50% faster. Further speedup, see loop_mod_step
+% David N. Bresch, david.bresch@gmail.com, 20150320, soon to be decommissioned, see climada_EDS_calc
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
+
+global interp_x_table % see climada_sparse_interp
+global interp_y_table % see climada_sparse_interp
 
 EDS=[]; % init output
 
@@ -97,7 +103,7 @@ if ~exist('silent_mode','var'),silent_mode=0;end
 % PARAMETERS
 %
 
-% prompt for entity if not given
+% prompt for hazard_set if not given
 if isempty(entity) % local GUI
     entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
     [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
@@ -196,10 +202,6 @@ if climada_global.EDS_at_centroid
     [i,j,x]           = find(EDS.damage_at_centroid);
 end
 
-% temp variables
-MDD_0                 = zeros(size(hazard.intensity,1),1);
-PAA_0                 = zeros(size(hazard.intensity,1),1);
-
 % start the calculation
 % THIS CODE MIGHT NEED FUTURE OPTIMIZATION
 % see also climada_code_optimizer, which removes all slowing code...
@@ -225,8 +227,6 @@ end % CLIMADA_OPT
 
 mod_step=2; % first time estimate after 2 calcs, then every 100
 
-loop_mod_step=floor(nn_assets/20);
-
 for asset_ii=1:nn_assets
     
     asset_i=valid_assets_pos(asset_ii);
@@ -241,23 +241,23 @@ for asset_ii=1:nn_assets
     end
     
     if ~isempty(asset_damfun_pos)
-        
         % convert hazard intensity into MDD
-        interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos);
-        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos);
-        [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
-        MDD=MDD_0;
-        MDD(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
-                
+        % we need a trick to apply interp1 to the SPARSE hazard matrix: we evaluate only at non-zero elements, but therefore need a function handle
+        interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
+        interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
+        MDD            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
+        % OPTIMIZATION HINT: see climada_sparse_interp, would interp_x_table be uniformly spaced...
+        
+        
         % figure
         % plot(interp_x_table, interp_y_table,':')
         % hold on
         % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
         
-        % convert hazard intensity into PAA
-        interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos);
-        PAA=PAA_0;
-        PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        % similarly, convert hazard intensity into PAA
+        interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos); % to pass damagefunctions to climada_sparse_interp
+        PAA            = spfun(@climada_sparse_interp,hazard.intensity(:,asset_hazard_pos)); % apply to non-zero elements only
+        
         
         % figure
         % plot(interp_x_table, interp_y_table,':k')
@@ -296,7 +296,7 @@ for asset_ii=1:nn_assets
         
         if ~silent_mode % CLIMADA_OPT
             if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
-                mod_step         = loop_mod_step; % CLIMADA_OPT
+                mod_step         = 100; % CLIMADA_OPT
                 t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
                 calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
                 t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
