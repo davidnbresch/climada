@@ -54,6 +54,10 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 %       prior to calling climada_tc_windfield (see e.g. climada_tc_hazard_set) 
 %       and then set equal_timestep=0 in calling climada_tc_windfield 
 %   silent_mode: if =1, do not write to stdout unless severe warning
+%       If silent_mode=-1, use step-by-step detailed windfield, i.e. reduce
+%       wind to zero at center of the eye (not recommended for
+%       probabilistic, since hit/miss issue with closest node, see variable
+%       max_wind_at_bullseye in code). 
 %   check_plot: disabled, see code, commented out for speedup
 % OUTPUTS:
 %   res: the output strcuture, with fields
@@ -66,7 +70,8 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 % David N. Bresch, david.bresch@gmail.com, 20090728
 % David N. Bresch, david.bresch@gmail.com, 20141227, centroids.distance2coast_km treatment added
 % David N. Bresch, david.bresch@gmail.com, 20150124, wind_threshold=15 (was 0), coastal_range_km=375 (was 300)
-% David N. Bresch, david.bresch@gmail.com, 20150315, back to real Holland (core was 'filled')
+% David N. Bresch, david.bresch@gmail.com, 20150315, back to real Holland for single timestep
+% David N. Bresch, david.bresch@gmail.com, 20150319, eye 'filled' for probabilistic windfields
 %-
 
 res = []; % init output
@@ -93,7 +98,9 @@ treat_extratropical_transition=0; % default=0, since non-standard iro Holland
 coastal_range_km=375; % in km, 300 until 20150124, 5*75=375 (see D<5*R below)
 %
 
-
+max_wind_at_bullseye=1; % =1 for probabilistic set, see remark down in code
+if silent_mode==-1,max_wind_at_bullseye=0;silent_mode=1;end % =0 only for single timestep
+    
 % if check_plot
 % to store original track for plotting, see below
 %     tc_track_ori = tc_track; 
@@ -289,11 +296,18 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % start adding your code here
         
-        % Kind of 'bug', due to windfield plots used for animation:
-        % next two lines active until 20150315 (elseif instead of if)
-        %if D<=R, S = min(M, M+2*T*D/R); % in the inner core
-        %elseif D<10*R % in the outer core
-        if D<10*R % center to outer core
+        % Please note the special case if zero_wind_at_bullseye=1
+        % That's only required of this code is called for single timestep
+        % calculations. For generation of fully probabilistic sets, the
+        % windfield calculation is speeded up by only treating the node
+        % closest to the centroid. In case the centroid sits within the eye
+        % of the hurricane at one timestep, it is very likely (almost
+        % certain) it will sooner or later experience the max wind, hence
+        % the code does indeed assign the maximum wind (eyewall) to these
+        % centroids, instead of a low value.
+        if D<=R && max_wind_at_bullseye
+            S = min(M, M+2*T*D/R); % in the inner core
+        elseif D<10*R % in the outer core
             S = max( (M-abs(T))*( R^1.5 * exp( 1-R^1.5/D^1.5 )/D^1.5) + T, 0);
         else
             S = 0; % well, see also check before, hence never reached
