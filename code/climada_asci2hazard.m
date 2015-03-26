@@ -125,10 +125,13 @@ event_grid(event_grid==NODATA_value) = 0;
 start_no  = name(isstrprop(name,'digit'));
 name_only = name(~isstrprop(name,'digit'));
 
+
 files_in_folder = ls(pathstr);
 read_index = zeros(1,size(files_in_folder,1));
 for i = 1:size(files_in_folder,1)
-    if strfind(files_in_folder(i,:),name_only) & strfind(files_in_folder(i,:),'.asc')
+    filename_i = files_in_folder(i,:);
+    filename_i = filename_i(~isstrprop(filename_i,'digit'));
+    if strfind(filename_i,[name_only ext]) & strfind(filename_i,'.asc')
         read_index(i) = 1;
     end
 end
