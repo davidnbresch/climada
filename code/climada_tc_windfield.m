@@ -296,15 +296,16 @@ for centroid_ii=1:centroid_count % now loop over all valid centroids
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % start adding your code here
         
-        % Please note the special case if zero_wind_at_bullseye=1
-        % That's only required of this code is called for single timestep
-        % calculations. For generation of fully probabilistic sets, the
-        % windfield calculation is speeded up by only treating the node
+        % Please note the special case if max_wind_at_bullseye=1
+        % For generation of fully probabilistic sets (max_wind_at_bullseye=1), 
+        % the windfield calculation is speeded up by only treating the node
         % closest to the centroid. In case the centroid sits within the eye
         % of the hurricane at one timestep, it is very likely (almost
         % certain) it will sooner or later experience the max wind, hence
         % the code does indeed assign the maximum wind (eyewall) to these
         % centroids, instead of a low value.
+        % max_wind_at_bullseye=0 is used for single time-step windfields,
+        % e.g. for animations.
         if D<=R && max_wind_at_bullseye
             S = min(M, M+2*T*D/R); % in the inner core
         elseif D<10*R % in the outer core

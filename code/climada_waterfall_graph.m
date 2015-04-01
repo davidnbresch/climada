@@ -1,4 +1,3 @@
-
 function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_printplot)
 % waterfall figure, expected damage for specified return period for 
 % - today,
