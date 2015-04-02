@@ -29,6 +29,7 @@ function AEV = climada_adaptation_event_view(measures_impact,comparison_return_p
 %           NOTE: measures ordered as in adaptation cost curve
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100109
+% David N. Bresch, david.bresch@gmail.com, 20150402, compatibility with version 8ff (R2014...)
 %-
 
 global climada_global
@@ -76,7 +77,7 @@ end % EDS_i
 
 n_measures=length(measures_impact.measures.cost);
 
-% calculate the effectof each measure
+% calculate the effect of each measure
 AEV.effect=zeros(n_measures-1,length(DFC_comparison_frequencies)); % allocate
 AEV.total_effect=zeros(1,length(DFC_comparison_frequencies));
 for measure_i=1:n_measures
@@ -112,12 +113,24 @@ for return_period_i=1:length(comparison_return_periods)
                 [AEV.cumulated{return_period_i}.effect(measure_i+1),AEV.cumulated{return_period_i}.effect(measure_i+1)],...
                 'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),'EdgeColor','none');
         end % measure_i
-    else
+        
+    elseif strcmp(version_str(1),'7')
         for measure_i=1:n_measures
             area([x1 x2],...
                 [AEV.cumulated{return_period_i}.effect(measure_i+1),AEV.cumulated{return_period_i}.effect(measure_i+1)],...
-                'BaseValue',AEV.cumulated{return_period_i}.effect(measure_i),...
+                'BaseValue',AEV.cumulated{return_period_i}.effect(measure_i+1),...
                 'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),'EdgeColor','none');
+        end % measure_i
+        
+    else % version 8 and later
+        Y=[];
+        for measure_i=1:n_measures
+            yy=AEV.cumulated{return_period_i}.effect(measure_i+1)-AEV.cumulated{return_period_i}.effect(measure_i);
+            Y(1,measure_i)=yy;Y(2,measure_i)=yy;
+            h=area([x1 x2],Y,'BaseValue',0,'EdgeColor','none');hold on
+        end % measure_i
+        for measure_i=1:n_measures
+            h(measure_i).FaceColor = measures_impact.measures.color_RGB(sort_index(measure_i),:);
         end % measure_i
     end % version
     
@@ -132,6 +145,14 @@ for measure_i=1:n_measures
     y_pos=(AEV.cumulated{end}.effect(measure_i)+AEV.cumulated{end}.effect(measure_i+1))/2;
     text(length(comparison_return_periods)-0.9,y_pos,...
         measures_impact.measures.name{sort_index(measure_i)},'Rotation',0);
+    if length(comparison_return_periods)>1
+        y_pos=(AEV.cumulated{end-1}.effect(measure_i)+AEV.cumulated{end-1}.effect(measure_i+1))/2;
+        text(length(comparison_return_periods)-1.9,y_pos,...
+            measures_impact.measures.name{sort_index(measure_i)},'Rotation',0);
+        %     y_pos=(AEV.cumulated{end-2}.effect(measure_i)+AEV.cumulated{end-2}.effect(measure_i+1))/2;
+        %     text(length(comparison_return_periods)-2.9,y_pos,...
+        %         measures_impact.measures.name{sort_index(measure_i)},'Rotation',0);
+    end
 end
 
 % write return period labels in x-axis
@@ -144,4 +165,4 @@ title_str=strrep(title_str,'_',' '); % since title is LaTEX format
 title_str=strrep(title_str,'|','\otimes'); % LaTEX format
 title(title_str,'FontSize',8);
 
-return
+end % climada_adaptation_event_view

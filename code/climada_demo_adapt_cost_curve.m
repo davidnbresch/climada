@@ -97,6 +97,7 @@ entity_future = entity_present;
 delta_years   = climada_global.future_reference_year - climada_global.present_reference_year;
 growth_factor = (1+climada_demo_params.growth)^delta_years;
 entity_future.assets.Value = entity_present.assets.Value.*growth_factor;
+entity_future.assets.Cover = entity_future.assets.Value;
 
 %fprintf('CAGR of %2.1f%% leads to cumulated growth of %3.0f%% until %i\n',...
 %   climada_demo_params.growth*100,...

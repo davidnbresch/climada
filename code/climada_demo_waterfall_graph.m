@@ -76,6 +76,7 @@ entity_future = entity_present;
 delta_years                = climada_global.future_reference_year - climada_global.present_reference_year;
 growth_factor              = (1+climada_demo_params.growth)^delta_years;
 entity_future.assets.Value = entity_present.assets.Value.*growth_factor;
+entity_future.assets.Cover = entity_future.assets.Value;
 
 %fprintf('CAGR of %2.1f%% leads to cumulated growth of %3.0f%% until %i\n',...
 %    climada_demo_params.growth*100,...
@@ -169,7 +170,9 @@ if ~omit_plot
         end
         %%FaceColor=FaceColor/max(FaceColor);
         %area('v6',x,y,level,'FaceColor',FaceColor,'EdgeColor',FaceColor);
-        area(x,y,level,'FaceColor',FaceColor,'EdgeColor',FaceColor);
+        %area(x,y,level,'FaceColor',FaceColor,'EdgeColor',FaceColor);
+        area(x,y,'BaseValue',level,'FaceColor',FaceColor,'EdgeColor',FaceColor);
+        if level>0,area(x,[level level],'BaseValue',0,'FaceColor',[1 1 1],'EdgeColor',[1 1 1]);end
         text(mean(x), y(1)*0.9, num2str(y(1)-level(1),'%2.0f'),'horizontalalignment','center','fontweight','bold','color',textcolor)
     end % box_i
     xlim([-0.2 5.7])
