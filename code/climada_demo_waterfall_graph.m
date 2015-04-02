@@ -24,6 +24,7 @@ function [risk_today,risk_econ_growth,risk_climate_change]=climada_demo_waterfal
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20110625
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
+% David N. Bresch, david.bresch@gmail.com, 20150402, area compatibility with version 8 (R2014...)
 %-
 
 risk_today          = [];
