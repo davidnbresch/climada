@@ -13,7 +13,8 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 %   climada_IFC_plot(IFC,1,1,0,3)
 %   climada_IFC_plot(climada_hazard2IFC)
 % INPUTS:
-%   IFC:  A structure, created using climada_hazard2IFC.
+%   IFC:  An intensity frequency curve structure, created using
+%       climada_hazard2IFC. Either one IFC or an array of structures, i.e. IFC(i)
 % OPTIONAL INPUT PARAMETERS:
 %   hist_check: Whether to plot the historical data points  (default = 1)
 %   check_log: Whether to use logarithmic x (return period) axis (default = 0)
@@ -29,6 +30,7 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 % Gilles Stassen, gillesstassen@hotmail.com, 20150130
 % David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
 % Lea Mueller, muellele@gmail.com, 20150318, changes according to hazard2IFC
+% David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array, white background
 %-
 
 if ~exist('IFC','var'),
@@ -59,7 +61,8 @@ color2 = [255  20  20;... % red
     ]/255;
 
 %legend
-lgd_struct = get(legend);
+%lgd_struct = get(legend);
+lgd_struct={}; % bug fix
 if ~isempty(lgd_struct)
     lgd_str = lgd_struct.UserData.lstrings';
     lgd_hdl = lgd_struct.UserData.handles';
@@ -67,45 +70,50 @@ else
     lgd_str = {};
     lgd_hdl = [];
 end
-for poi_i = 1:numel(IFC.centroid_ID) 
-        
+
+IFCs=IFC; % bug-fix, such that we can use struct arrays, i.e. IFC(i) to contain one IFC, not IFC.intensity(i,:) etc.
+for poi_ii = 1:length(IFCs)
+    
+    IFC=IFCs(poi_ii);
+    poi_i=1; % bug fix, such that we can use struct arrays
+    
     % probabilistic data
     %h_ndx = IFC(poi_i).orig_event_flag == 1;
     pos_indx = IFC.intensity(poi_i,:)>0;
-    h(1) = plot(IFC.return_periods(poi_i,pos_indx),IFC.intensity(poi_i,pos_indx),'.' ,'markersize',10,'color',color2(color_index,:));
-    hold on
-    h(2) = plot(IFC.DFC_return_periods,IFC.intensity_fit(poi_i,:),'--','markersize',3,'color',color2(color_index,:));
-    lgd_str{end+1} = sprintf('%s intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
-    lgd_str{end+1} = sprintf('%s fitted intensity', IFC.peril_ID);
-    lgd_hdl = [lgd_hdl h(1:2)];
-
-    
-    % historical data
-    if hist_check
-        pos_indx = IFC.hist_intensity(poi_i,:)>0;
-        h(3) = plot(IFC.hist_return_periods(poi_i,pos_indx),IFC.hist_intensity(poi_i,pos_indx),'*' ,'markersize',5,'color',color1(color_index,:));
-        lgd_str{end+1} = sprintf('%s historical intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
-        lgd_hdl = [lgd_hdl h(3)];
+    if sum(pos_indx)>0
+        h(1) = plot(IFC.return_periods(poi_i,pos_indx),IFC.intensity(poi_i,pos_indx),'.' ,'markersize',10,'color',color2(color_index,:));
+        hold on
+        h(2) = plot(IFC.fit_return_periods,IFC.intensity_fit(poi_i,:),'--','markersize',3,'color',color2(color_index,:));
+        lgd_str{end+1} = sprintf('%s intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
+        lgd_str{end+1} = sprintf('%s fitted intensity', IFC.peril_ID);
+        lgd_hdl = [lgd_hdl h(1:2)];
+        
+        % historical data
+        if hist_check
+            pos_indx = IFC.hist_intensity(poi_i,:)>0;
+            h(3) = plot(IFC.hist_return_periods(poi_i,pos_indx),IFC.hist_intensity(poi_i,pos_indx),'*' ,'markersize',5,'color',color1(color_index,:));
+            lgd_str{end+1} = sprintf('%s historical intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
+            lgd_hdl = [lgd_hdl h(3)];
+        end
+        
+        color_index = color_index+1;
+        if color_index>length(color1)
+            color_index=1;
+        end
+        
     end
     
-    color_index = color_index+1;
-    if color_index>length(color1)
-        color_index=1;
-    end
-            
-
-%     if Gumbel_check
-%         g = plot(1./IFC(poi_i).return_freq,  IFC(poi_i).return_polyval, 'o:', 'markersize',3,'color', clr_mod .* color2(color_index,:));
-%         %lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %10.1f, \\sigma = %10.1f centroid %i \n',...
-%         %    -IFC(poi_i).polyfit(1),-IFC(poi_i).polyfit(2),IFC(poi_i).centroid_ID)}];
-%         lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %s, \\sigma = %s, %s centroid %i',...
-%             num2str(-IFC(poi_i).polyfit(1),4),num2str(-IFC(poi_i).polyfit(2),4),IFC(poi_i).peril_ID,IFC(poi_i).centroid_ID)}];
-% 
-%         lgd_hdl = [lgd_hdl g];
-%     end
-end
-
-
+    
+    %     if Gumbel_check
+    %         g = plot(1./IFC(poi_i).return_freq,  IFC(poi_i).return_polyval, 'o:', 'markersize',3,'color', clr_mod .* color2(color_index,:));
+    %         %lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %10.1f, \\sigma = %10.1f centroid %i \n',...
+    %         %    -IFC(poi_i).polyfit(1),-IFC(poi_i).polyfit(2),IFC(poi_i).centroid_ID)}];
+    %         lgd_str = [lgd_str {sprintf('Gumbel fit \\mu = %s, \\sigma = %s, %s centroid %i',...
+    %             num2str(-IFC(poi_i).polyfit(1),4),num2str(-IFC(poi_i).polyfit(2),4),IFC(poi_i).peril_ID,IFC(poi_i).centroid_ID)}];
+    %
+    %         lgd_hdl = [lgd_hdl g];
+    %     end
+end % poi_ii
 
 legend('-DynamicLegend');
 if check_log
@@ -119,7 +127,7 @@ end
 % set axis
 max_rp  = max(max(IFC.return_periods))*1.1;
 max_int = max(max(IFC.intensity))*1.1;
-axis([0 max_rp 0 max_int])
+if max_rp*max_int>0axis([0 max_rp 0 max_int]);end
 
 % set(gca,'XGrid','on')
 % set(gca,'YGrid','on')
@@ -145,5 +153,6 @@ switch IFC.peril_ID
         ylabel('Hazard intensity')
 end
 
+set(gcf,'Color',[1 1 1]) % white background
 
 end % climada_IFC_plot
