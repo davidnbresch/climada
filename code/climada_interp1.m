@@ -75,10 +75,11 @@ function varargout = climada_interp1(varargin)
 %      float: double, single
 %
 %   See also INTERP1Q, INTERPFT, SPLINE, PCHIP, INTERP2, INTERP3, INTERPN, PPVAL.
-
 %   Copyright 1984-2012 The MathWorks, Inc.
 %   $Revision: 5.41.4.25 $  $Date: 2012/10/29 19:19:25 $
-%
+%   david.bresch@gmail.com, 20150301, copied as climada_interp1 for speedup (but limited functionality compared to interp1)
+%-
+
 % Determine input arguments.
 % Work backwards parsing from the end argument.
 

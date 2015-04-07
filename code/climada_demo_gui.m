@@ -287,12 +287,14 @@ function CloseMenuItem_Callback(hObject, eventdata, handles)
 % hObject    handle to CloseMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-selection = questdlg(['Close ' get(handles.figure1,'Name') '?'],...
-                     ['Close ' get(handles.figure1,'Name') '...'],...
-                     'Yes','No','Yes');
-if strcmp(selection,'No')
-    return;
-end
+
+% % asking to quit
+% selection = questdlg(['Close ' get(handles.figure1,'Name') '?'],...
+%                      ['Close ' get(handles.figure1,'Name') '...'],...
+%                      'Yes','No','Yes');
+% if strcmp(selection,'No')
+%     return;
+% end
 
 delete(handles.figure1)
 

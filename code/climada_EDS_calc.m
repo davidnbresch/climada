@@ -247,7 +247,11 @@ for asset_ii=1:nn_assets
         interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos);
         [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
         MDD=MDD_0;
-        MDD(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        if climada_global.octave_mode
+            MDD(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        else
+            MDD(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        end
                 
         % figure
         % plot(interp_x_table, interp_y_table,':')
@@ -257,7 +261,11 @@ for asset_ii=1:nn_assets
         % convert hazard intensity into PAA
         interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos);
         PAA=PAA_0;
-        PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        if climada_global.octave_mode
+            PAA(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        else
+            PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+        end
         
         % figure
         % plot(interp_x_table, interp_y_table,':k')
