@@ -250,3 +250,5 @@ climada_adaptation_cost_curve(measures_impact);
 % show the event view (effect of adaptation measures on different return
 % periods:
 figure;climada_adaptation_event_view(measures_impact);
+
+drawnow % to force drawing all figures
