@@ -1,7 +1,7 @@
 function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_printplot)
-% waterfall figure, expected damage for specified return period for 
+% waterfall figure, expected damage for specified return period for
 % - today,
-% - increase from economic growth, 
+% - increase from economic growth,
 % - increase from high climate change, total expected damage 2030
 % for the three EDS quoted above
 % NAME:
@@ -16,19 +16,20 @@ function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_p
 % INPUTS:
 %   none
 % OPTIONAL INPUT PARAMETERS:
-%   EDS:            three event damage sets 
+%   EDS:            three event damage sets
 %                   - today
 %                   - economic growth
 %                   - cc combined with economic growth, future
 %   return_period:  requested return period for according expected damage,or
 %                   annual expted damage, prompted if not given
-%   check_printplot:if set to 1, figure saved, default 0. 
+%   check_printplot:if set to 1, figure saved, default 0.
 % OUTPUTS:
 %   waterfall graph
 % MODIFICATION HISTORY:
 % Lea MuEDler, 20110622
 % Martin Heynen, 20120329
 % David N. Bresch, david.bresch@gmail.com, 20130316 EDS->EDS
+% David N. Bresch, david.bresch@gmail.com, 20150419 try-catch for arrow plotting
 %-
 
 global climada_global
@@ -53,15 +54,15 @@ if isempty(EDS1) % local GUI
     [filename, pathname] = uigetfile(EDS, 'Select EDS:',EDS_default,'MultiSelect','on');
     if isequal(filename,0) || isequal(pathname,0)
         %return; % cancel
-        EDS1   = climada_EDS_stats(climada_EDS_calc, 0); 
+        EDS1   = climada_EDS_stats(climada_EDS_calc, 0);
         if ischar(EDS1); fig = []; return; end
         climada_EDS_save(EDS1,'EDS_today')
         
-        EDS2   = climada_EDS_stats(climada_EDS_calc, 0); 
+        EDS2   = climada_EDS_stats(climada_EDS_calc, 0);
         if ischar(EDS2); fig = []; return; end
         climada_EDS_save(EDS2,'EDS_future_eco')
         
-        EDS3   = climada_EDS_stats(climada_EDS_calc, 0); 
+        EDS3   = climada_EDS_stats(climada_EDS_calc, 0);
         if ischar(EDS3); fig = []; return; end
         climada_EDS_save(EDS3,'EDS_future_cc')
         
@@ -104,7 +105,7 @@ if ~isstruct(EDS1)
         end
         %rename to EDS
         EDS = EDS_;
-        clear EDS_ 
+        clear EDS_
     else
         load(fullfile(pathname,filename))
     end
@@ -129,7 +130,7 @@ if isempty(return_period)
 elseif ischar(return_period)
     if strcmp(return_period,'AED')
         return_period = 9999;
-    else 
+    else
         fprintf('Please indicate return period (e.g. 1, 34, 50) or "AED"\n "%s" does not exist\n',return_period)
         return
     end
@@ -143,7 +144,7 @@ for EDS_i = 1:length(EDS)
     else
         % find index for requested return period
         r_index = EDS(EDS_i).R_fit == return_period;
-        if sum(r_index)<1           
+        if sum(r_index)<1
             fprintf('\n--no information available for requested return period %d year -- \n',return_period)
             
             fprintf('--calculate damage for specific return period %d  --\n', return_period)
@@ -152,7 +153,7 @@ for EDS_i = 1:length(EDS)
             
             %R_show = sprintf('%d, ', EDS(EDS_i).R_fit');
             %R_show(end-1:end) = [];
-            %fprintf('--please sEDect one of the following return periods:  --\n %s\n', R_show) 
+            %fprintf('--please sEDect one of the following return periods:  --\n %s\n', R_show)
             %damage = [];
             %return
         end
@@ -165,13 +166,13 @@ for EDS_i = 1:length(EDS)
     str               = sprintf('%s | %s',assets_name, hazard_name);
     str               = strrep(str,'_',' '); % since title is LaTEX format
     str               = strrep(str,'|','\otimes'); % LaTEX format
-    legend_str{EDS_i} = str;       
+    legend_str{EDS_i} = str;
 end % EDS_i
 
 % damage = permute(damage,[1 3 2]);
 
 % today, eco, cc, future damage
-[damage index]      = sort(damage,'ascend'); 
+[damage index]      = sort(damage,'ascend');
 damage(4)           = damage(3);
 
 %digits of damage
@@ -185,7 +186,7 @@ dig    = digits;
 % TIV of portfolio
 TIV_nr = round(unique([EDS(:).Value])*10^-digits);
 N      = -abs(floor(log10(max(TIV_nr)))-1);
-TIV_nr = round(TIV_nr*10^N)/10^N;  
+TIV_nr = round(TIV_nr*10^N)/10^N;
 
 %----------
 %% figure
@@ -199,40 +200,40 @@ stretch    = 0.3;
 fig        = climada_figuresize(0.57,0.7);
 % yellow - red color scheme
 color_     = [255 215   0 ;...   %today
-              255 127   0 ;...   %eco 
-              238  64   0 ;...   %clim
-              205   0   0 ;...   %total risk
-              120 120 120]/256;  %dotted line]/255;
-color_(1:4,:) = brighten(color_(1:4,:),0.3);            
-          
+    255 127   0 ;...   %eco
+    238  64   0 ;...   %clim
+    205   0   0 ;...   %total risk
+    120 120 120]/256;  %dotted line]/255;
+color_(1:4,:) = brighten(color_(1:4,:),0.3);
+
 % % green color scheme
 % color_     = [227 236 208;...   %today
-%               194 214 154;...   %eco 
+%               194 214 154;...   %eco
 %               181 205  133;...  %clim
 %               197 190 151;...   %total risk
 %               120 120 120]/256; %dotted line]/255;
-% color_(1:4,:) = brighten(color_(1:4,:),-0.5);  
+% color_(1:4,:) = brighten(color_(1:4,:),-0.5);
 
 damage_count = length(damage);
-damage       = [0 damage]; 
+damage       = [0 damage];
 
 hold on
 area([damage_count-stretch damage_count+stretch], damage(4)*ones(1,2),'facecolor',color_(4,:),'edgecolor','none')
 for i = 1:length(damage)-2
     h(i) = patch( [i-stretch i+stretch i+stretch i-stretch],...
-                  [damage(i) damage(i) damage(i+1) damage(i+1)],...
-                  color_(i,:),'edgecolor','none');
-%     if i==1
-%           plot([i+stretch 4+stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
-%     else
-%           plot([i+stretch 4-stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
-%     end
+        [damage(i) damage(i) damage(i+1) damage(i+1)],...
+        color_(i,:),'edgecolor','none');
+    %     if i==1
+    %           plot([i+stretch 4+stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
+    %     else
+    %           plot([i+stretch 4-stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
+    %     end
 end
 for i = 1:length(damage)-2
     if i==1
-          plot([i+stretch 4+stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
+        plot([i+stretch 4+stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
     else
-          plot([i+stretch 4-stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
+        plot([i+stretch 4-stretch],[damage(i+1) damage(i+1)],':','color',color_(5,:))
     end
 end
 
@@ -245,7 +246,7 @@ damage_disp(4) = damage(4);
 if max(damage)>10
     N = -abs(floor(log10(max(damage)))-1);
     damage_disp = round(damage_disp*10^N)/10^N;
-    N = 0;    
+    N = 0;
 else
     %N = round(log10(max(damage_disp)));
     N = 2;
@@ -282,24 +283,36 @@ ylabel(['damage amount \cdot 10^{', int2str(dig) '}'],'fontsize',fontsize_)
 dED2 = stretch+0.05;
 % dED3 = 0.10;
 dED3 = stretch+0.07;
-climada_arrow ([2+dED2 damage(2)], [2+dED2 damage(3)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[0.5 0.5 0.5]);
+try
+    climada_arrow ([2+dED2 damage(2)], [2+dED2 damage(3)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[0.5 0.5 0.5]);
+catch
+    fprintf('Warning: arrow printing failed in %s (1)\n',mfilename);
+end
 text (2+dED3, damage(2)+diff(damage(2:3))*0.5, ['+' int2str((damage(3)-damage(2))/damage(2)*100) '%'], ...
-      'color',[0. 0. 0.],'HorizontalAlignment','left','VerticalAlignment','middle','fontsize',fontsize_-1);
-  
+    'color',[0. 0. 0.],'HorizontalAlignment','left','VerticalAlignment','middle','fontsize',fontsize_-1);
+
 %arrow cc
-climada_arrow ([3+dED2 damage(3)], [3+dED2 damage(4)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[0.5 0.5 0.5]);
+try
+    climada_arrow ([3+dED2 damage(3)], [3+dED2 damage(4)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[0.5 0.5 0.5]);
+catch
+    fprintf('Warning: arrow printing failed in %s (2)\n',mfilename);
+end
 text (3+dED3, damage(3)+diff(damage(3:4))*0.5, ['+' int2str((damage(4)-damage(3))/damage(2)*100) '%'], ...
-      'color',[0. 0. 0.],'HorizontalAlignment','left','VerticalAlignment','middle','fontsize',fontsize_-1);
-  
+    'color',[0. 0. 0.],'HorizontalAlignment','left','VerticalAlignment','middle','fontsize',fontsize_-1);
+
 %arrow total
-climada_arrow ([4 damage(2)], [4 damage(4)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[256 256 256]/256);
+try
+    climada_arrow ([4 damage(2)], [4 damage(4)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[256 256 256]/256);
+catch
+    fprintf('Warning: arrow printing failed in %s (3)\n',mfilename);
+end
 text (4, damage(2)-max(damage)*0.02, ['+' int2str((damage(4)-damage(2))/damage(2)*100) '%'], 'color','w','HorizontalAlignment','center','VerticalAlignment','top','fontsize',fontsize_);
 
 
 %title
 if return_period == 9999
     textstr = 'Annual Expected Damage (AED)';
- else
+else
     textstr = ['Expected damage with a return period of ' int2str(return_period) ' years'];
 end
 textstr_TIV = sprintf('Total assets: %d, %d 10^%d USD', TIV_nr, digits);
@@ -330,20 +343,16 @@ set(L,'Fontsize',fontsize_2)
 if isempty(check_printplot)
     choice = questdlg('print?','print');
     switch choice
-    case 'Yes'
-        check_printplot = 1;
+        case 'Yes'
+            check_printplot = 1;
     end
 end
 
 
-if check_printplot %(>=1)   
+if check_printplot %(>=1)
     print(fig,'-dpdf',[climada_global.data_dir foldername])
     %close
     fprintf('saved 1 FIGURE in folder %s \n', foldername);
 end
-    
-return
 
-
-
-
+end % climada_waterfall_graph

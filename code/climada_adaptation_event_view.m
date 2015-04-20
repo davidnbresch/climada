@@ -107,7 +107,7 @@ for return_period_i=1:length(comparison_return_periods)
     x2=return_period_i;
     
     % plot each measure
-    if strcmp(version_str(1),'6')
+    if strcmp(version_str(1),'6') || climada_global.octave_mode
         for measure_i=n_measures:-1:1
             area([x1 x2],...
                 [AEV.cumulated{return_period_i}.effect(measure_i+1),AEV.cumulated{return_period_i}.effect(measure_i+1)],...
