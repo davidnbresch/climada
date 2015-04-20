@@ -73,6 +73,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 % David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
 % David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
 % David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
+% Lea Mueller, muelleleh@gmail.com, 20150420, include category into hazard structure
 %-
 
 hazard=[]; % init
@@ -194,6 +195,11 @@ if ~isstruct(centroids) % load, if filename given
     load(centroids_file); % contains centrois as a variable
 end
 
+% add tc track category (saffir-simpson)
+if ~isfield(tc_track, 'category')
+    tc_track = climada_tc_stormcategory(tc_track);
+end
+
 min_year   = tc_track(1).yyyy(1);
 max_year   = tc_track(end).yyyy(1); % start time of track, as we otherwise might count one year too much
 orig_years = max_year - min_year+1;
@@ -207,11 +213,13 @@ hazard.orig_years       = orig_years;
 hazard.orig_event_count = 0; % init
 hazard.event_count      = length(tc_track);
 hazard.event_ID         = 1:hazard.event_count;
+hazard.category         = zeros(1,hazard.event_count);
 hazard.orig_event_flag  = zeros(1,hazard.event_count);
 hazard.yyyy             = zeros(1,hazard.event_count);
 hazard.mm               = zeros(1,hazard.event_count);
 hazard.dd               = zeros(1,hazard.event_count);
 hazard.datenum          = zeros(1,hazard.event_count);
+
 
 % allocate the hazard array (sparse, to manage memory)
 hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
@@ -257,8 +265,9 @@ for track_i=track0:n_tracks
     hazard.yyyy(track_i)            = tc_track(track_i).yyyy(1);
     hazard.mm(track_i)              = tc_track(track_i).mm(1);
     hazard.dd(track_i)              = tc_track(track_i).dd(1);
-    hazard.datenum(track_i)    = tc_track(track_i).datenum(1);
+    hazard.datenum(track_i)         = tc_track(track_i).datenum(1);
     hazard.name{track_i}            = tc_track(track_i).name;
+    hazard.category(track_i)        = tc_track(track_i).category;
     
     % if check_plot
     %     values = res.gust;
