@@ -98,12 +98,12 @@ event_grid(event_grid==NODATA_value) = 0;
 % cellsize  = 100.0;
 
 % only for Barisal: transformation of UTM to lat lon coordinates (including shift)
-[lat_min, lon_min] = utm2ll_shift(xllcorner, yllcorner);
-[lat_max, lon_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+[lon_min, lat_min] = utm2ll_shift(xllcorner, yllcorner);
+[lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
 
 % original conversion from UTM to lat lon
-% [lat_min, lon_min] = btm2ll(xllcorner, yllcorner);
-% [lat_max, lon_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+% [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
+% [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
 
 % create meshgrid
 [X, Y ] = meshgrid(linspace(lon_min,lon_max,ncols), ...
