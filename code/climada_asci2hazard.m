@@ -183,8 +183,9 @@ for e_i = read_index;
     [~,name,ext]       = fileparts(filename);
     fprintf('Read %s\n',[name ext]);
     event_grid         = flipud(dlmread(fullfile(pathstr,filename),delimiter,row_count,0));
-    NODATA_value       = -9999;
+    %NODATA_value       = -9999;
     event_grid(event_grid==NODATA_value) = 0;
+    event_grid(isnan(event_grid)) = 0;
 
     % write hazard intensity into structure
     hazard.intensity(counter ,:) = reshape(event_grid,1,ncols*nrows);
