@@ -35,6 +35,8 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20140302
 % David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
 % David N. Bresch, david.bresch@gmail.com, 20150225, res instead of [X,Y,gridded_VALUE]
+% Lea Mueller, muellele@gmail.com, 20150424, colormap according to peril_ID
+% Lea Mueller, muellele@gmail.com, 20150427, higher resolution, npoints set to 2000 (instead of 199)
 %-
 
 res=[]; % init
@@ -98,11 +100,15 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     % create figure
     %fig = climada_figuresize(height,height*scale2+0.15);
     %set(fig,'Name',hazard.peril_ID);
-    
-    centroids.lon=hazard.lon; % as the gridding routine needs centroids
-    centroids.lat=hazard.lat;
-    [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
+    [cmap c_ax]   = climada_colormap(hazard.peril_ID);
+    centroids.lon = hazard.lon; % as the gridding routine needs centroids
+    centroids.lat = hazard.lat;
+    %npoints       = 2000;
+    npoints       = 1500;
+    stencil_ext   = 5;
+    [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,'linear',npoints,stencil_ext);  
     contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
+    %contourf(X, Y, gridded_VALUE,'edgecolor','none')
     hold on
     box on
     climada_plot_world_borders(0.5)
@@ -112,6 +118,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     title(title_str);
     if ~isempty(caxis_range),caxis(caxis_range);end
     colorbar
+    colormap(cmap)
 else
     fprintf('all intensities zero for event %i\n',event_i);
     return

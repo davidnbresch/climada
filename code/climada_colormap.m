@@ -3,13 +3,14 @@ function [cmap c_ax] = climada_colormap(peril_ID)
 % NAME:
 %   climada_colormap
 % PURPOSE:
-%   a helper function, returns a color map for specified perils
+%   a helper function, returns a color map for specified perils, if empty
+%   peril ID cmap jet is returned
 % CALLING SEQUENCE:
 %   cmap = climada_colormap(peril_ID)
 % EXAMPLE:
 %   cmap = climada_colormap('TC')
 % INPUTS:
-%   peril_ID: a peril ID, currently implemented are TC, TS and TR
+%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 % MODIFICATION HISTORY:
