@@ -22,7 +22,7 @@ function [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,interp_m
 %   none
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20120430
-% Lea Mueller, 17.5.2011
+% Lea Mueller, muellele@gmail.com, 20110517
 %-
 
 global climada_global
@@ -30,10 +30,10 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % set defaults
 if ~exist('values'        ,'var'), values         = []; end
-if ~exist('centroids'     ,'var'), fprintf('Centroids not specified\n'), return; end
+if ~exist('centroids'     ,'var'), centroids      = []; end
 if ~exist('interp_method' ,'var'), interp_method  = []; end
 if ~exist('npoints'       ,'var'), npoints        = []; end
-if ~exist('stencil_ext')         , stencil_ext    = []; end
+if ~exist('stencil_ext'   ,'var'), stencil_ext    = []; end
 
 % PARAMETERS
 % set defaults
@@ -42,6 +42,7 @@ if isempty(npoints       ), npoints       =  199        ;end
 if isempty(stencil_ext   ), stencil_ext   =  0          ;end
 %
 % to avoid masking areas far away from CalcUnits
+% no_mask = 1;
 no_mask = 0;
 X = [];
 Y = [];
@@ -54,10 +55,9 @@ elseif isfield(centroids,'lon')
     lon = centroids.lon;
     lat = centroids.lat;
 else
-    fprintf('Longitude, latitude not gitven. Unable to proceed.\n');
+    fprintf('Longitude, latitude not given. Unable to proceed.\n');
     return
 end
-
 
 
 % define grid if not existing or if npoints>0
@@ -87,3 +87,6 @@ end % no_mask
 
 gridded_VALUE = griddata(lon,lat,values,X,Y,interp_method)+mask; % interpolate to grid 'linear'
 % gridded_VALUE(gridded_VALUE == 0) = nan;
+
+
+

@@ -40,6 +40,7 @@ function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130316, slight cleanup
 % David N. Bresch, david.bresch@gmail.com, 20141206, legend_str as output added
+% Lea Mueller, muellele@gmail.com, 20150421, legend location SouthEast instead of NorthWest
 %-
 
 fig=[];legend_str=[];
@@ -147,7 +148,7 @@ for EDS_i=1:length(EDS)
 end % EDS_i
 
 set(gca,'fontsize',12)
-if ~isempty(legend_str),legend(legend_str,'Location','NorthWest');end % add legend
+if ~isempty(legend_str),legend(legend_str,'Location','SouthEast');end % add legend %changed to SouthEast instead of NorthWest
 %if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
 grid on; % show grid
 xlabel('Return period (years)')

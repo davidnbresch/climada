@@ -10,11 +10,13 @@ function [cmap c_ax] = climada_colormap(peril_ID)
 % EXAMPLE:
 %   cmap = climada_colormap('TC')
 % INPUTS:
-%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL
+%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, can
+%   also be damage or schematic.
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, raw documentation
+% Lea Mueller, muellele@gmail.com, 20140429, colormaps for damage and schematic
 %-
 
 cmap    = []; %init output
