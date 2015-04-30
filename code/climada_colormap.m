@@ -1,4 +1,4 @@
-function [cmap c_ax] = climada_colormap(peril_ID)
+function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % climada color map
 % NAME:
 %   climada_colormap
@@ -17,6 +17,7 @@ function [cmap c_ax] = climada_colormap(peril_ID)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, raw documentation
 % Lea Mueller, muellele@gmail.com, 20140429, colormaps for damage and schematic
+% Lea Mueller, muellele@gmail.com, 20140429, added waterfall colormap
 %-
 
 cmap    = []; %init output
@@ -27,8 +28,9 @@ if ~climada_init_vars, return; end
 
 % poor man's version to check arguments
 if ~exist('peril_ID', 'var'), peril_ID = ''; end
+if ~exist('steps10' , 'var'), steps10  = ''; end
 
-steps10 = 10;
+if isempty(steps10); steps10 = 10;end
 cmap1   = [];
 cmap2   = [];
 
@@ -109,7 +111,7 @@ switch peril_ID
         c_ax = [ ];
         startcolor   = [238 224 229]/255; %lavenderblush 2
         middlecolor1 = [255 181 197]/255; %pink 1
-        middlecolor2 = [238 18 137 ]/255; %deeppink 2
+        middlecolor2 = [238  18 137]/255; %deeppink 2
         endcolor     = [104  34 139]/255; %darkorchid 4
         for i=1:3
             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
@@ -120,14 +122,37 @@ switch peril_ID
     case 'schematic'
         % create schematic colormap (gray red)
         c_ax = [ ];
-        startcolor   = [244 244 244 ]/255; %sgi gray 96
-        middlecolor1 = [193 193 193 ]/255; %sgi gray 76
+        startcolor   = [244 244 244]/255; %sgi gray 96
+        middlecolor1 = [193 193 193]/255; %sgi gray 76
         middlecolor2 = [255 114  86]/255; %coral 1
-        endcolor    = [205   0   0]/255; %red 3
+        endcolor     = [205   0   0]/255; %red 3
         cmap1 = makeColorMap(startcolor, middlecolor1,10);
         cmap2 = makeColorMap(middlecolor1, middlecolor2,10);
         cmap3 = makeColorMap(middlecolor2, endcolor,10);
-        cmap = [cmap1; cmap2; cmap3];        
+        cmap = [cmap1; cmap2; cmap3];  
+        
+    case 'waterfall'
+        % create colormap for ECA waterfall graph
+        c_ax = [ ];
+        startcolor   = [255 193  37]/255; %goldenrod 1
+        middlecolor1 = [254 125  64]/255; %flesh
+        middlecolor2 = [205  51  51]/255; %brown 3
+        %endcolor     = [122 55 139]/255; %mediumorchid 4
+        endcolor     = [139  28  98]/255; %maroon 4
+        for i=1:3
+            cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor1(i);
+            cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
+        end
+        % add grey color for dotted line
+        cmap = [cmap1; cmap2; [120 120 120]/256];
+        % yellow, orange, red and add grey color for dotted line
+        %cmap = [255 215   0 ;...   %today
+        %        255 127   0 ;...   %eco
+        %        238  64   0 ;...   %clim
+        %        205   0   0 ;...   %total risk
+        %        120 120 120]/256;  %dotted line]/255;
+        %cmap(1:4,:) = brighten(cmap(1:4,:),0.3);
+
 end
 
 if isempty(cmap)
