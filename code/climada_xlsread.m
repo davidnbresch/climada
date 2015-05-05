@@ -85,8 +85,9 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 % David N. Bresch, david.bresch@gmail.com, 20020901, 20080924
 % Lea Mueller, muellele@gmail.com, 20120730, if ~isempty(NUMERIC) also possible
 % David N. Bresch, david.bresch@gmail.com, 20141230, misdat_value added
-% David N. Bresch, david.bresch@gmail.com, 20150101, simplified if file and sheet provied (no check for sheet to exist)
+% David N. Bresch, david.bresch@gmail.com, 20150101, simplified if file and sheet provided (no check for sheet to exist)
 % David N. Bresch, david.bresch@gmail.com, 20150227, finally, column headers with numbers are named VALxxxx
+% Lea Mueller, muellele@gmail.com, 2015505, bugfix for difficult header name
 %-
 
 if ~exist('interactive_mode','var'),interactive_mode=[];end
@@ -261,8 +262,9 @@ for header_i=1:size(RAW,2)
                 catch
                     fprintf('consider simplyfying header tag %s\n',header_tag);
                     if ~isnan(str2double(header_tag(1))), header_tag = ['Att_' header_tag];end% Attribute starts with number, rewrite for setfield
-                    header_tag = strrep(header_tag,'_'); % deblank attributes
-                    res = setfield(res,header_tag{:},arr_values); % add to struct
+                    header_tag = strrep(header_tag,' ',''); % deblank attributes
+                    %res = setfield(res,header_tag{:},arr_values); % add to struct
+                    res = setfield(res,header_tag,arr_values); % add to struct
                 end
             else
                 if ~silent_mode, fprintf('WARNING: (empty) header/column %i skipped\n',header_i);end

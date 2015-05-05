@@ -39,6 +39,7 @@ function IFC = climada_hazard2IFC(hazard,geo_locations)
 % David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
 % Lea Mueller, muellele@gmail.com, 20150318, fit parameters only for positive intensity values
 % David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array
+% Lea Mueller, muellele@gmail.com, 20150504, variable intensity threshold depending on peril_ID
 %-
 
 IFC = []; % init
@@ -90,6 +91,12 @@ if isstruct(geo_locations)
     poi_ID  = hazard.centroid_ID(poi_ndx);
 end
 
+% use 0 as intensity threshold for tc wind speed
+int_threshod = 0;
+switch hazard.peril_ID
+    case 'TR' % for torrential rain use 10 mm as intensity threshold
+        int_threshod = 10;
+end
 no_generated = hazard.event_count / hazard.orig_event_count;
 
 % initiate IFC
@@ -119,7 +126,7 @@ for poi_i = 1:numel(poi_ID)
     %IFC(poi_i).cum_event_freq = cumsum(hazard.frequency(int_ndx).*(no_generated+1));
     
     %2: fitted intensity for given return periods
-    rel_indx = IFC.intensity(poi_i,:)>0;
+    rel_indx = IFC.intensity(poi_i,:)> int_threshod;
     IFC.polyfit(poi_i,:)       = polyfit(log10(IFC.return_periods(poi_i,rel_indx)), IFC.intensity(poi_i,rel_indx), 1);
     IFC.intensity_fit(poi_i,:) = polyval(IFC.polyfit(poi_i,:), log10(IFC.fit_return_periods));
     

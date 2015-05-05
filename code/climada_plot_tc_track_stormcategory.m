@@ -137,7 +137,7 @@ if check_legend %(>=1)
     legendstr = {'Begin','Trop. depression','Trop. storm','Hurricane 1','Hurricane 2','Hurricane 3','Hurricane 4','Hurricane 5'};
     
     %%L = legend([h(end) g],legendstr,'location','se');
-    L = legend([f g],legendstr,'location','se');
+    L = legend([f g],legendstr,'location','ne');%'sw');
     %L = legend([f g],legendstr,'location','north','orientation','horizontal');
     legend('boxoff')
     set(L,'FontSize',8);
