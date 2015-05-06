@@ -89,19 +89,23 @@ else
 end
 h_points(end+[1:length(iv)]) = plot3(x(iv),y(iv),v(iv),marker,'color',map(1,:),'markerfacecolor',map(1,:),'markersize',markersize,'linewidth',0.1);
 
+color_steps = linspace(miv,mav,size(map,1));
+color_steps = [0 color_steps];
 for nc = 2:size(map,1)
-    iv = find(v > miv+(nc-3)*clrstep & v <= miv+(nc-2)*clrstep) ;
+    %iv = find(v > miv+(nc-3)*clrstep & v <= miv+(nc-2)*clrstep) ;
+    iv = find(v > color_steps(nc) & v<= color_steps(nc+1));
     h_points(end+[1:length(iv)]) = ...
         plot3(x(iv),y(iv),v(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
 end
-iv = find(v >= mav);
-h_points(end+[1:length(iv)]) = ...
-    plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
+% iv = find(v >= mav);
+% h_points(end+[1:length(iv)]) = ...
+%     plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
 
 if colorbar_on    
     caxis([miv-clrstep mav])
     colormap(map)
-    h = colorbar('ylim',[miv-clrstep mav]);
+    %h = colorbar('ylim',[miv-clrstep mav]);
+    h = colorbar('ylim',[miv mav]);
     if v_exp
         ytick_ = get(h,'ytick');
         set(h,'YTick',ytick_,'YTickLabel',10.^ytick_)

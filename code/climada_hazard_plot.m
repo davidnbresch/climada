@@ -104,7 +104,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     centroids.lon = hazard.lon; % as the gridding routine needs centroids
     centroids.lat = hazard.lat;
     %npoints       = 2000;
-    npoints       = 1500;
+    npoints       = 1000;
     stencil_ext   = 5;
     [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,'linear',npoints,stencil_ext);  
     contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
