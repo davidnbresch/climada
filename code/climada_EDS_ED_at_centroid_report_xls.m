@@ -89,11 +89,11 @@ matr(4:end,2) = num2cell(EDS(1).assets.lat);
 matr{3,3}     = 'Ward no';
 matr{3,4}     = 'Category';
 % special case for Barisal where we have two additional variables to
-% describee the centroids
-if isfield(entity(1).assets.Ward_Nr)
+% describe the centroids
+if isfield(entity(1).assets,'Ward_Nr')
     matr(4:end,3) = num2cell(entity(1).assets.Ward_Nr);
 end
-if isfield(entity(1).assets.Category)
+if isfield(entity(1).assets,'Category')
     matr(4:end,4) = entity(1).assets.Category;
 end
 
