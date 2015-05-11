@@ -48,6 +48,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20100107, revised, changed from entity.assets to assets
 % David N. Bresch, david.bresch@gmail.com, 20141127, allows for assets OR entity as input
 % David N. Bresch, david.bresch@gmail.com, 20141127, allows for hazard OR centroids as input
+% Lea Mueller, muellele@gmail.com, 20150511, only for unique lon/lat values, essential speedup
 %-
 
 global climada_global
@@ -124,9 +125,14 @@ if isfield(centroids,'centroid_ID')
     centroids.lat=centroids.lat(centroids.centroid_ID>0);
 end
 
+% find unique lat lons
+[lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
+% lon_lat_all           = [assets.lon assets.lat];
+
 % start encoding
-n_assets=length(assets.Value);
-assets.centroid_index=assets.Value*0; % init
+n_assets              = length(indx);
+% n_assets            = length(assets.Value);
+assets.centroid_index = assets.Value*0; % init
 
 t0       = clock;
 msgstr   = sprintf('Encoding %i assets ... ',n_assets);
@@ -143,9 +149,10 @@ end
 for asset_i=1:n_assets
     if climada_global.waitbar,waitbar(asset_i/n_assets,h);end
     
-    dist_m=climada_geo_distance(assets.lon(asset_i),assets.lat(asset_i),centroids.lon,centroids.lat);
-    [min_dist,min_dist_index] = min(dist_m);
-    assets.centroid_index(asset_i)=min_dist_index;
+    dist_m                       = climada_geo_distance(assets.lon(indx(asset_i)),assets.lat(indx(asset_i)),centroids.lon,centroids.lat);
+    [min_dist,min_dist_index]    = min(dist_m);
+    indx3                        = find(indx2 == asset_i);
+    assets.centroid_index(indx3) = min_dist_index;
     
     %if verbose,fprintf('%f/%f --> %f/%f\n',assets.lon(asset_i),assets.lat(asset_i),centroids.lon(min_dist_index),centroids.lat(min_dist_index));end
     
@@ -175,18 +182,18 @@ else
     fprintf(format_str,''); % move carriage to begin of line
 end
 
-assets.hazard.filename='assets encode'; % default
-assets.hazard.comment='assets encode'; % default
-if isfield(centroids,'filename'),assets.hazard.filename=centroids.filename;end
-if isfield(centroids,'comment'),assets.hazard.comment=centroids.comment;end
+assets.hazard.filename = 'assets encode'; % default
+assets.hazard.comment  = 'assets encode'; % default
+if isfield(centroids,'filename'),assets.hazard.filename = centroids.filename;end
+if isfield(centroids,'comment' ),assets.hazard.comment  = centroids.comment;end
 
 if entity_passed_on_input
-    entity=rmfield(entity,'assets'); % delete input
-    entity.assets=assets; % assign re-encoded assets
+    entity         = rmfield(entity,'assets'); % delete input
+    entity.assets  = assets; % assign re-encoded assets
     % and pass on output:
-    entityORassets=entity; % return entity as output
+    entityORassets = entity; % return entity as output
 else
-    entityORassets=assets; % return assets as output
+    entityORassets = assets; % return assets as output
 end
 
 return

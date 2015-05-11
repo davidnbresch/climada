@@ -88,9 +88,16 @@ else
 end
 
 [x, y] = meshgrid(unique(hazard.lon),unique(hazard.lat));
-
 gridded_h_int = griddata(hazard.lon,hazard.lat,hazard_intensity,x,y);
 
+% figure parameters
+scale  = max(hazard.lon) - min(hazard.lon);
+ax_lim = [min(hazard.lon)-scale/30 max(hazard.lon)+scale/30 ...
+          max(min(hazard.lat),-60)-scale/30  min(max(hazard.lat),95)+scale/30];
+
+
+% create figure
+gridded_h_int(gridded_h_int==0) = nan;
 fig = contourf(x,y,gridded_h_int, 'edgecolor','none');
 hold on
 title(title_str)
@@ -185,10 +192,11 @@ end
 ylabel('Latitude')
 xlabel('Longitude')
 
-
 set(gcf,'color', 'w')
+axis(ax_lim)
 axis equal
-axis([min(hazard.lon) max(hazard.lon) min(hazard.lat) max(hazard.lat)])
+axis(ax_lim)
+
 
 hold off
 return

@@ -83,7 +83,9 @@ fclose(fid);
 %% read asci-file
 % delimiter = ' ';
 delimiter = '\t';
-event_grid = flipud(dlmread(asci_file,delimiter,row_count,0));
+event_grid = dlmread(asci_file,delimiter,row_count,0);
+% event_grid = flipud(dlmread(asci_file,delimiter,row_count,0));
+
 
 % check that size matches
 if ncols~=size(event_grid,2);fprintf('Number of columns do not correspond, please check.\n');return;end
@@ -152,7 +154,7 @@ hazard_ex = hazard;
 % overwrite template hazard with flood information
 hazard.lon = reshape(X,1,ncols*nrows);
 hazard.lat = reshape(Y,1,ncols*nrows);  
-hazard.centroid_ID = 1:numel(hazard.lon);
+hazard.centroid_ID      = 1:numel(hazard.lon);
 hazard.orig_years       = no_event;
 hazard.orig_event_count = no_event;
 hazard.event_count      = no_event;

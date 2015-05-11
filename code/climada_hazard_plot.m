@@ -59,13 +59,13 @@ hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);
 scale2 =(max(hazard.lon) - min(hazard.lon))/...
-    (min(max(hazard.lat),80)-max(min(hazard.lat),-60));
+    (min(max(hazard.lat),95)-max(min(hazard.lat),-60));
 height = 0.5;
 if height*scale2 > 1.2; height = 1.2/scale2; end
 
 % calculate figure characteristics
 ax_lim = [min(hazard.lon)-scale/30 max(hazard.lon)+scale/30 ...
-    max(min(hazard.lat),-60)-scale/30  min(max(hazard.lat),80)+scale/30];
+          max(min(hazard.lat),-60)-scale/30  min(max(hazard.lat),95)+scale/30];
 
 if event_i<0
     % search for i-thlargest event
@@ -104,7 +104,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     centroids.lon = hazard.lon; % as the gridding routine needs centroids
     centroids.lat = hazard.lat;
     %npoints       = 2000;
-    npoints       = 1000;
+    npoints       = 500;
     stencil_ext   = 5;
     [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,'linear',npoints,stencil_ext);  
     contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
