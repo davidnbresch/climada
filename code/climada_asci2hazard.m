@@ -1,4 +1,4 @@
-function hazard = climada_asci2hazard(asci_file)
+function hazard = climada_asci2hazard(asci_file, row_count)
 % climada_asci2hazard
 % MODULE:
 %   climada core
@@ -24,6 +24,7 @@ function hazard = climada_asci2hazard(asci_file)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150313, init
 % Lea Mueller, muellele@gmail.com, 20150326, changes for generalisation
+% Lea Mueller, muellele@gmail.com, 20150511, row_count input added, 10 if empty
 %-
 
 hazard = []; %init
@@ -33,6 +34,10 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('asci_file','var'),asci_file=[];end
+if ~exist('row_count','var'),row_count=[];end
+
+if isempty(row_count),row_count=10;end
+%check row_count for your specific asci-file
 
 
 %% prompt for asci file if not given
@@ -60,9 +65,9 @@ end
 
 
 %% read information (number of rows, columsn, xllcorner and yllcorner, etc)
-row_count = 0;
+row_counter = 0;
 fid=fopen(asci_file,'r');
-for i = 1:10
+for i = 1:6
     line=fgetl(fid);
     if length(line)>0
        [token, remain] = strtok(line,' ');
@@ -73,7 +78,7 @@ for i = 1:10
            if strfind(token,'yllcorner'   ); yllcorner    = str2num(remain);end
            if strfind(token,'cellsize'    ); cellsize     = str2num(remain);end
            if strfind(token,'NODATA_value'); NODATA_value = str2num(remain);end
-           row_count = row_count+1;
+           row_counter = row_counter+1;
        end
     end
 end
@@ -81,15 +86,15 @@ fclose(fid);
 
 
 %% read asci-file
-% delimiter = ' ';
-delimiter = '\t';
+delimiter = '';
+% delimiter = '\t';
 event_grid = dlmread(asci_file,delimiter,row_count,0);
 % event_grid = flipud(dlmread(asci_file,delimiter,row_count,0));
 
 
 % check that size matches
-if ncols~=size(event_grid,2);fprintf('Number of columns do not correspond, please check.\n');return;end
-if nrows~=size(event_grid,1);fprintf('Number of rows do not correspond, please check.\n');return;end
+if ncols~=size(event_grid,2);fprintf('Number of columns do not correspond, please check. Hint: check number of header rows.\n');return;end
+if nrows~=size(event_grid,1);fprintf('Number of rows do not correspond, please check. Hint: check number of header rows.\\n');return;end
 
 % set nodata values to 0
 event_grid(event_grid==NODATA_value) = 0;
@@ -99,13 +104,22 @@ event_grid(event_grid==NODATA_value) = 0;
 % yllcorner = 504276.750;
 % cellsize  = 100.0;
 
-% only for Barisal: transformation of UTM to lat lon coordinates (including shift)
-[lon_min, lat_min] = utm2ll_shift(xllcorner, yllcorner);
-[lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+if row_count == 10
+    % only for Barisal: transformation of UTM to lat lon coordinates (including shift)
+    [lon_min, lat_min] = utm2ll_shift(xllcorner, yllcorner);
+    [lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+    
+elseif row_count == 6
+    % only for El Salvador: transformation of UTM to lat lon coordinates
+    [lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
+    [lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+    
+else
+    % original conversion from UTM to lat lon
+    % [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
+    % [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows); 
+end
 
-% original conversion from UTM to lat lon
-% [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
-% [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
 
 % create meshgrid
 [X, Y ] = meshgrid(linspace(lon_min,lon_max,ncols), ...

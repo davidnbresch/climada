@@ -37,6 +37,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20150225, res instead of [X,Y,gridded_VALUE]
 % Lea Mueller, muellele@gmail.com, 20150424, colormap according to peril_ID
 % Lea Mueller, muellele@gmail.com, 20150427, higher resolution, npoints set to 2000 (instead of 199)
+% Lea Mueller, muellele@gmail.com, 20150512, switched to griddata instead of climada_gridded_Value
 %-
 
 res=[]; % init
@@ -64,8 +65,9 @@ height = 0.5;
 if height*scale2 > 1.2; height = 1.2/scale2; end
 
 % calculate figure characteristics
-ax_lim = [min(hazard.lon)-scale/30 max(hazard.lon)+scale/30 ...
-          max(min(hazard.lat),-60)-scale/30  min(max(hazard.lat),95)+scale/30];
+ax_lim_buffer = scale/10;
+ax_lim = [min(hazard.lon)-ax_lim_buffer           max(hazard.lon)+ax_lim_buffer ...
+          max(min(hazard.lat),-60)-ax_lim_buffer  min(max(hazard.lat),95)+ax_lim_buffer];
 
 if event_i<0
     % search for i-thlargest event
@@ -93,7 +95,7 @@ else
         fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard.name{event_i},hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i),event_i);
     end
 end
-if isfield(hazard,'units'),title_str=[title_str ' [' hazard.units ']'];end % add units
+if isfield(hazard,'units'),title_str=[title_str ' (' hazard.units ')'];end % add units
 
 if sum(values(not(isnan(values))))>0 % nansum(values)>0
     
@@ -104,10 +106,12 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     centroids.lon = hazard.lon; % as the gridding routine needs centroids
     centroids.lat = hazard.lat;
     %npoints       = 2000;
-    npoints       = 500;
-    stencil_ext   = 5;
-    [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,'linear',npoints,stencil_ext);  
-    contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
+    %npoints       = 500;
+    %stencil_ext   = 5;
+    %[X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,'linear',npoints,stencil_ext); 
+    [X, Y]        = meshgrid(unique(hazard.lon),unique(hazard.lat));
+    gridded_VALUE = griddata(hazard.lon,hazard.lat,values,X,Y);
+    contourf(X, Y, gridded_VALUE,'edgecolor','none')
     %contourf(X, Y, gridded_VALUE,'edgecolor','none')
     hold on
     box on
@@ -117,8 +121,9 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     axis(ax_lim)
     title(title_str);
     if ~isempty(caxis_range),caxis(caxis_range);end
-    colorbar
+    colorbar;
     colormap(cmap)
+
 else
     fprintf('all intensities zero for event %i\n',event_i);
     return
