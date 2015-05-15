@@ -39,8 +39,8 @@ function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_
 % Lea Mueller, 20120816, comparison title of all comparisons, changed markersize
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20130316, slight cleanup
-% David N. Bresch, david.bresch@gmail.com, 20141206, legend_str as output added
 % Lea Mueller, muellele@gmail.com, 20150421, legend location SouthEast instead of NorthWest
+% David N. Bresch, david.bresch@gmail.com, 20150515, line 212, legend_str{end+1}...
 %-
 
 fig=[];legend_str=[];
@@ -209,7 +209,7 @@ if ~isempty(EDS_comparison)
         plot(return_period, sorted_damage, marker_(ii,:), 'color',color_(ii,:), 'LineWidth',1.2, 'markersize',msize);
         hold on
         ii = ii+1; if ii>length(marker_), ii=1; end
-        if isfield(EDS(EDS_i),'annotation_name'), legend_str{EDS_i}=strrep(EDS(EDS_i).annotation_name,'_',' '); end
+        if isfield(EDS(EDS_i),'annotation_name'), legend_str{end+1}=strrep(EDS(EDS_i).annotation_name,'_',' '); end
         % add title
         [~,hazard_name]    = fileparts(EDS(EDS_i).hazard.filename);
         [~,assets_name]    = fileparts(EDS(EDS_i).assets.filename);
