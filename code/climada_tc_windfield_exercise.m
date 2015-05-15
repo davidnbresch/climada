@@ -1,19 +1,22 @@
-function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_mode, check_plot)
+function res = climada_tc_windfield_exercise(tc_track, centroids, equal_timestep, silent_mode, check_plot)
 % TC windfield calculation
 % NAME:
-%   climada_tc_windfield
+%   climada_tc_windfield_exercise
 % PURPOSE:
 %   given a TC track (lat/lon,CentralPressure,MaxSustainedWind), calculate
 %   the wind field at locations (=centroids)
 %
+%   WARNING: please use climada_tc_windfield, the present code is for
+%   educational purposes only
+%
 %   mainly called from: see climada_tc_hazard_set
 %
 % CALLING SEQUENCE:
-%   climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode)
+%   climada_tc_windfield_exercise(tc_track,centroids,equal_timestep,silent_mode)
 % EXAMPLE:
-%   climada_tc_windfield
+%   climada_tc_windfield_exercise
 %   plot windfield:
-%   climada_tc_windfield(tc_track(1411), centroids,1,1,1)
+%   climada_tc_windfield_exercise(tc_track(1411), centroids,1,1,1)
 % INPUTS:
 %   tc_track: a structure with the track information:
 %       tc_track.lat
@@ -50,6 +53,7 @@ function res = climada_tc_windfield(tc_track, centroids, equal_timestep, silent_
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090728
+% David N. Bresch, david.bresch@gmail.com, 20150515, warning added and some debugs
 %-
 
 
@@ -130,7 +134,7 @@ treat_extratropical_transition = 0; % default=0, since non-standard iro Holland
 %
 % whether we plot the windfield (more for debugging this code)
 % (you rather plot the output of this routine in your own code than setting this flag, for speed reasons)
-% check_plot = 0; % default=0 
+% check_plot = 0; % default=0
 tc_track_ori = tc_track;
 
 if equal_timestep
@@ -180,7 +184,7 @@ if length(zero_wind_pos)>0
     if length(invalid_pos)>0,tc_track.MaxSustainedWind(invalid_pos)=0;end;
     filled_pos=find(tc_track.CentralPressure>=1013); % treat where pressure shows no wind
     if length(filled_pos)>0,tc_track.MaxSustainedWind(filled_pos)=0;end;
-
+    
     tc_track.zero_MaxSustainedWind_pos=zero_wind_pos; % to store
 end % length(zero_wind_pos)>0
 
@@ -244,7 +248,7 @@ res.gust         = zeros(1,centroid_count);
 res.node_Azimuth = zeros(1,centroid_count);
 res.node_lat     = zeros(1,centroid_count);
 res.node_lon     = zeros(1,centroid_count);
-                
+
 % add further fields (for climada use)
 if isfield(centroids,'OBJECTID')   , res.OBJECTID = centroids.OBJECTID;    end
 if isfield(centroids,'centroid_ID'), res.ID       = centroids.centroid_ID; end
@@ -258,29 +262,29 @@ for centroid_i=1:centroid_count % now loop over all centroids
     
     % the single-character variables refer to the Pioneer offering circular
     % that's why we kept these short names (so one can copy the OC for documentation)
-
+    
     % find closest node
     dd=((tc_track.lon-res.lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track.lat-res.lat(centroid_i)).^2; % in km
-
+    
     [min_dd,pos] = min(dd);
     %dd=sqrt(dd(pos))*111.12; % if one would need the real distance in km
-
+    
     node_i       = pos(1); % take first if more than one
-
+    
     res.node_lat (centroid_i) = tc_track.lat(node_i);
     res.node_lon (centroid_i) = tc_track.lon(node_i);
     res.node_id  (centroid_i) = node_i;
     res.dist_node(centroid_i) = sqrt(min_dd(1))*111.12;
-  
+    
     D = sqrt(dd(node_i))*111.12; % now in km
-
+    
     R = 30; % radius of max wind
     if abs(res.node_lat(centroid_i)) > 24, R = 30+2.5*(abs(res.node_lat(centroid_i))-24); end
     if abs(res.node_lat(centroid_i)) > 42, R = 75; end
-
+    
     if D<10*R % close enough to have an impact
         %%if D<5*R % faster method for non-Pioneer applications
-
+        
         % calculate angle to node to determine left/right of track
         ddx          = (res.lon(centroid_i)-res.node_lon(centroid_i))*cos(res.node_lat(centroid_i)/180*pi);
         ddy          = (res.lat(centroid_i)-res.node_lat(centroid_i));
@@ -288,7 +292,7 @@ for centroid_i=1:centroid_count % now loop over all centroids
         node_Azimuth = mod(-node_Azimuth+90,360); % convert wind such that N is 0, E is 90, S is 180, W is 270
         res.node_Azimuth(centroid_i) = node_Azimuth; % to store
         M            = tc_track.MaxSustainedWind(node_i);
-
+        
         if mod(node_Azimuth-tc_track.Azimuth(node_i)+360,360)<180
             % right of track
             T =  tc_track.Celerity(node_i);
@@ -299,8 +303,8 @@ for centroid_i=1:centroid_count % now loop over all centroids
         % switch sign for Southern Hemisphere
         if res.node_lat(centroid_i)<0
             T = -T;
-        end 
-
+        end
+        
         if treat_extratropical_transition
             % special to avoid unrealistic celerity after extratropical transition
             max_T_fact=0.0;
@@ -314,7 +318,7 @@ for centroid_i=1:centroid_count % now loop over all centroids
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % start adding your code here
         
-
+        
         
         % end your code here
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -328,85 +332,72 @@ if ~silent_mode,fprintf('%f secs for %s windfield\n',toc,deblank(title_str));end
 
 
 %--------------
-%% FIGURE
+% FIGURE
 %--------------
 if check_plot
-    fprintf('preparing footprint plot\n')
-
+    
+    if sum(res.gust)==0
+        fprintf('zero windfield, no plot\n')
+    else
+        fprintf('preparing footprint plot\n')
         
-    %scale figure according to range of longitude and latitude
-    scale  = max(centroids.lon) - min(centroids.lon);
-    scale2 =(max(centroids.lon) - min(centroids.lon))/...
+        
+        %scale figure according to range of longitude and latitude
+        scale  = max(centroids.lon) - min(centroids.lon);
+        scale2 =(max(centroids.lon) - min(centroids.lon))/...
             (min(max(centroids.lat),60)-max(min(centroids.lat),-50));
-    height = 0.5;
-    if height*scale2 > 1.2; height = 1.2/scale2; end
-    fig = climada_figuresize(height,height*scale2+0.15);
-    
-    % create gridded values
-    [X, Y, gridded_VALUE] = climada_gridded_VALUE(res.gust, centroids);
-    gridded_max       = max(max(gridded_VALUE));
-    gridded_max_round = 90;
+        height = 0.5;
+        if height*scale2 > 1.2; height = 1.2/scale2; end
+        fig = climada_figuresize(height,height*scale2+0.15);
         
-    contourf(X, Y, full(gridded_VALUE),...
-             0:10:gridded_max_round,'edgecolor','none')
-    hold on
-    climada_plot_world_borders(0.7)
-    climada_plot_tc_track_stormcategory(tc_track_ori);
-    
-    %centroids?
-    plot(centroids.lon, centroids.lat, '+r','MarkerSize',0.8,'linewidth',0.1)
-    
-    axis equal
-    axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
-          max(min(centroids.lat),-50)-scale/30  min(max(centroids.lat),60)+scale/30])
-      
-    caxis([0 gridded_max_round])
- 
-    
-    cmap_=...
-  [1.0000    1.0000    1.0000;
-    0.8100    0.8100    0.8100;
-    0.6300    0.6300    0.6300;
-    1.0000    0.8000    0.2000;
-    0.9420    0.6667    0.1600;
-    0.8839    0.5333    0.1200;
-    0.8259    0.4000    0.0800;
-    0.7678    0.2667    0.0400;
-    0.7098    0.1333         0];
-    
-    colormap(cmap_)
-    
-    
-    colorbartick           = [0:10:gridded_max_round round(gridded_max)];
-    colorbarticklabel      = num2cell(colorbartick);
-    colorbarticklabel{end} = [num2str(gridded_max,'%10.2f') 'max'];
-    colorbarticklabel{end} = [int2str(gridded_max)          'max'];
-    t = colorbar('YTick',colorbartick,'yticklabel',colorbarticklabel);
-    set(get(t,'ylabel'),'String', 'Wind speed (m s^{-1})','fontsize',8);
-    xlabel('Longitude','fontsize',8)
-    ylabel('Latitude','fontsize',8)
-    
-    title(title_str,'interpreter','none','fontsize',8)
-  
-    set(gca,'fontsize',8) 
+        % create gridded values
+        [X, Y, gridded_VALUE] = climada_gridded_VALUE(res.gust, centroids);
+        gridded_max       = max(max(gridded_VALUE));
+        gridded_max_round = 90;
+        
+        contourf(X, Y, full(gridded_VALUE),...
+            0:10:gridded_max_round,'edgecolor','none')
+        hold on
+        climada_plot_world_borders(0.7)
+        climada_plot_tc_track_stormcategory(tc_track_ori);
+        
+        %centroids?
+        plot(centroids.lon, centroids.lat, '+r','MarkerSize',0.8,'linewidth',0.1)
+        
+        axis equal
+        axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
+            max(min(centroids.lat),-50)-scale/30  min(max(centroids.lat),60)+scale/30])
+        
+        caxis([0 gridded_max_round])
+        
+        
+        cmap_=...
+            [1.0000    1.0000    1.0000;
+            0.8100    0.8100    0.8100;
+            0.6300    0.6300    0.6300;
+            1.0000    0.8000    0.2000;
+            0.9420    0.6667    0.1600;
+            0.8839    0.5333    0.1200;
+            0.8259    0.4000    0.0800;
+            0.7678    0.2667    0.0400;
+            0.7098    0.1333         0];
+        
+        colormap(cmap_)
+        
+        
+        colorbartick           = [0:10:gridded_max_round round(gridded_max)];
+        colorbarticklabel      = num2cell(colorbartick);
+        colorbarticklabel{end} = [num2str(gridded_max,'%10.2f') 'max'];
+        colorbarticklabel{end} = [int2str(gridded_max)          'max'];
+        t = colorbar('YTick',colorbartick,'yticklabel',colorbarticklabel);
+        set(get(t,'ylabel'),'String', 'Wind speed (m s^{-1})','fontsize',8);
+        xlabel('Longitude','fontsize',8)
+        ylabel('Latitude','fontsize',8)
+        
+        title(title_str,'interpreter','none','fontsize',8)
+        
+        set(gca,'fontsize',8)
+    end % non-zero gusts
+end % check_plot
 
-    choice = questdlg('print?','print');
-    switch choice
-    case 'Yes'
-        check_printplot = 1;
-    case 'No'
-        check_printplot = 0;
-    case 'Cancel'
-        return
-    end
-
-    if check_printplot %(>=1)   
-        foldername = [filesep 'results' filesep 'footprint_' tc_track.name '.pdf'];
-        print(fig,'-dpdf',[climada_global.data_dir foldername])
-        %close
-        fprintf('saved 1 FIGURE in folder %s \n', foldername);
-    end
-end
- 
-end
-    
+end % climada_tc_windfield_exercise
