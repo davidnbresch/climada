@@ -191,15 +191,17 @@ else
         if strcmp(sheet_names{sheet_i},'measures')
             %%fprintf('NOTE: also reading measures tab\n');
             measures        = climada_spreadsheet_read('no',entity_filename,'measures',1);
+            
+            % rename vuln_map, since otherwise climada_measures_encode does not treat it
+            if isfield(entity.measures,'vuln_map'),entity.measures.damagefunctions_map=entity.measures.vuln_map;entity.measures=rmfield(entity.measures,'vuln_map');end
+            
             entity.measures = climada_measures_encode(measures);
             
             % check for OLD naming convention, vuln_MDD_impact_a -> MDD_impact_a
             if isfield(entity.measures,'vuln_MDD_impact_a'),entity.measures.MDD_impact_a=entity.measures.vuln_MDD_impact_a;entity.measures=rmfield(entity.measures,'vuln_MDD_impact_a');end
             if isfield(entity.measures,'vuln_MDD_impact_b'),entity.measures.MDD_impact_b=entity.measures.vuln_MDD_impact_b;entity.measures=rmfield(entity.measures,'vuln_MDD_impact_b');end
             if isfield(entity.measures,'vuln_PAA_impact_a'),entity.measures.PAA_impact_a=entity.measures.vuln_PAA_impact_a;entity.measures=rmfield(entity.measures,'vuln_PAA_impact_a');end
-            if isfield(entity.measures,'vuln_PAA_impact_b'),entity.measures.PAA_impact_b=entity.measures.vuln_PAA_impact_b;entity.measures=rmfield(entity.measures,'vuln_PAA_impact_b');end
-            if isfield(entity.measures,'vuln_map'),entity.measures.damagefunctions_map=entity.measures.vuln_map;entity.measures=rmfield(entity.measures,'vuln_map');end
-            
+            if isfield(entity.measures,'vuln_PAA_impact_b'),entity.measures.PAA_impact_b=entity.measures.vuln_PAA_impact_b;entity.measures=rmfield(entity.measures,'vuln_PAA_impact_b');end            
         end
     end % sheet_i
     

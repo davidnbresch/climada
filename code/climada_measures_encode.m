@@ -20,6 +20,7 @@ function measures=climada_measures_encode(measures)
 % David N. Bresch, david.bresch@gmail.com, 20100107
 % David N. Bresch, david.bresch@gmail.com, 20141121, using only damagefunctions_map information
 % David N. Bresch, david.bresch@gmail.com, 20150103, some checks for .ods imported entities
+% David N. Bresch, david.bresch@gmail.com, 20150518, safety checkin
 %-
 
 %global climada_global
