@@ -94,7 +94,7 @@ pause(1)
 if isempty(hazard_clim_file) % local GUI
     hazard_clim_file = [climada_global.data_dir filesep 'hazards' filesep '*.mat'];
     if ~exist('filename','var'); filename = '_clim'; else filename = [strtok(filename,'.') '_clim'];end
-    hazard_clim_default  = [climada_global.data_dir filesep 'hazards' filesep 'Save climate change hazard in ' filename '.mat'];
+    hazard_clim_default  = [climada_global.data_dir filesep 'hazards' filesep filename '.mat'];
     [filename, pathname] = uiputfile(hazard_clim_file, 'Save climate change scenario hazard event set as:',hazard_clim_default);
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
