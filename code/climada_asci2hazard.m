@@ -38,6 +38,8 @@ if ~exist('row_count','var'),row_count=[];end
 
 if isempty(row_count),row_count=10;end
 %check row_count for your specific asci-file
+row_count = 6;
+
 
 
 %% prompt for asci file if not given
@@ -67,7 +69,7 @@ end
 %% read information (number of rows, columsn, xllcorner and yllcorner, etc)
 row_counter = 0;
 fid=fopen(asci_file,'r');
-for i = 1:6
+for i = 1:row_count
     line=fgetl(fid);
     if length(line)>0
        [token, remain] = strtok(line,' ');
@@ -88,13 +90,15 @@ fclose(fid);
 %% read asci-file
 delimiter = '';
 % delimiter = '\t';
-event_grid = dlmread(asci_file,delimiter,row_count,0);
-% event_grid = flipud(dlmread(asci_file,delimiter,row_count,0));
+
+%% ------always to be checked manually if flipud is needed or not ------
+% event_grid = dlmread(asci_file,delimiter,row_count,0);
+event_grid = flipud(dlmread(asci_file,delimiter,row_count,0));
 
 
-% check that size matches
-if ncols~=size(event_grid,2);fprintf('Number of columns do not correspond, please check. Hint: check number of header rows.\n');return;end
-if nrows~=size(event_grid,1);fprintf('Number of rows do not correspond, please check. Hint: check number of header rows.\\n');return;end
+%% check that size matches
+if ncols~=size(event_grid,2);fprintf('Number of columns do not correspond, please check. \\n Hint: check number of header rows.\n');return;end
+if nrows~=size(event_grid,1);fprintf('Number of rows do not correspond, please check. \\n Hint: check number of header rows.\\n');return;end
 
 % set nodata values to 0
 event_grid(event_grid==NODATA_value) = 0;
@@ -104,21 +108,22 @@ event_grid(event_grid==NODATA_value) = 0;
 % yllcorner = 504276.750;
 % cellsize  = 100.0;
 
-if row_count == 10
+%%% -------to be checked manually if we are working with Barisal or San Salvador-------
+%if row_count == 10
     % only for Barisal: transformation of UTM to lat lon coordinates (including shift)
     [lon_min, lat_min] = utm2ll_shift(xllcorner, yllcorner);
     [lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
     
-elseif row_count == 6
-    % only for El Salvador: transformation of UTM to lat lon coordinates
-    [lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
-    [lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
-    
-else
+%elseif row_count == 6
+%    % only for El Salvador: transformation of UTM to lat lon coordinates
+%    [lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
+%    [lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+%    
+%else
     % original conversion from UTM to lat lon
     % [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
     % [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows); 
-end
+%end
 
 
 % create meshgrid
