@@ -10,7 +10,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % EXAMPLE:
 %   cmap = climada_colormap('TC')
 % INPUTS:
-%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, can
+%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, MS, can
 %   also be damage or schematic.
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
@@ -18,6 +18,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % David N. Bresch, david.bresch@gmail.com, 20141121, raw documentation
 % Lea Mueller, muellele@gmail.com, 20140429, colormaps for damage and schematic
 % Lea Mueller, muellele@gmail.com, 20140429, added waterfall colormap
+% Lea Mueller, muellele@gmail.com, 20150522, added mudslides (MS) colormap
 %-
 
 cmap    = []; %init output
@@ -106,6 +107,19 @@ switch peril_ID
             0.4078    0.1333    0.5451;
             0.3333    0.1020    0.5451];    
         
+    case 'MS'
+        % create colormap for mudslides
+        c_ax = [];
+
+        startcolor   = [0.6118   0.4   0.1216]; %brick
+        middlecolor  = [0.9569   0.6431   0.3765]; %sandybrown
+        endcolor     = [0.1333   0.5451   0.1333]; %forest green
+        for i=1:3
+            cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
+            cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
+        end
+        cmap = [cmap1; cmap2];    
+
     case 'damage'
         % create colormap for surge
         c_ax = [ ];
