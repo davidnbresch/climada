@@ -49,6 +49,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141127, allows for assets OR entity as input
 % David N. Bresch, david.bresch@gmail.com, 20141127, allows for hazard OR centroids as input
 % Lea Mueller, muellele@gmail.com, 20150511, only for unique lon/lat values, essential speedup
+% David N. Bresch, david.bresch@gmail.com, 20150610, Lea's speedup fixed
 %-
 
 global climada_global
@@ -126,8 +127,8 @@ if isfield(centroids,'centroid_ID')
 end
 
 % find unique lat lons
-[lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
-% lon_lat_all           = [assets.lon assets.lat];
+%[lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows'); % until 20150610, wrong concat of lat/lon
+[lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
 
 % start encoding
 n_assets              = length(indx);
