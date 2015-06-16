@@ -193,7 +193,7 @@ else
             measures        = climada_spreadsheet_read('no',entity_filename,'measures',1);
             
             % rename vuln_map, since otherwise climada_measures_encode does not treat it
-            if isfield(entity.measures,'vuln_map'),entity.measures.damagefunctions_map=entity.measures.vuln_map;entity.measures=rmfield(entity.measures,'vuln_map');end
+            if isfield(measures,'vuln_map'),measures.damagefunctions_map=measures.vuln_map;measures=rmfield(measures,'vuln_map');end
             
             entity.measures = climada_measures_encode(measures);
             
