@@ -126,9 +126,18 @@ if isfield(centroids,'centroid_ID')
     centroids.lat=centroids.lat(centroids.centroid_ID>0);
 end
 
+% check lat lon dimension (1xn or nx1), now the concatenations works for both dimensions
+[lon_i lon_j] = size(assets.lon);
 % find unique lat lons
-%[lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows'); % until 20150610, wrong concat of lat/lon
-[lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
+if lon_i == 1
+    [lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
+elseif lon_j == 1
+    [lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
+else
+    fprintf('Please check the dimensions of assets.lon and assets.lat.\n')
+    return
+end
+
 
 % start encoding
 n_assets              = length(indx);
