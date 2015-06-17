@@ -50,6 +50,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141127, allows for hazard OR centroids as input
 % Lea Mueller, muellele@gmail.com, 20150511, only for unique lon/lat values, essential speedup
 % David N. Bresch, david.bresch@gmail.com, 20150610, Lea's speedup fixed
+% Lea Mueller, muellele@gmail.com, 20150617, speedup works for both dimensions of entity.lats and .lons (1xn and nx1)
 %-
 
 global climada_global
@@ -130,9 +131,9 @@ end
 [lon_i lon_j] = size(assets.lon);
 % find unique lat lons
 if lon_i == 1
-    [lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
-elseif lon_j == 1
     [lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
+elseif lon_j == 1
+    [lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
 else
     fprintf('Please check the dimensions of assets.lon and assets.lat.\n')
     return
