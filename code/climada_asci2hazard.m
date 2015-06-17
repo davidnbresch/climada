@@ -1,4 +1,4 @@
-function hazard = climada_asci2hazard(asci_file, row_count)
+function hazard = climada_asci2hazard(asci_file, row_count, utm_transformation)
 % climada_asci2hazard
 % MODULE:
 %   climada core
@@ -20,11 +20,15 @@ function hazard = climada_asci2hazard(asci_file, row_count)
 %   asci_file: prompted for if not given. Asci file is delimited by tabs
 %   (\t) and has 6 rows of information (ncols, nrows, xllcorner, yllcorner,
 %   cellsize, NODATA_value).
+%   utm_transformation: special case 'barisal' and 'salvador' to enable
+%   local coordinate system transformation to utm lat lon coordinates.
 % OUTPUTS: hazard
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150313, init
 % Lea Mueller, muellele@gmail.com, 20150326, changes for generalisation
 % Lea Mueller, muellele@gmail.com, 20150511, row_count input added, 10 if empty
+% Lea Mueller, muellele@gmail.com, 20150617, utm_tranformation added, to
+%              specific for barisal coordinate transformation and salvador
 %-
 
 hazard = []; %init
@@ -35,6 +39,7 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('asci_file','var'),asci_file=[];end
 if ~exist('row_count','var'),row_count=[];end
+if ~exist('utm_transformation','var'),utm_transformation=[];end
 
 if isempty(row_count),row_count=10;end
 %check row_count for your specific asci-file
@@ -94,6 +99,7 @@ delimiter = '';
 %% ------always to be checked manually if flipud is needed or not ------
 % event_grid = dlmread(asci_file,delimiter,row_count,0);
 event_grid = flipud(dlmread(asci_file,delimiter,row_count,0));
+fprintf('Data was flipped upside down, please check if this is correct.\n')
 
 
 %% check that size matches
@@ -108,22 +114,20 @@ event_grid(event_grid==NODATA_value) = 0;
 % yllcorner = 504276.750;
 % cellsize  = 100.0;
 
-%%% -------to be checked manually if we are working with Barisal or San Salvador-------
-%if row_count == 10
-    % only for Barisal: transformation of UTM to lat lon coordinates (including shift)
-    [lon_min, lat_min] = utm2ll_shift(xllcorner, yllcorner);
-    [lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
-    
-%elseif row_count == 6
-%    % only for El Salvador: transformation of UTM to lat lon coordinates
-%    [lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
-%    [lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
-%    
-%else
+switch utm_transformation
+    case 'barisal'
+        % only for Barisal: transformation of UTM to lat lon coordinates (including shift)
+        [lon_min, lat_min] = utm2ll_shift(xllcorner, yllcorner);
+        [lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
+        
+    case 'salvador'
+        % only for El Salvador: transformation of UTM to lat lon coordinates
+        [lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
+        [lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);  
     % original conversion from UTM to lat lon
     % [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
     % [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows); 
-%end
+end
 
 
 % create meshgrid
