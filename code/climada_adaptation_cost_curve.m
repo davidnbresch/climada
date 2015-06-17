@@ -49,6 +49,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % Gilles Stassen gillesstassen@hotmail.com 20141212 fixed the arrow issue; changed labeling of total climate risk to USD x m rounded to 2 s.f.
 % David N. Bresch, david.bresch@gmail.com, 20141213 plot_arrows=0 by default and climada_demo option cleaned up
 % David N. Bresch, david.bresch@gmail.com, 20141231 subaxis removed (not clean, troubles in Octave)
+% Lea Mueller, muellele@gmail.com, 20150617, set to bc_ratio (benefits per cost) instead of cb_ratio
 %-
 
 global climada_global
@@ -176,7 +177,7 @@ if reverse_cb,sorted_cb_ratio=1./sorted_cb_ratio;end
 % COMMAND WINDOW: results
 fprintf('%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
-fprintf('\t Measure \t\t\t Cost \t\t\t Benefit \t\t CB_ratio\n');
+fprintf('\t Measure \t\t\t Cost \t\t\t Benefit \t\t BC_ratio\n');
 if scaled_AED
     fprintf('\t \t    \t\t\t(Mio USD)\t\t(Mio USD)\t\t(USD/USD)\n');
 elseif nice_numbers>1
@@ -191,7 +192,7 @@ for measure_i = 1:n_measures
         m_name,...
         (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
         measures_impact.benefit(measure_i)*fct,...
-        measures_impact.cb_ratio(measure_i));
+        1./measures_impact.cb_ratio(measure_i));
 end % measure_i
 if add_insurance_measure % NOTE: this section not relevant for lecture
     fprintf('\t Residual covered by insurance')
