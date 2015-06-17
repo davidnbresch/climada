@@ -39,7 +39,7 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('asci_file','var'),asci_file=[];end
 if ~exist('row_count','var'),row_count=[];end
-if ~exist('utm_transformation','var'),utm_transformation=[];end
+if ~exist('utm_transformation','var'),utm_transformation='';end
 
 if isempty(row_count),row_count=10;end
 %check row_count for your specific asci-file
@@ -94,6 +94,7 @@ fclose(fid);
 
 %% read asci-file
 delimiter = '';
+% delimiter = ' ';
 % delimiter = '\t';
 
 %% ------always to be checked manually if flipud is needed or not ------
@@ -156,7 +157,7 @@ read_index = zeros(1,size(files_in_folder,1));
 for i = 1:size(files_in_folder,1)
     filename_i = files_in_folder(i,:);
     filename_i = filename_i(~isstrprop(filename_i,'digit'));
-    if strfind(filename_i,[name_only ext]) & strfind(filename_i,'.asc')
+    if strfind(filename_i,[name_only ext]) & strfind(filename_i,'.asc') & isempty(strfind(filename_i,'.xml'))
         read_index(i) = 1;
     end
 end
