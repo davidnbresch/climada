@@ -51,6 +51,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % Lea Mueller, muellele@gmail.com, 20150511, only for unique lon/lat values, essential speedup
 % David N. Bresch, david.bresch@gmail.com, 20150610, Lea's speedup fixed
 % Lea Mueller, muellele@gmail.com, 20150617, speedup works for both dimensions of entity.lats and .lons (1xn and nx1)
+% David N. Bresch, david.bresch@gmail.com, 20150618, Lea's speedup fixed 2nd time (line 134)
 %-
 
 global climada_global
@@ -130,10 +131,10 @@ end
 % check lat lon dimension (1xn or nx1), now the concatenations works for both dimensions
 [lon_i lon_j] = size(assets.lon);
 % find unique lat lons
-if lon_i == 1
-    [lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
-elseif lon_j == 1
+if lon_j == 1 % was lon_i
     [lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
+elseif lon_i == 1 % was lon_j
+    [lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
 else
     fprintf('Please check the dimensions of assets.lon and assets.lat.\n')
     return
