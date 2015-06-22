@@ -1,4 +1,4 @@
-function IFC = climada_hazard2IFC(hazard,geo_locations)
+function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,check_plot)
 % climada
 % NAME:
 %   climada_hazard2IFC
@@ -40,6 +40,7 @@ function IFC = climada_hazard2IFC(hazard,geo_locations)
 % Lea Mueller, muellele@gmail.com, 20150318, fit parameters only for positive intensity values
 % David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array
 % Lea Mueller, muellele@gmail.com, 20150504, variable intensity threshold depending on peril_ID
+% Gilles Stassen, gillesstassen@hotmail.com, 20150615, check_plot and 'SELECT' option added, bug fix order of isstruct/isvector(geo_loc)
 %-
 
 IFC = []; % init
@@ -47,7 +48,8 @@ IFC = []; % init
 %global climada_global
 if ~climada_init_vars                , return            ; end % init/import global variables
 if ~exist('hazard'            ,'var'), hazard        = []; end
-if ~exist('geo_locations'     ,'var'), geo_locations = []; end
+if ~exist('geo_locations'     ,'var'), geo_locations = 'SELECT'; end
+if ~exist('check_plot'        ,'var'), check_plot    = []; end
 
 % prompt for hazard if not given
 if isempty(hazard) % local GUI
@@ -60,15 +62,52 @@ if isempty(geo_locations)
     fprintf('Centroid_ID set to %d. Please specify otherwise, if required. \n',geo_locations)
 end
 
+if strcmp(geo_locations,'SELECT')
+    check_plot = 1; %interactive mode, so user will probably want a plot
+    msg_str = sprintf('Click on points of interest (press enter when done): ');
+    figure
+    climada_hazard_plot_hr(hazard,0); drawnow; 
+    title({'Max intensity at centroid'; msg_str})
+    clear geo_locations % to avoid warning message
+    [geo_locations.lon,geo_locations.lat] = ginput; 
+    close
+    geo_locations.name = {};
+    for i = 1:length(geo_locations.lon),geo_locations.name{i} = num2str(i); end
+end
+
 if isvector(geo_locations),n_points=length(geo_locations);end
 if isstruct(geo_locations),n_points=length(geo_locations.lon);end
 if n_points>1
     % recursively call to generate more than one IFC
     for point_i = 1:n_points
-        if isvector(geo_locations),geo_location=geo_locations(point_i);end
-        if isstruct(geo_locations),geo_location.lon=geo_locations.lon(point_i);geo_location.lat=geo_locations.lat(point_i);end
+        if isstruct(geo_locations)
+            geo_location.lon=geo_locations.lon(point_i);
+            geo_location.lat=geo_locations.lat(point_i);
+        elseif isvector(geo_locations)
+            geo_location=geo_locations(point_i);
+        end
         IFC_i=climada_hazard2IFC(hazard,geo_location);
         if isempty(IFC),IFC=IFC_i;else IFC(point_i)=IFC_i;end
+    end
+    if check_plot
+        figure; hold on; 
+        climada_hazard_plot_hr(hazard,0);
+        lon_buf = (max(hazard.lon)-min(hazard.lon))*0.05;
+        if isstruct(geo_locations) && isfield(geo_locations,'name')
+            text(geo_locations.lon+lon_buf,geo_locations.lat,geo_locations.name,...
+                'horizontalalignment','left',...
+                'verticalalignment','middle',...
+                'fontweight','bold',...
+                'backgroundcolor','w'); hold on
+            p = plot(geo_locations.lon,geo_locations.lat,'or');
+            set(p,'MarkerFaceColor','r')
+        else
+            geo_ndx = ismember(hazard.centroid_ID,geo_locations);
+            p = plot(hazard.lon(geo_ndx),geo_locations.lat(geo_ndx),'or');
+            set(p,'MarkerFaceColor','r')
+        end
+        title({sprintf('%s max intensity at centroid',hazard.peril_ID); 'Points chosen for IFC struct'})
+        box on; hold off
     end
     return % recursive
 end % n_points>1
@@ -145,5 +184,20 @@ for poi_i = 1:numel(poi_ID)
     %IFC.return_polyval(poi_i,:) = polyval(IFC.return_polyfit(poi_i,:), log(IFC.return_freq(poi_i,:)));
 end
 IFC.intensity_fit(IFC.intensity_fit<0) = 0;
+
+if check_plot % for the case n_points = 1
+    figure; hold on
+    climada_hazard_plot_hr(hazard,0);
+    lon_buf = (max(hazard.lon)-min(hazard.lon))*0.05;
+    if isstruct(geo_locations) && isfield(geo_locations,'name')
+        text(geo_locations.lon,geo_locations.lat+lon_buf,geo_locations.name,...
+            'horizontalalignment','center',...
+            'verticalalignment','top',...
+            'fontweight','bold',...
+            'backgroundcolor','w')
+    end
+    title({sprintf('%s max intensity at centroid',hazard.peril_ID); 'Points chosen for IFC struct'})
+    plot(poi_lon,poi_lat,'xy')
+end
 
 end % climada_hazard2IFC

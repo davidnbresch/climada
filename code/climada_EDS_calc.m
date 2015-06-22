@@ -80,6 +80,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150106, Octave issue with hazard saved as -v7.3 solved
 % David N. Bresch, david.bresch@gmail.com, 20150114, EDS.peril_ID (was EDS.hazard.peril_ID)
 % David N. Bresch, david.bresch@gmail.com, 20150320, spfun replaced with explicit call, turns out to be >50% faster. Further speedup, see loop_mod_step
+% Gilles Stassen, gillesstassen@hotmail.com, 20150622, use complete peril_ID in asset_damfun_pos refinement (1:2) -> (:), MDD, PAA  explicitly capped at max value
 %-
 
 global climada_global
@@ -237,7 +238,7 @@ for asset_ii=1:nn_assets
     % find the damagefunctions for the asset under consideration
     asset_damfun_pos = find(entity.damagefunctions.DamageFunID == entity.assets.DamageFunID(asset_i));
     if isfield(entity.damagefunctions,'peril_ID') % refine for peril
-        asset_damfun_pos=asset_damfun_pos(strcmp(entity.damagefunctions.peril_ID(asset_damfun_pos),char(hazard.peril_ID(1:2))));
+        asset_damfun_pos=asset_damfun_pos(strcmp(entity.damagefunctions.peril_ID(asset_damfun_pos),char(hazard.peril_ID)));
     end
     
     if ~isempty(asset_damfun_pos)
@@ -252,7 +253,10 @@ for asset_ii=1:nn_assets
         else
             MDD(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         end
-                
+        
+        % to be certain of no errant extrapolation
+        MDD(MDD>max(interp_y_table)) = max(interp_y_table);
+        
         % figure
         % plot(interp_x_table, interp_y_table,':')
         % hold on
@@ -267,6 +271,9 @@ for asset_ii=1:nn_assets
             PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         end
         
+        % to be certain of no errant extrapolation
+        PAA(PAA>max(interp_y_table)) = max(interp_y_table);
+
         % figure
         % plot(interp_x_table, interp_y_table,':k')
         % hold on
@@ -274,7 +281,7 @@ for asset_ii=1:nn_assets
         
         % calculate the from ground up (fgu) damage
         temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
-        
+
         if any(full(temp_damage)) % if at least one damage>0
             if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
                 % apply Deductible and Cover
