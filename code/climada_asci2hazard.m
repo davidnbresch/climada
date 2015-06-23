@@ -29,6 +29,7 @@ function hazard = climada_asci2hazard(asci_file, row_count, utm_transformation)
 % Lea Mueller, muellele@gmail.com, 20150511, row_count input added, 10 if empty
 % Lea Mueller, muellele@gmail.com, 20150617, utm_tranformation added, to
 %              specific for barisal coordinate transformation and salvador
+% Lea Mueller, muellele@gmail.com, 20150623, bugfix if not tranfomration needed
 %-
 
 hazard = []; %init
@@ -128,7 +129,14 @@ switch utm_transformation
     % original conversion from UTM to lat lon
     % [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
     % [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows); 
+    
+    case '' % without transformation
+        lon_min = xllcorner;
+        lat_min = yllcorner;
+        lon_max = xllcorner+cellsize*ncols;
+        lat_max = yllcorner+cellsize*nrows;
 end
+
 
 
 % create meshgrid
