@@ -35,6 +35,7 @@ function climada_ED_plot(EDS, percentage_of_value_flag,currency,unit_exp,logscal
 % Gilles Stassen, gillesstassen@hotmail.com, 20150519 - update and cleanup
 % Gilles Stassen, gillesstassen@hotmail.com, 20150528 - currency, unit_exp input args added
 % Gilles Stassen, gillesstassen@hotmail.com, 20150528 - logscale_check added
+% Gilles Stassen, gillesstassen@hotmail.com, 20150619 - sum damages at non-unique coords, caxis for log scale bug fix
 %-
 
 global climada_global
@@ -72,11 +73,6 @@ if unit_exp == 0
         unit_exp    = unit_exp + 3;
         ED          = ED./1000;
     end
-else
-    EDS.ED                  = EDS.ED                    .* 10^unit_exp;
-    EDS.Value               = EDS.Value                 .* 10^unit_exp;
-    EDS.damage              = EDS.damage                .* 10^unit_exp;
-    EDS.ED_at_centroid      = EDS.ED_at_centroid        .* 10^unit_exp;
 end
 
 unit_exp = interp1([0 3 6 9],[0 3 6 9],unit_exp,'nearest');
@@ -103,7 +99,7 @@ for EDS_i = 1: length(EDS)
     % create the figure
     scale  = max(EDS(EDS_i).assets.lon) - min(EDS(EDS_i).assets.lon);
     ax_buffer = 3; %ax_buffer = 30;
-    ax_lim = [min(EDS(EDS_i).assets.lon)-scale/ax_buffer          max(EDS(EDS_i).assets.lon)+scale/ax_buffer ...
+    ax_lim = [min(EDS(EDS_i).assets.lon)-scale/ax_buffer  max(EDS(EDS_i).assets.lon)+scale/ax_buffer ...
         max(min(EDS(EDS_i).assets.lat),-60)-scale/ax_buffer  min(max(EDS(EDS_i).assets.lat),80)+scale/ax_buffer];
     
     markersize = 2;
@@ -116,41 +112,41 @@ for EDS_i = 1: length(EDS)
             ED_sum_centroid(i)  = sum(EDS(EDS_i).ED_at_centroid(ndx));
             val_sum_centroid(i) = sum(EDS(EDS_i).assets.Value(ndx));
         end
+    else
+        lon_lat = [EDS(EDS_i).assets.lon EDS(EDS_i).assets.lat];
+        ED_sum_centroid     = EDS(EDS_i).ED_at_centroid;
+        val_sum_centroid    = EDS(EDS_i).assets.Value;
     end
     
     % fig = climada_figuresize(height,height*scale2+0.15);
     cmap = climada_colormap('schematic');
     if percentage_of_value_flag
-%         nz = EDS(EDS_i).ED_at_centroid>0;
-%         dam_TAV = (EDS(EDS_i).ED_at_centroid(nz) ./ EDS(EDS_i).assets.Value(nz)) *100;
-%         cbar = plotclr(EDS(EDS_i).assets.lon(nz), EDS(EDS_i).assets.lat(nz), dam_TAV,'s',markersize,1,...
-%             [],[],colormap(cmap),0,logscale_check);
-
         nz = ED_sum_centroid>0;
         dam_TAV = (ED_sum_centroid(nz) ./ val_sum_centroid(nz)) *100;
-        cbar = plotclr(lon_lat(nz,1), lon_lat(nz,2), dam_TAV,'s',markersize,1,...
+        cbar = plotclr(lon_lat(nz,1)', lon_lat(nz,2)', dam_TAV','s',markersize,1,...
             [],[],colormap(cmap),0,logscale_check);
         
         name_str = sprintf('Expected damage (as percentage of value) for %s',num2str(EDS(EDS_i).reference_year));
-    else
-%         nz = EDS(EDS_i).ED_at_centroid>0;
-%         cbar = plotclr(EDS(EDS_i).assets.lon(nz), EDS(EDS_i).assets.lat(nz), EDS(EDS_i).ED_at_centroid(nz),'s',markersize,1,...
-%             [],[],colormap(cmap),[],logscale_check);
-%         caxis([min(EDS(EDS_i).ED_at_centroid(nz)) max(EDS(EDS_i).ED_at_centroid(nz))])
-        
+    else        
         nz = ED_sum_centroid>0;
         cbar = plotclr(lon_lat(nz,1), lon_lat(nz,2), ED_sum_centroid(nz),'s',markersize,1,...
             [],[],colormap(cmap),0,logscale_check);
-        caxis([min(ED_sum_centroid(nz)) max(ED_sum_centroid(nz))])
+        if logscale_check
+            caxis(log([min(ED_sum_centroid(nz)) max(ED_sum_centroid(nz))]))
+        else
+            caxis([min(ED_sum_centroid(nz)) max(ED_sum_centroid(nz))])
+        end
         
-        name_str = sprintf('Expected damage for %s: %s %2.1f %s', ...
+        name_str = sprintf('Expected damage for %s:  %s %2.2f %s', ...
             num2str(EDS(EDS_i).reference_year),currency,...
-            round(EDS(EDS_i).ED/(10^(unit_exp-1)))/10,unit_char);
+            ED(EDS_i),unit_char);
         
     end
     if strfind(upper(currency),'PEOPLE')>0
         name_str = strrep(name_str,'damage','no. of casualties');
         name_str = strrep(name_str,'value','population');
+        name_str = [strtok(name_str,':') ':' sprintf('  %2.2f %s %s',...
+            ED(EDS_i),unit_char,currency)];
     end
     
     % set(fig,'Name',name_str)
