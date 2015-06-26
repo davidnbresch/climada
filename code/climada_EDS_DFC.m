@@ -114,16 +114,17 @@ color_     = [255 215   0 ;...   %today
               255 127   0 ;...   %eco 
               238  64   0 ;...   %clim
               205   0   0 ;...   %total risk
-              120 120 120]/256;  %dotted line]/255;              
+              120 120 120]/256;  %dotted line]/255;  
+
 if length(EDS)>  size(color_,1)    
     color_ = jet(length(EDS));
 end
-% order accroding to size of damage
-damage_                 = arrayfun(@(x)(sum(x.damage)), EDS);
-[~,sort_index] = sort(damage_,'ascend');
-color_ = color_(sort_index,:);
+% % order according to size of damage
+% damage_        = arrayfun(@(x)(sum(x.damage)), EDS);
+% [~,sort_index] = sort(damage_,'ascend');
+% color_ = color_(sort_index,:);
 
-marker_ = ['*- ';'o- ';'p- ';'.- ';'s- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'.--';'s--';'v--';'d--'];
+marker_ = ['*- ';'o- ';'p- ';'s- ';'.- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'s--';'.--';'v--';'d--'];
 ii      = 1;
 
 %create figure
@@ -136,6 +137,7 @@ for EDS_i=1:length(EDS)
     sorted_damage   = sorted_damage(nonzero_pos);
     exceedence_freq = exceedence_freq(nonzero_pos);
     return_period   = 1./exceedence_freq;
+    
     if Percentage_Of_Value_Flag,sorted_damage = sorted_damage/EDS(EDS_i).Value*100; end
     if plot_loglog
         loglog(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
@@ -148,8 +150,8 @@ for EDS_i=1:length(EDS)
 end % EDS_i
 
 set(gca,'fontsize',12)
-if ~isempty(legend_str),legend(legend_str,'Location','SouthEast');end % add legend %changed to SouthEast instead of NorthWest
-%if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
+% if ~isempty(legend_str),legend(legend_str,'Location','SouthEast');end % add legend %changed to SouthEast instead of NorthWest
+if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
 grid on; % show grid
 xlabel('Return period (years)')
 if Percentage_Of_Value_Flag
