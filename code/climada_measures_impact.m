@@ -71,6 +71,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20140510, risk premium map added
 % David N. Bresch, david.bresch@gmail.com, 20141220, re-encoding check added
 % David N. Bresch, david.bresch@gmail.com, 20150101, cleanup
+% Gilles Stassen, gillesstassen@hotmail.com, 20150626, if exist(hazard_file,'var') -> exist('hazard_file','var')
 %-
 
 global climada_global
@@ -254,7 +255,7 @@ for measure_i = 1:n_measures+1 % last with no measures
                 orig_hazard = hazard;
                 if ~exist(measures_hazard_set_name,'file')
                     % only filename given in measures tab, add path:
-                    if exist(hazard_file,'var')
+                    if exist('hazard_file','var') % <- exist(hazard_file,'var') fixed 20150626 GS
                         [hazard_dir] = fileparts(hazard_file);
                     else
                         hazard_dir = [climada_global.data_dir filesep 'hazards']; % default
