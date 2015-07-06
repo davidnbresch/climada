@@ -48,6 +48,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,peril_ID
 % David N. Bresch, david.bresch@gmail.com, 20140411 fixed some non-TC issues
 % David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
 % Lea Mueller, muellele@gmail.com, 20150607, change tc max int. value to 80 instead of 100m/s
+% Lea Mueller, muellele@gmail.com, 20150607, add cross for San Salvador in plot, for San Salvador only
 %-
 
 % init global variables
@@ -363,6 +364,14 @@ if check_plot
         if ~isempty(cmap), colormap(cmap);end
         set(gca,'fontsize',fontsize)
         set(hc,'XTick',xtick_)
+        
+        %%-----specially for San Salvador------
+        %salvador_lon = -89.218600;
+        %salvador_lat =  13.694261;
+        %plot(salvador_lon, salvador_lat, 'ok')
+        %plot(salvador_lon, salvador_lat, 'xk')
+        %-------------------------------------
+        
     end %return_i
     if climada_global.waitbar,close(h);end % dispose waitbar
     
