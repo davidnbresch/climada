@@ -43,10 +43,11 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,peril_ID
 %   - hazard.intensity_fit:     fitted intensity for requested return periods
 %                               for every centroid for all (probabilistic) events
 % MODIFICATION HISTORY:
-% Lea Mueller, 20110623
+% Lea Mueller, muellele@gmail.com, 20110623
 % David N. Bresch, david.bresch@gmail.com, 20130317 cleanup
 % David N. Bresch, david.bresch@gmail.com, 20140411 fixed some non-TC issues
 % David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
+% Lea Mueller, muellele@gmail.com, 20150607, change tc max int. value to 80 instead of 100m/s
 %-
 
 % init global variables
@@ -268,7 +269,8 @@ if check_plot
     cmap = climada_colormap(peril_ID);    
     switch peril_ID
         case 'TC'
-            caxis_max = 100;
+            %caxis_max = 100;
+            caxis_max = 80;
             xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
             %xtick_    = [20 40 60 80 caxis_max];
             cbar_str  = 'Probabilistic wind speed (m/s)';
