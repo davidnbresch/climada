@@ -11,7 +11,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 %   cmap = climada_colormap('TC')
 % INPUTS:
 %   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, MS, can
-%   also be damage or schematic.
+%   also be damage, schematic or benefit (averted damage).
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 % MODIFICATION HISTORY:
@@ -19,7 +19,9 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20140429, colormaps for damage and schematic
 % Lea Mueller, muellele@gmail.com, 20140429, added waterfall colormap
 % Lea Mueller, muellele@gmail.com, 20150522, added mudslides (MS) colormap
+% Lea Mueller, muellele@gmail.com, 20150607, add benefit colormap (grey-green) for averted damage in climada_MI_plot
 %-
+
 
 cmap    = []; %init output
 c_ax    = []; %init output
@@ -166,7 +168,18 @@ switch peril_ID
         %        205   0   0 ;...   %total risk
         %        120 120 120]/256;  %dotted line]/255;
         %cmap(1:4,:) = brighten(cmap(1:4,:),0.3);
-
+        
+    case 'benefit'
+        % create colormap for climada_MI_plot (averted damage)
+        c_ax = [ ];
+        startcolor   = [193	205	193]/255; %honeydew 4
+        middlecolor  = [  0	201	 87]/255; %emeraldgreen
+        endcolor     = [ 61	145	 64]/255; %cobaltgreen
+        for i=1:3
+            cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
+            cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
+        end
+        cmap = [cmap1; cmap2];
 end
 
 if isempty(cmap)
