@@ -1,4 +1,4 @@
-function climada_ED_plot(EDS, percentage_of_value_flag,currency,unit_exp,logscale_check)
+function climada_ED_plot(EDS, percentage_of_value_flag,currency,unit_exp,logscale_check,schematic_check)
 % visualize Annual Expected Damage per centroid as a map
 % NAME:
 %   climada_ED_plot
@@ -28,6 +28,11 @@ function climada_ED_plot(EDS, percentage_of_value_flag,currency,unit_exp,logscal
 % OPTIONAL INPUT PARAMETERS:
 %   percentage_of_value_flag: Set to 1 if you wish to plot damages as
 %                             percentage of asset values
+%   currency:   specify the currency unit, can be any string, e.g. 'EUR',
+%               default is 'USD'
+%   unit_exp:   specify the unit of the data (i.e. are the values in the 
+%               EDS struct in 10^3, 10^7 etc. The function automatically
+%               displays numbers in the best order of magnitude
 % OUTPUTS:
 %   figure
 % MODIFICATION HISTORY:
@@ -35,7 +40,8 @@ function climada_ED_plot(EDS, percentage_of_value_flag,currency,unit_exp,logscal
 % Gilles Stassen, gillesstassen@hotmail.com, 20150519 - update and cleanup
 % Gilles Stassen, gillesstassen@hotmail.com, 20150528 - currency, unit_exp input args added
 % Gilles Stassen, gillesstassen@hotmail.com, 20150528 - logscale_check added
-% Gilles Stassen, gillesstassen@hotmail.com, 20150619 - sum damages at non-unique coords, caxis for log scale bug fix
+% Gilles Stassen, gillesstassen@hotmail.com, 20150619 - sum damages at non-unique coords, caxis for logscale bug fix
+% Gilles Stassen, gillesstassen@hotmail.com, 20150629 - schematic_check added
 %-
 
 global climada_global
@@ -47,6 +53,7 @@ if ~exist('percentage_of_value_flag','var'),    percentage_of_value_flag=0; end
 if ~exist('currency'                ,'var'),    currency=   'USD';          end
 if ~exist('unit_exp'                ,'var'),    unit_exp=   0;              end
 if ~exist('logscale_check'          ,'var'),    logscale_check = 1;         end
+if ~exist('schematic_check'         ,'var'),    schematic_check = 0;        end
 
 % PARAMETERS
 % prompt for event damage set if not given
@@ -165,8 +172,13 @@ for EDS_i = 1: length(EDS)
         end
         set(get(cbar,'ylabel'),'String', label_str ,'fontsize',12);
     end
-    xlabel('Longitude')
-    ylabel('Latitude')
+    if schematic_check
+        set(gca,'xtickLabel',[],'ytickLabel',[])
+        set(cbar,'Location','East','Visible','off')
+    else
+        xlabel('Longitude')
+        ylabel('Latitude')
+    end
     
     box on
     climada_plot_world_borders(1)
