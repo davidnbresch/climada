@@ -33,6 +33,8 @@ function fig = climada_hazard_plot_hr(hazard,event_i,label,caxis_range,plot_cent
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150206
 % David N. Bresch, david.bresch@gmail.com, 20150313, synchronized with climada_hazard_plot
+% Gilles Stassen, 20150428, special plotting routine for MS hazard added
+% Gilles Stassen, 20150703, "**1st", "**2nd" "**3rd" etc. added in title
 %-
 
 fig = []; % init
@@ -46,7 +48,7 @@ if ~exist('event_i',    'var'), event_i=-1;     end
 if ~exist('label',      'var'), label=[];       end
 if ~exist('caxis_range','var'), caxis_range=[]; end
 if ~exist('plot_centroids','var'), plot_centroids=0; end
-if ~exist('hist_check', 'var'), hist_check = 1; end
+if ~exist('hist_check', 'var'), hist_check = 0; end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
 if isempty(hazard),return;end
@@ -61,22 +63,46 @@ end
 % Prepare data
 if event_i<0
     % search for i-th largest event
-    event_sum=sum(hazard.intensity,2);
-    [~,sorted_i]=sort(event_sum);
-    event_ii=sorted_i(length(sorted_i)+event_i+1);
+    if hist_check
+        event_sum=sum(abs(hazard.intensity),2).*hazard.orig_event_flag';
+    else
+        event_sum=sum(abs(hazard.intensity),2);
+    end
+    [~,sorted_i]=sort(event_sum,'descend');
+    event_ii=sorted_i(abs(event_i));
     hazard_intensity=full(hazard.intensity(event_ii,:)); % extract one event
     if event_i<-1
-        title_str=sprintf('%s %i-largest event (%i) on %s',hazard.peril_ID,-event_i,event_ii,datestr(hazard.datenum(event_ii),'dddd dd mmmm yyyy'));
+        title_str=sprintf('%s %i** largest event (%i) on %s',hazard.peril_ID,-event_i,event_ii,datestr(hazard.datenum(event_ii),'dddd dd mmmm yyyy'));
+        switch ((abs(event_i)/10) - floor(abs(event_i)/10))*10 % get last digit before decimal
+            case 1
+                title_str = strrep(title_str,'**','st');
+            case 2
+                title_str = strrep(title_str,'**','nd');
+            case 3
+                title_str = strrep(title_str,'**','rd');
+            otherwise
+                title_str = strrep(title_str,'**','th');
+        end
     else
-        title_str=sprintf('%s largest event (%i) on %s',hazard.peril_ID,event_ii,datestr(hazard.datenum(event_ii),'dddd dd mmmm yyyy'));
+        try
+            title_str=sprintf('%s largest event (%i) on %s',hazard.peril_ID,event_ii,datestr(hazard.datenum(event_ii),'dddd dd mmmm yyyy'));
+        catch
+            title_str=sprintf('%s largest event (%i) on %s',hazard.peril_ID,event_ii,...
+                datestr([hazard.dd(event_ii) hazard.mm(event_ii) hazard.yyyy(event_ii)],'dddd dd mmmm yyyy'));
+        end
     end
     % plot some further info to sdout:
     if (isfield(hazard,'name') && isfield(hazard,'yyyy')) && (isfield(hazard,'mm') && isfield(hazard,'dd'))
         fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard.name{event_ii},hazard.yyyy(event_ii),hazard.mm(event_ii),hazard.dd(event_ii),event_ii);
     end
     event_i = event_ii;
+    
 elseif event_i==0
-    hazard_intensity=full(max(hazard.intensity)); % max intensity at each point
+    if ~hist_check
+        hazard_intensity=full(max(hazard.intensity)); % max intensity at each point
+    else
+        hazard_intensity=full(max(hazard.intensity(hazard.orig_event_flag ==1)));
+    end
     title_str=sprintf('%s max intensity at each centroid',hazard.peril_ID);
 else
     hazard_intensity=full(hazard.intensity(event_i,:)); % extract one event
@@ -87,102 +113,50 @@ else
     end
 end
 
+% construct regular grid
 [x, y] = meshgrid(unique(hazard.lon),unique(hazard.lat));
-gridded_h_int = griddata(hazard.lon,hazard.lat,hazard_intensity,x,y);
 
-% figure parameters
-scale  = max(hazard.lon) - min(hazard.lon);
-ax_lim = [min(hazard.lon)-scale/30 max(hazard.lon)+scale/30 ...
-          max(min(hazard.lat),-60)-scale/30  min(max(hazard.lat),95)+scale/30];
+if strcmp(hazard.peril_ID,'MS') && isfield(hazard,'elevation_m') %to be on the safe side
+    % also plot DEM for mudslide hazard
+    z           = griddata(hazard.lon,hazard.lat,hazard.elevation_m,x,y);
+    [C,h] = contourf(unique(hazard.lon),unique(hazard.lat),z,10);
+    l_h = clabel(C,h);
+     for i=1:length(l_h)
+         s = get(l_h(i),'String'); % get string
+         s = str2num(s); % convert in to number
+         s = sprintf('%4.1f',s); % format as you need
+         set(l_h(i),'String',s); % place it back in the figure
+     end
+    colormap(flipud(bone(50)))
+    freezeColors
+    hold on
+    fig = scatter(hazard.lon(hazard_intensity~=0),hazard.lat(hazard_intensity~=0),'filled');
+    set(fig,'Marker', 'o','CData',hazard_intensity(hazard_intensity ~=0));
+    if any(hazard_intensity)
+        caxis([min(hazard_intensity(hazard_intensity~=0)) max(hazard_intensity)]);
+    end
+else
+    % gridded intensity for contour plot
+    gridded_h_int = griddata(hazard.lon,hazard.lat,hazard_intensity,x,y);
+    fig = contourf(x,y,gridded_h_int, 'edgecolor','none');
+end
 
-
-% create figure
-gridded_h_int(gridded_h_int==0) = nan;
-fig = contourf(x,y,gridded_h_int, 'edgecolor','none');
 hold on
+if hist_check
+    title_str = [title_str ' (historical)'];
+end
 title(title_str)
 if isfield(hazard, 'peril_ID')
     % The following maps define the colour spectra, downloaded from https://www.ncl.ucar.edu/Document/Graphics/ColorTables/MeteoSwiss.shtml
-    switch hazard.peril_ID
-        case 'TS' 
-            c_map = [
-                254 254 254
-                223 255 249
-                154 217 202
-                103 194 163
-                64 173 117
-                50 166 150
-                90 160 205
-                66 146 199
-                76 141 196
-                7  47 107
-                7  30  70
-                76   0 115]./255;
-        case 'FL' 
-            c_map = [
-                254 254 254
-                223 255 249
-                154 217 202
-                103 194 163
-                64 173 117
-                50 166 150
-                90 160 205
-                66 146 199
-                76 141 196
-                7  47 107
-                7  30  70
-                76   0 115]./255;
-        case 'TC'
-            % tc colours
-            c_map = [
-                255 255 255
-                239 244 209
-                232 244 158
-                170 206  99
-                226 237  22
-                255 237   0
-                255 237 130
-                244 209 127
-                237 165  73
-                229 140  61
-                219 124  61
-                239   7  61
-                232  86 163
-                155 112 168
-                99 112 247
-                127 150 255
-                142 178 255
-                181 201 255]./255;
-            % map_tc = [
-            %     255 255 255
-            %     255 245 204
-            %     255 230 112
-            %     255 204  51
-            %     255 175  51
-            %     255 153  51
-            %     255 111  51
-            %     255  85   0
-            %     230  40  30
-            %     200  30  20]./255;
-        case 'TR' 
-            c_map = [linspace(1,0,12)' linspace(1,0,12)' linspace(1,0.75,12)'];
-        case 'MA'
-            c_map = [linspace(1,0,12)' linspace(1,0,12)' linspace(1,0.75,12)'];
-        case 'TR_m'
-            c_map = [linspace(1,0,12)' linspace(1,0,12)' linspace(1,0.75,12)'];
-        otherwise
-            c_map = jet;
-    end
+    colormap(climada_colormap(hazard.peril_ID))
 end
-
-colormap(c_map)
 
 climada_plot_world_borders;
 if plot_centroids,plot(hazard.lon,hazard.lat,'.b','MarkerSize',1);end
 
 if ~isempty(label)
     text(label.lon, label.lat, label.name);
-    plot(label.lon,label.lat,'xk');
+    plot(label.lon, label.lat, 'xk');
 end
 if ~isempty(caxis_range), caxis(caxis_range); end
 cb = colorbar;
@@ -193,10 +167,8 @@ ylabel('Latitude')
 xlabel('Longitude')
 
 set(gcf,'color', 'w')
-axis(ax_lim)
 axis equal
-axis(ax_lim)
-
+axis([min(hazard.lon) max(hazard.lon) min(hazard.lat) max(hazard.lat)])
 
 hold off
 return
