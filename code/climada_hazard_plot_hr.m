@@ -35,6 +35,7 @@ function fig = climada_hazard_plot_hr(hazard,event_i,label,caxis_range,plot_cent
 % David N. Bresch, david.bresch@gmail.com, 20150313, synchronized with climada_hazard_plot
 % Gilles Stassen, 20150428, special plotting routine for MS hazard added
 % Gilles Stassen, 20150703, "**1st", "**2nd" "**3rd" etc. added in title
+% Lea Mueller, muellele@gmail.com, 20150713, add LS special case (intensity = 1-1/cutoff*distance_m)
 %-
 
 fig = []; % init
@@ -116,7 +117,7 @@ end
 % construct regular grid
 [x, y] = meshgrid(unique(hazard.lon),unique(hazard.lat));
 
-if strcmp(hazard.peril_ID,'MS') && isfield(hazard,'elevation_m') %to be on the safe side
+if strcmp(hazard.peril_ID,'LS') && isfield(hazard,'elevation_m') && ~isfield(hazard,'cutoff_m') %to be on the safe side
     % also plot DEM for mudslide hazard
     z           = griddata(hazard.lon,hazard.lat,hazard.elevation_m,x,y);
     [C,h] = contourf(unique(hazard.lon),unique(hazard.lat),z,10);
@@ -134,9 +135,15 @@ if strcmp(hazard.peril_ID,'MS') && isfield(hazard,'elevation_m') %to be on the s
     set(fig,'Marker', 'o','CData',hazard_intensity(hazard_intensity ~=0));
     if any(hazard_intensity)
         caxis([min(hazard_intensity(hazard_intensity~=0)) max(hazard_intensity)]);
-    end
+    end    
 else
     % gridded intensity for contour plot
+    if strcmp(hazard.peril_ID,'LS') && isfield(hazard,'cutoff_m') %to be on the safe side
+        % transform intensity back to distance, see
+        % climada_hazard_encode_distance for more information
+        hazard_intensity = (1-hazard_intensity)*hazard.cutoff_m;
+        hazard.units = 'm';
+    end
     gridded_h_int = griddata(hazard.lon,hazard.lat,hazard_intensity,x,y);
     fig = contourf(x,y,gridded_h_int, 'edgecolor','none');
 end
