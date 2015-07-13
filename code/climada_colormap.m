@@ -10,16 +10,17 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % EXAMPLE:
 %   cmap = climada_colormap('TC')
 % INPUTS:
-%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, MS, can
+%   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, LS, can
 %   also be damage, schematic or benefit (averted damage).
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, raw documentation
-% Lea Mueller, muellele@gmail.com, 20140429, colormaps for damage and schematic
-% Lea Mueller, muellele@gmail.com, 20140429, added waterfall colormap
-% Lea Mueller, muellele@gmail.com, 20150522, added mudslides (MS) colormap
+% Lea Mueller, muellele@gmail.com, 20140429, add colormaps for damage and schematic
+% Lea Mueller, muellele@gmail.com, 20140429, add waterfall colormap
+% Lea Mueller, muellele@gmail.com, 20150522, add mudslides (MS) colormap
 % Lea Mueller, muellele@gmail.com, 20150607, add benefit colormap (grey-green) for averted damage in climada_MI_plot
+% Lea Mueller, muellele@gmail.com, 20150713, add LS colormap
 %-
 
 
@@ -112,7 +113,6 @@ switch peril_ID
     case 'MS'
         % create colormap for mudslides
         c_ax = [];
-
         startcolor   = [0.6118   0.4   0.1216]; %brick
         middlecolor  = [0.9569   0.6431   0.3765]; %sandybrown
         endcolor     = [0.1333   0.5451   0.1333]; %forest green
@@ -120,8 +120,29 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
             cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [cmap1; cmap2];    
-
+        cmap = [cmap1; cmap2];  
+        
+        
+    case 'LS' 
+        % create colormap for landslide (distance to landslide)
+        c_ax = [0 1];
+        startcolor   = [238 173  14]/255; %darkgoldenrod 2
+        middlecolor1 = [255 125  64]/255; %flesh
+        middlecolor2 = [255  99  71]/255; %tomato1
+        endcolor     = [205 104 137]/255; %firebrick3
+        for i=1:3
+           cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor1(i);
+           cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
+        end
+        cmap = [1.0 1.0 1.0; cmap1; cmap2];
+        cmap = flipud(cmap);
+        %cmap3 = makeColorMap(middlecolor2, endcolor,3);
+        %cmap = [cmap1; cmap3];
+        % colormap hot
+        %cmap = flipud(hot(steps10+10));
+        %cmap(1:5,:) = [];
+        %cmap(end,:) = [];
+        
     case 'damage'
         % create colormap for surge
         c_ax = [ ];
