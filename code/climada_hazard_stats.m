@@ -49,6 +49,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,peril_ID
 % David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
 % Lea Mueller, muellele@gmail.com, 20150607, change tc max int. value to 80 instead of 100m/s
 % Lea Mueller, muellele@gmail.com, 20150607, add cross for San Salvador in plot, for San Salvador only
+% Lea Mueller, muellele@gmail.com, 20150716, add landslides option (LS) with specific colormap, intensities from 0 to 1
 %-
 
 % init global variables
@@ -159,6 +160,15 @@ if calc
         format_str='%s';
     end
     
+    
+    % % special case for LS
+    % if strcmp(hazard.peril_ID,'LS') && isfield(hazard,'cutoff_m')
+    %     hazard.intensity = (1-hazard.intensity)*hazard.cutoff_m;
+    %     hazard.units = 'm';
+    %     fprintf('Hazard for LS transformed to intensity as distance (m) from lanslide.\n')
+    % end
+
+    
     for centroid_i = 1:n_centroids
         
         if no_generated>1 % only if historic differs from probabilistic
@@ -255,9 +265,9 @@ if calc
     % save hazard file with stats
     [fP,fN]=fileparts(hazard.filename);
     if ~exist(fP,'dir'),fP=[climada_global.data_dir filesep 'hazards'];end % if hazard created on another machine...
-    hazard_R_file = [fP filesep fN '_R.mat'];
-    fprintf('Saving hazard statics in %s\n',hazard_R_file);
-    save(hazard_R_file,'hazard')
+    %hazard_R_file = [fP filesep fN '_R.mat'];
+    %fprintf('Saving hazard statistics in %s\n',hazard_R_file);
+    %save(hazard_R_file,'hazard')
     
 end % if calc
 
@@ -288,20 +298,37 @@ if check_plot
             %xtick_    = [1 2 4 caxis_max];
             cbar_str  = 'Probabilistic surge height (m)';
             
+        case 'MS'
+            caxis_max = 3;
+            xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+            cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
+            
+        case 'LS'
+            %if isfield(hazard, 'cutoff_m')
+            %    caxis_max = hazard.cutoff_m;
+            %else
+            %    caxis_max = 500;
+            %end
+            caxis_max = 1;
+            xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+            cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
+            cmap = flipud(climada_colormap(peril_ID));    
+            
         otherwise
             % use default colormap, hence no cmap defined  
             caxis_max = full(max(max(hazard.intensity_fit)));
-            xtick_    = [];
-            cbar_str  = '';
+            %xtick_    = [];
+            xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+            cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
     end
      
     fprintf('Preparing intensity vs return periods maps\n')
     
     centroids.lon = hazard.lon;
-    centroids.lat  = hazard.lat;
+    centroids.lat = hazard.lat;
     scale = max(centroids.lon)-min(centroids.lon);
     scale2= (max(centroids.lon)-min(centroids.lon)+scale*2/30)...
-        /(max(centroids.lat )-min(centroids.lat )+scale*2/30);
+           /(max(centroids.lat)-min(centroids.lat)+scale*2/30);
     
     %------------------
     % probabilistic map
@@ -333,8 +360,8 @@ if check_plot
     set(gca,'fontsize',fontsize)
     hold on
     
-    msgstr   = sprintf('Plotting wind speed vs return period map: probabilistic data');
-    if climada_global.waitbar,h        = waitbar(0,msgstr);end
+    msgstr   = sprintf('Plotting intensity vs return period map: probabilistic data');
+    if climada_global.waitbar,h = waitbar(0,msgstr);end
     
     for i=1:return_count %x_no*y_no %return_count
         if climada_global.waitbar,waitbar(i/return_count, h, msgstr);end % update waitbar
