@@ -125,23 +125,11 @@ switch peril_ID
         
     case 'LS' 
         % create colormap for landslide (distance to landslide)
-        c_ax = [0 1];
-        startcolor   = [238 173  14]/255; %darkgoldenrod 2
-        middlecolor1 = [255 125  64]/255; %flesh
-        middlecolor2 = [255  99  71]/255; %tomato1
-        endcolor     = [205 104 137]/255; %firebrick3
-        for i=1:3
-           cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor1(i);
-           cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
-        end
-        cmap = [1.0 1.0 1.0; cmap1; cmap2];
-        cmap = flipud(cmap);
-        %cmap3 = makeColorMap(middlecolor2, endcolor,3);
-        %cmap = [cmap1; cmap3];
-        % colormap hot
-        %cmap = flipud(hot(steps10+10));
-        %cmap(1:5,:) = [];
-        %cmap(end,:) = [];
+        c_ax = [0 1];       
+        cmap = flipud(jet(15));
+        cmap(end-3:end,:) = [];
+        cmap = [cmap; 1 1 1; 1 1 1];
+        
         
     case 'damage'
         % create colormap for surge
