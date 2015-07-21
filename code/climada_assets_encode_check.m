@@ -26,6 +26,7 @@ function climada_assets_encode_check(assets,hazard)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141219, initial
 % David N. Bresch, david.bresch@gmail.com, 20141230, hazard as input option added
+% David N. Bresch, david.bresch@gmail.com, 20150716, logical (line 72) fixed
 %-
 
 global climada_global
@@ -68,7 +69,8 @@ else
         if isempty(hazard)
             % try to find a matching hazard event set
             hazard_filename=entity.assets.hazard.filename;
-            if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
+            if  ~isempty(strfind(upper(computer),'MAC')) || ~isempty(strfind(upper(computer),'APPLE'))
+            % if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
                 hazard_filename = strrep(hazard_filename,'\',filesep); % switch filesep
             elseif strfind(computer,'PCWIN')
                 hazard_filename = strrep(hazard_filename,'/',filesep); % switch filesep
