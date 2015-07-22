@@ -47,6 +47,7 @@ function YDS=climada_EDS2YDS(EDS,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141226, initial
 % David N. Bresch, david.bresch@gmail.com, 20150116, YDS fields same order as in EDS
 % David N. Bresch, david.bresch@gmail.com, 20150204, automatic hazard set detection
+% David N. Bresch, david.bresch@gmail.com, 20150721, EDS is proxy for output, i.e. YDS=EDS to start with
 %-
 
 YDS=[]; % init output
@@ -105,21 +106,14 @@ if abs(length(EDS.damage)-hazard.event_count)>eps
     return
 end
 
-% copy some fields from EDS to YDS:
-YDS.reference_year=EDS.reference_year;
+YDS=EDS; % essentially a copy, reset some fields:
 YDS.event_ID=[]; % to indicate not by event any more
 YDS.damage=[]; % init, see below
-if isfield(EDS,'ED_at_centroid'),YDS.ED_at_centroid=EDS.ED_at_centroid;end
-YDS.Value=EDS.Value;
 YDS.frequency=[]; % init, see below
 YDS.orig_event_flag=[]; % to indicate not by event any more
-YDS.peril_ID=EDS.peril_ID;
-YDS.hazard=EDS.hazard;
-YDS.comment=EDS.comment;
-if isfield(EDS,'assets'),YDS.assets=EDS.assets;end
-if isfield(EDS,'damagefunctions'),YDS.damagefunctions=EDS.damagefunctions;end
-YDS.annotation_name=EDS.annotation_name;
-YDS.ED=EDS.ED;
+% init new fields
+YDS.yyyy=[];
+YDS.orig_year_flag=[];
 
 % template for-loop with waitbar or progress to stdout
 t0       = clock;
@@ -195,7 +189,7 @@ if prob_event_mismatch_count>0
 end
 
 YDS.frequency=YDS.damage*0+1/length(YDS.damage); % each year occurrs once...
-
+    
 % final check whether we picked up all damage
 YDS_ED=sum(YDS.damage)/n_years/(ens_size+1);
 if abs(YDS_ED-EDS.ED)/EDS.ED>0.0001 % not zero, as we deal with large numbers
