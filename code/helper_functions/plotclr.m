@@ -28,7 +28,8 @@ function [h h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, mav
 %    view(3)
 %
 % Uli Theune, University of Alberta, 2004
-% modified by Stephanie Contardo, British OCeanographic Data Centre, 2006
+% modified by Stephanie Contardo, British Oceanographic Data Centre, 2006
+% Lea Mueller, muellele@gmail.com, 20150728, plot values above threshold mav 
 %-
 
 if ~exist('marker'     , 'var'), marker      = [];end
@@ -97,9 +98,10 @@ for nc = 2:size(map,1)
     h_points(end+[1:length(iv)]) = ...
         plot3(x(iv),y(iv),v(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
 end
-% iv = find(v >= mav);
-% h_points(end+[1:length(iv)]) = ...
-%     plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
+% values above threshold
+iv = find(v >= mav);
+h_points(end+[1:length(iv)]) = ...
+    plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
 
 if colorbar_on    
     caxis([miv-clrstep mav])
