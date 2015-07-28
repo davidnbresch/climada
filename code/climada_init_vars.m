@@ -26,6 +26,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150126, csv_delimiter depends on computer
 % David N. Bresch, david.bresch@gmail.com, 20150203, climada_lonlat_cleanup
 % David N. Bresch, david.bresch@gmail.com, 20150211, global_CAGR added
+% Lea Mueller, muellele@gmail.com, 20150728, add project directory,i.e. now set to San Salvador
 %-
 
 global climada_global
@@ -150,6 +151,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % =0: no double check, faster, user needs to know what he's calculating ;-)
     % =1: if ~all(diff(entity.assets.centroid_index) == 1) etc., re-encoded
     climada_global.re_check_encoding = 0; % default =0
+    
+    % set project directory, i.e. now for San Salvador
+    climada_global.project_dir = 'M:\BGCC\CHR\RK\RS\A_Sustainable_Development\Projects\ECA\SanSalvador\salvador_climada_data';
     
     climada_vars_initialised=1; % indicate we have initialized all vars
     
