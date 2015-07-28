@@ -27,6 +27,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150203, climada_lonlat_cleanup
 % David N. Bresch, david.bresch@gmail.com, 20150211, global_CAGR added
 % Lea Mueller, muellele@gmail.com, 20150728, add project directory,i.e. now set to San Salvador
+% Lea Mueller, muellele@gmail.com, 20150728, set waitbar to 0
 %-
 
 global climada_global
@@ -138,7 +139,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.DFC_return_periods=[1 5 10 20 25 30 35 40 45 50 75 100 125 150 175 200 250 300 400 500 1000];
     
     % whether we show waitbars for progress (eg in climada_EDS_calc), =1:yes, =0: no
-    climada_global.waitbar=1;
+    climada_global.waitbar=0;
     
     % whether we store the damage (=1) at each centroid for each event (an EDS
     % for each centroid). Heavy memory, see climada_EDS_calc; therefore: default=0
