@@ -11,7 +11,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 %   cmap = climada_colormap('TC')
 % INPUTS:
 %   peril_ID: a peril ID, currently implemented are TC, TS, TR, FL, LS, FS (factor of safety), 
-%   can also be damage, schematic or benefit (averted damage).
+%   can also be assets, damage, schematic or benefit (averted damage).
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 % MODIFICATION HISTORY:
@@ -22,6 +22,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150607, add benefit colormap (grey-green) for averted damage in climada_MI_plot
 % Lea Mueller, muellele@gmail.com, 20150713, add LS colormap
 % Lea Mueller, muellele@gmail.com, 20150720, add FS (factor of safety) colormap
+% Lea Mueller, muellele@gmail.com, 20150729, add assets colormap
 %-
 
 
@@ -136,6 +137,15 @@ switch peril_ID
         cmap = flipud(jet(15));
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
+        
+    case 'assets'
+        beginColor  = [232 232 232 ]/255;
+        middleColor = [105 105 105 ]/255;
+        cmap1 = makeColorMap(beginColor, middleColor, 4);
+        cmap2 = makeColorMap([255 236 139]/255, [255 97 3 ]/255, 6); %[255 153 18]/255 yellow
+        cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 yellow
+        % cmap3 = makeColorMap([205 150 205 ]/255, [93 71 139 ]/255, 2); %[255 153 18]/255 yellow
+        cmap  = [cmap1; cmap2; cmap3];
         
     case 'damage'
         % create colormap for surge
