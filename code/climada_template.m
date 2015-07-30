@@ -17,7 +17,7 @@ function res=climada_template(param1,param2)
 %   param2: as an example
 % OUTPUTS:
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20150213
+% David N. Bresch, david.bresch@gmail.com, 20150128
 %-
 
 res=[]; % init output
@@ -101,4 +101,4 @@ else
 end
 fprintf('after the loop\n')
 
-end % climada_template
+return
