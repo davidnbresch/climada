@@ -355,6 +355,7 @@ if ~isempty(measures_impact_comparison)
         tot_climate_risk              = measures_impact.NPV_total_climate_risk;
     end
     [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
+    if reverse_cb,sorted_cb_ratio=1./sorted_cb_ratio;end
     cumulated_benefit            = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk]*fct;
     
     % to scale such that the plot comprises both
