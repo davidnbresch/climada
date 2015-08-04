@@ -22,10 +22,15 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   EDS=climada_EDS_calc(entity,hazard,annotation_name)
 % EXAMPLE:
 %   EDS=climada_EDS_calc(climada_assets_encode(climada_assets_read))
+%   EDS=climada_EDS_calc('demo_today','TCNA_today_small')
 % INPUTS:
-%   entity: a read and encoded assets file, see climada_assets_encode(climada_assets_read)
+%   entity: an entity structure or an entity .mat file, see climada_assets_encode(climada_assets_read)
+%       If a file and no path provided, default path ../data/entities is
+%       used (and name can be without extension .mat)
 %       > promted for if not given
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
+%       If a file and no path provided, default path ../data/hazards is
+%       used (and name can be without extension .mat)
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   annotation_name: a free text that will appear e.g. on plots for
@@ -81,6 +86,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150114, EDS.peril_ID (was EDS.hazard.peril_ID)
 % David N. Bresch, david.bresch@gmail.com, 20150320, spfun replaced with explicit call, turns out to be >50% faster. Further speedup, see loop_mod_step
 % Gilles Stassen, gillesstassen@hotmail.com, 20150622, use complete peril_ID in asset_damfun_pos refinement (1:2) -> (:), MDD, PAA  explicitly capped at max value
+% David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for entoity and hazard set name on input
 %-
 
 global climada_global
@@ -111,6 +117,11 @@ end
 % load the entity, if a filename has been passed
 if ~isstruct(entity)
     entity_file=entity;entity=[];
+    
+    % complete path, if missing
+    [fP,fN,fE]=fileparts(entity_file);
+    if isempty(fP),entity_file=[climada_global.data_dir filesep 'entities' filesep fN fE];end
+    
     load(entity_file);
 end
 
@@ -127,6 +138,11 @@ end
 % load the hazard set, if a filename has been passed
 if ~isstruct(hazard)
     hazard_file=hazard;hazard=[];
+    
+    % complete path, if missing
+    [fP,fN,fE]=fileparts(hazard_file);
+    if isempty(fP),hazard_file=[climada_global.data_dir filesep 'hazards' filesep fN fE];end
+    
     load(hazard_file);
 end
 

@@ -1,4 +1,4 @@
-function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
+function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % climada TC hazard event set generate
 % NAME:
 %   climada_tc_hazard_set
@@ -19,7 +19,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %   previous: likely climada_random_walk
 %   next: diverse
 % CALLING SEQUENCE:
-%   res=climada_tc_hazard_set(tc_track,hazard_set_file)
+%   res=climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % EXAMPLE:
 %   res=climada_tc_hazard_set(tc_track)
 % INPUTS:
@@ -27,19 +27,21 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 %   tc_track: a TC track structure, or a filename of a saved one
 %       details: see e.g. climada_tc_random_walk
 %       > promted for if not given
-%   hazard_set_file: the name and path of the hazard set file
+%   hazard_set_file: the name (and path, optional) of the hazard set file
+%       If no path provided, default path ../data/hazards is used (and name
+%       can be without extension .mat)
 %       > promted for if not given
 %   centroids: the variable grid centroids (see climada_centroids_read)
 %       a structure with
-%           Longitude(1,:): the longitudes
-%           Latitude(1,:): the latitudes
+%           lon(1,:): the longitudes
+%           lat(1,:): the latitudes
 %           centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
 %       or a .mat-file which contains a centroids struct (saved by
 %       climada_centroids_read) or the filename of an Excel file (the original
 %       input to climada_centroids_read) which holds the centroids, in
 %       which case climada_centroids_read is called.
 %       OR: an entity, in which case the entity.assets.lat and
-%       Longitude are used as centroids.
+%       entity.assets.lon are used as centroids.
 %       > promted for .mat or .xls filename if not given
 %       NOTE: if you then select Cancel, a regular default grid is used, see hard-wired definition in code
 % OUTPUTS:
@@ -74,6 +76,7 @@ function hazard = climada_tc_hazard_set(tc_track, hazard_set_file, centroids)
 % David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
 % David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
 % Lea Mueller, muelleleh@gmail.com, 20150420, include category into hazard structure
+% David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
 %-
 
 hazard=[]; % init
@@ -110,8 +113,7 @@ create_yearset=1; % default=1
 % prompt for tc_track if not given
 if isempty(tc_track) % local GUI
     tc_track             = [climada_global.data_dir filesep 'tc_tracks' filesep '*.mat'];
-    tc_track_default     = [climada_global.data_dir filesep 'tc_tracks' filesep 'Select tc track .mat'];
-    [filename, pathname] = uigetfile(tc_track, 'Select tc track set:',tc_track_default);
+    [filename, pathname] = uigetfile(tc_track, 'Select tc track set:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -138,9 +140,11 @@ if isempty(hazard_set_file) % local GUI
     else
         hazard_set_file = fullfile(pathname,filename);
     end
-else
-    %%hazard_set_file = [climada_global.data_dir filesep 'hazards' filesep hazard_set_file];
 end
+
+% complete path, if missing
+[fP,fN,fE]=fileparts(hazard_set_file);
+if isempty(fP),hazard_set_file=[climada_global.data_dir filesep 'hazards' filesep fN fE];end
 
 % prompt for centroids if not given
 if isempty(centroids) % local GUI

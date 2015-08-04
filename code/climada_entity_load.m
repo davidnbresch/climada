@@ -4,20 +4,24 @@ function entity_out=climada_entity_load(entity_file)
 %   climada_entity_load
 % PURPOSE:
 %   load a previously saved entity (just to avoid typing long paths and
-%   filenames in the cmd window)
+%   filenames in the command window)
 % CALLING SEQUENCE:
 %   entity_out=climada_entity_load(entity_file)
 % EXAMPLE:
-%   entity_out=climada_entity_load(entity_file)
+%   entity=climada_entity_load(entity_file)
+%   entity=climada_entity_load('demo_today')
 % INPUTS:
-%   entity_file: the filename with path of a previously saved entity, see
-%       climada_entity_save(climada_assets_encode(climada_assets_read))
+%   entity_file: the filename (with path, optional) of a previously saved
+%       entity, see climada_entity_read
+%       If no path provided, default path ../data/entities is used (and
+%       name can be without extension .mat) 
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 %   entity_out: a struct, see e.g. climada_assets_read for details
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091230
+% David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
 %-
 
 global climada_global
@@ -39,6 +43,10 @@ if isempty(entity_file) % local GUI
         entity_file=fullfile(pathname,filename);
     end
 end
+
+% complete path, if missing
+[fP,fN,fE]=fileparts(entity_file);
+if isempty(fP),entity_file=[climada_global.data_dir filesep 'entities' filesep fN fE];end
 
 load(entity_file)
 vars = whos('-file', entity_file); % in case entity was saved under another name
