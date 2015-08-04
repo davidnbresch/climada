@@ -30,6 +30,8 @@ function hazard = climada_asci2hazard(asci_file, row_count, utm_transformation)
 % Lea Mueller, muellele@gmail.com, 20150617, utm_tranformation added, to
 %              specific for barisal coordinate transformation and salvador
 % Lea Mueller, muellele@gmail.com, 20150623, bugfix if not tranfomration needed
+% Lea Mueller, muellele@gmail.com, 20150815, special case for San Salvador, where we get lon/lat min/max 
+%                                            directly from Maxime/GFA, thus ignoring xllorner and yllcorner
 %-
 
 hazard = []; %init
@@ -43,8 +45,9 @@ if ~exist('row_count','var'),row_count=[];end
 if ~exist('utm_transformation','var'),utm_transformation='';end
 
 if isempty(row_count),row_count=10;end
+
 %check row_count for your specific asci-file
-row_count = 6;
+% row_count = 6;
 
 
 
@@ -123,12 +126,20 @@ switch utm_transformation
         [lon_max, lat_max] = utm2ll_shift(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);
         
     case 'salvador'
+        % special case for San Salvador, we get the lat/lon corners directly from
+        % Maxime and ignore the xllcorner, yllcorner in the asci-file
+        lon_min = -89.251;
+        lon_max = -89.163;
+        lat_min =  13.671;
+        lat_max =  13.702;
+        
         % only for El Salvador: transformation of UTM to lat lon coordinates
-        [lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
-        [lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);  
-    % original conversion from UTM to lat lon
-    % [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
-    % [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows); 
+        %[lon_min, lat_min] = utm2ll_salvador(xllcorner, yllcorner);
+        %[lon_max, lat_max] = utm2ll_salvador(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows);  
+        
+        % original conversion from UTM to lat lon
+        % [lon_min, lat_min] = btm2ll(xllcorner, yllcorner);
+        % [lon_max, lat_max] = btm2ll(xllcorner+cellsize*ncols, yllcorner+cellsize*nrows); 
     
     case '' % without transformation
         lon_min = xllcorner;
@@ -236,8 +247,9 @@ fprintf('Please check hazard data fields \n\t-.peril_ID \n\t-.units \n\t-.commen
 %save in climada/data/hazard
 % hazard_filename = [climada_global.data_dir filesep 'hazards' filesep 'BCC_hazard_FL.mat'];
 hazard_filename = [pathstr filesep 'hazard_' name '.mat'];
+hazard.filename = hazard_filename;
 save(hazard_filename, 'hazard')
-fprintf('saved hazard in %s\n',hazard_filename);
+fprintf('Save hazard in %s\n',hazard_filename);
 
 
 %%
