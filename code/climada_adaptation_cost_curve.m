@@ -1,4 +1,4 @@
-function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measures_impact, measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
+function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measures_impact,measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
 % climada measures impact climate adaptation cost curve
 % NAME:
 %   climada_adaptation_cost_curve
@@ -10,7 +10,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %   insurance_cost is only used when called from climada_demo (the flag
 %   called_from_climada_demo), no relevance for standard use .
 % CALLING SEQUENCE:
-%   climada_adaptation_cost_curve(measures_impact,measures_impact_comparison)
+%   climada_adaptation_cost_curve(measures_impact,measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
 % EXAMPLE:
 %   climada_adaptation_cost_curve(climada_measures_impact(climada_entity_read)) % from scratch
 %   climada_adaptation_cost_curve(climada_measures_impact,climada_measures_impact) % one needs to really understand what's going on
@@ -35,8 +35,8 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %   reverse_cb: reverse the vertical axis (=1), instead of cost/benefit,
 %       show benefit per cost, default=0
 %   plot_arrows: whether we do (=1) or don't (=0, default) plot arrows
-%   underneath the x-axis to show cost-effective measures and
-%   non-cost-effective measures extent.
+%       underneath the x-axis to show cost-effective measures and
+%       non-cost-effective measures extent.
 % OUTPUTS:
 %   insurance_benefit and insurance_cost: only used when called from
 %       climada_play_adapt_cost_curve, see there (in essence to write
@@ -50,6 +50,8 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20141213 plot_arrows=0 by default and climada_demo option cleaned up
 % David N. Bresch, david.bresch@gmail.com, 20141231 subaxis removed (not clean, troubles in Octave)
 % Lea Mueller, muellele@gmail.com, 20150617, set to bc_ratio (benefits per cost) instead of cb_ratio
+% David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for
+% comparison plot (
 %-
 
 global climada_global
