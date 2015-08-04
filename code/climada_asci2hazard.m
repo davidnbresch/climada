@@ -32,6 +32,7 @@ function hazard = climada_asci2hazard(asci_file, row_count, utm_transformation)
 % Lea Mueller, muellele@gmail.com, 20150623, bugfix if not tranfomration needed
 % Lea Mueller, muellele@gmail.com, 20150815, special case for San Salvador, where we get lon/lat min/max 
 %                                            directly from Maxime/GFA, thus ignoring xllorner and yllcorner
+% Lea Mueller, muellele@gmail.com, 20150815, replace .asc with ext, so that txt-files can be processed as well
 %-
 
 hazard = []; %init
@@ -176,7 +177,7 @@ read_index = zeros(1,size(files_in_folder,1));
 for i = 1:size(files_in_folder,1)
     filename_i = files_in_folder(i,:);
     filename_i = filename_i(~isstrprop(filename_i,'digit'));
-    if strfind(filename_i,[name_only ext]) & strfind(filename_i,'.asc') & isempty(strfind(filename_i,'.xml'))
+    if strfind(filename_i,[name_only ext]) & strfind(filename_i,ext) & isempty(strfind(filename_i,'.xml'))
         read_index(i) = 1;
     end
 end
