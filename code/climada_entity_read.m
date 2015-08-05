@@ -41,6 +41,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 %   entity=climada_entity_read;
 % INPUTS:
 %   entity_filename: the filename of the Excel (or .ods) file with the assets
+%       If no path provided, default path ../data/entities is used
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
@@ -70,6 +71,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed and NOENCODE added
 % David N. Bresch, david.bresch@gmail.com, 20141230, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20150101, Octave compatibility (at least for .xlsx)
+% David N. Bresch, david.bresch@gmail.com, 20150805, allow for name without path on input
 %-
 
 global climada_global
@@ -99,6 +101,12 @@ if isempty(entity_filename) % local GUI
 end
 
 [fP,fN,fE] = fileparts(entity_filename);
+
+if isempty(fP) % complete path, if missing
+    entity_filename=[climada_global.data_dir filesep 'entities' filesep fN fE];
+    [fP,fN,fE] = fileparts(entity_filename);
+end
+
 entity_save_file=[fP filesep fN '.mat'];
 if climada_check_matfile(entity_filename,entity_save_file)
     % there is a .mat file more recent than the Excel
