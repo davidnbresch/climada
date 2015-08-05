@@ -87,6 +87,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150320, spfun replaced with explicit call, turns out to be >50% faster. Further speedup, see loop_mod_step
 % Gilles Stassen, gillesstassen@hotmail.com, 20150622, use complete peril_ID in asset_damfun_pos refinement (1:2) -> (:), MDD, PAA  explicitly capped at max value
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for entoity and hazard set name on input
+% Lea Mueller, muellele@gmail.com, 20150805, allow centroid_index to be zero, do not integrate such assets in valid_asset_pos, no damage will be calculated           
 %-
 
 global climada_global
@@ -221,8 +222,10 @@ PAA_0                 = zeros(size(hazard.intensity,1),1);
 % THIS CODE MIGHT NEED FUTURE OPTIMIZATION
 % see also climada_code_optimizer, which removes all slowing code...
 
-% only process Value>0, since otherwise no damage anyway
-valid_assets_pos=find(entity.assets.Value>0);
+% only process Value>0 and centroid_index>0, since otherwise no damage
+% anyway, Lea, 20150805
+valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
+% valid_assets_pos=find(entity.assets.Value>0);% only process Value>0, since otherwise no damage anyway
 nn_assets=length(valid_assets_pos);
 
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity

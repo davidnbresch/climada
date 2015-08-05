@@ -52,6 +52,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20150610, Lea's speedup fixed
 % Lea Mueller, muellele@gmail.com, 20150617, speedup works for both dimensions of entity.lats and .lons (1xn and nx1)
 % David N. Bresch, david.bresch@gmail.com, 20150618, Lea's speedup fixed 2nd time (line 134)
+% Lea Mueller, muellele@gmail.com, 20150805, define a minimum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
 %-
 
 global climada_global
@@ -114,8 +115,8 @@ if isfield(hazard,'intensity')
     % hence we do not need all fields
     centroids.lon=hazard.lon;
     centroids.lat=hazard.lat;
-    if isfield(hazard,'filename'),centroids.filename =hazard.filename;end
-    if isfield(hazard,'comment'), centroids.comment  =hazard.comment;end
+    if isfield(hazard,'filename'),centroids.filename = hazard.filename;end
+    if isfield(hazard,'comment'), centroids.comment  = hazard.comment;end
 else
     % hazard does contain centroids
     centroids=hazard; clear hazard
@@ -127,6 +128,7 @@ if isfield(centroids,'centroid_ID')
     centroids.lon=centroids.lon(centroids.centroid_ID>0);
     centroids.lat=centroids.lat(centroids.centroid_ID>0);
 end
+
 
 % check lat lon dimension (1xn or nx1), now the concatenations works for both dimensions
 [lon_i lon_j] = size(assets.lon);
@@ -146,6 +148,18 @@ n_assets              = length(indx);
 % n_assets            = length(assets.Value);
 assets.centroid_index = assets.Value*0; % init
 
+% define a minimum distance to hazard position (in m). assets that are too
+% far away from hazard, will get centroid_index =0 and no damage will be
+% calculated for this asset
+if isfield(hazard,'peril_ID')
+    if strcmp(hazard.peril_ID,'FL')
+        min_distance_to_hazard = 20; %m
+    else
+        min_distance_to_hazard = 10^6; %1000 km
+    end
+end
+    
+    
 t0       = clock;
 msgstr   = sprintf('Encoding %i assets ... ',n_assets);
 mod_step = 10; % first time estimate after 10 assets, then every 100
@@ -163,6 +177,10 @@ for asset_i=1:n_assets
     
     dist_m                       = climada_geo_distance(assets.lon(indx(asset_i)),assets.lat(indx(asset_i)),centroids.lon,centroids.lat);
     [min_dist,min_dist_index]    = min(dist_m);
+    % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
+    if min_dist>min_distance_to_hazard 
+        min_dist_index = 0;
+    end
     indx3                        = find(indx2 == asset_i);
     assets.centroid_index(indx3) = min_dist_index;
     
