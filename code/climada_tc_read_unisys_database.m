@@ -36,12 +36,13 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 %   previous step: see climada_tc_get_unisys_databases
 %   next step: see climada_tc_random_walk
 % CALLING SEQUENCE:
-%   tc_track=climada_tc_read_unisys_database(unisys_file);
+%   tc_track=climada_tc_read_unisys_database(unisys_file,check_plot);
 % EXAMPLE:
-%   tc_track=climada_tc_read_unisys_database(unisys_file);
+%   tc_track=climada_tc_read_unisys_database('tracks.atl.txt');
 % INPUTS:
 %   unisys_file: the filename of the raw databse file (as downloaded from
 %       UNISYS), prompted for, if not given
+%       If no path provided, default path ../data/tc_tracks is used
 %   see also PARAMETERS section, especially for filters
 % OPTIONAL INPUT PARAMETERS:
 %   check_plot: if =1, show plots, =0 not (default)
@@ -83,6 +84,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 % for southern hemisphere filename
 % David N. Bresch, david.bresch@gmail.com, 20140221, world border plotted on top of tracks
 % David N. Bresch, david.bresch@gmail.com, 20140922 (over the Atlantic, LX016), tc_track_hist_file as output added and storing processed as mat
+% David N. Bresch, david.bresch@gmail.com, 20150805, allow for unisys_file without path on input
 %-
 
 % init output
@@ -141,8 +143,13 @@ if isempty(unisys_file) % local GUI
     end
 end
 
+[fP,fN,fE]=fileparts(unisys_file);
+if isempty(fP) % complete path, if missing
+    unisys_file=[climada_global.data_dir filesep 'tc_tracks' filesep fN fE];
+    [fP,fN]=fileparts(unisys_file);
+end
+
 % construct the binary file names
-[fP,fN]=fileparts(unisys_file);
 tc_track_raw_file=[fP filesep fN '_raw.mat'];
 tc_track_hist_file=[fP filesep fN '_hist.mat'];
 

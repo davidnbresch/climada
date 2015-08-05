@@ -24,7 +24,7 @@ function varargout = climada_demo_gui(varargin)
 %
 % Edit the above text to modify the response to help climada_demo_gui
 %
-% Last Modified by GUIDE v2.5 16-May-2014 11:10:19
+% Last Modified by GUIDE v2.5 05-Aug-2015 17:49:27
 %-
 
 % Begin initialization code - DO NOT EDIT
@@ -145,12 +145,15 @@ varargout{1} = handles.output;
 
 
 % --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
+function pushbutton1_Callback(hObject,eventdata,handles,force_update)
 % hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 waterfall = 0;
+if ~exist('force_update','var'),force_update=0;end
+if force_update,waterfall = 1;end
+
 global climada_demo_params
 
 % climate scenario
@@ -762,3 +765,15 @@ function radiobutton_bc_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_bc
 pushbutton1_Callback(hObject, eventdata, handles); % recalc, since vertical axis swapped
+
+
+% --------------------------------------------------------------------
+function ReinitMenuItem_Callback(hObject, eventdata, handles)
+% hObject    handle to ReinitMenuItem (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% added by david.bresch@gmail.com in order to allow the user to edit the
+% underlying entity to experiment freely.
+fprintf('Re-init ...\n');
+pushbutton1_Callback(hObject,eventdata,handles,1) % force update, since new entity

@@ -25,6 +25,8 @@ function [risk_today,risk_econ_growth,risk_climate_change]=climada_demo_waterfal
 % David N. Bresch, david.bresch@gmail.com, 20110625
 % David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
 % David N. Bresch, david.bresch@gmail.com, 20150402, area compatibility with version 8 (R2014...)
+% David N. Bresch, david.bresch@gmail.com, 20150805, entity re-read from Excel if Excel edited (to allow for experimentation)
+% David N. Bresch, david.bresch@gmail.com, 20150805, entity and hazard set files defined in climada_init_vars
 %-
 
 risk_today          = [];
@@ -44,15 +46,16 @@ if ~exist('nice_numbers'       , 'var'), nice_numbers        = 1; end
 %
 fontsize_           = 8;
 if ismac, fontsize_ = 11;end % larger font on Mac looks better
-%
-% filename and path to the entity used for the demo GUI:
-climada_demo_entity_excel_file = [climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];
-climada_demo_entity_save_file  = [climada_global.data_dir filesep 'entities' filesep 'demo_today.mat'];
 
-% the hazard sets to be used:
-hazard_present         = [climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
-hazard_moderate_change = [climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
-hazard_high_change     = [climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030high_small.mat'];
+% entity used for the demo GUI (set in climada_init_vars, do not edit here):
+climada_demo_entity_excel_file=climada_global.demo_gui.entity_excel_file;
+[fP,fN]=fileparts(climada_demo_entity_excel_file);
+climada_demo_entity_save_file=[fP filesep fN '.mat'];
+
+% hazard sets to be used for the GUI (set in climada_init_vars, do not edit here)
+hazard_present=climada_global.demo_gui.hazard_present;
+hazard_moderate_change=climada_global.demo_gui.hazard_moderate_change;
+hazard_high_change=climada_global.demo_gui.hazard_high_change;
 
 if isempty(climada_demo_params) % set for simple TEST
     climada_demo_params.growth   = 0.02;
@@ -60,14 +63,21 @@ if isempty(climada_demo_params) % set for simple TEST
 end
 
 % load the entity we use for this:
-if ~exist(climada_demo_entity_save_file,'file')
-    % first time, load from Excel
-    entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
-    climada_entity_save(entity_present,climada_demo_entity_save_file); % for future fast access
+if climada_check_matfile(climada_demo_entity_excel_file,climada_demo_entity_save_file)
+    entity_present = climada_entity_load(climada_demo_entity_save_file);
 else
-    load(climada_demo_entity_save_file) % contains entity_present
-    entity_present = entity; entity = []; % to free up memory
+    entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
 end
+
+% old entity loading (until 20150805, kept for records)
+% if ~exist(climada_demo_entity_save_file,'file')
+%     % first time, load from Excel
+%     entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
+%     climada_entity_save(entity_present,climada_demo_entity_save_file); % for future fast access
+% else
+%     load(climada_demo_entity_save_file) % contains entity_present
+%     entity_present = entity; entity = []; % to free up memory
+% end
 
 % update entity (we start from entity_today, kind of the 'template')
 % -------------

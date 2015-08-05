@@ -28,7 +28,8 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150211, global_CAGR added
 % Lea Mueller, muellele@gmail.com, 20150728, add project directory,i.e. now set to San Salvador
 % Lea Mueller, muellele@gmail.com, 20150728, set waitbar to 0
-%-
+% David N. Bresch, david.bresch@gmail.com, 20150805, project_dir NOT possible to set here, set to default data dir
+% David N. Bresch, david.bresch@gmail.com, 20150805, climada_demo_gui parameters set here
 
 global climada_global
 
@@ -153,8 +154,16 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % =1: if ~all(diff(entity.assets.centroid_index) == 1) etc., re-encoded
     climada_global.re_check_encoding = 0; % default =0
     
-    % set project directory, i.e. now for San Salvador
-    climada_global.project_dir = 'M:\BGCC\CHR\RK\RS\A_Sustainable_Development\Projects\ECA\SanSalvador\salvador_climada_data';
+    % set some parameters for climada_demo_gui (allows users to make use of
+    % the GUI for their own purpose, i.e. other entity...) 
+    climada_global.demo_gui.entity_excel_file     =[climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];
+    climada_global.demo_gui.hazard_present        =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
+    climada_global.demo_gui.hazard_moderate_change=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
+    climada_global.demo_gui.hazard_high_change    =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030high_small.mat'];
+
+    % set project directory, the user can this way store some data in his
+    % own folders, outside of core climada (e.g. no automatic sync with GitHub)
+    climada_global.project_dir = climada_global.data_dir;
     
     climada_vars_initialised=1; % indicate we have initialized all vars
     
