@@ -52,7 +52,6 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20150610, Lea's speedup fixed
 % Lea Mueller, muellele@gmail.com, 20150617, speedup works for both dimensions of entity.lats and .lons (1xn and nx1)
 % David N. Bresch, david.bresch@gmail.com, 20150618, Lea's speedup fixed 2nd time (line 134)
-% Lea Mueller, muellele@gmail.com, 20150805, define a minimum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
 %-
 
 global climada_global
