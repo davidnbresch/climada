@@ -1,11 +1,11 @@
-function res=climada_event_damage_animation(animation_data_file,animation_avi_file,schematic_tag,show_plots,focus_region)
+function res=climada_event_damage_animation(animation_data_file,animation_mp4_file,schematic_tag,show_plots,focus_region)
 % climada template
 % MODULE:
 %   module name
 % NAME:
 %   climada_event_damage_animation
 % PURPOSE:
-%   Animation of event damage - as an .avi movie
+%   Animation of event damage - as an .mp4 movie
 %   This code does the visualization (rendering), see e.g.
 %   climada_event_damage_data_tc to calculate all the data. As one often
 %   needs to play with visualization parameters, the process is split.
@@ -24,14 +24,14 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 %   prior calls: climada_event_damage_data_tc or similar to prepare the
 %   event damage information
 % CALLING SEQUENCE:
-%   res=climada_event_damage_animation(animation_data_file,animation_avi_file)
+%   res=climada_event_damage_animation(animation_data_file,animation_mp4_file)
 % EXAMPLE:
 %   res=climada_event_damage_animation; % prompt for
 % INPUTS:
 %   animation_data_file: the data file (.mat) with hazard set which
 %       includes event damage information, see e.g. climada_event_damage_data_tc
 %       > promted for if not given
-%   animation_avi_file: the filename of the resulting .avi movie
+%   animation_mp4_file: the filename of the resulting .mp4 movie
 %       > promted for if not given (if cancel pressed, the movie frames are
 %       not written to file - useful for test)
 % OPTIONAL INPUT PARAMETERS:
@@ -52,6 +52,7 @@ function res=climada_event_damage_animation(animation_data_file,animation_avi_fi
 % David N. Bresch, david.bresch@gmail.com, 20150220, show_plots added
 % David N. Bresch, david.bresch@gmail.com, 20150220, focus_region added
 % David N. Bresch, david.bresch@gmail.com, 20150318, save as text debugged
+% David N. Bresch, david.bresch@gmail.com, 20150804, switched from 'Uncompressed AVI' to 'MPEG-4' (no AVI coded on Mac)
 %-
 
 res=[]; % init output
@@ -63,7 +64,7 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 % and to set default value where  appropriate
 if ~exist('animation_data_file','var'),animation_data_file = '';end
-if ~exist('animation_avi_file','var'), animation_avi_file  = '';end
+if ~exist('animation_mp4_file','var'), animation_mp4_file  = '';end
 if ~exist('schematic_tag','var'),      schematic_tag       = [];end
 if ~exist('show_plots','var'),         show_plots          =  0;end
 if ~exist('focus_region','var'),       focus_region        = [];end
@@ -103,7 +104,7 @@ dX=0;dY=0; % default=1
 %
 % TEST
 %animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
-%animation_avi_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.avi'];
+%animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
 %
 
 % prompt for animation_data_file if not given
@@ -118,16 +119,17 @@ if isempty(animation_data_file) % local GUI
     end
 end
 
-% prompt for animation_avi_file if not given
-make_avi=1;
-if isempty(animation_avi_file) % local GUI
-    animation_avi_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.avi'];
-    [filename, pathname] = uiputfile(animation_avi_file, 'Save animation as:');
+% prompt for animation_mp4_file if not given
+make_mp4=1;
+if isempty(animation_mp4_file) % local GUI
+    %animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.avi'];
+    animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
+    [filename, pathname] = uiputfile(animation_mp4_file, 'Save animation as:');
     if isequal(filename,0) || isequal(pathname,0)
-        make_avi=0;
-        animation_avi_file='';
+        make_mp4=0;
+        animation_mp4_file='';
     else
-        animation_avi_file=fullfile(pathname,filename);
+        animation_mp4_file=fullfile(pathname,filename);
     end
 end
 
@@ -193,9 +195,10 @@ damage_max_value=full(max(max(hazard.damage)))*damage_scale;
 max_damage_str=sprintf('%g',damage_max_value);
 
 % Prepare the new file
-if make_avi
-    %mov = avifile(animation_avi_file,'compression','none','fps',2,'quality',100);end
-    vidObj = VideoWriter(animation_avi_file,'Uncompressed AVI'); % 'Archival', 'Indexed AVI'
+if make_mp4
+    %mov = avifile(animation_mp4_file,'compression','none','fps',2,'quality',100);end
+    %vidObj = VideoWriter(animation_mp4_file,'Uncompressed AVI'); % 'Archival', 'Indexed AVI'
+    vidObj = VideoWriter(animation_mp4_file,'MPEG-4');
     open(vidObj);
 end
 
@@ -307,7 +310,7 @@ for step_i=1:n_steps
     
     %drawnow
         
-    if make_avi
+    if make_mp4
         %currFrame   = getframe(gcf);
         currFrame   = getframe(fig_handle);
         %%mov = addframe(mov,currFrame);
@@ -331,10 +334,10 @@ for step_i=1:n_steps
 end % step_i
 fprintf(format_str,''); % move carriage to begin of line
 
-if make_avi
+if make_mp4
     %mov = close(mov);
     close(vidObj);
-    fprintf('movie saved in %s\n', animation_avi_file)
+    fprintf('movie saved in %s\n', animation_mp4_file)
 end
 
 if ~show_plots,delete(fig_handle);end
