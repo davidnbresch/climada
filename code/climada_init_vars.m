@@ -30,6 +30,7 @@ function ok=climada_init_vars(reset_flag)
 % Lea Mueller, muellele@gmail.com, 20150728, set waitbar to 0
 % David N. Bresch, david.bresch@gmail.com, 20150805, project_dir NOT possible to set here, set to default data dir
 % David N. Bresch, david.bresch@gmail.com, 20150805, climada_demo_gui parameters set here
+% David N. Bresch, david.bresch@gmail.com, 20150807, climada_global.tc.extratropical_transition
 
 global climada_global
 
@@ -125,6 +126,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % '.txt' for UNISYS files (http://weather.unisys.com/hurricane/index.html)
     % '.nc' for netCDF files
     climada_global.tc.default_raw_data_ext='.txt'; % default '.txt'
+    % in climada_tc_windfield, treat the extratropical transition celerity
+    % exceeding vmax problem an issue e.g. for Northern US, where this should be set=1 
+    climada_global.tc.extratropical_transition=0; % default =0 (original Holland)
     
     % evaluation and NPV (net present value) specific parameters
     climada_global.present_reference_year = 2014; % yyyy

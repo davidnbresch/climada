@@ -73,6 +73,7 @@ function res=climada_tc_windfield(tc_track,centroids,equal_timestep,silent_mode,
 % David N. Bresch, david.bresch@gmail.com, 20150315, back to real Holland for single timestep
 % David N. Bresch, david.bresch@gmail.com, 20150319, eye 'filled' for probabilistic windfields
 % David N. Bresch, david.bresch@gmail.com, 20150515, optional plot debugged (usually commented out, starting line 333)
+% David N. Bresch, david.bresch@gmail.com, 20150807, climada_global.tc.extratropical_transition
 %-
 
 res = []; % init output
@@ -93,7 +94,8 @@ wind_threshold=15; % in m/s, default=0 until 20150124
 %
 % treat the extratropical transition celerity exceeding vmax problem
 % an issue e.g. for Northern US, where this should be set=1
-treat_extratropical_transition=0; % default=0, since non-standard iro Holland
+% (in climada_init_vars, default=0, since non-standard iro Holland)
+treat_extratropical_transition=climada_global.tc.extratropical_transition;
 %
 % for speed, up only process centroids within a coastal range (on/offshore)
 coastal_range_km=375; % in km, 300 until 20150124, 5*75=375 (see D<5*R below)
