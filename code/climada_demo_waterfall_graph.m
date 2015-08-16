@@ -27,6 +27,7 @@ function [risk_today,risk_econ_growth,risk_climate_change]=climada_demo_waterfal
 % David N. Bresch, david.bresch@gmail.com, 20150402, area compatibility with version 8 (R2014...)
 % David N. Bresch, david.bresch@gmail.com, 20150805, entity re-read from Excel if Excel edited (to allow for experimentation)
 % David N. Bresch, david.bresch@gmail.com, 20150805, entity and hazard set files defined in climada_init_vars
+% David N. Bresch, david.bresch@gmail.com, 20140816, automatic update if entity changed
 %-
 
 risk_today          = [];
@@ -62,22 +63,9 @@ if isempty(climada_demo_params) % set for simple TEST
     climada_demo_params.scenario = 1;
 end
 
-% load the entity we use for this:
-if climada_check_matfile(climada_demo_entity_excel_file,climada_demo_entity_save_file)
-    entity_present = climada_entity_load(climada_demo_entity_save_file);
-else
-    entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
-end
-
-% old entity loading (until 20150805, kept for records)
-% if ~exist(climada_demo_entity_save_file,'file')
-%     % first time, load from Excel
-%     entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
-%     climada_entity_save(entity_present,climada_demo_entity_save_file); % for future fast access
-% else
-%     load(climada_demo_entity_save_file) % contains entity_present
-%     entity_present = entity; entity = []; % to free up memory
-% end
+% get the entity (note that climada_entity_read only reads if .xls is more
+% recent than an eventually existing .mat)
+entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
 
 % update entity (we start from entity_today, kind of the 'template')
 % -------------

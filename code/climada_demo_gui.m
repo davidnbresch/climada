@@ -150,12 +150,29 @@ function pushbutton1_Callback(hObject,eventdata,handles,force_update)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% flags to steer update
 waterfall = 0;
+cost_curve = 0; % will always be =1, if waterfall=1
+nice_numbers = 1;
+scaled_AED   = 1;
+
 if ~exist('force_update','var'),force_update=0;end
 if force_update,waterfall = 1;end
 
 global climada_demo_params
+global climada_global
 
+% first, check whether the user edited the Excel entity
+climada_demo_entity_excel_file=climada_global.demo_gui.entity_excel_file;
+[fP,fN]=fileparts(climada_demo_entity_excel_file);
+climada_demo_entity_save_file=[fP filesep fN '.mat'];
+if ~climada_check_matfile(climada_demo_entity_excel_file,climada_demo_entity_save_file)
+    % if entity changed, re-calc waterfall (we need to check here, as with
+    % no other (GUI) parameters changed, this would otherwise not happen
+    waterfall=1;
+end
+
+% next, check for user action on GUI that requires re-calculation of waterfall
 % climate scenario
 if climada_demo_params.scenario ~= get(handles.slider1, 'Value');
     climada_demo_params.scenario = get(handles.slider1, 'Value');
@@ -167,10 +184,16 @@ if climada_demo_params.growth ~= get(handles.slider2, 'Value');
     waterfall = 1;
 end
 
-nice_numbers = 1;
-scaled_AED   = 1;
+% discount rate
+string = get(handles.edit3,'String'); val = str2double(string)/100;
+if climada_demo_params.discount_rate ~= val;
+    climada_demo_params.discount_rate = val;
+    cost_curve = 1;
+    waterfall = 1; % to be correct (since we run all with entity present, no real need to update waterfall)
+end
 
 if waterfall
+    %fprintf('****** WATERFALL *******\n');
     cc_label = {'No' 'Middle' 'High'};
     set(handles.text1,'String', [cc_label{get(handles.slider1,'Value')+1} ' climate change'])
     set(handles.text2,'String', ['Economic growth ' num2str(get(handles.slider2,'Value')*100,'%1.0f') '%'])
@@ -179,16 +202,11 @@ if waterfall
     cla;
     climada_demo_waterfall_graph(climada_demo_params,0,nice_numbers);
     cost_curve = 1;
-else
-    cost_curve = 0;
 end
 
-% discount rate
-string = get(handles.edit3,'String'); val = str2double(string)/100;
-if climada_demo_params.discount_rate ~= val;
-    climada_demo_params.discount_rate = val;
-    cost_curve = 1;
-end
+% now, if only measures sliders moved, no need to update waterfall (unless
+% the entity changed, see above)
+
 if climada_demo_params.measures.mangroves ~= get(handles.slider3, 'Value');
     climada_demo_params.measures.mangroves = get(handles.slider3, 'Value');
     cost_curve = 1;
@@ -209,7 +227,9 @@ if climada_demo_params.measures.reverse_cb ~= get(handles.radiobutton_bc, 'Value
     climada_demo_params.measures.reverse_cb = get(handles.radiobutton_bc, 'Value');
     cost_curve = 1;
 end
+
 if cost_curve
+    %fprintf('****** COST CURVE ******\n');
     set(handles.text3,'String',['Mangroves '         num2str(get(handles.slider3, 'Value')*100,'%2.0f') '%'])
     set(handles.text4,'String',['Beach nourishment ' num2str(get(handles.slider4, 'Value')*100,'%2.0f') '%'])
     set(handles.text5,'String',['Seawall '           num2str(get(handles.slider5, 'Value')*100,'%2.0f') '%'])

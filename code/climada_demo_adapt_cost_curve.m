@@ -37,6 +37,7 @@ function [impact_present, impact_future, insurance_benefit, insurance_cost] = cl
 % David N. Bresch, david.bresch@gmail.com, 20110623, Ashdown Park
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact...
 % David N. Bresch, david.bresch@gmail.com, 20140516, reverse_cb added
+% David N. Bresch, david.bresch@gmail.com, 20140816, automatic update if entity changed
 %-
 
 impact_present = []; % init
@@ -74,15 +75,9 @@ if isempty(climada_demo_params) % set for simple TEST
    %climada_demo_params.measures.insurance_deductible = 0;
 end
 
-% load the entity we use for this:
-if ~exist(climada_demo_entity_save_file,'file')
-   % first time, load from Excel
-   entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
-   %%climada_entity_save(entity_present,climada_demo_entity_save_file); % for future fast access, new done already in climada_entity_read
-else
-   load(climada_demo_entity_save_file) % contains entity_present
-   entity_present = entity; entity = []; % to free up memory
-end
+% get the entity (note that climada_entity_read only reads if .xls is more
+% recent than an eventually existing .mat)
+entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
 
 % update entity (we start from entity_today, kind of the 'template')
 % -------------
