@@ -31,6 +31,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150805, project_dir NOT possible to set here, set to default data dir
 % David N. Bresch, david.bresch@gmail.com, 20150805, climada_demo_gui parameters set here
 % David N. Bresch, david.bresch@gmail.com, 20150807, climada_global.tc.extratropical_transition
+% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir introduced
 
 global climada_global
 
@@ -101,7 +102,12 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     if ~exist(climada_global.system_dir,'dir')
         fprintf('WARNING: please create %s manually\n',climada_global.system_dir);
     end
-    
+    climada_global.centroids_dir=[climada_global.data_dir filesep 'centroids']; % added 20150819
+    if ~exist(climada_global.centroids_dir,'dir')
+        fprintf('WARNING: please create %s manually\n',climada_global.centroids_dir);
+        climada_global.centroids_dir=climada_global.system_dir;
+        fprintf('--> ad interim centroids in system folder (backward compatibility, too)\n');
+    end
     % the map border file as used by climada_plot_world_borders
     % (see the short documentation in climada_global.system_dir/admin0.txt)
     climada_global.map_border_file=[climada_global.system_dir filesep 'admin0.mat'];
@@ -191,6 +197,19 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
         end
     else
         fprintf('OK: migrated to lon/lat instead of Longitude/Latitude\n');
+    end
+    
+    % !!!!!!!!!!!!!!!!!!!!!!!!!
+    % a temporary cleanup item (to be removed winter 2015 latest)
+    cleanup_check_file=[climada_global.system_dir filesep 'climada_centroids_cleanup_done.txt'];
+    if ~exist(cleanup_check_file,'file')
+        if climada_centroids_cleanup
+            fid=fopen(cleanup_check_file,'w');
+            fprintf(fid,'climada_centroids_cleanup run at %s\n',datestr(now));
+            fclose(fid);
+        end
+    else
+        fprintf('OK: centroids moved into own folder (out of system)\n');
     end
     % !!!!!!!!!!!!!!!!!!!!!!!!!
     

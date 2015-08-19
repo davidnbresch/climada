@@ -28,6 +28,7 @@ function climada_tc_windfield_animation(tc_track,centroids,aggregation,check_avi
 %   (minimum 1 hour) for one specific storm track
 % MODIFICATION HISTORY:
 % Lea Mueller, 20110603
+% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
 %-
 
 global climada_global
@@ -43,8 +44,7 @@ if isempty(tc_track)
     %load ([climada_global.data_dir
     %'\tc_tracks\tc_tracks_mozambique_1978_2011_southwestindian_cleaned_6h'])
     tc_track = [climada_global.data_dir filesep 'tc_tracks' filesep '*.mat'];
-    tc_track_default     = [climada_global.data_dir filesep 'tc_tracks' filesep 'Select PROBABILISTIC tc track .mat'];
-    [filename, pathname] = uigetfile(tc_track, 'Select PROBABILISTIC tc track set:',tc_track_default);
+    [filename, pathname] = uigetfile(tc_track, 'Select PROBABILISTIC TC track set:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -71,9 +71,8 @@ end
 
 %% prompt for centroids if not given
 if isempty(centroids)
-    centroids            = [climada_global.system_dir filesep '*.mat'];
-    centroids_default    = [climada_global.system_dir filesep 'Select centroids .mat'];
-    [filename, pathname] = uigetfile(centroids, 'Select centroids:',centroids_default);
+    centroids            = [climada_global.centroids_dir filesep '*.mat'];
+    [filename, pathname] = uigetfile(centroids, 'Select centroids:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else

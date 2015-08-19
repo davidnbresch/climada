@@ -77,6 +77,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
 % Lea Mueller, muelleleh@gmail.com, 20150420, include category into hazard structure
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
+% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
 %-
 
 hazard=[]; % init
@@ -148,7 +149,7 @@ if isempty(fP),hazard_set_file=[climada_global.data_dir filesep 'hazards' filese
 
 % prompt for centroids if not given
 if isempty(centroids) % local GUI
-    centroids_default    = [climada_global.system_dir filesep '*.mat'];
+    centroids_default    = [climada_global.centroids_dir filesep '*.mat'];
     %%[filename, pathname] = uigetfile(centroids_default,'Select centroids:');
     [filename, pathname] = uigetfile({'*.mat;*.xls'},'Select centroids (.mat or .xls):',centroids_default);
     if isequal(filename,0) || isequal(pathname,0)
@@ -195,6 +196,9 @@ end
 
 if ~isstruct(centroids) % load, if filename given
     centroids_file=centroids;centroids=[];
+    % complete path, if missing
+    [fP,fN,fE]=fileparts(centroids_file);
+    if isempty(fP),centroids_file=[climada_global.centroids_dir filesep fN fE];end
     fprintf('centroids read from %s\n',centroids_file);
     load(centroids_file); % contains centrois as a variable
 end

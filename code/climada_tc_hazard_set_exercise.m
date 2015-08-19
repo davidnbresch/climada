@@ -57,6 +57,7 @@ function hazard = climada_tc_hazard_set_exercise(tc_track, hazard_set_file, cent
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090729
 % David N. Bresch, david.bresch@gmail.com, 20120404 copy from climada_tc_hazard_set
+% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
 %-
 
 hazard=[]; % init
@@ -106,8 +107,7 @@ end
 % prompt for hazard_set_file if not given
 if isempty(hazard_set_file) % local GUI
     hazard_set_file      = [climada_global.data_dir filesep 'hazards' filesep 'TCXX_hazard.mat'];
-    hazard_set_default   = [climada_global.data_dir filesep 'hazards' filesep 'Save in TCXX_hazard .mat'];
-    [filename, pathname] = uiputfile(hazard_set_file, 'Save TC hazard set as:',hazard_set_default);
+    [filename, pathname] = uiputfile(hazard_set_file, 'Save TC hazard set as:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -117,9 +117,8 @@ end
 
 % prompt for centroids if not given
 if isempty(centroids) % local GUI
-    centroids            = [climada_global.data_dir filesep 'system' filesep '*.mat'];
-    centroids_default    = [climada_global.system_dir filesep 'Select centroids .mat'];
-    [filename, pathname] = uigetfile(centroids, 'Select centroids:',centroids_default);
+    centroids            = [climada_global.centroids_dir filesep '*.mat'];
+    [filename, pathname] = uigetfile(centroids, 'Select centroids:');
     if isequal(filename,0) || isequal(pathname,0)
         % TEST centroids
         ii=0;

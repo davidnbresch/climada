@@ -25,6 +25,7 @@ function centroids_out=climada_centroids_load(centroids_file)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20130719
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
+% David N. Bresch, david.bresch@gmail.com, 20150817, climada_global.centroids_dir
 %-
 
 global climada_global
@@ -40,7 +41,7 @@ if ~exist('centroids_file','var'),centroids_file=[];end
 
 % prompt for centroids_file if not given
 if isempty(centroids_file) % local GUI
-    centroids_file=[climada_global.data_dir filesep 'system' filesep '*.mat'];
+    centroids_file=[climada_global.centroids_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(centroids_file, 'Load centroids:');
     if isequal(filename,0) || isequal(pathname,0)
         centroids_out = []; return; % cancel
@@ -51,7 +52,7 @@ end
 
 % complete path, if missing
 [fP,fN,fE]=fileparts(centroids_file);
-if isempty(fP),centroids_file=[climada_global.data_dir filesep 'system' filesep fN fE];end
+if isempty(fP),centroids_file=[climada_global.centroids_dir filesep fN fE];end
 
 load(centroids_file) % contains centroids
 

@@ -96,7 +96,7 @@ end
 
 % prompt for hazard_set_file if not given
 if isempty(hazard_set_file) % local GUI
-    [fP,fN]=fileparts(excel_file);
+    [~,fN]=fileparts(excel_file);
     hazard_set_file=[climada_global.data_dir filesep 'hazards' filesep fN '.mat'];
     [filename, pathname] = uiputfile(hazard_set_file, 'Save hazard set as:');
     if isequal(filename,0) || isequal(pathname,0)

@@ -5,7 +5,7 @@ function ok=climada_lonlat_cleanup
 % NAME:
 %   climada_lonlat_cleanup
 % PURPOSE:
-%   cleans up old entities and centroids in renaming fields 
+%   cleans up old entities and centroids in renaming fields
 %   .Latitude to .lat and .Longitude to .lon, i.e.:
 %   entity.assets.Longitude/Latitude -> entity.assets.lon/lat
 %   centroids.Longitude/Latitude -> centroids.lon/lat
@@ -24,6 +24,7 @@ function ok=climada_lonlat_cleanup
 %   ok: =1 if all done, see error messages else
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150203
+% David N. Bresch, david.bresch@gmail.com, 20150819, centroids folder added
 %-
 
 ok=0; % init output
@@ -35,7 +36,7 @@ if ~climada_init_vars,return;end % init/import global variables
 %
 % define all parameters here - no parameters to be defined in code below
 %
-folder_names={'entities','system'};
+folder_names={'entities','system','centroids'};
 
 for folder_i=1:length(folder_names)
     
@@ -51,7 +52,7 @@ for folder_i=1:length(folder_names)
             % some files to ignore:
             if strcmp(fN,'admin0_oct'),fE='';end
             if strcmp(fN,'coastline_oct'),fE='';end
-                
+            
             if strcmp(fE,'.mat')
                 fprintf('checking %s\n',fN);
                 load(full_filename)
@@ -80,7 +81,9 @@ for folder_i=1:length(folder_names)
                     if save_file,save(full_filename,'entity');end
                     clear entity
                     
-                elseif strcmp(folder_names{folder_i},'system') && exist('centroids','var')
+                elseif (strcmp(folder_names{folder_i},'system') || ...
+                        strcmp(folder_names{folder_i},'centroids')) && ...
+                        exist('centroids','var')
                     
                     if isfield(centroids,'Longitude')
                         fprintf(' centroids.Longitude/Latitude -> centroids.lon/lat\n');

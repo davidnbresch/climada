@@ -1,4 +1,4 @@
-function centroids = climada_centroids_read(centroids_filename, centroids_save_file, visualize)
+function centroids = climada_centroids_read(centroids_filename, centroids_save_file, visualize, add_regular_grid)
 % climada measures read import
 % NAME:
 %   climada_centroids_read
@@ -18,6 +18,7 @@ function centroids = climada_centroids_read(centroids_filename, centroids_save_f
 %       'NO_SAVE' to suppress saving centroids
 %       'PROMPT' to prompt for via file dialog
 %   visualize: whether we plot the centroids on a map (=1) or not (=0, default)
+%   add_regular_grid: add a regular grid for plotting purposes (default=1)
 % OUTPUTS:
 %   centroids: a structure, with 
 %       Longitude  (1,:): the longitudes   
@@ -27,6 +28,7 @@ function centroids = climada_centroids_read(centroids_filename, centroids_save_f
 % David N. Bresch, david.bresch@gmail.com, 20091229
 % Lea Mueller, 20110718
 % David N. Bresch, david.bresch@gmail.com, 20120505, cleanup
+% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir and add_regular_grid as input parameter
 %-
 
 global climada_global
@@ -35,19 +37,19 @@ if ~climada_init_vars,return;end % init/import global variables
 centroids = [];
 
 % poor man's version to check arguments
-if ~exist('centroids_filename','var'), centroids_filename = []; end
-if ~exist('centroids_save_file','var'), centroids_save_file     = []; end
-if ~exist('visualize','var'), visualize          = 0 ; end
+if ~exist('centroids_filename','var'),  centroids_filename = []; end
+if ~exist('centroids_save_file','var'), centroids_save_file= []; end
+if ~exist('visualize','var'),           visualize          = 0 ; end
+if ~exist('add_regular_grid','var'),    add_regular_grid   = 1 ; end
 
 % PARAMETERS
 %
-add_regular_grid= 1; % default=1, to add a regular grid for plotting purposes
 grid_extent     = 5; % how many degrees extended grid
 grid_resolution = 1; % regular grids resolution in degree
 
 % prompt for centroids_filename if not given
 if isempty(centroids_filename) % local GUI
-    centroids_filename=[climada_global.data_dir filesep 'system' filesep '*.xls'];
+    centroids_filename=[climada_global.centroids_dir filesep '*.xls'];
     [filename, pathname] = uigetfile(centroids_filename, 'Select centroids file:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -55,6 +57,10 @@ if isempty(centroids_filename) % local GUI
         centroids_filename=fullfile(pathname,filename);
     end
 end
+
+% complete path, if missing
+[fP,fN,fE]=fileparts(centroids_filename);
+if isempty(fP),centroids_filename=[climada_global.centroids_dir filesep fN fE];end
 
 centroids  = climada_xlsread('no',centroids_filename,'centroids');
 
