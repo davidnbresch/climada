@@ -21,9 +21,9 @@ function measures=climada_measures_read(measures_filename)
 % OUTPUTS:
 %   measures: a structure, with the measures
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20091228
-% David N. Bresch, david.bresch@gmail.com, 20130316, vulnerability->damagefunctions...
-%-
+% David N. Bresch,  david.bresch@gmail.com, 20091228
+% David N. Bresch,  david.bresch@gmail.com, 20130316, vulnerability->damagefunctions...
+% Jacob Anz,        j.anz@gmx.net,          20150819, use try statement to check for damagefunctions in excel sheet
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -48,8 +48,11 @@ if isempty(measures_filename) % local GUI
 end
 
 measures=climada_xlsread('no',measures_filename,'measures',1);
-measures.damagefunctions=climada_xlsread('no',measures_filename,'damagefunctions',1);
-
+try 
+    measures.damagefunctions=climada_xlsread('no',measures_filename,'damagefunctions',1);
+catch
+    %fprintf('no damagefunctions found')
+end
 measures=climada_measures_encode(measures);
 
 % save measures as .mat file for fast access
