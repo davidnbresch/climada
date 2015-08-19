@@ -88,6 +88,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Gilles Stassen, gillesstassen@hotmail.com, 20150622, use complete peril_ID in asset_damfun_pos refinement (1:2) -> (:), MDD, PAA  explicitly capped at max value
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for entoity and hazard set name on input
 % Lea Mueller, muellele@gmail.com, 20150805, allow centroid_index to be zero, do not integrate such assets in valid_asset_pos, no damage will be calculated           
+% Lea Mueller, muellele@gmail.com, 20150819, use only unique values in interp_x_table, so that interp1 works (interp_x_table is monotonically increasing)        
 %-
 
 global climada_global
@@ -265,6 +266,9 @@ for asset_ii=1:nn_assets
         % convert hazard intensity into MDD
         interp_x_table = entity.damagefunctions.Intensity(asset_damfun_pos);
         interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos);
+        % take only unique values, so that interp1 works (x is monotonically increasing)
+        [interp_x_table,is_unique] = unique(interp_x_table);
+        interp_y_table = interp_y_table(is_unique);
         [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
         MDD=MDD_0;
         if climada_global.octave_mode
@@ -283,6 +287,7 @@ for asset_ii=1:nn_assets
         
         % convert hazard intensity into PAA
         interp_y_table = entity.damagefunctions.PAA(asset_damfun_pos);
+        interp_y_table = interp_y_table(is_unique);
         PAA=PAA_0;
         if climada_global.octave_mode
             PAA(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
