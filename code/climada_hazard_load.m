@@ -20,7 +20,10 @@ function hazard=climada_hazard_load(hazard_file)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140302
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
+% David N. Bresch, david.bresch@gmail.com, 20150820, check for correct filename
 %-
+
+hazard=[]; % init output
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -36,7 +39,7 @@ if isempty(hazard_file) % local GUI
     hazard_file=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
     [filename, pathname] = uigetfile(hazard_file, 'Load hazard event set:');
     if isequal(filename,0) || isequal(pathname,0)
-        hazard = []; return; % cancel
+        return; % cancel
     else
         hazard_file=fullfile(pathname,filename);
     end
@@ -46,7 +49,13 @@ end
 [fP,fN,fE]=fileparts(hazard_file);
 if isempty(fP),hazard_file=[climada_global.data_dir filesep 'hazards' filesep fN fE];end
 
-load(hazard_file); % really the only code line
+load(hazard_file);  % contains hazard, the only line that really matters ;-)
+
+% check for valid/correct entity.assets.filename
+if ~strcmp(hazard_file,hazard.filename)
+    hazard.filename=hazard_file;
+    save(hazard_file,'hazard')
+end
 
 return
 

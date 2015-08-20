@@ -72,6 +72,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141230, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20150101, Octave compatibility (at least for .xlsx)
 % David N. Bresch, david.bresch@gmail.com, 20150805, allow for name without path on input
+% David N. Bresch, david.bresch@gmail.com, 20150829, check for valid/correct entity.assets.filename
 %-
 
 global climada_global
@@ -111,6 +112,16 @@ entity_save_file=[fP filesep fN '.mat'];
 if climada_check_matfile(entity_filename,entity_save_file)
     % there is a .mat file more recent than the Excel
     load(entity_save_file)
+    
+    % check for valid/correct entity.assets.filename
+    if ~strcmp(entity_save_file,entity.assets.filename)
+        entity.assets.filename=entity_save_file;
+        entity.damagefunctions.filename=entity_save_file;
+        entity.measures.filename=entity_save_file;
+        entity.discount.filename=entity_save_file;
+        save(entity_file,'entity')
+    end
+
 else
     
     % read assets

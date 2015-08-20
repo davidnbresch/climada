@@ -20,6 +20,7 @@ function climada_entity_save(entity,entity_file)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091230
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
+% David N. Bresch, david.bresch@gmail.com, 20150820, filename checked
 %-
 
 global climada_global
@@ -47,7 +48,15 @@ end
 [fP,fN,fE]=fileparts(entity_file);
 if isempty(fP),entity_file=[climada_global.data_dir filesep 'entities' filesep fN fE];end
 
+% check for valid/correct entity.assets.filename
+if ~strcmp(entity_file,entity.assets.filename)
+    entity.assets.filename=entity_file;
+    entity.damagefunctions.filename=entity_file;
+    entity.measures.filename=entity_file;
+    entity.discount.filename=entity_file;
+    save(entity_file,'entity')
+end
+
 save(entity_file,'entity')
 
-return
-
+end % climada_entity_save

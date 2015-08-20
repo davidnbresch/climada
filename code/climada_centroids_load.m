@@ -1,4 +1,4 @@
-function centroids_out=climada_centroids_load(centroids_file)
+function centroids=climada_centroids_load(centroids_file)
 % climada
 % NAME:
 %   climada_centroids_load
@@ -17,7 +17,7 @@ function centroids_out=climada_centroids_load(centroids_file)
 %       climada_centroids_read
 %       Works also if the file contains an entity.
 %       If no path provided, default path ../data/system is used (and name
-%       can be without extension .mat) 
+%       can be without extension .mat)
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
@@ -27,6 +27,8 @@ function centroids_out=climada_centroids_load(centroids_file)
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150817, climada_global.centroids_dir
 %-
+
+centroids=[]; % init output
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -67,7 +69,4 @@ if exist('entity','var') % the file contains an entity, not centroids
     clear entity
 end
 
-centroids_out=centroids;
-
-return
-
+end % climada_centroids_load
