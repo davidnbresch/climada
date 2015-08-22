@@ -119,7 +119,7 @@ if climada_check_matfile(entity_filename,entity_save_file)
         entity.damagefunctions.filename=entity_save_file;
         entity.measures.filename=entity_save_file;
         entity.discount.filename=entity_save_file;
-        save(entity_file,'entity')
+        save(entity_save_file,'entity')
     end
 
 else
