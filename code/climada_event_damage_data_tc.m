@@ -70,6 +70,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %   focus_region: the region we're going to show [minlon maxlon minlat maxlat]
 %       default=[], automatically determined by area of entity lat/lon
 %       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
+%       E.g. for Salvador (Lea, 20150220) focus_region = [-91.5 -86 12 15.5];
 % OUTPUTS:
 %   hazard_plus: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -127,12 +128,6 @@ damage_scale=1/100;
 % the range (in degree) around the tc_track (to show a bit a wider area in plots)
 dX=1;dY=1; % default=1
 %
-% the rect to plot (default is track's full coverage, =[], in which case it is automatically determined)
-focus_region=[]; % default=[], [minlon maxlon minlat maxlat]
-%-- for Salvador, lea, 20150220
-% focus_region = [-91.5 -86 12 15.5];
-%------------------------------------------
-
 % label track nodes along track
 label_track_nodes=0; % default=0
 %
@@ -165,7 +160,8 @@ if isempty(animation_data_file),animation_data_file=[climada_global.data_dir fil
 
 % prompt for inputs, if not provided:
 if isempty(tc_track),[tc_track,tc_track_mat]=climada_tc_read_unisys_database;end % get tc_track
-if isempty(entity),entity=climada_entity_load;end                                % get entity
+if isempty(entity),entity=climada_entity_load;end                                % prompt for entity
+if ischar(entity),entity=climada_entity_load(entity);end                         % get entity from file
 if isempty(entity),return;end                                                    % Cancel pressed
 % if isempty(animation_data_file)                                                  % get output filename
 %     animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
@@ -179,7 +175,7 @@ if isempty(entity),return;end                                                   
 
 focus_track_region=0;
 if ~isempty(focus_region)
-    if focus_region(1)==1,focus_track_region=1;focus_region=[];end
+    if focus_region(1)==1,focus_track_region=1;end
 end
 if isempty(focus_region) % define the focus region based on entity
     focus_region(1)=min(entity.assets.lon)-dX;
@@ -270,6 +266,7 @@ if focus_track_region==1
     focus_region(2)=max(tc_track.lon)+dX;
     focus_region(3)=min(tc_track.lat)-dY;
     focus_region(4)=max(tc_track.lat)+dY;
+    fprintf('focus on TC tack region, not on whole entity\n');
 end
 
 tc_track=climada_tc_equal_timestep(tc_track,tc_track_timestep);
