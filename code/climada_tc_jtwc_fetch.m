@@ -13,6 +13,14 @@ function [tc_track,tc_track_hist_file]=climada_tc_jtwc_fetch(check_plot)
 %   event set generation works for South Psacific ocean (most likely use,
 %   as there is no UNISYS data for this region). Set Pacific_centric=0 in
 %   case you'd like to use jtwc data for South Indian ocean.
+%
+%   Note: we do NOT store empty (no wind nor pressure) or too short (less
+%   than 3 nodes) tracks in tc_track, as any subsequent climada code would
+%   struggle to use it anyway.
+%
+%   next step: see climada_tc_random_walk and climada_tc_hazard_set
+%
+%   See also climada_tc_read_unisys_database and climada_tc_hurdat_read
 % CALLING SEQUENCE:
 %   [tc_track,tc_track_hist_file]=climada_tc_jtwc_fetch(check_plot)
 % EXAMPLE:
@@ -47,6 +55,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_jtwc_fetch(check_plot)
 %       tc_track is stored in (see NOTE above)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150823
+% David N. Bresch, david.bresch@gmail.com, 20150824, made fully consistent with unisys and hurdat
 %-
 
 tc_track=[]; % init output
@@ -59,8 +68,12 @@ if ~exist('check_plot','var'),check_plot=0;end
 
 % PARAMETERS
 %
+% minimal nodes a track must have to be selected (otherwise operators such
+% as forward speed will not work properly)
+min_nodes=3;    
+%
 % define first and last year of data (see )
-year_start=1945;
+year_start=1945; % really no wind/pressure until 1957
 year_end=2014;
 %
 % whether we want track's longitudes be Pacific centric (i.e. dateline) or
@@ -75,13 +88,14 @@ if ~exist([climada_global.data_dir filesep 'tc_tracks' filesep '' tc_track_subfo
 end
 tc_track_subfolder=[climada_global.data_dir filesep 'tc_tracks' filesep tc_track_subfolder];
 
-tc_track_hist_file=[tc_track_subfolder filesep 'jtwc_tc_track.mat'];
+tc_track_hist_file=[tc_track_subfolder filesep 'jtwc_tc_track_hist.mat'];
 
 if exist(tc_track_hist_file,'file')
     load(tc_track_hist_file)
 else
     track_i=1; % init
     lon_correction_count=0;
+    min_nodes_count=0;
     MaxSustainedWind_NaN_count=0;
     CentralPressure_NaN_count=0;
     
@@ -121,7 +135,7 @@ else
                     fprintf(fid,'%s\n',track_data_str);
                     fclose(fid);
                 else
-                    fprintf('local %s already exists\n',sub_str);
+                    %fprintf('local %s already exists\n',sub_str);
                 end % ~exist(out_file,'file')
                 
                 % read the single track file and store to tc_track
@@ -131,16 +145,22 @@ else
                 tc_track(track_i).CentralPressureUnit='mb';
                 node_i=1; % init
                 
-                fprintf('adding %s to tc_track ...',sub_str);
+                %fprintf('adding %s to tc_track ...',sub_str);
                 fid=fopen(out_file,'r');
                 while ~feof(fid)
                     line_str=fgetl(fid);
                     if ~isempty(line_str)
                         
+                        % only later years have names, hence store .txt or .dat filename
+                        %tc_track(track_i).name='noname'; % real default
+                        tc_track(track_i).name=deblank(strrep(sub_str,'.txt',''));
+                        tc_track(track_i).name=strrep(tc_track(track_i).name,'.dat','');
+                        
                         [~,line_str]=strtok(line_str,','); % get rid of 'SH'
                         [~,line_str]=strtok(line_str,','); % get rid of number
                         [date_str,line_str]=strtok(line_str,','); % get date
                         % convert date
+                        date_str=deblank(strtrim(date_str)); % blanks everywhere ...
                         tc_track(track_i).yyyy(node_i)=str2double(date_str(1:4));
                         tc_track(track_i).mm(node_i)=str2double(date_str(5:6));
                         tc_track(track_i).dd(node_i)=str2double(date_str(7:8));
@@ -192,7 +212,7 @@ else
                     
                 end % ~eof(fid)
                 fclose(fid);
-                fprintf(' %i nodes\n',node_i-1);
+                %fprintf(' %i nodes\n',node_i-1);
                 
                 % complete the track
                 tc_track(track_i).ID_no=track_i; % just for compatibility
@@ -200,10 +220,50 @@ else
                 % add TimeStep (in hours)
                 tc_track(track_i).TimeStep=diff(tc_track(track_i).datenum)*24;
                 tc_track(track_i).TimeStep(end+1)=tc_track(track_i).TimeStep(end); % add last entry
+                
+                valid_pos=find(tc_track(track_i).TimeStep>0); % check for duplicate records
+                tc_track(track_i).yyyy=tc_track(track_i).yyyy(valid_pos);
+                tc_track(track_i).mm=tc_track(track_i).mm(valid_pos);
+                tc_track(track_i).dd=tc_track(track_i).dd(valid_pos);
+                tc_track(track_i).hh=tc_track(track_i).hh(valid_pos);
+                tc_track(track_i).datenum=tc_track(track_i).datenum(valid_pos);
+                tc_track(track_i).lat=tc_track(track_i).lat(valid_pos);
+                tc_track(track_i).lon=tc_track(track_i).lon(valid_pos);
+                tc_track(track_i).MaxSustainedWind=tc_track(track_i).MaxSustainedWind(valid_pos);
+                tc_track(track_i).CentralPressure=tc_track(track_i).CentralPressure(valid_pos);
+                tc_track(track_i).TimeStep=tc_track(track_i).TimeStep(valid_pos);
+                
                 if Pacific_centric
                     pos=find(tc_track(track_i).lon>0);
                     tc_track(track_i).lon(pos)=tc_track(track_i).lon(pos)-360;
                 end % Pacific_centric
+                
+                reset_track=0;
+                if length(tc_track(track_i).lon)<min_nodes
+                    reset_track=1;
+                    min_nodes_count=min_nodes_count+1;
+                elseif isnan(min(tc_track(track_i).MaxSustainedWind))
+                    if isnan(min(tc_track(track_i).CentralPressure))
+                        reset_track=1;
+                    end
+                end
+                
+                if reset_track
+                    % too few nodes and/or no valid MaxSustainedWind
+                    % nor CentralPressure
+                    tc_track(track_i).yyyy=[];
+                    tc_track(track_i).mm=[];
+                    tc_track(track_i).dd=[];
+                    tc_track(track_i).hh=[];
+                    tc_track(track_i).datenum=[];
+                    tc_track(track_i).lat=[];
+                    tc_track(track_i).lon=[];
+                    tc_track(track_i).MaxSustainedWind=[];
+                    tc_track(track_i).CentralPressure=[];
+                    tc_track(track_i).TimeStep=[];
+                
+                    track_i=track_i-1; % re-use record
+                end % reset_track
                 
                 track_i=track_i+1; % point to next track
                 
@@ -224,8 +284,20 @@ else
         fprintf('NOTE: %i nodes with no valid CentralPressure\n',CentralPressure_NaN_count);
     end
     
+    if min_nodes_count>0
+        fprintf('NOTE: %i tracks skipped since <%i nodes\n',min_nodes_count,min_nodes);
+    end
+    
     fprintf('saving tc_track in %s\n',tc_track_hist_file);
     save(tc_track_hist_file,'tc_track');
+    
+    % for speedup, also create the probabilistic track set
+    tc_track_hist=tc_track;
+    tc_track=climada_tc_random_walk(tc_track_hist);
+    tc_track_prob_file=strrep(tc_track_hist_file,'hist','prob');
+    fprintf('saving probabilstic tc_track in %s\n',tc_track_prob_file);
+    save(tc_track_prob_file,'tc_track');
+    tc_track=tc_track_hist; % set back
     
 end % exist(tc_track_hist_file,'file')
 

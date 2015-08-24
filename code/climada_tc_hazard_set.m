@@ -78,6 +78,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % Lea Mueller, muelleleh@gmail.com, 20150420, include category into hazard structure
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
+% David N. Bresch, david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
 %-
 
 hazard=[]; % init
@@ -315,7 +316,7 @@ else
 end
 
 t_elapsed = etime(clock,t0);
-msgstr    = sprintf('generating %i windfields took %3.2f min (%3.2f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
+msgstr    = sprintf('generating %i windfields took %3.2f min (%3.4f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
 fprintf('%s\n',msgstr);
 
 if isfield(hazard,'track_i'),hazard=rmfield(hazard,'track_i');end
@@ -330,7 +331,7 @@ hazard.matrix_density    = nnz(hazard.intensity)/numel(hazard.intensity);
 hazard.windfield_comment = msgstr;
 hazard.peril_ID          = 'TC';
 hazard.filename          = hazard_set_file;
-hazard.comment           = sprintf('TCNA hazard event set, generated %s',datestr(now));
+hazard.comment           = sprintf('TC hazard event set, generated %s',datestr(now));
 hazard.date              = datestr(now);
 hazard.units             = 'm/s';
 

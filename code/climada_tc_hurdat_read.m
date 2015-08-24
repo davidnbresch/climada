@@ -1,4 +1,4 @@
-function [tc_track,hurdat_hist_file]=climada_tc_hurdat_read(hurdat_filename,check_plot)
+function [tc_track,tc_track_hist_file]=climada_tc_hurdat_read(hurdat_filename,check_plot)
 % climada template
 % MODULE:
 %   core
@@ -21,7 +21,9 @@ function [tc_track,hurdat_hist_file]=climada_tc_hurdat_read(hurdat_filename,chec
 %   For debugging, there is a simple try/catch which stops and shows the
 %   line number and its content in case of trouble.
 %
-%   next call: e.g. climada_tc_hazard_set
+%   next step: see climada_tc_random_walk and climada_tc_hazard_set
+%
+%   See also climada_tc_read_unisys_database and climada_tc_jtwc_fetch
 % CALLING SEQUENCE:
 %   tc_track=climada_tc_hurdat_read(hurdat_filename)
 % EXAMPLE:
@@ -74,14 +76,15 @@ function [tc_track,hurdat_hist_file]=climada_tc_hurdat_read(hurdat_filename,chec
 %       To really start from the raw text file again, please delete the
 %       binary file (*_hist.mat).
 %
-%   hurdat_hist_file: the hurdat_filename with path to the binary file
+%   tc_track_hist_file: the filename with path to the binary file
 %       tc_track is stored in (see NOTE above)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150730, intial
+% David N. Bresch, david.bresch@gmail.com, 20150824, made fully consistent with unisys and jtwc
 %-
 
 tc_track=[]; % init output
-hurdat_hist_file='';
+tc_track_hist_file='';
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -116,7 +119,7 @@ end
 
 % construct the binary file names
 [fP,fN]=fileparts(hurdat_filename);
-hurdat_hist_file=[fP filesep fN '_hist.mat'];
+tc_track_hist_file=[fP filesep fN '_hist.mat'];
 
 if ~exist(hurdat_filename,'file'),fprintf('ERROR: file %s not found\n',hurdat_filename);return;end
 
@@ -127,7 +130,7 @@ else
     Pacific_centric=0;
 end
 
-if ~climada_check_matfile(hurdat_filename,hurdat_hist_file)
+if ~climada_check_matfile(hurdat_filename,tc_track_hist_file)
     
     fid=fopen(hurdat_filename,'r');
     
@@ -259,6 +262,7 @@ if ~climada_check_matfile(hurdat_filename,hurdat_hist_file)
                         tc_track(track_i).lon=[];
                         tc_track(track_i).MaxSustainedWind=[];
                         tc_track(track_i).CentralPressure=[];
+                        tc_track(track_i).TimeStep=[];
                         tc_track(track_i).WindRadii=[];
                         track_i=track_i-1; % re-use record
                         min_nodes_count=min_nodes_count+1;
@@ -288,8 +292,8 @@ if ~climada_check_matfile(hurdat_filename,hurdat_hist_file)
     end % while
     fprintf(format_str,''); % move carriage to begin of line
 
-    fprintf('saving as %s\n',hurdat_hist_file);
-    save(hurdat_hist_file,'tc_track');
+    fprintf('saving as %s\n',tc_track_hist_file);
+    save(tc_track_hist_file,'tc_track');
     
     if lon_correction_count>0
         fprintf('NOTE: %i longitudes corrected for range -180..180\n',lon_correction_count);
@@ -308,8 +312,8 @@ if ~climada_check_matfile(hurdat_filename,hurdat_hist_file)
     end
     
 else
-    fprintf('loading from %s\n',hurdat_hist_file);
-    load(hurdat_hist_file)
+    fprintf('loading from %s\n',tc_track_hist_file);
+    load(tc_track_hist_file)
 end
 
 if check_plot

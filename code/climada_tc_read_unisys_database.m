@@ -35,6 +35,8 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 %
 %   previous step: see climada_tc_get_unisys_databases
 %   next step: see climada_tc_random_walk
+%
+%   See also: climada_tc_hurdat_read and climada_tc_jtwc_fetch
 % CALLING SEQUENCE:
 %   tc_track=climada_tc_read_unisys_database(unisys_file,check_plot);
 % EXAMPLE:
@@ -85,6 +87,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 % David N. Bresch, david.bresch@gmail.com, 20140221, world border plotted on top of tracks
 % David N. Bresch, david.bresch@gmail.com, 20140922 (over the Atlantic, LX016), tc_track_hist_file as output added and storing processed as mat
 % David N. Bresch, david.bresch@gmail.com, 20150805, allow for unisys_file without path on input
+% David N. Bresch, david.bresch@gmail.com, 20150824, made fully consistent with jtwc and hurdat
 %-
 
 % init output
