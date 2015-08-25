@@ -37,6 +37,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 %       (this way the user can e.g. temporarily 'disable' centroids prior
 %       to passing them to climada_assets_encode by simply setting their
 %       centroid_ID=-1)
+%       NOTE: if isfield(centroids,'peril_ID') and FL some special rules apply
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 %   the encoded assets, means locations mapped to calculation centroids
@@ -53,6 +54,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % Lea Mueller, muellele@gmail.com, 20150617, speedup works for both dimensions of entity.lats and .lons (1xn and nx1)
 % David N. Bresch, david.bresch@gmail.com, 20150618, Lea's speedup fixed 2nd time (line 134)
 % Lea Mueller, muellele@gmail.com, 20150805, define a minimum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
+% David N. Bresch, david.bresch@gmail.com, 20150825, bug-fix to use centroids instead of hazard
 %-
 
 global climada_global
@@ -115,6 +117,7 @@ if isfield(hazard,'intensity')
     % hence we do not need all fields
     centroids.lon=hazard.lon;
     centroids.lat=hazard.lat;
+    centroids.peril_ID=hazard.peril_ID;
     if isfield(hazard,'filename'),centroids.filename = hazard.filename;end
     if isfield(hazard,'comment'), centroids.comment  = hazard.comment;end
 else
@@ -151,12 +154,9 @@ assets.centroid_index = assets.Value*0; % init
 % define a minimum distance to hazard position (in m). assets that are too
 % far away from hazard, will get centroid_index =0 and no damage will be
 % calculated for this asset
-if isfield(hazard,'peril_ID')
-    if strcmp(hazard.peril_ID,'FL')
-        min_distance_to_hazard = 20; %m
-    else
-        min_distance_to_hazard = 10^6; %1000 km
-    end
+        min_distance_to_hazard = 10^6; % 1000 km, in [m]
+if isfield(centroids,'peril_ID') % switched to centroids, david.bresch@gmail.com, 20150825
+    if strcmp(centroids.peril_ID,'FL'),min_distance_to_hazard = 20;end % in [m]
 end
     
     
