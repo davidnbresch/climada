@@ -246,6 +246,9 @@ if reverse_cb
 else
     ylabelstr = sprintf('Cost/benefit ratio (USD/%s)',Value_unit_str);
 end
+if strcmp(measures_impact.Value_unit,'people')
+    ylabelstr = strrep(ylabelstr,'USD','100''000 USD');
+end
 ylabel(ylabelstr,'fontsize',fontsize_+1)
 
 
