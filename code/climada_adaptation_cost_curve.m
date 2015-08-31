@@ -50,8 +50,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20141213 plot_arrows=0 by default and climada_demo option cleaned up
 % David N. Bresch, david.bresch@gmail.com, 20141231 subaxis removed (not clean, troubles in Octave)
 % Lea Mueller, muellele@gmail.com, 20150617, set to bc_ratio (benefits per cost) instead of cb_ratio
-% David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for
-% comparison plot (
+% David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for comparison plot
 %-
 
 global climada_global
@@ -115,7 +114,15 @@ if called_from_climada_demo
     if ismac, fontsize_   = 11;end % 20140516, was 8, too small
 else
     add_insurance_measure = 0;
-    fontsize_             = 11;
+    %fontsize_             = 11;
+    fontsize_             = 8.5;
+end
+
+% set Value_unit
+if isfield(measures_impact,'Value_unit')
+    Value_unit_str = measures_impact.Value_unit;
+else
+    Value_unit_str = climada_global.Value_unit;
 end
 
 if scaled_AED
@@ -146,23 +153,26 @@ if add_insurance_measure % NOTE: this section not relevant for lecture
 end
 
 n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
+
+% set format for numbers (for command line output)
 if nice_numbers
     % scaled, used if called from climada_play_adapt_cost_curve
     if nice_numbers == 1
         fct        = 10^-8;
         nr_format  = '\t %4.1f';
-        xlabel_str = sprintf('Averted damage (Mio USD)');
+        xlabel_str = sprintf('Averted damage (Mio %s)',Value_unit_str);
     else
         fct        = 10^-nice_numbers;
         nr_format  = '\t %4.1f';
-        xlabel_str = sprintf('Averted damage over %d years (10^%1.0f USD)',n_years, nice_numbers);
+        xlabel_str = sprintf('Averted damage over %d years (10^%1.0f %s)',n_years,nice_numbers,Value_unit_str);
     end
 else
     fct        = 1;
     nr_format  = '%2.1e';
-    xlabel_str = sprintf('Averted damage over %d years (USD)',n_years);
+    xlabel_str = sprintf('Averted damage over %d years (%s)',n_years,Value_unit_str);
 end
-
+nr_format_benefit  = nr_format;
+nr_format_bc_ratio = '%2.1f';
 
 % correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
@@ -172,25 +182,31 @@ if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
     %measures_impact.cb_ratio(risk_transfer_idx) = measures_impact.measures.cost(risk_transfer_idx)/measures_impact.benefit(risk_transfer_idx);
 end
 
+% special case for people, set cb_ratio as people not affected per 100'000 USD invested
+if strcmp(measures_impact.Value_unit,'people')
+    nr_format_benefit = strrep(nr_format,'.1e','.0f');
+    measures_impact.cb_ratio = measures_impact.cb_ratio/100000;
+end
+
 title_str                    = measures_impact.title_str;
-[sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
-if reverse_cb,sorted_cb_ratio=1./sorted_cb_ratio;end
+[sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio); 
+if reverse_cb,sorted_cb_ratio= 1./sorted_cb_ratio;end
 
 % COMMAND WINDOW: results
 fprintf('%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
 fprintf('\t Measure \t\t\t Cost \t\t\t Benefit \t\t BC_ratio\n');
 if scaled_AED
-    fprintf('\t \t    \t\t\t(Mio USD)\t\t(Mio USD)\t\t(USD/USD)\n');
+    fprintf('\t \t    \t\t\t(Mio USD)\t\t(Mio %s)\t\t(%s/USD)\n',Value_unit_str,Value_unit_str);
 elseif nice_numbers>1
-    fprintf('\t \t\t    \t\t(10^%1.0f USD)\t\t(10^%1.0f USD)\t\t(USD/USD)\n', nice_numbers, nice_numbers);
+    fprintf('\t \t\t    \t\t(10^%1.0f USD)\t\t(10^%1.0f %s)\t\t(%s/USD)\n', nice_numbers,nice_numbers,Value_unit_str,Value_unit_str);
 else
-    fprintf('\t \t    \t\t\t(USD)\t\t\t(USD)\t\t\t(USD/USD)\n');
+    fprintf('\t \t    \t\t\t(USD)\t\t\t(%s)\t\t\t(%s/USD)\n',Value_unit_str,Value_unit_str);
 end
 for measure_i = 1:n_measures
     m_name = [measures_impact.measures.name{measure_i} '                    '];
     m_name = m_name(1:25);
-    fprintf(['\t %s ' nr_format ' \t ' ['\t' nr_format] ' \t\t\t\t %2.1f \n'],...
+    fprintf(['\t %s ' nr_format ' \t ' ['\t' nr_format_benefit] ' \t\t\t\t ' nr_format_bc_ratio '\n'],...
         m_name,...
         (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
         measures_impact.benefit(measure_i)*fct,...
@@ -198,13 +214,13 @@ for measure_i = 1:n_measures
 end % measure_i
 if add_insurance_measure % NOTE: this section not relevant for lecture
     fprintf('\t Residual covered by insurance')
-    fprintf([nr_format ' \t ' ['\t' nr_format] '\t\t\t\t %2.1f\n'],...
+    fprintf([nr_format ' \t ' ['\t' nr_format_benefit] '\t\t\t\t ' nr_format_bc_ratio '\n'],...
         insurance_cost*fct, insurance_benefit*fct, insurance_cb)
     if reverse_cb,insurance_cb=1./insurance_cb;end
     sorted_cb_ratio = [sorted_cb_ratio insurance_cb];
 else
     fprintf('\t Residual damage \n')
-    fprintf(['\t\t\t\t\t\t\t' nr_format '  \t ' ['\t ' nr_format] '\t\t\t\t %2.1f\n'],...
+    fprintf(['\t\t\t\t\t\t\t' nr_format '  \t ' ['\t ' nr_format_benefit] '\t\t\t\t ' nr_format_bc_ratio '\n'],...
         0, (tot_climate_risk-sum(measures_impact.benefit))*fct, 0)
 end
 cumulated_benefit = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk]*fct;
@@ -226,10 +242,12 @@ else
 end
 xlabel(xlabel_str,'fontsize',fontsize_+1)
 if reverse_cb
-    ylabel('Benefit/cost ratio (USD/USD)','fontsize',fontsize_+1)
+    ylabelstr = sprintf('Benefit/cost ratio (%s/USD)',Value_unit_str);
 else
-    ylabel('Cost/benefit ratio (USD/USD)','fontsize',fontsize_+1)
-end;
+    ylabelstr = sprintf('Cost/benefit ratio (USD/%s)',Value_unit_str);
+end
+ylabel(ylabelstr,'fontsize',fontsize_+1)
+
 
 % plot measures
 for measure_i = 1:n_measures+add_insurance_measure
@@ -339,7 +357,7 @@ if ~isempty(measures_impact_comparison)
     
     fprintf('\t Measure \t\t\t\t Cost \t\t\t Benefit \t CB_ratio\n');
     for measure_i = 1:n_measures
-        fprintf(['\t %s \t\t\t' nr_format ' \t ' ['\t' nr_format] ' \t\t\t %2.1f \n'],...
+        fprintf(['\t %s \t\t\t' nr_format ' \t ' ['\t' nr_format_benefit] ' \t\t\t %2.1f \n'],...
             measures_impact.measures.name{measure_i},...
             (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
             measures_impact.benefit(measure_i)*fct,...

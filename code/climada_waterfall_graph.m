@@ -26,10 +26,11 @@ function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_p
 % OUTPUTS:
 %   waterfall graph
 % MODIFICATION HISTORY:
-% Lea MuEDler, 20110622
+% Lea Mueller, 20110622
 % Martin Heynen, 20120329
 % David N. Bresch, david.bresch@gmail.com, 20130316 EDS->EDS
 % David N. Bresch, david.bresch@gmail.com, 20150419 try-catch for arrow plotting
+% Lea Mueller, muellele@gmail.com, 20150831, integrate Value_unit from EDS1.Value_unit
 %-
 
 global climada_global
@@ -175,11 +176,18 @@ end % EDS_i
 [damage index]      = sort(damage,'ascend');
 damage(4)           = damage(3);
 
+% set unit string
+if isfield(EDS1,'Value_unit')
+    unit_str = EDS1.Value_unit;
+else
+    unit_str = climada_global.Value_unit;
+end
+
 %digits of damage
 % digits = log10(max(damage));
 % digits = floor(digits)-1;
 % digits = 9;
-digits = 6;
+digits = 0; %digits = 6;
 damage = damage*10^-digits;
 dig    = digits;
 
@@ -243,15 +251,15 @@ damage_disp(2) = damage(3)-damage(2);
 damage_disp(3) = damage(4)-damage(3);
 damage_disp(4) = damage(4);
 
-if max(damage)>10
+if max(damage)>100
     N = -abs(floor(log10(max(damage)))-1);
+    N = 0;
     damage_disp = round(damage_disp*10^N)/10^N;
     N = 0;
 else
     %N = round(log10(max(damage_disp)));
     N = 2;
 end
-
 
 
 %damages above bars
@@ -315,7 +323,7 @@ if return_period == 9999
 else
     textstr = ['Expected damage with a return period of ' int2str(return_period) ' years'];
 end
-textstr_TIV = sprintf('Total assets: %d, %d 10^%d USD', TIV_nr, digits);
+textstr_TIV = sprintf('Total assets: %d, %d 10^%d %s', TIV_nr, digits, unit_str);
 text(1-stretch, max(damage)*1.20,textstr, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','bold','fontsize',fontsize_);
 text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','normal','fontsize',fontsize_2);
 

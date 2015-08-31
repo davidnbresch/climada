@@ -32,6 +32,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150805, climada_demo_gui parameters set here
 % David N. Bresch, david.bresch@gmail.com, 20150807, climada_global.tc.extratropical_transition
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir introduced
+% Lea Mueller, muellele@gmail.com, 20150831, introduce climada_global.Value_unit
 
 global climada_global
 
@@ -135,6 +136,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % in climada_tc_windfield, treat the extratropical transition celerity
     % exceeding vmax problem an issue e.g. for Northern US, where this should be set=1 
     climada_global.tc.extratropical_transition=0; % default =0 (original Holland)
+    
+    % define asset value units (e.g. USD or people)
+    climada_global.Value_unit = 'USD';
     
     % evaluation and NPV (net present value) specific parameters
     climada_global.present_reference_year = 2014; % yyyy

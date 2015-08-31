@@ -72,6 +72,8 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20141220, re-encoding check added
 % David N. Bresch, david.bresch@gmail.com, 20150101, cleanup
 % Gilles Stassen, gillesstassen@hotmail.com, 20150626, if exist(hazard_file,'var') -> exist('hazard_file','var')
+% Lea Mueller, muellele@gmail.com, 20150831, introduce measures_impact.Value_unit
+
 %-
 
 global climada_global
@@ -370,7 +372,7 @@ if ~isempty(measures_impact_reference)
         measures_impact_reference.EDS(end).frequency));
 end
 
-% get the discound rates for years:
+% get the discount rates for years:
 present_year_pos = find(entity.discount.year==climada_global.present_reference_year); % present year
 future_year_pos  = find(entity.discount.year==climada_global.future_reference_year); % future year
 discount_rates   = entity.discount.discount_rate(present_year_pos:future_year_pos);
@@ -455,6 +457,11 @@ measures_impact.risk_transfer    = risk_transfer;
 measures_impact.cb_ratio         = cb_ratio;
 measures_impact.NPV_total_climate_risk = NPV_total_climate_risk;
 measures_impact.peril_ID         = hazard.peril_ID;
+if isfield(EDS,'Value_unit')
+    measures_impact.Value_unit   = EDS(1).Value_unit;
+else
+    measures_impact.Value_unit   = climada_global.Value_unit;
+end
 measures_impact.measures         = measures; % store measures into res, so we have a complete set
 
 % prepare annotation

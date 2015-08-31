@@ -89,6 +89,8 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for entoity and hazard set name on input
 % Lea Mueller, muellele@gmail.com, 20150805, allow centroid_index to be zero, do not integrate such assets in valid_asset_pos, no damage will be calculated           
 % Lea Mueller, muellele@gmail.com, 20150819, use only unique values in interp_x_table, so that interp1 works (interp_x_table is monotonically increasing)        
+% Lea Mueller, muellele@gmail.com, 20150819, set minimum damage to min defined in damage function (probably 0)  
+% Lea Mueller, muellele@gmail.com, 20150831, EDS.ED, EDS.damage, EDS.Value is the sum only of the first Value_unit encountered, all other units are not included
 %-
 
 global climada_global
@@ -207,6 +209,7 @@ EDS.frequency         = hazard.frequency;
 EDS.orig_event_flag   = hazard.orig_event_flag;
 EDS.peril_ID          = char(hazard.peril_ID);
 EDS.hazard.peril_ID   = EDS.peril_ID; % backward compatibility
+EDS.Value_unit        = ''; % init
 if climada_global.EDS_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
@@ -223,11 +226,17 @@ PAA_0                 = zeros(size(hazard.intensity,1),1);
 % THIS CODE MIGHT NEED FUTURE OPTIMIZATION
 % see also climada_code_optimizer, which removes all slowing code...
 
-% only process Value>0 and centroid_index>0, since otherwise no damage
-% anyway, Lea, 20150805
+% only process Value>0 and centroid_index>0, since otherwise no damage anyway
 valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
-% valid_assets_pos=find(entity.assets.Value>0);% only process Value>0, since otherwise no damage anyway
 nn_assets=length(valid_assets_pos);
+
+% check unit of asset values
+EDS.Value_unit = entity.assets.Value_unit{valid_assets_pos(1)};
+if numel(unique(entity.assets.Value_unit(valid_assets_pos)))>1
+    fprintf('Warning: More than one Value_unit used. Please check so that you do not compare apples and oranges!\n')
+end
+is_unit = strcmp(entity.assets.Value_unit,EDS.Value_unit);
+
 
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
@@ -279,6 +288,7 @@ for asset_ii=1:nn_assets
         
         % to be certain of no errant extrapolation
         MDD(MDD>max(interp_y_table)) = max(interp_y_table);
+        MDD(MDD<min(interp_x_table)) = interp_y_table(1);
         
         % figure
         % plot(interp_x_table, interp_y_table,':')
@@ -297,6 +307,7 @@ for asset_ii=1:nn_assets
         
         % to be certain of no errant extrapolation
         PAA(PAA>max(interp_y_table)) = max(interp_y_table);
+        PAA(PAA<min(interp_x_table)) = interp_y_table(1);
 
         % figure
         % plot(interp_x_table, interp_y_table,':k')
@@ -311,7 +322,9 @@ for asset_ii=1:nn_assets
                 % apply Deductible and Cover
                 temp_damage=min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
             end
-            EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+            if is_unit(asset_i)==1
+                EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+            end
             
             if climada_global.EDS_at_centroid
                 %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
@@ -328,7 +341,9 @@ for asset_ii=1:nn_assets
             end
             
         end
-        EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
+        if is_unit(asset_i)==1
+            EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
+        end
         
         % TEST output
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));

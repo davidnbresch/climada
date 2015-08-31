@@ -73,6 +73,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20150101, Octave compatibility (at least for .xlsx)
 % David N. Bresch, david.bresch@gmail.com, 20150805, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150829, check for valid/correct entity.assets.filename
+% Lea Mueller, muellele@gmail.com, 20150831, assign assets.Value_unit with climada_global.Value_unit if not given
 %-
 
 global climada_global
@@ -138,6 +139,11 @@ else
             fprintf('> make sure there are no cell comments in the .ods file, as they trouble odsread\n');
         end
         return
+    end
+    
+    % assign value units if not given in xls-entity with global values
+    if ~isfield(assets,'Value_unit')
+        assets.Value_unit = repmat({climada_global.Value_unit},size(assets.Value));
     end
     
     % check for OLD naming convention, VulnCurveID -> DamageFunID
