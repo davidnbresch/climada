@@ -210,7 +210,7 @@ figure; climada_EDS_DFC(EDS) % show damage excess frequency curve
 % entity.measures.name{m} contains the name of measure m,
 % entity.measures.name.cost(m) the cost . The following fields allow the
 % parameterization of the measure?s impact on both the hazard as well as
-% the damage function. entity.measures.name.hazard_intensity_impact(m)
+% the damage function. entity.measures.name.hazard_intensity_impact_b(m)
 % allows to reduce the hazard intensity (e.g. -1 reduces tropical cyclone
 % windspeed by 1 m/s) for measure m. The hazard_high_frequency_cutoff
 % allows to specify a frequency below which damages are suppressed due to

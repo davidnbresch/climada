@@ -38,6 +38,7 @@ function [impact_present, impact_future, insurance_benefit, insurance_cost] = cl
 % David N. Bresch, david.bresch@gmail.com, 20130328, vuln_MDD_impact -> MDD_impact...
 % David N. Bresch, david.bresch@gmail.com, 20140516, reverse_cb added
 % David N. Bresch, david.bresch@gmail.com, 20140816, automatic update if entity changed
+% Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
 %-
 
 impact_present = []; % init
@@ -103,39 +104,34 @@ entity_future.assets.Cover = entity_future.assets.Value;
 measures_i = 1; % hard-wired, see Excel sheet
 %fprintf('measure %s set to %d%%\n', char(entity_future.measures.name(measures_i)),...
 %   climada_demo_params.measures.mangroves*100);
-entity_future.measures.cost(measures_i)                     = entity_present.measures.cost(measures_i)*...
-                                                              climada_demo_params.measures.mangroves; % costs linear
-entity_future.measures.hazard_intensity_impact(measures_i)  = entity_present.measures.hazard_intensity_impact(measures_i)*...
-                                                              climada_demo_params.measures.mangroves;
-entity_present.measures.cost(measures_i)                    = entity_future.measures.cost(measures_i);
-entity_present.measures.hazard_intensity_impact(measures_i) = entity_future.measures.hazard_intensity_impact(measures_i);
+entity_future.measures.cost(measures_i) = entity_present.measures.cost(measures_i)*climada_demo_params.measures.mangroves; % costs linear
+entity_future.measures.hazard_intensity_impact_b(measures_i) = entity_present.measures.hazard_intensity_impact_b(measures_i)*climada_demo_params.measures.mangroves;
+entity_present.measures.cost(measures_i) = entity_future.measures.cost(measures_i);
+entity_present.measures.hazard_intensity_impact_b(measures_i)= entity_future.measures.hazard_intensity_impact_b(measures_i);
 
 
 % beachnourish (we only adjust what's relevant for this measure!)
 measures_i = 2; % hard-wired, see Excel sheet
 %fprintf('measure %s set to %d%%\n', char(entity_future.measures.name(measures_i)),...
 %   climada_demo_params.measures.beachnourish*100);
-entity_future.measures.cost(measures_i)                     = entity_present.measures.cost(measures_i)*...
-                                                              climada_demo_params.measures.beachnourish; % costs linear
-entity_future.measures.hazard_intensity_impact(measures_i)  = entity_present.measures.hazard_intensity_impact(measures_i)*...
-                                                              climada_demo_params.measures.beachnourish;
-entity_present.measures.cost(measures_i)                    = entity_future.measures.cost(measures_i);
-entity_present.measures.hazard_intensity_impact(measures_i) = entity_future.measures.hazard_intensity_impact(measures_i);
+entity_future.measures.cost(measures_i)= entity_present.measures.cost(measures_i)*climada_demo_params.measures.beachnourish; % costs linear
+entity_future.measures.hazard_intensity_impact_b(measures_i) = entity_present.measures.hazard_intensity_impact_b(measures_i)*climada_demo_params.measures.beachnourish;
+entity_present.measures.cost(measures_i) = entity_future.measures.cost(measures_i);
+entity_present.measures.hazard_intensity_impact_b(measures_i)= entity_future.measures.hazard_intensity_impact_b(measures_i);
 
 
 % seawall (we only adjust what's relevant for this measure!)
 measures_i = 3; % hard-wired, see Excel sheet
 %fprintf('measure %s set to %d%%\n', char(entity_future.measures.name(measures_i)),...
 %   climada_demo_params.measures.seawall*100);
-entity_future.measures.cost(measures_i)                         = entity_present.measures.cost(measures_i)*...
-                                                                  (climada_demo_params.measures.seawall); % costs non-linear
+entity_future.measures.cost(measures_i) = entity_present.measures.cost(measures_i)*(climada_demo_params.measures.seawall); % costs non-linear
 rp = 1/entity_present.measures.hazard_high_frequency_cutoff(measures_i); % linear in return period
 % linear in return period (well... let's try)
 entity_future.measures.hazard_high_frequency_cutoff(measures_i) = 1/(rp*climada_demo_params.measures.seawall); 
 if climada_demo_params.measures.seawall==0
     entity_future.measures.hazard_high_frequency_cutoff(measures_i) = 1;
 end
-entity_present.measures.cost(measures_i)                         = entity_future.measures.cost(measures_i);
+entity_present.measures.cost(measures_i) = entity_future.measures.cost(measures_i);
 entity_present.measures.hazard_high_frequency_cutoff(measures_i) = entity_future.measures.hazard_high_frequency_cutoff(measures_i);
 
 
@@ -143,13 +139,12 @@ entity_present.measures.hazard_high_frequency_cutoff(measures_i) = entity_future
 measures_i = 4; % hard-wired, see Excel sheet
 %fprintf('measure %s set to %d%%\n', char(entity_future.measures.name(measures_i)),...
 %   climada_demo_params.measures.quality*100);
-entity_future.measures.cost(measures_i) = entity_present.measures.cost(measures_i)*...
-                                          (climada_demo_params.measures.quality); % costs non-linear
+entity_future.measures.cost(measures_i) = entity_present.measures.cost(measures_i)*(climada_demo_params.measures.quality); % costs non-linear
 max_delta = 1 - entity_present.measures.MDD_impact_a(measures_i);
-entity_future.measures.MDD_impact_a(measures_i)  = 1-max_delta*(climada_demo_params.measures.quality^2); % linear in MDD
+entity_future.measures.MDD_impact_a(measures_i) = 1-max_delta*(climada_demo_params.measures.quality^2); % linear in MDD
 %entity_future.measures.MDD_impact_b(measures_i)=entity_present.measures.MDD_impact_b(measures_i)*...
 %    climada_demo_params.measures.quality; % linear in MDD
-entity_present.measures.cost(measures_i)              = entity_future.measures.cost(measures_i);
+entity_present.measures.cost(measures_i) = entity_future.measures.cost(measures_i);
 entity_present.measures.MDD_impact_a(measures_i) = entity_future.measures.MDD_impact_a(measures_i);
 %entity_present.measures.MDD_impact_b(measures_i)=entity_future.measures.MDD_impact_b(measures_i);
 

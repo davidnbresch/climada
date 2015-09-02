@@ -21,6 +21,7 @@ function measures=climada_measures_encode(measures)
 % David N. Bresch, david.bresch@gmail.com, 20141121, using only damagefunctions_map information
 % David N. Bresch, david.bresch@gmail.com, 20150103, some checks for .ods imported entities
 % David N. Bresch, david.bresch@gmail.com, 20150518, safety checkin
+% Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
 %-
 
 %global climada_global
@@ -98,4 +99,10 @@ if isfield(measures,'peril_ID')
     end % peril_i
 end
 
+% rename to hazard_intensity_impact_b from hazard_intensity_impact
+if isfield(measures,'hazard_intensity_impact')
+    measures.hazard_intensity_impact_b = measures.hazard_intensity_impact;
+    measures = rmfield(measures,'hazard_intensity_impact');
+end
+        
 return

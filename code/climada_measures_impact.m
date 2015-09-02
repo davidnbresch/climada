@@ -73,7 +73,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20150101, cleanup
 % Gilles Stassen, gillesstassen@hotmail.com, 20150626, if exist(hazard_file,'var') -> exist('hazard_file','var')
 % Lea Mueller, muellele@gmail.com, 20150831, introduce measures_impact.Value_unit
-
+% Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
 %-
 
 global climada_global
@@ -309,10 +309,15 @@ for measure_i = 1:n_measures+1 % last with no measures
             %    measures.damagefunctions_mapping(measure_i).map_to(map_i));
         end % map_i
         
-        entity.damagefunctions.Intensity = max(orig_damagefunctions.Intensity - measures.hazard_intensity_impact(measure_i),0);
+        entity.damagefunctions.Intensity = max(orig_damagefunctions.Intensity - measures.hazard_intensity_impact_b(measure_i),0);
         entity.damagefunctions.MDD       = max(orig_damagefunctions.MDD*measures.MDD_impact_a(measure_i)+measures.MDD_impact_b(measure_i),0);
         entity.damagefunctions.PAA       = max(orig_damagefunctions.PAA*measures.PAA_impact_a(measure_i)+measures.PAA_impact_b(measure_i),0);
         annotation_name                  = measures.name{measure_i};
+        % new parameter of how a measure impacts the hazard, mutliply
+        % hazard intensity with a factor, instead of substracting a given absolute amount
+        if isfield(measures,'hazard_intensity_impact_a')
+            entity.damagefunctions.Intensity = max(orig_damagefunctions.Intensity*(1-measures.hazard_intensity_impact_a(measure_i)),0);
+        end
     else
         entity.damagefunctions = entity_orig_damagefunctions; % back to original
         annotation_name        = 'control';
