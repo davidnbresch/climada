@@ -23,6 +23,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150713, add LS colormap
 % Lea Mueller, muellele@gmail.com, 20150720, add FS (factor of safety) colormap
 % Lea Mueller, muellele@gmail.com, 20150729, add assets colormap
+% Lea Mueller, muellele@gmail.com, 20150729, add measures colormap
 %-
 
 
@@ -139,8 +140,8 @@ switch peril_ID
         cmap = [cmap; 1 1 1; 1 1 1];
         
     case 'assets'
-        beginColor  = [232 232 232 ]/255;
-        middleColor = [105 105 105 ]/255;
+        beginColor  = [232 232 232 ]/255; %light grey
+        middleColor = [105 105 105 ]/255; %dark grey
         cmap1 = makeColorMap(beginColor, middleColor, 4);
         cmap2 = makeColorMap([255 236 139]/255, [255 97 3 ]/255, 6); %[255 153 18]/255 yellow
         cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 yellow
@@ -205,6 +206,28 @@ switch peril_ID
             cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
         end
         cmap = [cmap1; cmap2];
+        
+     case 'measures'
+        % create colormap for measures (adaptation_cost_curve)
+        c_ax = [ ];
+        startcolor   = [  0 139  69]/255; %springgreen 3 %[ 69 139 116]/255; %aquamarine 4
+        middlecolor  = [255 215   0]/255; %gold1
+        endcolor     = [255 127   0]/255; %darkorange 1    
+        endcolor2    = [193 193 193]/255; %sgi gray 76
+
+        n_steps = ceil(steps10/3);
+        cmap1 = makeColorMap(startcolor,middlecolor,n_steps);
+        cmap2 = makeColorMap(middlecolor,endcolor,steps10-2*n_steps);
+        cmap3 = makeColorMap(endcolor,endcolor2,n_steps);
+        cmap  = [cmap1; cmap2; cmap3];
+        
+        %beginColor  = [232 232 232 ]/255; %light grey
+        %middleColor = [105 105 105 ]/255; %dark grey
+        %cmap1 = makeColorMap(beginColor, middleColor, 4);
+        %cmap2 = makeColorMap([255 236 139]/255, [255 97 3 ]/255, 6); %[255 153 18]/255 yellow
+        %cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 yellow
+        %%cmap3 = makeColorMap([205 150 205 ]/255, [93 71 139 ]/255, 2); %[255 153 18]/255 yellow
+        %cmap  = [cmap1; cmap2; cmap3];
 end
 
 if isempty(cmap)
