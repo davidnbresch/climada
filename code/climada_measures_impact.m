@@ -4,7 +4,8 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %   climada_measures_impact
 % PURPOSE:
 %   calculate the impact of a series of measures on a given set of assets
-%   under a given hazard
+%   under a given hazard, main functions called are climada_EDS_calc and
+%   climada_measures_impact_discount
 %
 %   next step: climada_adaptation_cost_curve or
 %   climada_adaptation_event_view
@@ -57,7 +58,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %       ED(measure_i): the annual expected damage to the assets under measure_i,
 %           last one ED(end) for no measures
 %       benefit(measure_i): the benefit of measure_i
-%       b_ratio(measure_i): the cost/benefit ratio of measure_i
+%       cb_ratio(measure_i): the cost/benefit ratio of measure_i
 %       measures: just a copy of measures, so we have all we need together
 %       title_str: a meaningful title, of the format: measures @ assets | hazard
 %       NOTE: currently measures_impact is also stored (with a lengthy filename)
@@ -74,6 +75,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Gilles Stassen, gillesstassen@hotmail.com, 20150626, if exist(hazard_file,'var') -> exist('hazard_file','var')
 % Lea Mueller, muellele@gmail.com, 20150831, introduce measures_impact.Value_unit
 % Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
+% Lea Mueller, muellele@gmail.com, 20150902, call climada_measures_impact_discount in an separate function
 %-
 
 global climada_global
@@ -148,7 +150,7 @@ if ~isempty(measures_impact_reference)
     % load if a filename has been passed
     if ~isstruct(measures_impact_reference)
         if strcmp(measures_impact_reference,'no')
-            measures_impact_reference = '';
+            %measures_impact_reference = '';
         else
             measures_impact_reference_file = measures_impact_reference; measures_impact_reference = [];
             vars = whos('-file', measures_impact_reference_file);
@@ -159,7 +161,7 @@ if ~isempty(measures_impact_reference)
             end
         end
     end
-    if ~isempty(measures_impact_reference)
+    if ~isempty(measures_impact_reference) & ~strcmp(measures_impact_reference,'no')
         % reference is aleays today, warn if not
         reference_year = measures_impact_reference.EDS(end).reference_year;
         if reference_year ~= climada_global.present_reference_year
@@ -242,7 +244,7 @@ n_measures           = length(measures.cost);
 
 %fprintf('assessing impacts of %i measures:\n',n_measures);
 
-ED_risk_transfer = zeros(1,n_measures+1); % allocate
+risk_transfer = zeros(1,n_measures+1); % allocate
 hazard_switched  = 0; % indicated whether a special hazard set for a given measure is used
 
 for measure_i = 1:n_measures+1 % last with no measures
@@ -347,7 +349,7 @@ for measure_i = 1:n_measures+1 % last with no measures
         if measures.risk_transfer_attachement(measure_i)+measures.risk_transfer_cover(measure_i)>0
             damage_in_layer = min(max(EDS(measure_i).damage-measures.risk_transfer_attachement(measure_i),0),...
                 measures.risk_transfer_cover(measure_i));
-            ED_risk_transfer(measure_i) = full(sum(damage_in_layer.*EDS(measure_i).frequency)); % ED in layer
+            risk_transfer(measure_i) = full(sum(damage_in_layer.*EDS(measure_i).frequency)); % ED in layer
             EDS(measure_i).damage       = max(EDS(measure_i).damage-damage_in_layer,0); % remaining damage after risk transfer
         end % apply risk transfer
         
@@ -362,114 +364,34 @@ for measure_i = 1:n_measures+1 % last with no measures
     
 end % measure_i
 
-measures_impact.EDS = EDS; % store for output
-
-% calculate the cost/benefit ratio also here (so we have all results in one
-% -------------------------------------------------------------------------
-
-n_measures = length(measures.cost);
-ED         = zeros(1,n_measures); % init
-n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
-
-if ~isempty(measures_impact_reference)
-    % calculate reference ED (expected damage) no measures
-    reference_ED_no_measures = full(sum(measures_impact_reference.EDS(end).damage.*...
-        measures_impact_reference.EDS(end).frequency));
-end
-
-% get the discount rates for years:
-present_year_pos = find(entity.discount.year==climada_global.present_reference_year); % present year
-future_year_pos  = find(entity.discount.year==climada_global.future_reference_year); % future year
-discount_rates   = entity.discount.discount_rate(present_year_pos:future_year_pos);
-ED_no_measures   = full(sum(EDS(end).damage .* EDS(end).frequency)); % calculate annual expected damage
-ED(end+1)        = ED_no_measures; % store the ED with no measures at the end (convention)
-
-% time evolution of benefits etc. (linear if climada_global.impact_time_dependence=1)
-time_dependence=(0:n_years-1).^climada_global.impact_time_dependence/(n_years-1)^climada_global.impact_time_dependence;
-
-for measure_i = 1:n_measures
-    
-    % first, calculate the ED (exepected damage) perspective
-    ED(measure_i)          = full(sum(EDS(measure_i).damage .* EDS(measure_i).frequency)); % calculate annual expected damage
-    ED_benefit(measure_i)  = ED(end) - ED(measure_i);
-    
-    % store damage frequency curve (DFC), for information only
-    DFC(measure_i,:)       = climada_EDS_DFC_report(EDS(measure_i),0,'lean');
-    
-    % costs are costs as in measures table plus expected damage (for risk transfer only)
-    ED_cb_ratio(measure_i) = (measures.cost(measure_i) + ED_risk_transfer(measure_i)) /ED_benefit(measure_i);
-    
-    % second, calculate the NPV (net present value perspective)
-    if isempty(measures_impact_reference)
-        % no reference, hence we assume a steady-state, means we see the ED for each year from present to future
-        benefits       = ones(1,n_years)*(ED(end)-ED(measure_i)); % same benefit each year
-        risk_transfers = ones(1,n_years)*ED_risk_transfer(measure_i); % same risk transfer costs each year
-    else
-        % time evolution of benefits
-        present_benefit = measures_impact_reference.ED(end) - measures_impact_reference.ED(measure_i);
-        future_benefit  = ED(end)-ED(measure_i);
-        benefits        = present_benefit+(future_benefit-present_benefit)*time_dependence;
-        % and similarly for risk transfer costs
-        present_risk_transfer = measures_impact_reference.ED_risk_transfer(measure_i);
-        future_risk_transfer  = ED_risk_transfer(measure_i);
-        risk_transfers        = present_risk_transfer+(future_risk_transfer-present_risk_transfer)*time_dependence;
-        
-        % old, linear only, kept for backward compatibility, same as climada_global.impact_time_dependence=1
-        %         d_benefit       = (future_benefit-present_benefit)/(n_years-1);
-        %         d_benefits      = [0,ones(1,n_years-1)*d_benefit];
-        %         benefits        = present_benefit+cumsum(d_benefits); % linear increase
-        %         % and similarly for risk transfer costs
-        %         present_risk_transfer = measures_impact_reference.ED_risk_transfer(measure_i);
-        %         future_risk_transfer  = ED_risk_transfer(measure_i);
-        %         d_risk_transfer       = (future_risk_transfer-present_risk_transfer)/(n_years-1);
-        %         d_risk_transfers      = [0,ones(1,n_years-1)*d_risk_transfer];
-        %         risk_transfers        = present_risk_transfer+cumsum(d_risk_transfers);
-        
-    end
-    
-    % discount the benefits
-    benefit(measure_i)       = climada_NPV(benefits,discount_rates);
-    risk_transfer(measure_i) = climada_NPV(risk_transfers,discount_rates); % discount the risk transfer costs
-    % costs are costs as in measures table plus expected damage (for risk transfer only)
-    cb_ratio(measure_i)      = (measures.cost(measure_i)+risk_transfer(measure_i))/benefit(measure_i);
-    
-end % measure_i
-
-% calculate the NPV of the full unaverted damages, too
-% TCR stands for total climate risk
-if isempty(measures_impact_reference)
-    NPV_total_climate_risk = climada_NPV(ones(1,n_years)*ED(end), discount_rates);
-else
-    % time evolution of risk
-    present_TCR = measures_impact_reference.ED(end);
-    future_TCR  = ED(end);
-    TCRs        = present_TCR+(future_TCR-present_TCR)*time_dependence;
-    % old, linear only, kept for backward compatibility, same as climada_global.impact_time_dependence=1
-    % d_TCR       = (future_TCR-present_TCR)/(n_years-1);
-    % d_TCRs      = [0,ones(1,n_years-1)*d_TCR];
-    % TCRs        = present_TCR+cumsum(d_TCRs); % linear increase
-    NPV_total_climate_risk = climada_NPV(TCRs, discount_rates);
-end
-
-% store in measures
-measures_impact.ED               = ED;
-measures_impact.DFC              = DFC; % info only
-measures_impact.ED_benefit       = benefit;
-measures_impact.ED_risk_transfer = ED_risk_transfer;
-measures_impact.ED_cb_ratio      = cb_ratio;
-measures_impact.benefit          = benefit;
-measures_impact.risk_transfer    = risk_transfer;
-measures_impact.cb_ratio         = cb_ratio;
-measures_impact.NPV_total_climate_risk = NPV_total_climate_risk;
-measures_impact.peril_ID         = hazard.peril_ID;
+% store useful hazard and EDS information into measures_impact
+measures_impact.EDS = EDS; 
+measures_impact.risk_transfer = risk_transfer;
+measures_impact.measures = measures; % store measures into res, so we have a complete set
+measures_impact.peril_ID = hazard.peril_ID;
 if isfield(EDS,'Value_unit')
     measures_impact.Value_unit   = EDS(1).Value_unit;
 else
     measures_impact.Value_unit   = climada_global.Value_unit;
 end
-measures_impact.measures         = measures; % store measures into res, so we have a complete set
 
-% prepare annotation
+% calculate the cost/benefit ratio also here (so we have all results in one)
+measures_impact = climada_measures_impact_discount(entity,measures_impact,measures_impact_reference);
+
+
+% last but not least, calculate risk premium
+measures_impact.risk_premium_fgu = measures_impact.NPV_total_climate_risk/measures_impact.EDS(1).Value;
+fprintf('total climate risk premium (fgu - only a proxy): %f%%\n',...
+measures_impact.risk_premium_fgu*100);
+measures_impact.risk_premium_net = (measures_impact.NPV_total_climate_risk-...
+sum(measures_impact.ED_benefit(measures_impact.cb_ratio<1)))/measures_impact.EDS(1).Value;
+fprintf('total climate risk premium (net of effective measures): %f%%\n',...
+measures_impact.risk_premium_net*100);
+fprintf('total climate risk premium reduction (relative) %2.2f%%\n',...
+-(measures_impact.risk_premium_net/measures_impact.risk_premium_fgu-1)*100);
+measures_impact.risk_premium_comment = 'total climate risk divided by the total value of assets';
+
+% prepare annotation (title_str) and filename
 [~,hazard_name]   = fileparts(EDS(1).hazard.filename);
 [~,assets_name]   = fileparts(EDS(1).assets.filename);
 [~,measures_name] = fileparts(measures.filename);
@@ -483,18 +405,6 @@ save_filename = strrep(save_filename,'|','_'); % for filename
 save_filename = [climada_global.data_dir filesep 'results' filesep save_filename];
 
 measures_impact.filename = save_filename;
-
-% last but not least, calculate risk premium
-measures_impact.risk_premium_fgu=measures_impact.NPV_total_climate_risk/measures_impact.EDS(1).Value;
-fprintf('total climate risk premium (fgu - only a proxy):        %f%%\n',...
-    measures_impact.risk_premium_fgu*100);
-measures_impact.risk_premium_net=(measures_impact.NPV_total_climate_risk-...
-    sum(measures_impact.ED_benefit(measures_impact.cb_ratio<1)))/measures_impact.EDS(1).Value;
-fprintf('total climate risk premium (net of effective measures): %f%%\n',...
-    measures_impact.risk_premium_net*100);
-fprintf('total climate risk premium reduction (relative)        %2.2f%%\n',...
-    -(measures_impact.risk_premium_net/measures_impact.risk_premium_fgu-1)*100);
-measures_impact.risk_premium_comment='total climate risk divided by the total value of assets';
 
 save(save_filename,'measures_impact')
 fprintf('results written to %s\n',save_filename);
