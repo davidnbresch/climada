@@ -231,12 +231,16 @@ valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
 nn_assets=length(valid_assets_pos);
 
 % check unit of asset values
-EDS.Value_unit = entity.assets.Value_unit{valid_assets_pos(1)};
-if numel(unique(entity.assets.Value_unit(valid_assets_pos)))>1
-    fprintf('Warning: More than one Value_unit used. Please check so that you do not compare apples and oranges!\n')
+if ~isfield(entity.assets,'Value_unit')
+    EDS.Value_unit=climada_global.Value_unit; % use default for entities creasted prior to 20150903
+    is_unit=entity.assets.Value*0+1; % use all
+else
+    EDS.Value_unit = entity.assets.Value_unit{valid_assets_pos(1)};
+    if numel(unique(entity.assets.Value_unit(valid_assets_pos)))>1
+        fprintf('Warning: More than one Value_unit used. Please check so that you do not compare apples and oranges!\n')
+    end
+    is_unit = strcmp(entity.assets.Value_unit,EDS.Value_unit);
 end
-is_unit = strcmp(entity.assets.Value_unit,EDS.Value_unit);
-
 
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
