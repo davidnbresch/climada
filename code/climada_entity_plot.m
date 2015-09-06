@@ -74,7 +74,7 @@ hold on
 axis equal
 xlabel('Longitude')
 ylabel('Latitude')
-set(gca,'layer','top')
+%set(gca,'layer','top')
 
 set(get(cbar,'ylabel'),'string','Values','fontsize',12)
 climada_plot_world_borders(0.7);

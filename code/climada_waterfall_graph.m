@@ -1,4 +1,4 @@
-function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_printplot)
+function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_printplot)
 % waterfall figure, expected damage for specified return period for
 % - today,
 % - increase from economic growth,
@@ -9,8 +9,7 @@ function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_p
 % PURPOSE:
 %   plot expected damage for specific return period
 % CALLING SEQUENCE:
-%   climada_waterfall_graph(EDS1, EDS2, EDS3, return_period,
-%   check_printplot)
+%   climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_printplot)
 % EXAMPLE:
 %   climada_waterfall_graph
 % INPUTS:
@@ -21,7 +20,8 @@ function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_p
 %                   - economic growth
 %                   - cc combined with economic growth, future
 %   return_period:  requested return period for according expected damage,or
-%                   annual expted damage, prompted if not given
+%                   annual expected damage, prompted if not given
+%                   Default is annual expected damage (EDS.ED)
 %   check_printplot:if set to 1, figure saved, default 0.
 % OUTPUTS:
 %   waterfall graph
@@ -31,6 +31,8 @@ function  fig = climada_waterfall_graph(EDS1, EDS2, EDS3, return_period, check_p
 % David N. Bresch, david.bresch@gmail.com, 20130316 EDS->EDS
 % David N. Bresch, david.bresch@gmail.com, 20150419 try-catch for arrow plotting
 % Lea Mueller, muellele@gmail.com, 20150831, integrate Value_unit from EDS1.Value_unit
+% David N. Bresch, david.bresch@gmail.com, 20150906 ED as default for return_period
+% David N. Bresch, david.bresch@gmail.com, 20150906 font scale and label texts shortened
 %-
 
 global climada_global
@@ -40,7 +42,7 @@ if ~climada_init_vars, return; end
 if ~exist('EDS1'           ,'var'), EDS1 = []; end
 if ~exist('EDS2'           ,'var'), EDS2 = []; end
 if ~exist('EDS3'           ,'var'), EDS3 = []; end
-if ~exist('return_period'  ,'var'), return_period   = []; end
+if ~exist('return_period'  ,'var'), return_period   = 9999; end
 if ~exist('check_printplot','var'), check_printplot = 0; end
 
 
@@ -200,8 +202,9 @@ TIV_nr = round(TIV_nr*10^N)/10^N;
 %% figure
 %----------
 % fontsize_  = 8;
-fontsize_  = 12;
+fontsize_  = 12*climada_global.font_scale;
 fontsize_2 = fontsize_ - 3;
+fontsize_3  = 12; % does not scale, since additional labels
 % stretch    = 0.3;
 stretch    = 0.3;
 
@@ -292,7 +295,7 @@ dED2 = stretch+0.05;
 % dED3 = 0.10;
 dED3 = stretch+0.07;
 try
-    climada_arrow ([2+dED2 damage(2)], [2+dED2 damage(3)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[0.5 0.5 0.5]);
+    climada_arrow ([2+dED2 damage(2)], [2+dED2 damage(3)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor''none', 'FaceColor',[0.5 0.5 0.5]);
 catch
     fprintf('Warning: arrow printing failed in %s (1)\n',mfilename);
 end
@@ -335,17 +338,17 @@ text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment',
 % end
 
 %xlabel
-text(1-stretch, damage(1)-max(damage)*0.02, {[num2str(climada_global.present_reference_year) ' today''s'];'expected damage'}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(2-stretch, damage(1)-max(damage)*0.02, {'Incremental increase';'from economic';'gowth; no climate';'change'},          'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(3-stretch, damage(1)-max(damage)*0.02, {'Incremental increase';'from climate change'},                                 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(4-stretch, damage(1)-max(damage)*0.02, {[num2str(climada_global.future_reference_year) ', total'];'expected damage'},    'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(1-stretch, damage(1)-max(damage)*0.02, {['risk today (' num2str(climada_global.present_reference_year) ')']}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(2-stretch, damage(1)-max(damage)*0.02, {'economic growth'},'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(3-stretch, damage(1)-max(damage)*0.02, {'climate change'},                                 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(4-stretch, damage(1)-max(damage)*0.02, {['risk ' num2str(climada_global.future_reference_year)]}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
 
 %Legend
 %L = legend(h,legend_str(index),'location','NorthOutside','fontsize',fontsize_2);
 %set(L,'Box', 'off')
 L=legend(h, legend_str(index),'Location','NorthEast');
 set(L,'Box', 'off')
-set(L,'Fontsize',fontsize_2)
+set(L,'Fontsize',fontsize_3)
 
 
 if isempty(check_printplot)

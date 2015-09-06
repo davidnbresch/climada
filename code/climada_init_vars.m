@@ -33,6 +33,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150807, climada_global.tc.extratropical_transition
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir introduced
 % Lea Mueller, muellele@gmail.com, 20150831, introduce climada_global.Value_unit
+% David N. Bresch, david.bresch@gmail.com, 20150906, climada_global.font_scale
 
 global climada_global
 
@@ -178,6 +179,10 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % set project directory, the user can this way store some data in his
     % own folders, outside of core climada (e.g. no automatic sync with GitHub)
     climada_global.project_dir = climada_global.data_dir;
+    
+    % to scale (some) fonts in plots, usefule to create eg ppt visuals
+    % (larger fonts than on the screen for expert users)
+    climada_global.font_scale=1; % integer only, please, default=1, useful for ppt is 2 or 3
     
     climada_vars_initialised=1; % indicate we have initialized all vars
     

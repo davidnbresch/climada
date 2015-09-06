@@ -15,6 +15,13 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %   calculation by calling climada_tc_hazard_set with exactly the same
 %   input parameters (the last track calculated is stored in hazard.track_i
 %   and the field track_i is removed in the final complete hazard event set).  
+%   Therefore, if you get errors such as 
+%       Subscripted assignment dimension mismatch.
+%       Error in climada_tc_hazard_set (line 270) % ... or nearby
+%       hazard.intensity(track_i,:)     = res.gust;
+%   It is VERY likely that you changed something between subsequent calls
+%   (i.e. different centroids). Just delete the hazard set .mat file and run
+%   climada_tc_hazard_set again.
 %
 %   previous: likely climada_random_walk
 %   next: diverse
@@ -79,6 +86,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
 % David N. Bresch, david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
+% David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue aded to header
 %-
 
 hazard=[]; % init

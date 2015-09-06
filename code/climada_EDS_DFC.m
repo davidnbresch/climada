@@ -41,6 +41,7 @@ function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_
 % David N. Bresch, david.bresch@gmail.com, 20130316, slight cleanup
 % Lea Mueller, muellele@gmail.com, 20150421, legend location SouthEast instead of NorthWest
 % David N. Bresch, david.bresch@gmail.com, 20150515, line 212, legend_str{end+1}...
+% David N. Bresch, david.bresch@gmail.com, 20150906, EDS.Value_unit used
 %-
 
 fig=[];legend_str=[];
@@ -69,13 +70,13 @@ if isempty(EDS) % local GUI
                 vars = whos('-file', fullfile(pathname,filename{i}));
                 load(fullfile(pathname,filename{i}));
                 %temporarily save in EDS_temp
-                EDS_temp(i) = eval(vars.name);           
+                EDS_temp(i) = eval(vars.name);
                 clear (vars.name)
             end
             EDS = EDS_temp;
         else
             EDS = fullfile(pathname,filename);
-        end        
+        end
     end
 end
 % load the EDS, if a filename has been passed
@@ -111,12 +112,12 @@ end
 msize      = 5;
 legend_str = {};
 color_     = [255 215   0 ;...   %today
-              255 127   0 ;...   %eco 
-              238  64   0 ;...   %clim
-              205   0   0 ;...   %total risk
-              120 120 120]/256;  %dotted line]/255;  
+    255 127   0 ;...   %eco
+    238  64   0 ;...   %clim
+    205   0   0 ;...   %total risk
+    120 120 120]/256;  %dotted line]/255;
 
-if length(EDS)>  size(color_,1)    
+if length(EDS)>  size(color_,1)
     color_ = jet(length(EDS));
 end
 % % order according to size of damage
@@ -128,11 +129,11 @@ marker_ = ['*- ';'o- ';'p- ';'s- ';'.- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'s-
 ii      = 1;
 
 %create figure
-%fig = climada_figuresize(0.5,0.8);         
+%fig = climada_figuresize(0.5,0.8);
 
 for EDS_i=1:length(EDS)
-    [sorted_damage,exceedence_freq]... 
-                    = climada_damage_exceedence(EDS(EDS_i).damage,EDS(EDS_i).frequency);
+    [sorted_damage,exceedence_freq]...
+        = climada_damage_exceedence(EDS(EDS_i).damage,EDS(EDS_i).frequency);
     nonzero_pos     = find(exceedence_freq);
     sorted_damage   = sorted_damage(nonzero_pos);
     exceedence_freq = exceedence_freq(nonzero_pos);
@@ -157,7 +158,11 @@ xlabel('Return period (years)')
 if Percentage_Of_Value_Flag
     ylabel('Damage as percentage of value')
 else
-    ylabel('Damage amount')
+    if isfield(EDS(EDS_i),'Value_unit')
+        ylabel(sprintf('Damage amount (%s)',EDS(EDS_i).Value_unit))
+    else
+        ylabel('Damage amount')
+    end
 end
 % set(gcf,'Color',[1 1 1])
 
@@ -181,9 +186,9 @@ if ~isempty(EDS_comparison)
         EDS            = EDS_comparison;
         EDS_comparison = [];
     end
-
+    
     % attention, from now on, EDS holds the EDS for comparison
-
+    
     if exist('measures_impact','var') % if a results file is loaded
         EDS = measures_impact.EDS;
     end
@@ -193,16 +198,16 @@ if ~isempty(EDS_comparison)
         EDS      = EDS_temp.EDS;
         EDS_temp = [];
     end
-
+    
     hold on;
     ii = 2; %go to next color
-    if length(EDS)>  size(color_,1)-1   
+    if length(EDS)>  size(color_,1)-1
         color_ = jet(length(EDS)+1);
     end
     
     for EDS_i=1:length(EDS)
         [sorted_damage,exceedence_freq]...
-                        = climada_damage_exceedence(EDS(EDS_i).damage,EDS(EDS_i).frequency);
+            = climada_damage_exceedence(EDS(EDS_i).damage,EDS(EDS_i).frequency);
         nonzero_pos     = find(exceedence_freq);
         sorted_damage   = sorted_damage(nonzero_pos);
         exceedence_freq = exceedence_freq(nonzero_pos);

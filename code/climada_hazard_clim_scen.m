@@ -26,6 +26,7 @@ function hazard = climada_hazard_clim_scen(hazard,hazard_clim_file,frequency_scr
 % David N. Bresch, david.bresch@gmail.com, 20090920
 % Lea Mueller, 20110720
 % Reto Stockmann 20120719
+% David N. Bresch, david.bresch@gmail.com, 20150906, allow for name without path on input
 %-
 
 % SAFETY message prior to first call - user is asked to comment the return statement
@@ -49,16 +50,16 @@ if ~exist('intensity_screw','var'),intensity_screw=[];end
 % new hazard frequency=orig hazard frequency * frequency_screw
 % =1.0 for identity
 if isempty(frequency_screw)
-frequency_screw = 1.10; 
+    frequency_screw = 1.10;
 end
 % new hazard intensity=orig hazard intensity * intensity_screw
 % =1.0 for identity
 if isempty(intensity_screw)
-intensity_screw = 1.05; 
+    intensity_screw = 1.05;
 end
 % define the reference year for this hazard set
 % default for future or scenario hazard is normally 2030
-hazard_reference_year = climada_global.future_reference_year; 
+hazard_reference_year = climada_global.future_reference_year;
 
 % prompt for hazard if not given
 if isempty(hazard) % local GUI
@@ -101,9 +102,12 @@ if isempty(hazard_clim_file) % local GUI
     else
         hazard_clim_file = fullfile(pathname,filename);
     end
-else
-    hazard_clim_file = [climada_global.data_dir filesep 'hazards' filesep hazard_clim_file];
 end
+
+% complete path, if missing
+[fP,fN,fE]=fileparts(hazard_clim_file);
+if isempty(fP),hazard_clim_file=[climada_global.data_dir filesep 'hazards' filesep fN fE];end
+
 
 % store as additional fields in hazard:
 hazard.frequency_screw_applied = frequency_screw;
