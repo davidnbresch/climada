@@ -91,6 +91,10 @@ if ~exist('measures','var'),measures='';end
 if ~exist('map_risk_premium','var'),map_risk_premium=0;end
 
 % PARAMETERS
+%
+% to debug one measure, set debug_measure_i to its number
+debug_measure_i=0; % default=0 (switched off, no debugging)
+
 
 % prompt for entity if not given
 if isempty(entity) % local GUI
@@ -311,19 +315,28 @@ for measure_i = 1:n_measures+1 % last with no measures
             %    measures.damagefunctions_mapping(measure_i).map_to(map_i));
         end % map_i
         
+        if measure_i==debug_measure_i,plot(orig_damagefunctions.Intensity,orig_damagefunctions.MDD.*orig_damagefunctions.PAA,'--b');end
+        
         entity.damagefunctions.Intensity = max(orig_damagefunctions.Intensity - measures.hazard_intensity_impact_b(measure_i),0);
         entity.damagefunctions.MDD       = max(orig_damagefunctions.MDD*measures.MDD_impact_a(measure_i)+measures.MDD_impact_b(measure_i),0);
         entity.damagefunctions.PAA       = max(orig_damagefunctions.PAA*measures.PAA_impact_a(measure_i)+measures.PAA_impact_b(measure_i),0);
         annotation_name                  = measures.name{measure_i};
-        % new parameter of how a measure impacts the hazard, mutliply
-        % hazard intensity with a factor, instead of substracting a given absolute amount
+       
         if isfield(measures,'hazard_intensity_impact_a')
-            entity.damagefunctions.Intensity = max(orig_damagefunctions.Intensity*(1-measures.hazard_intensity_impact_a(measure_i)),0);
+            % for BACKWARD COMPATIBILITY, we keep for the moment (david.bresch@gmail.com, 20150907)
+            entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity*(1-measures.hazard_intensity_impact_a(measure_i)),0);
+            % CORRECTLY, it should be (david.bresch@gmail.com, 20150907)
+%             if ~(measures.hazard_intensity_impact_a(measure_i)==0)
+%                 entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity./measures.hazard_intensity_impact_a(measure_i),0);
+%             end
         end
     else
         entity.damagefunctions = entity_orig_damagefunctions; % back to original
         annotation_name        = 'control';
     end
+    
+    if measure_i==debug_measure_i,hold on;plot(entity.damagefunctions.Intensity,entity.damagefunctions.MDD.*entity.damagefunctions.PAA,'-g');legend('orig','impact');end
+            
     EDS(measure_i)            = climada_EDS_calc(entity,hazard,annotation_name);
     entity.assets.DamageFunID = orig_assets_DamageFunID; % reset damagefunctions mapping
     

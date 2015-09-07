@@ -91,6 +91,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20150819, use only unique values in interp_x_table, so that interp1 works (interp_x_table is monotonically increasing)        
 % Lea Mueller, muellele@gmail.com, 20150819, set minimum damage to min defined in damage function (probably 0)  
 % Lea Mueller, muellele@gmail.com, 20150831, EDS.ED, EDS.damage, EDS.Value is the sum only of the first Value_unit encountered, all other units are not included
+% David N. Bresch, david.bresch@gmail.com, 20150907, ...errant extrapolation leads to WRONG behaviour in case of hazard_intensity_impact_b, commented 
 %-
 
 global climada_global
@@ -281,6 +282,7 @@ for asset_ii=1:nn_assets
         interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos);
         % take only unique values, so that interp1 works (x is monotonically increasing)
         [interp_x_table,is_unique] = unique(interp_x_table);
+
         interp_y_table = interp_y_table(is_unique);
         [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
         MDD=MDD_0;
@@ -291,8 +293,9 @@ for asset_ii=1:nn_assets
         end
         
         % to be certain of no errant extrapolation
-        MDD(MDD>max(interp_y_table)) = max(interp_y_table);
-        MDD(MDD<min(interp_x_table)) = interp_y_table(1);
+        % leads to WRONG behaviour in case of hazard_intensity_impact_b, david.bresch@gmail.com, 20150907
+%         MDD(MDD>max(interp_y_table)) = max(interp_y_table);
+%         MDD(MDD<min(interp_x_table)) = interp_y_table(1);
         
         % figure
         % plot(interp_x_table, interp_y_table,':')
@@ -310,8 +313,9 @@ for asset_ii=1:nn_assets
         end
         
         % to be certain of no errant extrapolation
-        PAA(PAA>max(interp_y_table)) = max(interp_y_table);
-        PAA(PAA<min(interp_x_table)) = interp_y_table(1);
+        % leads to WRONG behaviour in case of hazard_intensity_impact_b, david.bresch@gmail.com, 20150907
+%         PAA(PAA>max(interp_y_table)) = max(interp_y_table);
+%         PAA(PAA<min(interp_x_table)) = interp_y_table(1);
 
         % figure
         % plot(interp_x_table, interp_y_table,':k')
