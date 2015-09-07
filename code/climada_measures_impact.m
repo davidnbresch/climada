@@ -76,6 +76,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150831, introduce measures_impact.Value_unit
 % Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
 % Lea Mueller, muellele@gmail.com, 20150902, call climada_measures_impact_discount in an separate function
+% David N. Bresch, david.bresch@gmail.com, 20150907, hazard_intensity_impact_a and hazard_intensity_impact_b properly implemented
 %-
 
 global climada_global
@@ -323,12 +324,11 @@ for measure_i = 1:n_measures+1 % last with no measures
         annotation_name                  = measures.name{measure_i};
        
         if isfield(measures,'hazard_intensity_impact_a')
-            % for BACKWARD COMPATIBILITY, we keep for the moment (david.bresch@gmail.com, 20150907)
-            entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity*(1-measures.hazard_intensity_impact_a(measure_i)),0);
-            % CORRECTLY, it should be (david.bresch@gmail.com, 20150907)
-%             if ~(measures.hazard_intensity_impact_a(measure_i)==0)
-%                 entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity./measures.hazard_intensity_impact_a(measure_i),0);
-%             end
+            % for BACKWARD COMPATIBILITY: the following line was used until 20150907
+            %%entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity*(1-measures.hazard_intensity_impact_a(measure_i)),0);
+            if ~(measures.hazard_intensity_impact_a(measure_i)==0)
+                entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity/measures.hazard_intensity_impact_a(measure_i),0);
+            end
         end
     else
         entity.damagefunctions = entity_orig_damagefunctions; % back to original
