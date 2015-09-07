@@ -1,4 +1,4 @@
-function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode)
+function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode,sanity_check)
 % climada calculate event damage set
 % NAME:
 %   climada_EDS_calc
@@ -92,6 +92,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20150819, set minimum damage to min defined in damage function (probably 0)  
 % Lea Mueller, muellele@gmail.com, 20150831, EDS.ED, EDS.damage, EDS.Value is the sum only of the first Value_unit encountered, all other units are not included
 % David N. Bresch, david.bresch@gmail.com, 20150907, ...errant extrapolation leads to WRONG behaviour in case of hazard_intensity_impact_b, commented 
+% Lea Mueller, muellele@gmail.com, 20150907, add sanity_check variable to call climada_damagefunctions_check
 %-
 
 global climada_global
@@ -105,6 +106,7 @@ if ~exist('hazard','var'),hazard=[];end
 if ~exist('annotation_name','var'),annotation_name='';end
 if ~exist('force_re_encode','var'),force_re_encode=0;end
 if ~exist('silent_mode','var'),silent_mode=0;end
+if ~exist('sanity_check','var'),sanity_check=0;end
 
 % PARAMETERS
 %
@@ -180,7 +182,8 @@ if force_re_encode % re-encode entity to hazard
 end
 
 if ~isfield(entity.assets,'Deductible'),...
-        entity.assets.Deductible=entity.assets.Value*0;end
+    entity.assets.Deductible=entity.assets.Value*0;
+end
 
 if isfield(entity.assets,'Cover')
     if sum(entity.assets.Cover)==0
@@ -193,6 +196,10 @@ end
 
 if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
     if ~silent_mode,fprintf('Note: At least some assets have Cover limiting the damage\n');end
+end
+
+if sanity_check ~=0
+    entity = climada_damagefunctions_check(entity,hazard,silent_mode);
 end
 
 % initialize the event damage set (EDS)
@@ -215,7 +222,7 @@ if climada_global.EDS_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
     EDS.damage_at_centroid     = spalloc(n_assets, hazard.event_count,...
-        ceil(hazard.event_count*n_assets*damage_at_centroid_density));
+                                 ceil(hazard.event_count*n_assets*damage_at_centroid_density));
     [i,j,x]           = find(EDS.damage_at_centroid);
 end
 
@@ -234,7 +241,7 @@ nn_assets=length(valid_assets_pos);
 % check unit of asset values
 if ~isfield(entity.assets,'Value_unit')
     EDS.Value_unit=climada_global.Value_unit; % use default for entities creasted prior to 20150903
-    is_unit=entity.assets.Value*0+1; % use all
+    is_unit = logical(entity.assets.Value*0+1); % use all
 else
     EDS.Value_unit = entity.assets.Value_unit{valid_assets_pos(1)};
     if numel(unique(entity.assets.Value_unit(valid_assets_pos)))>1
@@ -282,7 +289,6 @@ for asset_ii=1:nn_assets
         interp_y_table = entity.damagefunctions.MDD(asset_damfun_pos);
         % take only unique values, so that interp1 works (x is monotonically increasing)
         [interp_x_table,is_unique] = unique(interp_x_table);
-
         interp_y_table = interp_y_table(is_unique);
         [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
         MDD=MDD_0;

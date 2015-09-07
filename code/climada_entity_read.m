@@ -74,6 +74,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20150805, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150829, check for valid/correct entity.assets.filename
 % Lea Mueller, muellele@gmail.com, 20150831, assign assets.Value_unit with climada_global.Value_unit if not given
+% Lea Mueller, muellele@gmail.com, 20150907, add damagefunctions check and measures check 
 %-
 
 global climada_global
@@ -204,6 +205,11 @@ else
             end
             
             entity.damagefunctions.datenum=entity.damagefunctions.DamageFunID*0+now; % add datenum
+            
+            % check if damagefuntions define MDD and PAA in the necessary range given in hazard.intensity
+            if isstruct(hazard)
+                entity = climada_damagefunctions_check(entity,hazard,0);
+            end
         end
         
     catch ME
@@ -221,6 +227,7 @@ else
             if isfield(measures,'vuln_map'),measures.damagefunctions_map=measures.vuln_map;measures=rmfield(measures,'vuln_map');end
             
             entity.measures = climada_measures_encode(measures);
+            climada_measures_check(entity.measures);
             
             % check for OLD naming convention, vuln_MDD_impact_a -> MDD_impact_a
             if isfield(entity.measures,'vuln_MDD_impact_a'),entity.measures.MDD_impact_a=entity.measures.vuln_MDD_impact_a;entity.measures=rmfield(entity.measures,'vuln_MDD_impact_a');end

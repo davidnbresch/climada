@@ -1,4 +1,4 @@
-function measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures,map_risk_premium)
+function measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures,map_risk_premium,sanity_check)
 % climada
 % NAME:
 %   climada_measures_impact
@@ -77,6 +77,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
 % Lea Mueller, muellele@gmail.com, 20150902, call climada_measures_impact_discount in an separate function
 % David N. Bresch, david.bresch@gmail.com, 20150907, hazard_intensity_impact_a and hazard_intensity_impact_b properly implemented
+% Lea Mueller, muellele@gmail.com, 20150907, add variable sanity_check to perform a safety check within climada_EDS_calc, add climada_measures_check
 %-
 
 global climada_global
@@ -90,6 +91,8 @@ if ~exist('hazard','var'),hazard=[];end
 if ~exist('measures_impact_reference','var'),measures_impact_reference=[];end
 if ~exist('measures','var'),measures='';end
 if ~exist('map_risk_premium','var'),map_risk_premium=0;end
+if ~exist('sanity_check','var'),sanity_check=0;end
+
 
 % PARAMETERS
 %
@@ -247,6 +250,8 @@ end
 orig_damagefunctions = entity.damagefunctions; % copy of this table for speedup
 n_measures           = length(measures.cost);
 
+climada_measures_check(entity.measures)
+
 %fprintf('assessing impacts of %i measures:\n',n_measures);
 
 risk_transfer = zeros(1,n_measures+1); % allocate
@@ -336,8 +341,8 @@ for measure_i = 1:n_measures+1 % last with no measures
     end
     
     if measure_i==debug_measure_i,hold on;plot(entity.damagefunctions.Intensity,entity.damagefunctions.MDD.*entity.damagefunctions.PAA,'-g');legend('orig','impact');end
-            
-    EDS(measure_i)            = climada_EDS_calc(entity,hazard,annotation_name);
+       
+    EDS(measure_i)            = climada_EDS_calc(entity,hazard,annotation_name,'',0,sanity_check);
     entity.assets.DamageFunID = orig_assets_DamageFunID; % reset damagefunctions mapping
     
     if measure_i<=n_measures % not for the control run (last one)

@@ -23,7 +23,8 @@ function measures=climada_measures_read(measures_filename)
 % MODIFICATION HISTORY:
 % David N. Bresch,  david.bresch@gmail.com, 20091228
 % David N. Bresch,  david.bresch@gmail.com, 20130316, vulnerability->damagefunctions...
-% Jacob Anz,        j.anz@gmx.net,          20150819, use try statement to check for damagefunctions in excel sheet
+% Jacob Anz, j.anz@gmx.net, 20150819, use try statement to check for damagefunctions in excel sheet
+% Lea Mueller, muellele@gmail.com, 20150907, add measures sanity check
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -54,6 +55,9 @@ catch
     %fprintf('no damagefunctions found')
 end
 measures=climada_measures_encode(measures);
+
+% sanity check for measures
+climada_measures_check(measures)
 
 % save measures as .mat file for fast access
 % but we re-read form .xls each time this code is called
