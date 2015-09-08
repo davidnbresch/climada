@@ -19,10 +19,20 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %   measures_impact: either a struct containing the impacts of measures or a measures_impact file (.mat with a struct)
 %       see climada_measures_impact
 %       > promted for if not given
+%       If theres is a field measures_impact.y_axis_max, it defines the
+%       maximum of the vertical axis (to shape plots comparable). There are
+%       no checks any more, hence if you provide a stange number, you get a
+%       strange vertical scale ;-)   
+%       If theres is a field measures_impact.x_axis_max, it defines the
+%       maximum of the horizontal axis (to shape plots comparable). 
 % OPTIONAL INPUT PARAMETERS:
 %   measures_impact_comparison: same as measures_impact, but for comparison
 %       (will be shown in overlay). Not prompted for, so please specify in
 %       call, or enter 'ASK' in climada_adaptation_cost_curve('','ASK')
+%       If theres is a field measures_impact_comparison.label_comparison,
+%       it defines whether comparison wll be labeld (=1, default) or not (=0)
+%       If =0, also do not label TCR (total climate risk) for comparison
+%       These setting are usually good for decluttered plots for presentations
 %   x_text_control: controls the horizontal distribution of the text labels
 %       (divider of the length of the x-axis, default=20)
 %   y_text_control: controls the vertical distribution of the text labels
@@ -51,6 +61,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20141231 subaxis removed (not clean, troubles in Octave)
 % Lea Mueller, muellele@gmail.com, 20150617, set to bc_ratio (benefits per cost) instead of cb_ratio
 % David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for comparison plot
+% David N. Bresch, david.bresch@gmail.com, 20150907 decluttered (for presentations), i.e. label_comparison, x_axis_max and y_axis_max introduced
 %-
 
 global climada_global
@@ -115,7 +126,8 @@ if called_from_climada_demo
 else
     add_insurance_measure = 0;
     %fontsize_             = 11;
-    fontsize_             = 8.5;
+    fontsize_             = 8.5*climada_global.font_scale;
+    if ismac, fontsize_   = 12*climada_global.font_scale;end % 20140516, was 8, too small
 end
 
 % set Value_unit
@@ -164,15 +176,18 @@ if nice_numbers
     else
         fct        = 10^-nice_numbers;
         nr_format  = '\t %4.1f';
-        xlabel_str = sprintf('Averted damage over %d years (10^%1.0f %s)',n_years,nice_numbers,Value_unit_str);
+        xlabel_str = sprintf('NPV averted damage over %d years (10^%1.0f %s)',n_years,nice_numbers,Value_unit_str);
     end
 else
     fct        = 1;
     nr_format  = '%2.1e';
-    xlabel_str = sprintf('Averted damage over %d years (%s)',n_years,Value_unit_str);
+    xlabel_str = sprintf('NPV averted damage over %d years (%s)',n_years,Value_unit_str);
 end
 nr_format_benefit  = nr_format;
 nr_format_bc_ratio = '%2.1f';
+
+if ~isfield(measures_impact,'x_axis_max'),measures_impact.x_axis_max=[];end
+if ~isfield(measures_impact,'y_axis_max'),measures_impact.y_axis_max=[];end
 
 % correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
@@ -227,7 +242,9 @@ cumulated_benefit = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climat
 
 % PLOT: a dummy plot to open the figure and set the axes
 xmax      = max(cumulated_benefit);
+if ~isempty(measures_impact.x_axis_max),xmax = measures_impact.x_axis_max;end
 ymax      = max([max(sorted_cb_ratio),1.1]);
+if ~isempty(measures_impact.y_axis_max),ymax = measures_impact.y_axis_max;end
 if called_from_climada_demo
     plot([0,xmax],[ymax,ymax],'.w'); hold on
     set(gca,'FontSize',fontsize_);
@@ -330,6 +347,8 @@ if plot_arrows
     %%%axis goes below zero and the arrows are shown below zero line...
     ylim([0 max(sorted_cb_ratio)*1.1])
     xlim([0 max(cumulated_benefit)*1.03]) % was commented already
+    if ~isempty(measures_impact.x_axis_max),xlim([0 measures_impact.x_axis_max]);end
+    if ~isempty(measures_impact.y_axis_max),ylim([0 measures_impact.y_axis_max]);end
 end
 
 % add title
@@ -340,12 +359,17 @@ title(title_str,'FontSize',fontsize_);
 
 % comparison scenario
 if ~isempty(measures_impact_comparison)
+    
     if ~isstruct(measures_impact_comparison)
         measures_impact_comparison_file = measures_impact_comparison;
         clear measures_impact_comparison
         load(measures_impact_comparison_file);
     else
         measures_impact = measures_impact_comparison;
+    end
+    
+    if ~isfield(measures_impact_comparison,'label_comparison')
+        measures_impact_comparison.label_comparison=1; % default to label
     end
     
     % NOTE: measures_impact holds now the impacts for comparison! (load overloaded this)
@@ -404,19 +428,22 @@ if ~isempty(measures_impact_comparison)
         end % version
     end
     
-    % annotate names of measures (smaller and in greyshade)
-    for measure_i = 1:n_measures
-        text(cumulated_benefit(measure_i)+cumulated_benefit(end)/x_text_control,...
-            sorted_cb_ratio(measure_i), measures_impact.measures.name{sort_index(measure_i)},...
-            ... %max(sorted_cb_ratio)/y_text_control, measures_impact.measures.name{sort_index(measure_i)},...
-            'Rotation',90,'FontSize',fontsize_,'Color',[.5 .5 .5],'horizontalalignment','right ');
-    end
+    if measures_impact_comparison.label_comparison
+        fontsize_comparison=ceil(fontsize_/2);
+        % annotate names of measures (smaller and in greyshade)
+        for measure_i = 1:n_measures
+            text(cumulated_benefit(measure_i)+cumulated_benefit(end)/x_text_control,...
+                sorted_cb_ratio(measure_i), measures_impact.measures.name{sort_index(measure_i)},...
+                ... %max(sorted_cb_ratio)/y_text_control, measures_impact.measures.name{sort_index(measure_i)},...
+                'Rotation',90,'FontSize',fontsize_comparison,'Color',[.5 .5 .5],'horizontalalignment','right ');
+        end
+    end % measures_impact_comparison.label_comparison
     
     % show total unmitigated expected damage ED
     plot(measures_impact.ED(end)*fct,0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
     text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
     % show NPV of total climate risk TCR
-    if isfield(measures_impact,'NPV_total_climate_risk')
+    if isfield(measures_impact,'NPV_total_climate_risk') && measures_impact_comparison.label_comparison
         plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
         text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
     end

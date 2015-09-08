@@ -1,7 +1,7 @@
 function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_printplot)
 % waterfall figure, expected damage for specified return period for
 % - today,
-% - increase from economic growth,
+% - increase from economic development,
 % - increase from high climate change, total expected damage 2030
 % for the three EDS quoted above
 % NAME:
@@ -17,12 +17,13 @@ function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_print
 % OPTIONAL INPUT PARAMETERS:
 %   EDS:            three event damage sets
 %                   - today
-%                   - economic growth
-%                   - cc combined with economic growth, future
+%                   - economic development
+%                   - cc combined with economic development, future
 %   return_period:  requested return period for according expected damage,or
 %                   annual expected damage, prompted if not given
 %                   Default is annual expected damage (EDS.ED)
 %   check_printplot:if set to 1, figure saved, default 0.
+%       if =-1, avoid all the additonal labels etc (for e.g. slides)
 % OUTPUTS:
 %   waterfall graph
 % MODIFICATION HISTORY:
@@ -33,6 +34,7 @@ function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_print
 % Lea Mueller, muellele@gmail.com, 20150831, integrate Value_unit from EDS1.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20150906 ED as default for return_period
 % David N. Bresch, david.bresch@gmail.com, 20150906 font scale and label texts shortened
+% David N. Bresch, david.bresch@gmail.com, 20150907 font scale and label texts shortened
 %-
 
 global climada_global
@@ -266,13 +268,12 @@ end
 
 
 %damages above bars
-strfmt = ['%2.' int2str(N) 'f'];
-dED = 0.0;
-text(1, damage(2)                     , num2str(damage_disp(1),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
-text(2-dED, damage(2)+ (damage(3)-damage(2))/2, num2str(damage_disp(2),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
-text(3-dED, damage(3)+ (damage(4)-damage(3))/2, num2str(damage_disp(3),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
-text(4, damage(4)                     , num2str(damage_disp(4),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
-
+    strfmt = ['%2.' int2str(N) 'f'];
+    dED = 0.0;
+    text(1, damage(2)                     , num2str(damage_disp(1),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
+    text(2-dED, damage(2)+ (damage(3)-damage(2))/2, num2str(damage_disp(2),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
+    text(3-dED, damage(3)+ (damage(4)-damage(3))/2, num2str(damage_disp(3),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
+    text(4, damage(4)                     , num2str(damage_disp(4),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
 
 % %damages above barsn -- int2str
 % dED = 0.0;
@@ -321,15 +322,16 @@ text (4, damage(2)-max(damage)*0.02, ['+' int2str((damage(4)-damage(2))/damage(2
 
 
 %title
-if return_period == 9999
-    textstr = 'Annual Expected Damage (AED)';
-else
-    textstr = ['Expected damage with a return period of ' int2str(return_period) ' years'];
+if check_printplot>=0
+    if return_period == 9999
+        textstr = 'Annual Expected Damage (AED)';
+    else
+        textstr = ['Expected damage with a return period of ' int2str(return_period) ' years'];
+    end
+    textstr_TIV = sprintf('Total assets: %d, %d 10^%d %s', TIV_nr, digits, unit_str);
+    text(1-stretch, max(damage)*1.20,textstr, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','bold','fontsize',fontsize_);
+    text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','normal','fontsize',fontsize_2);
 end
-textstr_TIV = sprintf('Total assets: %d, %d 10^%d %s', TIV_nr, digits, unit_str);
-text(1-stretch, max(damage)*1.20,textstr, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','bold','fontsize',fontsize_);
-text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','normal','fontsize',fontsize_2);
-
 
 % if return_period == 9999
 %     text(1- stretch, max(damage)*1.2, {'Annual Expected damage (AED)'}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','bold','fontsize',fontsize_);
@@ -338,17 +340,19 @@ text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment',
 % end
 
 %xlabel
-text(1-stretch, damage(1)-max(damage)*0.02, {['risk today (' num2str(climada_global.present_reference_year) ')']}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(2-stretch, damage(1)-max(damage)*0.02, {'economic growth'},'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(3-stretch, damage(1)-max(damage)*0.02, {'climate change'},                                 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(1-stretch, damage(1)-max(damage)*0.02, {'risk today',['(' num2str(climada_global.present_reference_year) ')']}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(2-stretch, damage(1)-max(damage)*0.02, {'economic','development'},'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(3-stretch, damage(1)-max(damage)*0.02, {'climate','change'},                                 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
 text(4-stretch, damage(1)-max(damage)*0.02, {['risk ' num2str(climada_global.future_reference_year)]}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
 
 %Legend
 %L = legend(h,legend_str(index),'location','NorthOutside','fontsize',fontsize_2);
 %set(L,'Box', 'off')
-L=legend(h, legend_str(index),'Location','NorthEast');
-set(L,'Box', 'off')
-set(L,'Fontsize',fontsize_3)
+if check_printplot>=0
+    L=legend(h, legend_str(index),'Location','NorthEast');
+    set(L,'Box', 'off')
+    set(L,'Fontsize',fontsize_3)
+end
 
 
 if isempty(check_printplot)
@@ -360,9 +364,8 @@ if isempty(check_printplot)
 end
 
 
-if check_printplot %(>=1)
+if check_printplot>0 %(>=1)
     print(fig,'-dpdf',[climada_global.data_dir foldername])
-    %close
     fprintf('saved 1 FIGURE in folder %s \n', foldername);
 end
 
