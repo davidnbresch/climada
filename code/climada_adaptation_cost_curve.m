@@ -115,7 +115,7 @@ if called_from_climada_demo
 else
     add_insurance_measure = 0;
     %fontsize_             = 11;
-    fontsize_             = 8.5;
+    fontsize_             = 10;
 end
 
 % set Value_unit
@@ -191,6 +191,11 @@ end
 title_str                    = measures_impact.title_str;
 [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio); 
 if reverse_cb,sorted_cb_ratio= 1./sorted_cb_ratio;end
+
+% special colormap for salvador
+cmap = climada_colormap('measures',numel(measures_impact.measures.name));
+measures_impact.measures.color_RGB(sort_index,:) = cmap;
+
 
 % COMMAND WINDOW: results
 fprintf('%s :\n',title_str);
@@ -271,13 +276,13 @@ for measure_i = 2:n_measures+1 %first entry = 0
         text(cumulated_benefit(measure_i)-(cumulated_benefit(measure_i)-cumulated_benefit(measure_i-1))/2,...
             max(sorted_cb_ratio)/y_text_control,...
             [measures_impact.measures.name{sort_index(measure_i-1)},...
-            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_);
+            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_-4);
     end
 end
 % show net present value of total climate risk
 plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
 % tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
-tcr_str = sprintf('Total climate risk\n USD %.0f m',round(tot_climate_risk*fct/100000)/10);
+tcr_str = sprintf('Total climate risk\n USD %.1f m',round(tot_climate_risk*fct/100000)/10);
 text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
     'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
 
