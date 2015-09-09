@@ -51,6 +51,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20141231 subaxis removed (not clean, troubles in Octave)
 % Lea Mueller, muellele@gmail.com, 20150617, set to bc_ratio (benefits per cost) instead of cb_ratio
 % David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for comparison plot
+% Lea Mueller, muellele@gmail.com, 20150909, introduce factor for unit 'people', to show cb ratio as people not affected/10'000 USD 
 %-
 
 global climada_global
@@ -137,6 +138,12 @@ else
     tot_climate_risk  = measures_impact.NPV_total_climate_risk;
 end
 
+if tot_climate_risk>600000
+    million_flag = 1;
+else
+    million_flag = 0;
+end
+
 if add_insurance_measure % NOTE: this section not relevant for lecture
     %cover residual damage with insurance
     insurance_benefit    = tot_climate_risk - sum(measures_impact.benefit);
@@ -174,6 +181,7 @@ end
 nr_format_benefit  = nr_format;
 nr_format_bc_ratio = '%2.1f';
 
+
 % correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
 if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
@@ -184,8 +192,9 @@ end
 
 % special case for people, set cb_ratio as people not affected per 100'000 USD invested
 if strcmp(measures_impact.Value_unit,'people')
+    people_factor = 10000;
     nr_format_benefit = strrep(nr_format,'.1e','.0f');
-    measures_impact.cb_ratio = measures_impact.cb_ratio/100000;
+    measures_impact.cb_ratio = measures_impact.cb_ratio/people_factor;
 end
 
 title_str                    = measures_impact.title_str;
@@ -252,7 +261,7 @@ else
     ylabelstr = sprintf('Cost/benefit ratio (USD/%s)',Value_unit_str);
 end
 if strcmp(measures_impact.Value_unit,'people')
-    ylabelstr = strrep(ylabelstr,'USD','100''000 USD');
+    ylabelstr = strrep(ylabelstr,'USD','10''000 USD');
 end
 ylabel(ylabelstr,'fontsize',fontsize_+1)
 
@@ -282,7 +291,11 @@ end
 % show net present value of total climate risk
 plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
 % tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
-tcr_str = sprintf('Total climate risk\n USD %.1f m',round(tot_climate_risk*fct/100000)/10);
+if million_flag
+    tcr_str = sprintf('Total climate risk\n %.1f m %s',round(tot_climate_risk*fct/100000)/10,measures_impact.Value_unit);
+else
+    tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk*fct,measures_impact.Value_unit);
+end
 text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
     'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
 
