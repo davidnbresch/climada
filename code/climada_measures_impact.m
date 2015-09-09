@@ -78,6 +78,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150902, call climada_measures_impact_discount in an separate function
 % David N. Bresch, david.bresch@gmail.com, 20150907, hazard_intensity_impact_a and hazard_intensity_impact_b properly implemented
 % Lea Mueller, muellele@gmail.com, 20150907, add variable sanity_check to perform a safety check within climada_EDS_calc, add climada_measures_check
+% Lea Mueller, muellele@gmail.com, 20150908, switch assets if needed (defined in measures.assets_file)
 %-
 
 global climada_global
@@ -234,6 +235,7 @@ end
 % make (backup) copies of the original data in entity:
 entity_orig_damagefunctions = entity.damagefunctions;
 orig_assets_DamageFunID     = entity.assets.DamageFunID;
+orig_assets = entity.assets; % backup
 
 if isfield(measures,'damagefunctions') % append measure's vulnerabilities
     entity.damagefunctions.DamageFunID = measures.damagefunctions.DamageFunID;
@@ -255,7 +257,8 @@ climada_measures_check(entity.measures)
 %fprintf('assessing impacts of %i measures:\n',n_measures);
 
 risk_transfer = zeros(1,n_measures+1); % allocate
-hazard_switched  = 0; % indicated whether a special hazard set for a given measure is used
+hazard_switched = 0; % indicated whether a special hazard set for a given measure is used
+assets_switched = 0; % indicated whether a special assets for a given measure is used
 
 for measure_i = 1:n_measures+1 % last with no measures
     if measure_i <= n_measures
@@ -311,6 +314,12 @@ for measure_i = 1:n_measures+1 % last with no measures
             end % measures_hazard_set_name
         end % isfield(measures,'hazard_event_set')
         
+        % switch assets if needed (defined in measures.assets_file)
+        assets = climada_measures_assets_change(measures,measure_i);
+        if ~isempty(assets)
+            entity.assets = climada_assets_encode(assets,hazard);
+            assets_switched = 1;
+        end
         
         for map_i = 1:length(measures.damagefunctions_mapping(measure_i).map_from)
             % damagefunctions mapping
@@ -378,6 +387,13 @@ for measure_i = 1:n_measures+1 % last with no measures
         hazard = orig_hazard; % restore
         fprintf('NOTE: switched hazard back\n');
         orig_hazard=[]; % free up memory
+    end
+    
+    if assets_switched
+        % always switch back, to avoid troubles if hazard passed as struct
+        entity.assets = orig_assets; % restore
+        fprintf('NOTE: switched assets back\n');
+        orig_assets=[]; % free up memory
     end
     
 end % measure_i
