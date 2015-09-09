@@ -30,7 +30,7 @@ function hazard = climada_hazard_clim_scen(hazard,hazard_clim_file,frequency_scr
 %-
 
 % SAFETY message prior to first call - user is asked to comment the return statement
-fprintf('%   Modifications done in code, so please visit/edit the code prior to use\n');
+fprintf('!!!   Modifications done in code, so please visit/edit the code prior to use\n');
 %%return % comment out, but activate once code is subject to use by newcomer
 
 global climada_global
