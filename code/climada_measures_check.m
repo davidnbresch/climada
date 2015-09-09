@@ -16,6 +16,7 @@ function climada_measures_check(measures)
 %   none, just stdout information
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150907, init
+% Lea Mueller, muellele@gmail.com, 20150909, check if a measure implies to use a differerent assets file
 %-
 
 global climada_global
@@ -106,6 +107,16 @@ if isfield(measures, 'PAA_impact_b')
     end
     if any(measures.PAA_impact_b<0)
         fprintf('%d measures decrease the hazard the PAA by an absolute factor. \n',sum(measures.PAA_impact_b<0))
+    end
+end
+if isfield(measures, 'assets_file')
+    if any(~strcmp(measures.assets_file,'nil'))
+        fprintf('%d measures use a different asset file. \n',sum(~strcmp(measures.assets_file,'nil')))
+    end
+end
+if isfield(measures, 'hazard_event_set')
+    if any(~strcmp(measures.hazard_event_set,'nil'))
+        fprintf('%d measures use a different hazard event set. \n',sum(~strcmp(measures.hazard_event_set,'nil')))
     end
 end
 
