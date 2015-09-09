@@ -75,6 +75,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20150829, check for valid/correct entity.assets.filename
 % Lea Mueller, muellele@gmail.com, 20150831, assign assets.Value_unit with climada_global.Value_unit if not given
 % Lea Mueller, muellele@gmail.com, 20150907, add damagefunctions check and measures check 
+% Lea Mueller, muellele@gmail.com, 20150908, add assets even it not encoded 
 %-
 
 global climada_global
@@ -155,6 +156,7 @@ else
     
     if ischar(hazard) && strcmpi(hazard,'NOENCODE')
         fprintf('Note: assets not encoded\n')
+        entity.assets = assets;
     else
         % encode assets
         entity.assets = climada_assets_encode(assets,hazard);
