@@ -3,9 +3,13 @@ function measures=climada_measures_encode(measures)
 % NAME:
 %   climada_measures_encode
 % PURPOSE:
-%   encode measures, i.e. process the damagefunctions_map to concert it
+%   encode measures, i.e. process the damagefunctions_map to convert it
 %   into a damagefunctions_mapping, which allows climada_measures_impact to
-%   switch damagefunctions for specific measures.
+%   switch damagefunctions for specific measures. Also convert color
+%   triples as string into RGB color triplets. Plus some sanity checks.
+%
+%   Previous call: climada_entity_read (usually called in there,
+%       climada_measures_encode is a low-level function)
 %
 %   See also climada_damagefunctions_read and climada_damagefunctions_map
 % CALLING SEQUENCE:
@@ -13,15 +17,28 @@ function measures=climada_measures_encode(measures)
 % EXAMPLE:
 %   measures=climada_measures_encode(climada_measures_read);
 % INPUTS:
-%   measures: a structure, with the measures
+%   measures: a structure, with the measures as read in climada_entity_read
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
+%   measures: a structure, with the measures as input, plus the fields
+%       color_RGB: the RGB triples (each element range 0..1), default all
+%       yellow, if troubles arise converting measures.color (the
+%       triple, but as text, often troubles if read in Octave)
+%   damagefunctions_mapping: the damagefunctions_map converted into a
+%       direct index, i.e. from damagefunctions_map(i)='1to3;4to7' to a mapping
+%       damagefunctions_mapping(i).map_from(i)=[1 4]
+%       damagefunctions_mapping(i).map_to(i)=[3 7] etc.
+%   hazard_intensity_impact_b: older entities
+%       might still have hazard_intensity_impact and hence we rename it to
+%       hazard_intensity_impact_b. See excel_template.xls and the comment
+%       for column 'hazard intensity impact' in tab 'measures'.
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100107
 % David N. Bresch, david.bresch@gmail.com, 20141121, using only damagefunctions_map information
 % David N. Bresch, david.bresch@gmail.com, 20150103, some checks for .ods imported entities
 % David N. Bresch, david.bresch@gmail.com, 20150518, safety checkin
 % Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
+% David N. Bresch, david.bresch@gmail.com, 20150907, keep color_RGB if provided on input
 %-
 
 %global climada_global
@@ -36,13 +53,24 @@ if ~exist('measures','var'),measures=[];return;end
 % make sure measures are well-defined (to fix an issue with .ods sometimes
 % reading more than the 'popupated' rows)
 measures.name=measures.name(1:length(measures.cost));
-measures.color=measures.color(1:length(measures.cost));
+measures.damagefunctions_map=measures.damagefunctions_map(1:length(measures.cost));
+if isfield(measures,'color')
+    measures.color=measures.color(1:length(measures.cost));
+end
 if isfield(measures,'hazard_event_set')
     measures.hazard_event_set=measures.hazard_event_set(1:length(measures.cost));
 end
-measures.damagefunctions_map=measures.damagefunctions_map(1:length(measures.cost));
 if isfield(measures,'peril_ID')
     measures.peril_ID=measures.peril_ID(1:length(measures.cost));
+end
+
+if ~isfield(measures,'color_RGB')
+    measures.color_RGB=repmat([255 219 105]/255,length(measures.cost),1); % init yellow
+end
+if size(measures.color_RGB,1)<length(measures.cost)
+    % init missing ones
+    measures.color_RGB=[measures.color_RGB;repmat([255 219 105]/255,...
+        length(measures.cost)-size(measures.color_RGB,1),1)];
 end
 
 if isfield(measures,'color')
@@ -50,14 +78,17 @@ if isfield(measures,'color')
     % convert to RGB triplets
     for measure_i=1:length(measures.cost)
         try
+            % color takes precendence
             measures.color_RGB(measure_i,:)=str2num(measures.color{measure_i});
         catch
             % troubles reading this particular field from .ods, since a triple)
-            color_warning=1;
-            measures.color_RGB(measure_i,:)=[255 219 105]/255; % each range 0..1
+            color_warning=color_warning+1;
+            if sum(measures.color_RGB(measure_i,:))<1 % otherwise assume user already defined meaningfully
+                measures.color_RGB(measure_i,:)=[255 219 105]/255; % each range 0..1
+            end
         end
     end % measure_i
-    if color_warning,fprintf('Note: measure colors not read properly, set to default (yellow, see entity.measures.color_RGB)\n');end
+    if color_warning,fprintf('Note: %i measure colors not read properly, set to default (yellow, see entity.measures.color_RGB)\n',color_warning);end
 end
 
 % interpret all the mappings
@@ -104,5 +135,5 @@ if isfield(measures,'hazard_intensity_impact')
     measures.hazard_intensity_impact_b = measures.hazard_intensity_impact;
     measures = rmfield(measures,'hazard_intensity_impact');
 end
-        
-return
+
+end % climada_measures_encode
