@@ -457,12 +457,14 @@ if ~isempty(measures_impact_comparison)
     end % measures_impact_comparison.label_comparison
     
     % show total unmitigated expected damage ED
-    plot(measures_impact.ED(end)*fct,0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
-    text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
-    % show NPV of total climate risk TCR
-    if isfield(measures_impact,'NPV_total_climate_risk') && measures_impact_comparison.label_comparison
-        plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
-        text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
+    if measures_impact_comparison.label_comparison
+        plot(measures_impact.ED(end)*fct,0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
+        text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
+        % show NPV of total climate risk TCR
+        if isfield(measures_impact,'NPV_total_climate_risk') && measures_impact_comparison.label_comparison
+            plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
+            text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
+        end
     end
     
     both_title_str{1} = title_str;

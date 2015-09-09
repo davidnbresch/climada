@@ -61,6 +61,8 @@ if ~isstruct(measures_impact)
     load(measures_impact_file);
 end
 
+fontsize_ = 12*climada_global.font_scale;
+
 title_str=measures_impact.title_str;
 %fprintf('%s\n',title_str);
 
@@ -97,6 +99,7 @@ xmax=length(comparison_return_periods);
 ymax=max(max(AEV.damage));
 plot([0,xmax],[ymax,ymax],'.w'); hold on
 set(gcf,'Color',[1 1 1]); % set background color white
+set(gca,'FontSize',fontsize_);
 xlabel('return period')
 ylabel('event damage amount')
 
@@ -144,11 +147,11 @@ end % return_period_i
 for measure_i=1:n_measures
     y_pos=(AEV.cumulated{end}.effect(measure_i)+AEV.cumulated{end}.effect(measure_i+1))/2;
     text(length(comparison_return_periods)-0.9,y_pos,...
-        measures_impact.measures.name{sort_index(measure_i)},'Rotation',0);
+        measures_impact.measures.name{sort_index(measure_i)},'Rotation',0,'fontsize',fontsize_);
     if length(comparison_return_periods)>1
         y_pos=(AEV.cumulated{end-1}.effect(measure_i)+AEV.cumulated{end-1}.effect(measure_i+1))/2;
         text(length(comparison_return_periods)-1.9,y_pos,...
-            measures_impact.measures.name{sort_index(measure_i)},'Rotation',0);
+            measures_impact.measures.name{sort_index(measure_i)},'Rotation',0,'fontsize',fontsize_);
         %     y_pos=(AEV.cumulated{end-2}.effect(measure_i)+AEV.cumulated{end-2}.effect(measure_i+1))/2;
         %     text(length(comparison_return_periods)-2.9,y_pos,...
         %         measures_impact.measures.name{sort_index(measure_i)},'Rotation',0);
