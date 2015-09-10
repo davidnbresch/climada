@@ -3,12 +3,17 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % NAME:
 %   climada_adaptation_cost_curve
 % PURPOSE:
-%   plot adaptation cost curve
+%   plot adaptation cost curve, color measures according to benefit/cost
+%   ratio (see measures_impact.color_keep to keep colors as defined in
+%   measures)
+%
 %   see also: climada_adaptation_event_view
 %
 %   NOTE: The mode with output arguments insurance_benefit and
 %   insurance_cost is only used when called from climada_demo (the flag
 %   called_from_climada_demo), no relevance for standard use .
+%
+%   Previous call climada_measures_impact
 % CALLING SEQUENCE:
 %   climada_adaptation_cost_curve(measures_impact,measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
 % EXAMPLE:
@@ -25,6 +30,8 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %       strange vertical scale ;-)   
 %       If theres is a field measures_impact.x_axis_max, it defines the
 %       maximum of the horizontal axis (to shape plots comparable). 
+%       If there is a field measures_impact.color_keep, the colors as
+%       defined in measures are kept, otherwise nice colors are assigned.
 % OPTIONAL INPUT PARAMETERS:
 %   measures_impact_comparison: same as measures_impact, but for comparison
 %       (will be shown in overlay). Not prompted for, so please specify in
@@ -63,6 +70,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for comparison plot
 % David N. Bresch, david.bresch@gmail.com, 20150907 decluttered (for presentations), i.e. label_comparison, x_axis_max and y_axis_max introduced
 % Lea Mueller, muellele@gmail.com, 20150909, introduce factor for unit 'people', to show cb ratio as people not affected/10'000 USD 
+% David N. Bresch, david.bresch@gmail.com, 20150909, color_keep introduced
 %-
 
 global climada_global
@@ -117,8 +125,16 @@ if ~isstruct(measures_impact)
     load(measures_impact_file);
 end
 
+% from here on, measures is definitely a struct, hence we can check for
+% fields etc.
+if ~isfield(measures_impact,'x_axis_max'),measures_impact.x_axis_max=[];end
+if ~isfield(measures_impact,'y_axis_max'),measures_impact.y_axis_max=[];end
+if ~isfield(measures_impact,'color_keep'),measures_impact.color_keep=0;end
+
+
 % set the extras for climada_demo
 if called_from_climada_demo
+    measures_impact.color_keep=1; % keep demo GUI colors
     scaled_AED            = 1;
     nice_numbers          = 1;
     add_insurance_measure = 1;
@@ -193,9 +209,6 @@ end
 nr_format_benefit  = nr_format;
 nr_format_bc_ratio = '%2.1f';
 
-if ~isfield(measures_impact,'x_axis_max'),measures_impact.x_axis_max=[];end
-if ~isfield(measures_impact,'y_axis_max'),measures_impact.y_axis_max=[];end
-
 % correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
 if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
@@ -215,10 +228,17 @@ title_str                    = measures_impact.title_str;
 [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio); 
 if reverse_cb,sorted_cb_ratio= 1./sorted_cb_ratio;end
 
-% special colormap for salvador
-cmap = climada_colormap('measures',numel(measures_impact.measures.name));
-measures_impact.measures.color_RGB(sort_index,:) = cmap;
+% special colormap for salvador - UUHHH, please do NOT make such changes in
+% the check in code ;-), I've fixed it as follows:
 
+if ~isfield(measures_impact,'color_keep')
+    measures_impact.color_keep=0; % default to label
+end
+
+if ~measures_impact.color_keep
+    cmap = climada_colormap('measures',numel(measures_impact.measures.name));
+    measures_impact.measures.color_RGB(sort_index,:) = cmap;
+end
 
 % COMMAND WINDOW: results
 fprintf('%s :\n',title_str);
@@ -457,12 +477,14 @@ if ~isempty(measures_impact_comparison)
     end % measures_impact_comparison.label_comparison
     
     % show total unmitigated expected damage ED
-    plot(measures_impact.ED(end)*fct,0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
-    text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
-    % show NPV of total climate risk TCR
-    if isfield(measures_impact,'NPV_total_climate_risk') && measures_impact_comparison.label_comparison
-        plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
-        text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
+    if measures_impact_comparison.label_comparison
+        plot(measures_impact.ED(end)*fct,0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
+        text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
+        % show NPV of total climate risk TCR
+        if isfield(measures_impact,'NPV_total_climate_risk') && measures_impact_comparison.label_comparison
+            plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
+            text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
+        end
     end
     
     both_title_str{1} = title_str;
