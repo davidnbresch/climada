@@ -93,6 +93,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20150831, EDS.ED, EDS.damage, EDS.Value is the sum only of the first Value_unit encountered, all other units are not included
 % David N. Bresch, david.bresch@gmail.com, 20150907, ...errant extrapolation leads to WRONG behaviour in case of hazard_intensity_impact_b, commented 
 % Lea Mueller, muellele@gmail.com, 20150907, add sanity_check variable to call climada_damagefunctions_check
+% Lea Mueller, muellele@gmail.com, 20150910, set sanity_check to silent_mode
 %-
 
 global climada_global
@@ -199,7 +200,7 @@ if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
 end
 
 if sanity_check ~=0
-    entity = climada_damagefunctions_check(entity,hazard,silent_mode);
+    entity = climada_damagefunctions_check(entity,hazard);
 end
 
 % initialize the event damage set (EDS)

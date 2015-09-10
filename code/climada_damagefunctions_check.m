@@ -152,7 +152,7 @@ for damagefunction_i = 1:numel(DamageFunID_valid)
     if ~isempty(additional_value_min)
         
         if ~silent_mode
-        	rintf('Enlarge DamageFunID %d\n',DamageFunID_valid(damagefunction_i))
+        	fprintf('Enlarge DamageFunID %d\n',DamageFunID_valid(damagefunction_i))
         end
         
         % loop over all fields (that containt intensity, MDD, PAA, etc
