@@ -25,6 +25,7 @@ function fig = climada_adaptation_bar_chart(measures_impact,measures_impact_comp
 %   fig: a figure handle
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150908, init
+% Lea Mueller, muellele@gmail.com, 20150910, set cost_factor to 20'000
 %-
 
 global climada_global
@@ -147,14 +148,6 @@ end
 % nr_format_benefit  = nr_format;
 % nr_format_bc_ratio = '%2.1f';
 
-if strcmp(measures_impact.Value_unit,'people')
-    cost_factor = 10000;
-    xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (%d USD)',measures_impact.Value_unit, n_years, cost_factor);
-else
-    xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (USD)',measures_impact.Value_unit, n_years);
-end
-
-
 % correct risk transfer to not cover more than actual climate risk
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
 if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
@@ -165,13 +158,15 @@ end
 
 % special case for people, set cb_ratio as people not affected per 100'000 USD invested
 if strcmp(measures_impact.Value_unit,'people')
-    cost_factor = 10000;
+    cost_factor = 20000;%cost_factor = 10000;
+    xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (%d USD)',measures_impact.Value_unit, n_years, cost_factor);
     %mean(measures_impact.measures.cost' ./ measures_impact.benefit)
     nr_format_benefit = strrep(nr_format,'.1e','.0f');
     measures_impact.cb_ratio = measures_impact.cb_ratio/cost_factor;
     measures_impact.measures.cost = measures_impact.measures.cost/cost_factor;
 else
     cost_factor = 1;
+    xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (USD)',measures_impact.Value_unit, n_years);
 end
 
 title_str = measures_impact.title_str;
