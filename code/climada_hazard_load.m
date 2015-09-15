@@ -51,7 +51,7 @@ if isempty(fP),hazard_file=[climada_global.data_dir filesep 'hazards' filesep fN
 
 load(hazard_file);  % contains hazard, the only line that really matters ;-)
 
-% check for valid/correct entity.assets.filename
+% check for valid/correct hazard.filename
 if ~strcmp(hazard_file,hazard.filename)
     hazard.filename=hazard_file;
     save(hazard_file,'hazard')
