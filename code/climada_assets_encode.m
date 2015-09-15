@@ -1,4 +1,4 @@
-function entityORassets = climada_assets_encode(entityORassets,hazard)
+function entityORassets = climada_assets_encode(entityORassets,hazard,max_distance_to_hazard)
 % climada assets encode
 % NAME:
 %   climada_assets_encode
@@ -53,8 +53,9 @@ function entityORassets = climada_assets_encode(entityORassets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20150610, Lea's speedup fixed
 % Lea Mueller, muellele@gmail.com, 20150617, speedup works for both dimensions of entity.lats and .lons (1xn and nx1)
 % David N. Bresch, david.bresch@gmail.com, 20150618, Lea's speedup fixed 2nd time (line 134)
-% Lea Mueller, muellele@gmail.com, 20150805, define a minimum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
+% Lea Mueller, muellele@gmail.com, 20150805, define a maximum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
 % David N. Bresch, david.bresch@gmail.com, 20150825, bug-fix to use centroids instead of hazard
+% Lea Mueller, muellele@gmail.com, 20150915, set max_distance_to_hazard as input variable
 %-
 
 global climada_global
@@ -63,11 +64,18 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('entityORassets','var'),entityORassets=[];end
 if ~exist('hazard','var'),hazard=[];end
+if ~exist('min_distance_to_hazard','var'),max_distance_to_hazard=[];end
+
 
 % PARAMETERS
 %
 % whether we print all encoded centroids (=1) or not (=0), rather to TEST
 verbose=0; % default =0
+
+
+% set max_distance_to_hazard = 10^6; % 1000 km, in [m]
+if isempty(max_distance_to_hazard),max_distance_to_hazard = 10^6; end
+
 
 % prompt for assets (entity) if not given
 if isempty(entityORassets) % local GUI
@@ -154,10 +162,10 @@ assets.centroid_index = assets.Value*0; % init
 % define a minimum distance to hazard position (in m). assets that are too
 % far away from hazard, will get centroid_index =0 and no damage will be
 % calculated for this asset
-        min_distance_to_hazard = 10^6; % 1000 km, in [m]
-if isfield(centroids,'peril_ID') % switched to centroids, david.bresch@gmail.com, 20150825
-    if strcmp(centroids.peril_ID,'FL'),min_distance_to_hazard = 20;end % in [m]
-end
+% max_distance_to_hazard = 10^6; % 1000 km, in [m]
+% if isfield(centroids,'peril_ID') % switched to centroids, david.bresch@gmail.com, 20150825
+%     if strcmp(centroids.peril_ID,'FL'),max_distance_to_hazard = 20;end % in [m]
+% end
     
     
 t0       = clock;
@@ -178,7 +186,7 @@ for asset_i=1:n_assets
     dist_m                       = climada_geo_distance(assets.lon(indx(asset_i)),assets.lat(indx(asset_i)),centroids.lon,centroids.lat);
     [min_dist,min_dist_index]    = min(dist_m);
     % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
-    if min_dist>min_distance_to_hazard 
+    if min_dist>max_distance_to_hazard 
         min_dist_index = 0;
     end
     indx3                        = find(indx2 == asset_i);
