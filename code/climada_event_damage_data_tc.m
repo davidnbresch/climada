@@ -271,7 +271,6 @@ end
 
 tc_track=climada_tc_equal_timestep(tc_track,tc_track_timestep);
 
-% prepare entity and centroids
 centroids.lon=entity.assets.lon;
 centroids.lat=entity.assets.lat;
 
@@ -339,9 +338,10 @@ max_damage_at_centroid=[]; % init
 hazard.units='m/s';
 
 
-%entity=climada_assets_encode(entity,hazard); % to be on the safe side, lea, 20150131
-% previous line not needed, since we create hazard.lat/lon from entity.lat/lon
-entity.assets.centroid_index = 1:length(entity.assets.lon);
+entity=climada_assets_encode(entity,hazard); % to be on the safe side, lea, 20150131
+% previous line needed, since we removed any duplicates in centroids
+% OLD: previous line not needed, since we create hazard.lat/lon from entity.lat/lon
+% OLD: entity.assets.centroid_index = 1:length(entity.assets.lon);
 
 % for-loop progress to stdout
 t0       = clock;

@@ -117,6 +117,7 @@ if climada_check_matfile(entity_filename,entity_save_file)
     load(entity_save_file)
     
     % check for valid/correct entity.assets.filename
+    if ~isfield(entity.assets,'filename'),entity.assets.filename=entity_save_file;end
     if ~strcmp(entity_save_file,entity.assets.filename)
         entity.assets.filename=entity_save_file;
         entity.damagefunctions.filename=entity_save_file;

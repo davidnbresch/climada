@@ -69,7 +69,7 @@ if isempty(markersize)
 end
 
 mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
-[cbar,asset_handle]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
+[cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
 hold on
 axis equal
 xlabel('Longitude')

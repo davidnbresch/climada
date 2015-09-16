@@ -16,6 +16,18 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %
 %   Called from many plot functions, e.g. climada_entity_plot
 %   See also: climada_shaperead
+%
+%   Programmers hint:
+%   In case you only need the borders (quick&dirty, order of 10 times faster), 
+%   you might consider the following code bit instead of
+%   climada_plot_world_borders (especially in subsequent calls, as
+%   climada_plot_world_borders does also set up the .mat file if missing etc.)  
+%
+%       shapes=climada_shaperead(climada_global.map_border_file,1,1); % reads .mat
+%       border.X=[];for i=1:length(shapes),border.X=[border.X shapes(i).X];end
+%       border.Y=[];for i=1:length(shapes),border.Y=[border.Y shapes(i).Y];end
+%       plot(border.X,border.Y,'-k')
+%
 % CALLING SEQUENCE:
 %   climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color);
 % EXAMPLE:
@@ -45,6 +57,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141211, initial, supersedes old version (which read a .gen file)
 % David N. Bresch, david.bresch@gmail.com, 20141223, fill debugged
+% David N. Bresch, david.bresch@gmail.com, 20150916, hint for speedup in header added
 %-
 
 % import/setup global variables
