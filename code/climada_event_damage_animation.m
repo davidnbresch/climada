@@ -64,6 +64,7 @@ function climada_event_damage_animation(animation_data_file,animation_mp4_file,s
 % David N. Bresch, david.bresch@gmail.com, 20150318, save as text debugged
 % David N. Bresch, david.bresch@gmail.com, 20150804, switched from 'Uncompressed AVI' to 'MPEG-4' (no AVI coded on Mac)
 % David N. Bresch, david.bresch@gmail.com, 20150915, schematic_tag=2 implemented, i.e. asset distribution shown as in climada_entity_plot
+% David N. Bresch, david.bresch@gmail.com, 20150916, speedup plotting map borders directly (avoid climada_plot_world_borders)
 %-
 
 global climada_global
@@ -230,6 +231,11 @@ damage_min_value=full(min(min(hazard.damage(hazard.damage>0))));
 damage_max_value=full(max(max(hazard.damage)))*damage_scale;
 max_damage_str=sprintf('%g',damage_max_value);
 
+% prepare country border (for substantila speedup)
+shapes=climada_shaperead(climada_global.map_border_file,1,1); % reads .mat
+border.X=[];for i=1:length(shapes),border.X=[border.X shapes(i).X];end
+border.Y=[];for i=1:length(shapes),border.Y=[border.Y shapes(i).Y];end
+
 % Prepare the new file
 if make_mp4
     vidObj = VideoWriter(animation_mp4_file,'MPEG-4');
@@ -286,7 +292,8 @@ for step_i=1:n_steps
     % set figure properties
     shading flat;axis equal
     caxis(c_ax);axis off
-    climada_plot_world_borders(1);
+    plot(border.X,border.Y,'-k')
+    %climada_plot_world_borders(1); % replaced by line above
     axis(focus_region);
     if ~schematic_tag
         colorbar;
