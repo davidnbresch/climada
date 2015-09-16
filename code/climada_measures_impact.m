@@ -79,6 +79,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20150907, hazard_intensity_impact_a and hazard_intensity_impact_b properly implemented
 % Lea Mueller, muellele@gmail.com, 20150907, add variable sanity_check to perform a safety check within climada_EDS_calc, add climada_measures_check
 % Lea Mueller, muellele@gmail.com, 20150908, switch assets if needed (defined in measures.assets_file)
+% Lea Mueller, muellele@gmail.com, 20150915, add regional scope of measures
 %-
 
 global climada_global
@@ -260,6 +261,9 @@ risk_transfer = zeros(1,n_measures+1); % allocate
 hazard_switched = 0; % indicated whether a special hazard set for a given measure is used
 assets_switched = 0; % indicated whether a special assets for a given measure is used
 
+% calculate control (with no measure) right from the beginning
+EDS(n_measures+1) = climada_EDS_calc(entity,hazard,'control','',0,sanity_check);
+
 for measure_i = 1:n_measures+1 % last with no measures
     if measure_i <= n_measures
         
@@ -344,17 +348,35 @@ for measure_i = 1:n_measures+1 % last with no measures
                 entity.damagefunctions.Intensity = max(entity.damagefunctions.Intensity/measures.hazard_intensity_impact_a(measure_i),0);
             end
         end
+        
+        % add regional scope of a measure, correct .ED_at_centroid, .ED . Do not use .damage afterwards, as this holds an incorrect number
+        if isfield(measures,'regional_scope')
+            within_scope = measures.regional_scope(:,measure_i);
+            if any(~within_scope) %measure does not affect all assets
+                entity.assets.Value(~within_scope) = 0;
+                assets_switched = 1;
+                fprintf('Measure %d does not affect all assets\n', measure_i)
+            end
+        end % regional_scope
     else
         entity.damagefunctions = entity_orig_damagefunctions; % back to original
         annotation_name        = 'control';
-    end
+    end %measure_i<=n_measures
     
     if measure_i==debug_measure_i,hold on;plot(entity.damagefunctions.Intensity,entity.damagefunctions.MDD.*entity.damagefunctions.PAA,'-g');legend('orig','impact');end
-       
+
     EDS(measure_i)            = climada_EDS_calc(entity,hazard,annotation_name,'',0,sanity_check);
-    entity.assets.DamageFunID = orig_assets_DamageFunID; % reset damagefunctions mapping
+    entity.assets.DamageFunID = orig_assets_DamageFunID; % reset damagefunctions mapping      
     
     if measure_i<=n_measures % not for the control run (last one)
+        
+        % add regional scope of a measure, correct .ED_at_centroid, .ED . Do not use .damage afterwards, as this holds an incorrect number
+        if isfield(measures,'regional_scope')
+            within_scope = measures.regional_scope(:,measure_i);
+            if any(~within_scope) %measure does not affect all assets
+                EDS(measure_i) = climada_measure_regional_scope(EDS(measure_i),within_scope,EDS(n_measures+1));
+            end
+        end
         
         if measures.hazard_high_frequency_cutoff(measure_i)>0
             % apply frequency cutoff
@@ -386,14 +408,16 @@ for measure_i = 1:n_measures+1 % last with no measures
         % always switch back, to avoid troubles if hazard passed as struct
         hazard = orig_hazard; % restore
         fprintf('NOTE: switched hazard back\n');
-        orig_hazard=[]; % free up memory
+        orig_hazard = []; % free up memory
+        hazard_switched = 0;
     end
     
     if assets_switched
         % always switch back, to avoid troubles if hazard passed as struct
         entity.assets = orig_assets; % restore
         fprintf('NOTE: switched assets back\n');
-        orig_assets=[]; % free up memory
+        %orig_assets = []; % free up memory
+        assets_switched = 0;
     end
     
 end % measure_i

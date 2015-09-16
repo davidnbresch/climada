@@ -1,4 +1,4 @@
-function climada_measures_check(measures)
+function climada_measures_check(measures, assets)
 % climada_measures_check
 % NAME:
 %   climada_measures_check
@@ -17,13 +17,16 @@ function climada_measures_check(measures)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150907, init
 % Lea Mueller, muellele@gmail.com, 20150909, check if a measure implies to use a differerent assets file
+% Lea Mueller, muellele@gmail.com, 20150915, check that regional_scope matrix has the correct dimension 
+% Lea Mueller, muellele@gmail.com, 20150916, shorten or enlarge regional_scope if needed 
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
-if ~exist('measures','var'),measures = [];end
+if ~exist('measures','var'), measures = [];end
+if ~exist('assets','var'), assets = [];end
 
 % PARAMETERS
 if isempty(measures), fprintf('No measures given.\n'), return, end
@@ -121,5 +124,30 @@ if isfield(measures, 'hazard_event_set')
 end
 
 
+n_measures = size(measures.name,1);
+
+if isfield(measures,'regional_scope')
+    if ~isempty(assets)
+    % check that regional_scope matrix has the correct dimension 
+        if size(measures.regional_scope,1) > numel(assets.Value)
+            fprintf('Regional scope of measures does not match with number of assets. Data will be shortened./n')
+            measures.regional_scope(numel(assets.Value)+1:end,:) = [];
+            measures.regional_scope = logical(measures.regional_scope);
+        end
+        if size(measures.regional_scope,1) < numel(assets.Value)
+            fprintf('Regional scope of measures does not match with number of assets. Data will be enlarged./n')
+            measures.regional_scope(end+1:numel(assets.Value),:) = 1;
+            measures.regional_scope = logical(measures.regional_scope);
+        end
+    end
+    
+    n_assets = size(measures.regional_scope,1);
+    for m_i = 1:n_measures
+        if any(~measures.regional_scope(:,m_i))        
+            fprintf('\t - Measure %d impacts %d of %d assets (%s)\n',m_i,...
+                sum(measures.regional_scope(:,m_i)),n_assets,measures.name{m_i})
+        end
+    end 
+end
 
 
