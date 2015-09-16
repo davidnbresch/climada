@@ -56,6 +56,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_distan
 % Lea Mueller, muellele@gmail.com, 20150805, define a maximum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
 % David N. Bresch, david.bresch@gmail.com, 20150825, bug-fix to use centroids instead of hazard
 % Lea Mueller, muellele@gmail.com, 20150915, set max_distance_to_hazard as input variable
+% Lea Mueller, muellele@gmail.com, 20150916, add max_distance in waitbar text
 %-
 
 global climada_global
@@ -64,7 +65,7 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('entityORassets','var'),entityORassets=[];end
 if ~exist('hazard','var'),hazard=[];end
-if ~exist('min_distance_to_hazard','var'),max_distance_to_hazard=[];end
+if ~exist('max_distance_to_hazard','var'),max_distance_to_hazard=[];end
 
 
 % PARAMETERS
@@ -169,7 +170,7 @@ assets.centroid_index = assets.Value*0; % init
     
     
 t0       = clock;
-msgstr   = sprintf('Encoding %i assets ... ',n_assets);
+msgstr   = sprintf('Encoding %i assets (max distance %d m)... ',n_assets,max_distance_to_hazard);
 mod_step = 10; % first time estimate after 10 assets, then every 100
 if climada_global.waitbar
     fprintf('%s (updating waitbar with estimation of time remaining every 100th asset)\n',msgstr);
