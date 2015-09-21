@@ -1,4 +1,4 @@
-function climada_measures_check(measures, assets)
+function measures = climada_measures_check(measures, assets)
 % climada_measures_check
 % NAME:
 %   climada_measures_check
@@ -19,6 +19,7 @@ function climada_measures_check(measures, assets)
 % Lea Mueller, muellele@gmail.com, 20150909, check if a measure implies to use a differerent assets file
 % Lea Mueller, muellele@gmail.com, 20150915, check that regional_scope matrix has the correct dimension 
 % Lea Mueller, muellele@gmail.com, 20150916, shorten or enlarge regional_scope if needed 
+% Lea Mueller, muellele@gmail.com, 20150921, hand back corrected measures
 %-
 
 global climada_global

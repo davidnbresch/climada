@@ -80,6 +80,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150907, add variable sanity_check to perform a safety check within climada_EDS_calc, add climada_measures_check
 % Lea Mueller, muellele@gmail.com, 20150908, switch assets if needed (defined in measures.assets_file)
 % Lea Mueller, muellele@gmail.com, 20150915, add regional scope of measures
+% Lea Mueller, muellele@gmail.com, 20150921, add measures check to ensure size of regional_scope is aligned with number of assets
 %-
 
 global climada_global
@@ -253,7 +254,8 @@ end
 orig_damagefunctions = entity.damagefunctions; % copy of this table for speedup
 n_measures           = length(measures.cost);
 
-climada_measures_check(entity.measures)
+% check measures, correct regional_scope if necessary to ensure size is aligned with number of assets
+measures = climada_measures_check(measures,entity.assets);
 
 %fprintf('assessing impacts of %i measures:\n',n_measures);
 
