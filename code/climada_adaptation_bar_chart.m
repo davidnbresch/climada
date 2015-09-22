@@ -1,4 +1,4 @@
-function fig = climada_adaptation_bar_chart(measures_impact,measures_impact_comparison,sort_measures,cb_text_control,alpha_value,scale_benefit,benefit_str,legend_location,tcr_off)
+function fig = climada_adaptation_bar_chart(measures_impact,measures_impact_comparison,sort_measures,cb_text_control,alpha_value,scale_benefit,benefit_str,legend_location,tcr_off,xlim_value)
 % climada measures impact climate adaptation bar chart
 % NAME:
 %   climada_adaptation_bar_chart
@@ -27,6 +27,7 @@ function fig = climada_adaptation_bar_chart(measures_impact,measures_impact_comp
 % Lea Mueller, muellele@gmail.com, 20150908, init
 % Lea Mueller, muellele@gmail.com, 20150910, set cost_factor to 20'000
 % Lea Mueller, muellele@gmail.com, 20150921, add second axis to show benefit on y-axis (bottom) and bc-ratio on x-axis (right) 
+% Lea Mueller, muellele@gmail.com, 20150922, set default scale_benefit to 20000 for people
 %-
 
 global climada_global
@@ -45,6 +46,7 @@ if ~exist('scale_benefit'             , 'var'), scale_benefit              = '';
 if ~exist('benefit_str'               , 'var'), benefit_str                = ''; end
 if ~exist('legend_location'           , 'var'), legend_location            = ''; end
 if ~exist('tcr_off'                   , 'var'), tcr_off                    = ''; end
+if ~exist('xlim_value'                , 'var'), xlim_value                 = ''; end
 
 
 % additional parameters that are necessary for the code, maybe useful later
@@ -168,8 +170,21 @@ end
 
 % special case for people, set cb_ratio as people not affected per 100'000 USD invested
 if strcmp(measures_impact.Value_unit,'people')
-    cost_factor = 20000;%cost_factor = 10000;
-    xlabel_str = sprintf('Costs (%d USD)',cost_factor);
+    cost_factor = 1.0;%20000;%cost_factor = 10000;
+    if scale_benefit == 1, scale_benefit = 20000; end
+    if cost_factor == 1
+        xlabel_str = sprintf('Costs (USD)');
+        ylabel_str_2 = 'USD';
+    else
+        xlabel_str = sprintf('Costs (%d USD)',cost_factor);
+        ylabel_str_2 = sprintf('%d USD',cost_factor);
+    end
+    if scale_benefit == 1
+        ylabel_str_1 = measures_impact.Value_unit;
+    else
+        ylabel_str_1 = sprintf('%s / %d',measures_impact.Value_unit,scale_benefit);
+    end
+
     %xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (%d USD)',measures_impact.Value_unit, n_years, cost_factor);
     %mean(measures_impact.measures.cost' ./ measures_impact.benefit)
     nr_format_benefit = strrep(nr_format,'.1e','.0f');
@@ -178,6 +193,7 @@ if strcmp(measures_impact.Value_unit,'people')
     %if isempty(benefit_str)
     %    benefit_str = sprintf('NPV benefits (%s, %d years)',measures_impact.Value_unit, n_years);
     %end
+    tot_climate_risk = tot_climate_risk*scale_benefit;
 else
     cost_factor = 1;
     %xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (USD)',measures_impact.Value_unit, n_years);
@@ -185,8 +201,10 @@ else
 end
 if isempty(benefit_str)
     benefit_str = sprintf('NPV benefits (%s, %d years)',measures_impact.Value_unit, n_years);
-end
-    
+end 
+ylabelstr = sprintf('Benefit-cost ratio (%s %s)',ylabel_str_1,ylabel_str_2);
+
+
 title_str = measures_impact.title_str;
 % sort measures according to size of benefit, not cb_ratio
 if sort_measures
@@ -249,7 +267,11 @@ legend('boxoff')
 set(l,'fontsize',fontsize_-1);
 % legendstr = {'Benefits', 'Costs'}
 xlabel(xlabel_str)
-xlim([0 tot_climate_risk*1.17])
+if isempty(xlim_value)
+    xlim([0 tot_climate_risk*1.17])
+else
+    xlim([0 xlim_value])
+end
 set(gca,'Xaxislocation','top','xcolor',color_cost)
 
 % add title
@@ -260,7 +282,7 @@ title(title_str,'FontSize',fontsize_);
 % bc_ratio for original measures_impact
 bc_ratio_str = cell(n_measures,1);
 for m_i = 1:n_measures
-    bc_ratio_str{m_i} = sprintf(' %5.1f',1./measures_impact.cb_ratio(sort_index(m_i)));
+    bc_ratio_str{m_i} = sprintf(' %5.1f',1./measures_impact.cb_ratio(sort_index(m_i))*scale_benefit);
 end
 
 
@@ -337,6 +359,8 @@ set(gca,'layer','top')
 % Next create a second set of axes, 
 % position This on top of the first and make it transparent.
 ax1 = gca;
+x_tick_top = get(ax1,'xtick'); % top handle
+set(ax1, 'XTickLabel',x_tick_top)
 ax2 = axes('Position', get(ax1, 'Position'),'Color', 'none');
 set(ax2, 'XAxisLocation', 'bottom','YAxisLocation','Right');
 % set the same Limits and Ticks on ax2 as on ax1;
@@ -344,13 +368,12 @@ set(ax2, 'XLim', get(ax1, 'XLim'),'YLim', get(ax1, 'YLim'));
 set(ax2, 'XTick', get(ax1, 'XTick'), 'YTick', get(ax1, 'YTick'));
 
 % Set the x-tick and y-tick  labels for the second axes
-x_tick_top = get(ax1,'xtick'); % top handle
+% x_tick_top = get(ax1,'xtick'); % top handle
 x_tick_bottom = x_tick_top/scale_benefit;
 x_label_bottom = sprintf('Benefit (%s)',benefit_str);
 set(ax2, 'XTickLabel',x_tick_bottom,'YTickLabel',bc_ratio_str,'xcolor',color_benefit)
 xlabel(x_label_bottom)
-ylabel('Benefit-cost ratio')
-
+ylabel(ylabelstr)
 set(ax1, 'ActivePositionProperty', 'position');
 set(ax2, 'ActivePositionProperty', 'position');
 
