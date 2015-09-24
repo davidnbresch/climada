@@ -34,6 +34,8 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir introduced
 % Lea Mueller, muellele@gmail.com, 20150831, introduce climada_global.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20150906, climada_global.font_scale
+% Lea Mueller, muellele@gmail.com, 20150924, introduce climada_global.max_distance_to_hazard
+%
 
 global climada_global
 
@@ -149,25 +151,29 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % concave means: damage increases slowly first (see climada_measures_impact)
     climada_global.impact_time_dependence = 1; % 1 for linear
     % define the default global compound annual growth rate (CAGR)
-    climada_global.global_CAGR=0.02; % default 0.02 for 2%
+    climada_global.global_CAGR = 0.02; % default 0.02 for 2%
     
     % standard return periods for DFC report
-    climada_global.DFC_return_periods=[1 5 10 20 25 30 35 40 45 50 75 100 125 150 175 200 250 300 400 500 1000];
+    climada_global.DFC_return_periods = [1 5 10 20 25 30 35 40 45 50 75 100 125 150 175 200 250 300 400 500 1000];
     
     % whether we show waitbars for progress (eg in climada_EDS_calc), =1:yes, =0: no
-    climada_global.waitbar=0;
+    climada_global.waitbar = 0;
     
     % whether we store the damage (=1) at each centroid for each event (an EDS
     % for each centroid). Heavy memory, see climada_EDS_calc; therefore: default=0
     % please note that ED_at_centroid is always calculated (only a vector
     % length number of centroids)
-    climada_global.EDS_at_centroid=0; % default=0
+    climada_global.EDS_at_centroid = 0; % default=0
     
     % whether the code checks for (possible) asset encoding issues and
     % re-encodes in case of doubt (might take time...)
     % =0: no double check, faster, user needs to know what he's calculating ;-)
     % =1: if ~all(diff(entity.assets.centroid_index) == 1) etc., re-encoded
     climada_global.re_check_encoding = 0; % default =0
+    
+    % define maximum distance to hazard when encoding assets to centroids
+    % 1000 km, in [m]
+    climada_global.max_distance_to_hazard = 10^6;
     
     % set some parameters for climada_demo_gui (allows users to make use of
     % the GUI for their own purpose, i.e. other entity...) 

@@ -75,7 +75,9 @@ verbose=0; % default =0
 
 
 % set max_distance_to_hazard = 10^6; % 1000 km, in [m]
-if isempty(max_distance_to_hazard),max_distance_to_hazard = 10^6; end
+if isempty(max_distance_to_hazard)
+    max_distance_to_hazard = climada_global.max_distance_to_hazard; %max_distance_to_hazard = 10^6; 
+end
 
 
 % prompt for assets (entity) if not given

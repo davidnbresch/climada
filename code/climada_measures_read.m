@@ -108,7 +108,7 @@ end
 measures = climada_measures_encode(measures);
 
 % sanity check for measures
-climada_measures_check(measures)
+climada_measures_check(measures);
 
 % save measures as .mat file for fast access
 % but we re-read form .xls each time this code is called
