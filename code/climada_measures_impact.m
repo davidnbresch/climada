@@ -325,6 +325,7 @@ for measure_i = 1:n_measures+1 % last with no measures
         if ~isempty(assets)
             entity.assets = climada_assets_encode(assets,hazard);
             assets_switched = 1;
+            save(entity.assets.filename,'entity')
         end
         
         for map_i = 1:length(measures.damagefunctions_mapping(measure_i).map_from)
