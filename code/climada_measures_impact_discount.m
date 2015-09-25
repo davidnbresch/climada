@@ -36,6 +36,8 @@ function measures_impact = climada_measures_impact_discount(entity,measures_impa
 %       cb_ratio(measure_i): the cost/benefit ratio of measure_i
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150902, separate function to be called in climada_measures_impact
+% Lea Mueller, muellele@gmail.com, 20150924, set to silent mode in climada_assets_select
+% Lea Mueller, muellele@gmail.com, 20150925, correct discounting if reference scenario is provided
 %-
 
 global climada_global
@@ -131,12 +133,6 @@ n_measures = length(measures_impact.EDS)-1;
 ED         = zeros(1,n_measures+1); % init
 n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
 
-if ~isempty(measures_impact_reference)
-    % calculate reference ED (expected damage) no measures
-    reference_ED_no_measures = full(sum(measures_impact_reference.EDS(end).damage.*...
-        measures_impact_reference.EDS(end).frequency));
-end
-
 % get the discount rates for years:
 present_year_pos = find(entity.discount.year==climada_global.present_reference_year); % present year
 future_year_pos  = find(entity.discount.year==climada_global.future_reference_year); % future year
@@ -144,26 +140,46 @@ discount_rates   = entity.discount.discount_rate(present_year_pos:future_year_po
 
 % recalculate ED, maybe with only a subset of asset values, given by a criterium
 is_selected = [];%init
+silent_mode = 1;
 if ~isempty(unit_or_cat_flag) & isfield(EDS,'ED_at_centroid')
     % select a specific set of assets to recalculate the total ED
     switch unit_or_cat_flag
         case 'unit'
-            is_selected = climada_assets_select(entity,measures_impact.peril_ID,criterium,'');
+            is_selected = climada_assets_select(entity,measures_impact.peril_ID,criterium,'',silent_mode);
         case 'category'
-            is_selected = climada_assets_select(entity,measures_impact.peril_ID,'',criterium);     
+            is_selected = climada_assets_select(entity,measures_impact.peril_ID,'',criterium,silent_mode);     
         otherwise
             fprintf('WARNING: Selection of assets not found, please check %s.\n', unit_or_cat_flag)
     end
 end
+
+EDS = measures_impact.EDS;
+
+% measures_impact_reference
+if ~isempty(measures_impact_reference)
+    EDS_reference = measures_impact_reference.EDS;
+    if ~isempty(unit_or_cat_flag) & ~isfield(EDS_reference,'ED_at_centroid')
+        fprintf('ERROR: measures_impact_reference does not have ED_at_centroid information, please check.\n')
+    end
+    
+end
+
 % recalculate ED with the selected subset of asset values
 if ~isempty(is_selected)
     for measure_i = 1:n_measures+1
     	ED(measure_i) = full(sum(EDS(measure_i).ED_at_centroid(is_selected))); % calculate annual expected damage
+        
+        if ~isempty(measures_impact_reference)% calculate annual expected damage
+            ED_reference(measure_i) = full(sum(EDS_reference(measure_i).ED_at_centroid(is_selected))); 
+        end
     end
 else
     for measure_i = 1:n_measures+1
         % first, calculate the ED (exepected damage) perspective
-        ED(measure_i) = full(sum(EDS(measure_i).damage .* EDS(measure_i).frequency)); % calculate annual expected damage
+        ED(measure_i) = full(sum(EDS(measure_i).damage .* EDS(measure_i).frequency));
+        if ~isempty(measures_impact_reference)% calculate annual expected damage for reference
+            ED_reference(measure_i) = full(sum(EDS_reference(measure_i).damage .* EDS_reference(measure_i).frequency));
+        end
     end
 end
     
@@ -182,7 +198,7 @@ for measure_i = 1:n_measures
         risk_transfers = ones(1,n_years)*measures_impact.risk_transfer(measure_i); % same risk transfer costs each year
     else
         % time evolution of benefits
-        present_benefit = measures_impact_reference.ED(end) - measures_impact_reference.ED(measure_i);
+        present_benefit = ED_reference(end) - ED_reference(measure_i);
         future_benefit  = ED(end)-ED(measure_i);
         benefits        = present_benefit+(future_benefit-present_benefit)*time_dependence;
         % and similarly for risk transfer costs
@@ -216,7 +232,7 @@ if isempty(measures_impact_reference)
     NPV_total_climate_risk = climada_NPV(ones(1,n_years)*ED(end), discount_rates);
 else
     % time evolution of risk
-    present_TCR = measures_impact_reference.ED(end);
+    present_TCR = ED_reference(end);
     future_TCR  = ED(end);
     TCRs        = present_TCR+(future_TCR-present_TCR)*time_dependence;
     % old, linear only, kept for backward compatibility, same as climada_global.impact_time_dependence=1
