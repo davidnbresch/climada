@@ -24,8 +24,9 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150720, add FS (factor of safety) colormap
 % Lea Mueller, muellele@gmail.com, 20150729, add assets colormap
 % Lea Mueller, muellele@gmail.com, 20150729, add measures colormap
+% Lea Mueller, muellele@gmail.com, 20150922, add benefit for adaptation bar chart colormap
+% Lea Mueller, muellele@gmail.com, 20150924, special case if only one colour is required
 %-
-
 
 cmap    = []; %init output
 c_ax    = []; %init output
@@ -40,6 +41,13 @@ if ~exist('steps10' , 'var'), steps10  = ''; end
 if isempty(steps10); steps10 = 10;end
 cmap1   = [];
 cmap2   = [];
+
+% special case if only one colour is required
+only_one_step = 0;
+if steps10 == 1
+    steps10 = steps10+1;
+    only_one_step = 1;
+end
 
 switch peril_ID
     case 'TC'
@@ -228,6 +236,19 @@ switch peril_ID
         %cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 yellow
         %%cmap3 = makeColorMap([205 150 205 ]/255, [93 71 139 ]/255, 2); %[255 153 18]/255 yellow
         %cmap  = [cmap1; cmap2; cmap3];
+        
+    case 'benefit_adaptation_bar_chart'
+        % create colormap for climada_MI_plot (averted damage)
+        c_ax = [ ];
+        startcolor   = [ 51 153 51]/255; % green for benefits
+        middlecolor  = [154 205 50]/255; % lighter green for reference benefits
+        %endcolor     = [173 255 47]/255; % greenyellow
+        endcolor     = [255 215  0]/255; % gold1
+        cmap = makeColorMap(startcolor,middlecolor,endcolor,steps10);
+end
+
+if only_one_step
+    cmap = cmap(1,:);
 end
 
 if isempty(cmap)

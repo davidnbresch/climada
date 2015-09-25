@@ -105,8 +105,13 @@ is_valid = logical(is_peril.* is_intensity_unit);
 DamageFunID_all = unique(entity.damagefunctions.DamageFunID);
 [DamageFunID_valid,is_unique,position_valid_damagefun] = unique(entity.damagefunctions.DamageFunID(is_valid));
 if ~silent_mode
-    fprintf('%d from %d damage function IDs are valid (peril_ID=%s,intensity_unit=%s)\n',...
+    if numel(DamageFunID_valid) == 0
+        fprintf('ERROR: %d from %d damage function IDs are valid (peril_ID=%s,intensity_unit=%s). Please check! \n',...
         numel(DamageFunID_valid),numel(DamageFunID_all), hazard.peril_ID, hazard.units)
+    else
+        fprintf('%d from %d damage function IDs are valid (peril_ID=%s,intensity_unit=%s)\n',...
+        numel(DamageFunID_valid),numel(DamageFunID_all), hazard.peril_ID, hazard.units)
+    end
 end
 
 % define number of damage function entries

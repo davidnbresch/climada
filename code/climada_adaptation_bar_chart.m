@@ -172,18 +172,7 @@ end
 if strcmp(measures_impact.Value_unit,'people')
     cost_factor = 1.0;%20000;%cost_factor = 10000;
     if scale_benefit == 1, scale_benefit = 20000; end
-    if cost_factor == 1
-        xlabel_str = sprintf('Costs (USD)');
-        ylabel_str_2 = 'USD';
-    else
-        xlabel_str = sprintf('Costs (%d USD)',cost_factor);
-        ylabel_str_2 = sprintf('%d USD',cost_factor);
-    end
-    if scale_benefit == 1
-        ylabel_str_1 = measures_impact.Value_unit;
-    else
-        ylabel_str_1 = sprintf('%s / %d',measures_impact.Value_unit,scale_benefit);
-    end
+    
 
     %xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (%d USD)',measures_impact.Value_unit, n_years, cost_factor);
     %mean(measures_impact.measures.cost' ./ measures_impact.benefit)
@@ -199,6 +188,19 @@ else
     %xlabel_str = sprintf('NPV benefits (%s, %d years)\n Costs (USD)',measures_impact.Value_unit, n_years);
     xlabel_str = sprintf('Costs (%s)',measures_impact.Value_unit);
 end
+if cost_factor == 1
+    xlabel_str = sprintf('Costs (USD)');
+    ylabel_str_2 = 'USD';
+else
+    xlabel_str = sprintf('Costs (%d USD)',cost_factor);
+    ylabel_str_2 = sprintf('%d USD',cost_factor);
+end
+if scale_benefit == 1
+    ylabel_str_1 = sprintf('%s /',measures_impact.Value_unit);
+else
+    ylabel_str_1 = sprintf('%s / %d',measures_impact.Value_unit,scale_benefit);
+end
+    
 if isempty(benefit_str)
     benefit_str = sprintf('NPV benefits (%s, %d years)',measures_impact.Value_unit, n_years);
 end 
