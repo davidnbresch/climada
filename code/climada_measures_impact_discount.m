@@ -130,7 +130,7 @@ EDS = measures_impact.EDS;
 
 % set time horizon, number of years
 n_measures = length(measures_impact.EDS)-1;
-ED         = zeros(1,n_measures+1); % init
+ED = zeros(1,n_measures+1); % init
 n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
 
 % get the discount rates for years:
@@ -158,6 +158,7 @@ EDS = measures_impact.EDS;
 % measures_impact_reference
 if ~isempty(measures_impact_reference)
     EDS_reference = measures_impact_reference.EDS;
+    ED_reference = zeros(1,n_measures+1); % init
     if ~isempty(unit_or_cat_flag) & ~isfield(EDS_reference,'ED_at_centroid')
         fprintf('ERROR: measures_impact_reference does not have ED_at_centroid information, please check.\n')
     end
@@ -167,10 +168,12 @@ end
 % recalculate ED with the selected subset of asset values
 if ~isempty(is_selected)
     for measure_i = 1:n_measures+1
-    	ED(measure_i) = full(sum(EDS(measure_i).ED_at_centroid(is_selected))); % calculate annual expected damage
-        
-        if ~isempty(measures_impact_reference)% calculate annual expected damage
-            ED_reference(measure_i) = full(sum(EDS_reference(measure_i).ED_at_centroid(is_selected))); 
+        if length(is_selected) == length(EDS(measure_i).ED_at_centroid)
+            % only if vectors correspond in size
+            ED(measure_i) = full(sum(EDS(measure_i).ED_at_centroid(is_selected))); % calculate annual expected damage
+            if ~isempty(measures_impact_reference)% calculate annual expected damage
+                ED_reference(measure_i) = full(sum(EDS_reference(measure_i).ED_at_centroid(is_selected))); 
+            end            
         end
     end
 else

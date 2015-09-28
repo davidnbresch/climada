@@ -4,7 +4,7 @@ function [digit, digit_str] = climada_digit_set(data,data2)
 %   climada_digit_set
 % PURPOSE:
 %   Set digit (10 to the power of digit) and digit string for a given data 
-%   set, e.g. for an input of 1'000'000, digit = 6 and digit_str = 'millions' 
+%   set, e.g. for an input of 1'000'000, digit = 6 and digit_str = 'million' 
 % CALLING SEQUENCE:
 %   [digit, digit_str] = climada_digit_set(data,data2)
 % EXAMPLE:
@@ -15,12 +15,13 @@ function [digit, digit_str] = climada_digit_set(data,data2)
 % OPTIONAL INPUT PARAMETERS:
 %   data2: a second array or matrix of data
 % OUTPUTS:
-%   digit: an array defining 10 to the power of digit, e.g. 6 for millions,
-%   9 for billions
-%   digit_str: a char, e.g 'millions', 'billions'
+%   digit: an array defining 10 to the power of digit, e.g. 6 for million,
+%   9 for billion
+%   digit_str: a char, e.g 'million', 'billion'
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
 % Lea Mueller, 20150924, init
+% Lea Mueller, 20150928, delete s in million, billion, etc
 %-
 
 global climada_global
@@ -51,13 +52,13 @@ while max(max_data) > 1000
 end
 switch digit
     case 3
-        digit_str = 'thousands';
+        digit_str = 'thousand';
     case 6
-        digit_str = 'millions';
+        digit_str = 'million';
     case 9
-        digit_str = 'billions';
+        digit_str = 'billion';
     case 12
-        digit_str = 'trillions';
+        digit_str = 'trillion';
     otherwise
         digit_str = '';
 end
