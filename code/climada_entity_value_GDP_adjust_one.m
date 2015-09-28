@@ -61,6 +61,7 @@ function entity=climada_entity_value_GDP_adjust_one(entity,mode_selector)
 %       file (only last entity if entity_file_regexp covers more than one)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150204, switched to one entity, see also climada_entity_value_GDP_adjust
+% David N. Bresch, david.bresch@gmail.com, 20150927, economic_indicators_mastertable from climada_global.system_dir
 %-
 
 % set global variables and directories
@@ -75,7 +76,7 @@ if ~exist('mode_selector','var'),mode_selector=0;end
 % PARAMETERS
 %
 % the table with global GDP etc info (per country)
-economic_data_file=[climada_global.data_dir filesep 'system' filesep 'economic_indicators_mastertable.xls'];
+economic_data_file=[climada_global.system_dir filesep 'economic_indicators_mastertable.xls'];
 %
 % missing data indicator (any missing in Excel has this entry)
 misdat_value=-999;

@@ -288,7 +288,7 @@ set(gca,'xticklabel',[],'FontSize',10,'XTick',zeros(1,0),'layer','top');
 %axis range and ylabED
 xlim([0.5 4.5])
 ylim([0   max(damage)*1.25])
-ylabel(['damage amount \cdot 10^{', int2str(dig) '}'],'fontsize',fontsize_)
+ylabel(['Damage amount \cdot 10^{', int2str(dig) '}'],'fontsize',fontsize_)
 
 %arrow eco
 % dED2 = 0.05;
@@ -340,10 +340,10 @@ end
 % end
 
 %xlabel
-text(1-stretch, damage(1)-max(damage)*0.02, {'risk today',['(' num2str(climada_global.present_reference_year) ')']}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(2-stretch, damage(1)-max(damage)*0.02, {'economic','development'},'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(3-stretch, damage(1)-max(damage)*0.02, {'climate','change'},                                 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
-text(4-stretch, damage(1)-max(damage)*0.02, {['risk ' num2str(climada_global.future_reference_year)]}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(1-stretch, damage(1)-max(damage)*0.02, {'Risk today',['(' num2str(climada_global.present_reference_year) ')']}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(2-stretch, damage(1)-max(damage)*0.02, {'Economic','development'},'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(3-stretch, damage(1)-max(damage)*0.02, {'Climate','change'},                                 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
+text(4-stretch, damage(1)-max(damage)*0.02, {['Risk ' num2str(climada_global.future_reference_year)]}, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','fontsize',fontsize_2);
 
 %Legend
 %L = legend(h,legend_str(index),'location','NorthOutside','fontsize',fontsize_2);
