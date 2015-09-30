@@ -8,7 +8,7 @@ function EDS=climada_EDS_combine(EDS1,EDS2)
 %   Combine two event damage sets (EDS), i.e. add damages. The codes in
 %   essence takes EDS=EDS1 and then adds relevant fields (damage,
 %   ED_at_centroid) from EDS2. Hence please make sure the 'main' peril is
-%   in EDS1 (e.g. TC in EDS1, TS in EDS2). Note thsat ONLY damages are
+%   in EDS1 (e.g. TC in EDS1, TS in EDS2). Note that ONLY damages are
 %   added, we do NOT add Value, as most often the sub-peril is on the same
 %   asset base. Hence edit the resulting EDS yourself in case Value should
 %   be additive.
