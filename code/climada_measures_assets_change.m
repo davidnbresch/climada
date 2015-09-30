@@ -20,6 +20,7 @@ function assets = climada_measures_assets_change(measures,measure_i)
 %       .lon, .lat, .Value, etc. not encoded
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150908, init
+% Lea Mueller, muellele@gmail.com, 20150930, save assets.filename with .mat as extension
 %-
 
 global climada_global
@@ -88,6 +89,7 @@ if isfield(measures,'assets_file')
         cprintf([0 0 1],'NOTE: measure %i, switched assets according to %s\n',measure_i,measures_assets_file);
         entity = climada_entity_read(measures_assets_file,'NOENCODE');
         assets = entity.assets;
+        assets.filename = [fP filesep fN '.mat'];
     else
         cprintf([1 0 0],'ERROR: measure %i, assets NOT switched, entity %s not found\n',measure_i,measures_assets_file);
     end

@@ -81,6 +81,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150908, switch assets if needed (defined in measures.assets_file)
 % Lea Mueller, muellele@gmail.com, 20150915, add regional scope of measures
 % Lea Mueller, muellele@gmail.com, 20150921, add measures check to ensure size of regional_scope is aligned with number of assets
+% Lea Mueller, muellele@gmail.com, 20150921, save entity as .mat if assets are switched (in entity.assets.filename)
 %-
 
 global climada_global
@@ -325,7 +326,8 @@ for measure_i = 1:n_measures+1 % last with no measures
         if ~isempty(assets)
             entity.assets = climada_assets_encode(assets,hazard);
             assets_switched = 1;
-            save(entity.assets.filename,'entity')
+            %save entity.assets so that it can be used in climada_EDS_ED_report
+            if ~isempty(strfind(entity.assets.filename,'.mat')),save(entity.assets.filename,'entity'),end
         end
         
         for map_i = 1:length(measures.damagefunctions_mapping(measure_i).map_from)
