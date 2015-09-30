@@ -224,9 +224,9 @@ switch peril_ID
         endcolor2    = [193 193 193]/255; %sgi gray 76
 
         n_steps = ceil(steps10/3);
-        cmap1 = makeColorMap(startcolor,middlecolor,n_steps);
-        cmap2 = makeColorMap(middlecolor,endcolor,steps10-2*n_steps);
-        cmap3 = makeColorMap(endcolor,endcolor2,n_steps);
+        if n_steps>1, cmap1 = makeColorMap(startcolor,middlecolor,n_steps); else cmap1 = startcolor; end
+        if steps10-2*n_steps>1, cmap2 = makeColorMap(middlecolor,endcolor,steps10-2*n_steps); else cmap2 = middlecolor; end
+        if n_steps>1, cmap3 = makeColorMap(endcolor,endcolor2,n_steps); else cmap3 = endcolor; end
         cmap  = [cmap1; cmap2; cmap3];
         
         %beginColor  = [232 232 232 ]/255; %light grey
