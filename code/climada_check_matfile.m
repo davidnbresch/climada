@@ -63,7 +63,7 @@ if exist(source_filename,'file')
     D_source = dir(char(source_filename));
     %datenum_source=datenum(D_source.date); % date of source
     % lea, 20150305, take datenum directly, the above line does not 
-    % work with date spelled our in german
+    % work with date spelled out in german
     datenum_source = D_source.datenum;
     
     [fP,fN]=fileparts(char(source_filename));
