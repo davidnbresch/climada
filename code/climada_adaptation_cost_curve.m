@@ -71,6 +71,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20150907 decluttered (for presentations), i.e. label_comparison, x_axis_max and y_axis_max introduced
 % Lea Mueller, muellele@gmail.com, 20150909, introduce factor for unit 'people', to show cb ratio as people not affected/10'000 USD 
 % David N. Bresch, david.bresch@gmail.com, 20150909, color_keep introduced
+% Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
 %-
 
 global climada_global
@@ -166,11 +167,13 @@ else
     tot_climate_risk  = measures_impact.NPV_total_climate_risk;
 end
 
-if tot_climate_risk>600000
-    million_flag = 1;
-else
-    million_flag = 0;
-end
+[digit, digit_str] = climada_digit_set(tot_climate_risk);
+if digit == 3, digit = 0; digit_str = '';end
+% if tot_climate_risk>600000
+%     million_flag = 1;
+% else
+%     million_flag = 0;
+% end
 
 if add_insurance_measure % NOTE: this section not relevant for lecture
     %cover residual damage with insurance
@@ -204,7 +207,7 @@ if nice_numbers
 else
     fct        = 1;
     nr_format  = '%2.1e';
-    xlabel_str = sprintf('NPV averted damage over %d years (%s)',n_years,Value_unit_str);
+    xlabel_str = sprintf('NPV averted damage over %d years (%s %s)',n_years,Value_unit_str,digit_str);
 end
 nr_format_benefit  = nr_format;
 nr_format_bc_ratio = '%2.1f';
@@ -327,8 +330,8 @@ end
 % show net present value of total climate risk
 plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
 % tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
-if million_flag
-    tcr_str = sprintf('Total climate risk\n %.1f m %s',round(tot_climate_risk*fct/100000)/10,measures_impact.Value_unit);
+if digit>0 %if million_flag
+    tcr_str = sprintf('Total climate risk\n %.1f %s %s',round(tot_climate_risk*fct/100000)/10,measures_impact.Value_unit,digit_str);
 else
     tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk*fct,measures_impact.Value_unit);
 end
@@ -504,6 +507,9 @@ else
     %    % until 20141231, but subaxis not clean
     %    set(subaxis(1),'layer','top')
 end
+
+x_tick_top = get(gca,'xtick'); % top handle
+set(gca, 'XTickLabel',x_tick_top/10^digit)
 
 box off
 %axis tight % to get max area used

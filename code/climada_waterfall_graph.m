@@ -35,6 +35,7 @@ function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_print
 % David N. Bresch, david.bresch@gmail.com, 20150906 ED as default for return_period
 % David N. Bresch, david.bresch@gmail.com, 20150906 font scale and label texts shortened
 % David N. Bresch, david.bresch@gmail.com, 20150907 font scale and label texts shortened
+% Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
 %-
 
 global climada_global
@@ -188,17 +189,33 @@ else
 end
 
 %digits of damage
-% digits = log10(max(damage));
-% digits = floor(digits)-1;
-% digits = 9;
-digits = 0; %digits = 6;
+[digits, digit_str] = climada_digit_set(damage);
 damage = damage*10^-digits;
-dig    = digits;
+% % digits = log10(max(damage));
+% % digits = floor(digits)-1;
+% % digits = 9;
+% digits = 0; %digits = 6;
+% dig    = digits;
 
 % TIV of portfolio
-TIV_nr = round(unique([EDS(:).Value])*10^-digits);
-N      = -abs(floor(log10(max(TIV_nr)))-1);
-TIV_nr = round(TIV_nr*10^N)/10^N;
+[digit_TIV, digit_TIV_str] = climada_digit_set([EDS(:).Value]);
+TIV = round(unique([EDS(:).Value])*10^-digit_TIV);
+% TIV_nr = round(unique([EDS(:).Value])*10^-digits);
+% N      = -abs(floor(log10(max(TIV_nr)))-1);
+% TIV_nr = round(TIV_nr*10^N)/10^N;
+
+
+% set ylabel
+if isfield(EDS,'Value_unit')
+    Value_unit = EDS.Value_unit;
+else
+    Value_unit = climada_global.Value_unit;
+end
+if isempty(digit_str)
+    ylabel_str = sprintf('Damage (%s)',Value_unit);
+else
+    ylabel_str = sprintf('Damage (%s %s)',Value_unit,digit_str);
+end
 
 %----------
 %% figure
@@ -268,12 +285,12 @@ end
 
 
 %damages above bars
-    strfmt = ['%2.' int2str(N) 'f'];
-    dED = 0.0;
-    text(1, damage(2)                     , num2str(damage_disp(1),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
-    text(2-dED, damage(2)+ (damage(3)-damage(2))/2, num2str(damage_disp(2),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
-    text(3-dED, damage(3)+ (damage(4)-damage(3))/2, num2str(damage_disp(3),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
-    text(4, damage(4)                     , num2str(damage_disp(4),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
+strfmt = ['%2.' int2str(N) 'f'];
+dED = 0.0;
+text(1, damage(2)                     , num2str(damage_disp(1),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
+text(2-dED, damage(2)+ (damage(3)-damage(2))/2, num2str(damage_disp(2),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
+text(3-dED, damage(3)+ (damage(4)-damage(3))/2, num2str(damage_disp(3),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
+text(4, damage(4)                     , num2str(damage_disp(4),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
 
 % %damages above barsn -- int2str
 % dED = 0.0;
@@ -285,10 +302,11 @@ end
 %remove xlabEDS and ticks
 set(gca,'xticklabel',[],'FontSize',10,'XTick',zeros(1,0),'layer','top');
 
-%axis range and ylabED
+%axis range and ylabel
 xlim([0.5 4.5])
 ylim([0   max(damage)*1.25])
-ylabel(['Damage amount \cdot 10^{', int2str(dig) '}'],'fontsize',fontsize_)
+ylabel(ylabel_str,'fontsize',fontsize_)
+% ylabel(['Damage amount \cdot 10^{', int2str(dig) '}'],'fontsize',fontsize_)
 
 %arrow eco
 % dED2 = 0.05;
@@ -328,7 +346,11 @@ if check_printplot>=0
     else
         textstr = ['Expected damage with a return period of ' int2str(return_period) ' years'];
     end
-    textstr_TIV = sprintf('Total assets: %d, %d 10^%d %s', TIV_nr, digits, unit_str);
+    if strcmp(Value_unit,'people')
+        textstr_TIV = sprintf('Total population (%d): %d %s %s',climada_global.present_reference_year,TIV(1),digit_TIV_str,unit_str);
+    else
+        textstr_TIV = sprintf('Total assets (%d): %d %s %s',climada_global.present_reference_year,TIV(1),digit_TIV_str,unit_str);
+    end
     text(1-stretch, max(damage)*1.20,textstr, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','bold','fontsize',fontsize_);
     text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','normal','fontsize',fontsize_2);
 end

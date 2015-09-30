@@ -170,7 +170,8 @@ color_benefit = flipud(climada_colormap('benefit_adaptation_bar_chart',n_impacts
 color_cost = [95 95 81]/255; % grey for reference costs
 
 % create bar chart
-fig = climada_figuresize(0.8,0.7);% fig = climada_figuresize(1.0,0.7); for Barisal
+fig = climada_figuresize(0.8,0.7);% 
+% fig = climada_figuresize(1.0,0.9); %for Barisal
 
 hold on
 h = barh([1:n_measures]-0,[fliplr(benefit) zeros(size(cost(:,1)))],width*1.3);
