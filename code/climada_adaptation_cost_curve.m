@@ -239,8 +239,12 @@ if ~isfield(measures_impact,'color_keep')
 end
 
 if ~measures_impact.color_keep
-    cmap = climada_colormap('measures',numel(measures_impact.measures.name));
-    measures_impact.measures.color_RGB(sort_index,:) = cmap;
+    try
+        cmap = climada_colormap('measures',numel(measures_impact.measures.name));
+        measures_impact.measures.color_RGB(sort_index,:) = cmap;
+    catch
+        fprintf('WARNING: automatic color assignment failed, colors as defined in measures used\n');
+    end
 end
 
 % COMMAND WINDOW: results
