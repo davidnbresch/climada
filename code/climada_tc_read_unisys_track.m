@@ -1,4 +1,4 @@
-function tc_track = climada_tc_read_unisys_track(track_filename,check_plot)
+function [tc_track,track_filename] = climada_tc_read_unisys_track(track_filename,check_plot)
 % climada unisys TC track
 % NAME:
 %   climada_tc_read_unisys_track
@@ -15,10 +15,12 @@ function tc_track = climada_tc_read_unisys_track(track_filename,check_plot)
 %   tc_track=climada_tc_read_unisys_track
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
-%   filename: the filename with path of a UNISYS *.dat file
+%   track_filename: the filename with path of a UNISYS *.dat file
 %       > user gets prompted for if not specified
 %   check_plot: =1 show track on map, =0 not (default)
 % OUTPUTS:
+%   tc_track: a TC track structure, see climada_tc_read_unisys_database
+%   track_filename: the track_filename (usefeul if prompted for)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20110429
 % Lea Mueller, 20110718

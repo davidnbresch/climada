@@ -36,7 +36,8 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %       > promted for if not given
 %   hazard_set_file: the name (and path, optional) of the hazard set file
 %       If no path provided, default path ../data/hazards is used (and name
-%       can be without extension .mat)
+%       can be without extension .mat). If ='NOSAVE', the hazard set is not
+%       saved (but returned as output)
 %       > promted for if not given
 %   centroids: the variable grid centroids (see climada_centroids_read)
 %       a structure with
@@ -86,7 +87,8 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
 % David N. Bresch, david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
-% David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue aded to header
+% David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue added to header
+% David N. Bresch, david.bresch@gmail.com, 20151008, NOSAVE option added
 %-
 
 hazard=[]; % init
@@ -307,7 +309,7 @@ for track_i=track0:n_tracks
             msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
         end
         hazard.track_i=track_i;
-        save(hazard_set_file,'hazard'); % intermediate save
+        if isempty(strfind(hazard_set_file,'NOSAVE')),save(hazard_set_file,'hazard');end % intermediate save
         if climada_global.waitbar
             waitbar(track_i/n_tracks,h,msgstr); % update waitbar
         else
@@ -434,7 +436,9 @@ if create_yearset
     
 end % create_yearset
 
-fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
-save(hazard_set_file,'hazard')
+if isempty(strfind(hazard_set_file,'NOSAVE'))
+    fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
+    save(hazard_set_file,'hazard')
+end
 
 return
