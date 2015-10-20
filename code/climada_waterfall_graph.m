@@ -36,6 +36,7 @@ function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_print
 % David N. Bresch, david.bresch@gmail.com, 20150906 font scale and label texts shortened
 % David N. Bresch, david.bresch@gmail.com, 20150907 font scale and label texts shortened
 % Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
+% Lea Mueller, muellele@gmail.com, 20151020, add TIV for future reference year
 %-
 
 global climada_global
@@ -198,8 +199,10 @@ damage = damage*10^-digits;
 % dig    = digits;
 
 % TIV of portfolio
-[digit_TIV, digit_TIV_str] = climada_digit_set([EDS(:).Value]);
-TIV = round(unique([EDS(:).Value])*10^-digit_TIV);
+[digit_TIV, digit_TIV_str] = climada_digit_set([EDS(1).Value]);
+% [digit_TIV, digit_TIV_str] = climada_digit_set([EDS(:).Value]);
+TIV = unique([EDS(:).Value])*10^-digit_TIV;
+% TIV = round(unique([EDS(:).Value])*10^-digit_TIV);
 % TIV_nr = round(unique([EDS(:).Value])*10^-digits);
 % N      = -abs(floor(log10(max(TIV_nr)))-1);
 % TIV_nr = round(TIV_nr*10^N)/10^N;
@@ -347,12 +350,15 @@ if check_printplot>=0
         textstr = ['Expected damage with a return period of ' int2str(return_period) ' years'];
     end
     if strcmp(Value_unit,'people')
-        textstr_TIV = sprintf('Total population (%d): %d %s %s',climada_global.present_reference_year,TIV(1),digit_TIV_str,unit_str);
+        textstr_TIV = sprintf('Total population (%d): %3.1f %s %s',climada_global.present_reference_year,TIV(1),digit_TIV_str,unit_str);
+        textstr_TIV_2 = sprintf('Total population (%d): %3.1f %s %s',climada_global.future_reference_year,TIV(2),digit_TIV_str,unit_str);
     else
-        textstr_TIV = sprintf('Total assets (%d): %d %s %s',climada_global.present_reference_year,TIV(1),digit_TIV_str,unit_str);
+        textstr_TIV = sprintf('Total assets (%d): %3.1f %s %s',climada_global.present_reference_year,TIV(1),digit_TIV_str,unit_str);
+        textstr_TIV_2 = sprintf('Total assets (%d): %3.1f %s %s',climada_global.future_reference_year,TIV(2),digit_TIV_str,unit_str);
     end
     text(1-stretch, max(damage)*1.20,textstr, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','bold','fontsize',fontsize_);
     text(1-stretch, max(damage)*1.15,textstr_TIV, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','normal','fontsize',fontsize_2);
+    text(1-stretch, max(damage)*1.10,textstr_TIV_2, 'color','k','HorizontalAlignment','left','VerticalAlignment','top','FontWeight','normal','fontsize',fontsize_2);
 end
 
 % if return_period == 9999
