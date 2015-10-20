@@ -29,6 +29,7 @@ function measures = climada_measures_read(measures_filename)
 % Lea Mueller, muellele@gmail.com, 20150907, add measures sanity check
 % Lea Mueller, muellele@gmail.com, 20150915, add read the "assets" tab which defines the regional scope of one or more measures
 % Lea Mueller, muellele@gmail.com, 20150916, omit nans in regional_scope 
+% Lea Mueller, muellele@gmail.com, 20151016, delete nans in measures.name if there are invalid entries
 %
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -56,6 +57,8 @@ measures = climada_xlsread('no',measures_filename,'measures',1);
 try 
     measures.damagefunctions = climada_xlsread('no',measures_filename,'damagefunctions',1);
     display('damagefunction sheet found')
+    % delete nans if there are
+    measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID');
 catch
     display('no damagefunction sheet found')
 end
@@ -65,14 +68,22 @@ try
     % one or more measures
     assets = climada_xlsread('no',measures_filename,'assets',1);
     display('asset sheet found');
+    
+    % delete nans if there are invalid entries
+    assets = climada_entity_check(assets,'lon');
+    assets = climada_entity_check(assets,'Longitude');
+
 catch
     assets = [];
     display('no asset sheet found');
 end
 
+% delete nans if there are invalid entries
+measures = climada_entity_check(measures,'name');
+   
 
 if ~isempty(assets)
-    
+      
     % number of measures
     n_measures = numel(measures.name);
     

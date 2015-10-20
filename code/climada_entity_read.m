@@ -76,6 +76,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % Lea Mueller, muellele@gmail.com, 20150831, assign assets.Value_unit with climada_global.Value_unit if not given
 % Lea Mueller, muellele@gmail.com, 20150907, add damagefunctions check and measures check 
 % Lea Mueller, muellele@gmail.com, 20150908, add assets even it not encoded 
+% Lea Mueller, muellele@gmail.com, 20151016, delete nans if there are invalid entries
 %-
 
 global climada_global
@@ -155,6 +156,9 @@ else
         assets=rmfield(assets,'VulnCurveID');
     end
     
+    % delete nans if there are invalid entries
+    assets = climada_entity_check(assets,'lon');
+    
     if ischar(hazard) && strcmpi(hazard,'NOENCODE')
         fprintf('Note: assets not encoded\n')
         entity.assets = assets;
@@ -207,6 +211,9 @@ else
                 fprintf('WARN: DamageFunIDs in assets might not all be defined in damagefunctions tab\n')
             end
             
+            % delete nans if there are invalid entries
+            entity.damagefunctions = climada_entity_check(entity.damagefunctions,'DamageFunID');
+    
             entity.damagefunctions.datenum=entity.damagefunctions.DamageFunID*0+now; % add datenum
             
             % check if damagefuntions define MDD and PAA in the necessary range given in hazard.intensity
@@ -228,6 +235,9 @@ else
             
             % rename vuln_map, since otherwise climada_measures_encode does not treat it
             if isfield(measures,'vuln_map'),measures.damagefunctions_map=measures.vuln_map;measures=rmfield(measures,'vuln_map');end
+            
+            % delete nans if there are invalid entries
+            measures = climada_entity_check(measures,'name');
             
             entity.measures = climada_measures_encode(measures);
             climada_measures_check(entity.measures);

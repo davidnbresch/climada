@@ -41,6 +41,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE initial
 % David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed
+% Lea Mueller, muellele@gmail.com, 20151016, delete nans if there are invalid entries
 %-
 
 global climada_global
@@ -105,6 +106,10 @@ damagefunctions.datenum=damagefunctions.DamageFunID*0+now; % add datenum
 % remove MDR, since MDR=MDD*PAA and hence we better
 % re-calculate where needed (in climada_damagefunctions_plot)
 if isfield(damagefunctions,'MDR'),damagefunctions=rmfield(damagefunctions,'MDR');end
+
+% delete nans if there are invalid entries
+damagefunctions = climada_entity_check(damagefunctions,'DamageFunID');
+
 
 if ~isempty(entity)
     entity=rmfield(entity,'damagefunctions'); % delete OLD
