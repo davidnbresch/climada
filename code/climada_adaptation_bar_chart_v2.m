@@ -23,6 +23,7 @@ function fig = climada_adaptation_bar_chart_v2(measures_impact,sort_measures,sca
 % Lea Mueller, muellele@gmail.com, 20150921, init
 % Lea Mueller, muellele@gmail.com, 20150921, measures_impact can hold multiple measures_impact(impact_i)
 % Lea Mueller, muellele@gmail.com, 20150924, add cost_unit and xlim_value, introduce climada_digit_set
+% Lea Mueller, muellele@gmail.com, 20151019, set bc ratio to less affected people per 10'000 USD
 %-
 
 global climada_global
@@ -85,7 +86,7 @@ n_years = climada_global.future_reference_year - climada_global.present_referenc
 
 % special case for people, set cb_ratio as people not affected per 100'000 USD invested
 if strcmp(measures_impact(1).Value_unit,'people') & scale_benefit==1
-    scale_benefit = 20000; %cost_factor = 10000;
+    scale_benefit = 10000; %scale_benefit = 20000; %cost_factor = 10000;
 end
 
 % get all important numbers for graph
@@ -145,13 +146,20 @@ cost = cost(sort_index,:);
 bc_ratio = bc_ratio(sort_index,:);
 measure_names = measures_impact(1).measures.name(sort_index);
 
-% bc_ratio for original measures_impact
+% bc_ratio for a specific scenario measures_impact
 bc_ratio_str = cell(n_measures,1);
 % special case for Barisal
 if strcmp(benefit_str,'Risk reduction in AED (%)'), bc_ratio=bc_ratio/scale_benefit;end
+if sort_measures == 0
+    refence_scenario = 1; % original measures_impact scenario
+else
+    refence_scenario = sort_measures; % take the scenario which is specified in sort_measures
+end 
 for m_i = 1:n_measures
-    bc_ratio_str{m_i} = sprintf(' %5.1f',bc_ratio(m_i,1));
+    bc_ratio_str{m_i} = sprintf(' %5.1f',bc_ratio(m_i,refence_scenario));
 end
+
+    
 
 % % special colormap for salvador
 % cmap = climada_colormap('measures',numel(measures_impact.measures.name));
