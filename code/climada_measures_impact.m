@@ -10,6 +10,8 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %   next step: climada_adaptation_cost_curve or
 %   climada_adaptation_event_view
 %
+%   see also: climada_measures_impact_parametric
+%
 %   Note: the risk premiums show need to be handled with UTMOST care, as
 %   they are proxies of real risk premiums. First, the total climate risk
 %   premium is calculated as NPV of total climate risk divided by the sum

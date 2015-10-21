@@ -137,11 +137,12 @@ n_years    = climada_global.future_reference_year - climada_global.present_refer
 present_year_pos = find(entity.discount.year==climada_global.present_reference_year); % present year
 future_year_pos  = find(entity.discount.year==climada_global.future_reference_year); % future year
 discount_rates   = entity.discount.discount_rate(present_year_pos:future_year_pos);
+measures_impact.discount_rates=discount_rates; % store discount_rates used
 
 % recalculate ED, maybe with only a subset of asset values, given by a criterium
 is_selected = [];%init
 silent_mode = 1;
-if ~isempty(unit_or_cat_flag) & isfield(EDS,'ED_at_centroid')
+if ~isempty(unit_or_cat_flag) && isfield(EDS,'ED_at_centroid')
     % select a specific set of assets to recalculate the total ED
     switch unit_or_cat_flag
         case 'unit'
@@ -159,7 +160,7 @@ EDS = measures_impact.EDS;
 if ~isempty(measures_impact_reference)
     EDS_reference = measures_impact_reference.EDS;
     ED_reference = zeros(1,n_measures+1); % init
-    if ~isempty(unit_or_cat_flag) & ~isfield(EDS_reference,'ED_at_centroid')
+    if ~isempty(unit_or_cat_flag) && ~isfield(EDS_reference,'ED_at_centroid')
         fprintf('ERROR: measures_impact_reference does not have ED_at_centroid information, please check.\n')
     end
     

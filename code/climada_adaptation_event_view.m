@@ -30,6 +30,7 @@ function AEV = climada_adaptation_event_view(measures_impact,comparison_return_p
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100109
 % David N. Bresch, david.bresch@gmail.com, 20150402, compatibility with version 8ff (R2014...)
+% David N. Bresch, david.bresch@gmail.com, 20151021, checked to work for index insurance, too
 %-
 
 global climada_global
@@ -88,7 +89,7 @@ for measure_i=1:n_measures
 end
 
 % the same sort order as in adaptation cost curve
-[sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
+[~,sort_index] = sort(measures_impact.cb_ratio);
 
 for return_period_i=1:length(comparison_return_periods)
     AEV.cumulated{return_period_i}.effect=[0;cumsum(AEV.effect(sort_index,return_period_i))]';
