@@ -28,6 +28,7 @@ function hazard = climada_hazard_clim_scen(hazard,hazard_clim_file,frequency_scr
 % Reto Stockmann 20120719
 % David N. Bresch, david.bresch@gmail.com, 20150906, allow for name without path on input
 % Lea Mueller, muellele@gmail.com, 20151021, add intensity shift
+% Lea Mueller, muellele@gmail.com, 20151022, bugfix in fprintf
 %-
 
 % % SAFETY message prior to first call - user is asked to comment the return statement
@@ -140,6 +141,6 @@ save(hazard_clim_file,'hazard')
 hazard_units = '';
 if isfield(hazard,'units'),  hazard_units = hazard.units; end
 fprintf('Apply climate change scenario (%d)\n \t-frequency_screw = %10.4f \n \t-intensity screw = %10.4f \n \t-intensity shift = %10.4f %s \nsaved in \n%s \n\n',...
-    climada_global.future_reference_year,frequency_screw,intensity_screw,intensity_shift,hazard_units,[climada_global.data_dir hazard_clim_file])
+    climada_global.future_reference_year,frequency_screw,intensity_screw,intensity_shift,hazard_units,hazard_clim_file)
 
 return
