@@ -37,6 +37,7 @@ function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_print
 % David N. Bresch, david.bresch@gmail.com, 20150907 font scale and label texts shortened
 % Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
 % Lea Mueller, muellele@gmail.com, 20151020, add TIV for future reference year
+% Lea Mueller, muellele@gmail.com, 20151030, bugfix in climada_arrow
 %-
 
 global climada_global
@@ -317,7 +318,7 @@ dED2 = stretch+0.05;
 % dED3 = 0.10;
 dED3 = stretch+0.07;
 try
-    climada_arrow ([2+dED2 damage(2)], [2+dED2 damage(3)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor''none', 'FaceColor',[0.5 0.5 0.5]);
+    climada_arrow ([2+dED2 damage(2)], [2+dED2 damage(3)], 40, 10, 30,'width',1.5,'Length',10, 'BaseAngle',90, 'EdgeColor','none', 'FaceColor',[0.5 0.5 0.5]);
 catch
     fprintf('Warning: arrow printing failed in %s (1)\n',mfilename);
 end
