@@ -30,6 +30,7 @@ function [tc_track,track_filename] = climada_tc_read_unisys_track(track_filename
 % Lea Mueller, 20110718
 % David N. Bresch, david.bresch@gmail.com, 20150220, init_vars reset removed
 % David N. Bresch, david.bresch@gmail.com, 20151018, forecast file added to output and automatic removal of backward timesteps
+% David N. Bresch, david.bresch@gmail.com, 20151102, allow for name without path on input
 %-
 
 global climada_global
@@ -57,6 +58,11 @@ if isempty(track_filename)
         track_filename=[pathname filename];
     end
 end
+
+% complete path, if missing
+[fP,fN,fE]=fileparts(track_filename);
+if isempty(fE),fE='.dat';end
+if isempty(fP),track_filename=[climada_global.data_dir filesep 'tc_tracks' filesep fN fE];end
 
 if exist(track_filename,'file')
     
