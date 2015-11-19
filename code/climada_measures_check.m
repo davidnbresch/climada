@@ -20,6 +20,7 @@ function measures = climada_measures_check(measures, assets)
 % Lea Mueller, muellele@gmail.com, 20150915, check that regional_scope matrix has the correct dimension 
 % Lea Mueller, muellele@gmail.com, 20150916, shorten or enlarge regional_scope if needed 
 % Lea Mueller, muellele@gmail.com, 20150921, hand back corrected measures
+% Lea Mueller, muellele@gmail.com, 20151117, correct fprintf
 %-
 
 global climada_global
@@ -145,7 +146,7 @@ if isfield(measures,'regional_scope')
     n_assets = size(measures.regional_scope,1);
     for m_i = 1:n_measures
         if any(~measures.regional_scope(:,m_i))        
-            fprintf('\t - Measure %d impacts %d of %d assets (%s)\n',m_i,...
+            fprintf('Measure %d impacts %d of %d assets (%s)\n',m_i,...
                 sum(measures.regional_scope(:,m_i)),n_assets,measures.name{m_i})
         end
     end 

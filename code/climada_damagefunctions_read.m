@@ -3,10 +3,10 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % NAME:
 %   climada_damagefunctions_read
 % PURPOSE:
-%   read a file with damage functions (vulnerabilities)
-%
-%   Please consider using climada_entity_read, which reads a full entity
-%   file, i.e. assets, damagefunctions and measures.
+%   read a file with damage functions (vulnerabilities), usually called in
+%   climada_entity_read, which reads a full entity file, i.e. assets, 
+%   damagefunctions, discount and measures. The field "Intensity" is
+%   mandatory otherwise damagefunctions are not read.
 %
 %   The code invokes climada_spreadsheet_read to really read the data,
 %   which implements .xls and .ods files
@@ -23,7 +23,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % CALLING SEQUENCE:
 %   damagefunctions = climada_damagefunctions_read(damagefunction_filename)
 % EXAMPLE:
-%   damagefunctions=climada_damagefunctions_read
+%   damagefunctions = climada_damagefunctions_read
 % INPUTS:
 %   damagefunction_filename: the filename of the Excel file with the assets
 %       > promted for if not given
@@ -42,18 +42,19 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE initial
 % David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed
 % Lea Mueller, muellele@gmail.com, 20151016, delete nans if there are invalid entries
+% Lea Mueller, muellele@gmail.com, 20151119, read first sheet if sheet "damagefunctions" is not found
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
-damagefunctions=[];
+damagefunctions = [];
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
 % poor man's version to check arguments
 if ~exist('damagefunction_filename','var'),damagefunction_filename='';end
-if ~exist('entity','var'),entity=[];end
+if ~exist('entity','var'), entity = [];end
 
 % PARAMETERS
 %
@@ -90,18 +91,33 @@ try
         if strcmp(sheet_names{sheet_i},'vulnerability')
             damagefunctions=climada_spreadsheet_read('no',damagefunction_filename,'vulnerability',1);
         end
-    end % sheet_i
+    end % sheet_i 
+    if isempty(damagefunctions)
+        fprintf('No sheet "damagefunctions" found, just reading the first sheet.\n')
+        damagefunctions = climada_spreadsheet_read('no',damagefunction_filename,1);
+    end
+    
 catch ME
     fprintf('WARN: no damagefunctions data read, %s\n',ME.message)
 end
 
+% .Intensity is mandatory
+if ~isfield(damagefunctions,'Intensity')
+    fprintf('Error: no Intensity column in damagefunctions tab, aborted\n')
+    damagefunctions = [];
+    if strcmp(fE,'.ods') && climada_global.octave_mode
+        fprintf('> make sure there are no cell comments in the .ods file, as they trouble odsread\n');
+    end
+    return
+end
+    
 % check for OLD naming convention, VulnCurveID -> DamageFunID
 if isfield(damagefunctions,'VulnCurveID')
-    damagefunctions.DamageFunID=damagefunctions.VulnCurveID;
-    damagefunctions=rmfield(damagefunctions,'VulnCurveID');
+    damagefunctions.DamageFunID = damagefunctions.VulnCurveID;
+    damagefunctions = rmfield(damagefunctions,'VulnCurveID');
 end
 
-damagefunctions.datenum=damagefunctions.DamageFunID*0+now; % add datenum
+damagefunctions.datenum = damagefunctions.DamageFunID*0+now; % add datenum
 
 % remove MDR, since MDR=MDD*PAA and hence we better
 % re-calculate where needed (in climada_damagefunctions_plot)

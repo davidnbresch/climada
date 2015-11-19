@@ -21,6 +21,7 @@ function assets = climada_measures_assets_change(measures,measure_i)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150908, init
 % Lea Mueller, muellele@gmail.com, 20150930, save assets.filename with .mat as extension
+% Lea Mueller, muellele@gmail.com, 20151117, call climada_assets_read instead of climada_entity_read
 %-
 
 global climada_global
@@ -87,11 +88,12 @@ if isfield(measures,'assets_file')
     if isempty(fE),measures_assets_file = [fP filesep fN '.mat'];end % append .mat
     if exist(measures_assets_file,'file')
         cprintf([0 0 1],'NOTE: measure %i, switched assets according to %s\n',measure_i,measures_assets_file);
-        entity = climada_entity_read(measures_assets_file,'NOENCODE');
-        assets = entity.assets;
+        %entity = climada_entity_read(measures_assets_file,'NOENCODE');
+        %assets = entity.assets;
+        assets = climada_assets_read(measures_assets_file,'NOENCODE');
         assets.filename = [fP filesep fN '.mat'];
     else
-        cprintf([1 0 0],'ERROR: measure %i, assets NOT switched, entity %s not found\n',measure_i,measures_assets_file);
+        cprintf([1 0 0],'ERROR: measure %i, assets NOT switched, assets %s not found\n',measure_i,measures_assets_file);
     end
 end % measures_assets_name
 
