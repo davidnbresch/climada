@@ -30,6 +30,7 @@ function discount = climada_discount_read(discount_filename)
 %           .discount_rate: discount_rate per year
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151117, init from climada_entity_read to read only discount
+% David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 %-
 
 global climada_global
@@ -68,8 +69,12 @@ if strcmp(fE,'.ods')
     % hard-wired sheet names for files of type .ods
     sheet_names = {'discount'};
 else
-    % inquire sheet names from .xls
-    [~,sheet_names] = xlsfinfo(discount_filename);
+    try
+        % inquire sheet names from .xls
+        [~,sheet_names] = xlsfinfo(discount_filename);
+    catch
+        sheet_names = {'discount'};
+    end
 end
 
 try

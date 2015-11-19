@@ -43,6 +43,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % David N. Bresch, david.bresch@gmail.com, 20141221, damagefunctions.MDR removed
 % Lea Mueller, muellele@gmail.com, 20151016, delete nans if there are invalid entries
 % Lea Mueller, muellele@gmail.com, 20151119, read first sheet if sheet "damagefunctions" is not found
+% David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 %-
 
 global climada_global
@@ -77,8 +78,12 @@ if strcmp(fE,'.ods')
     % hard-wired sheet names for files of type .ods
     sheet_names={'damagefunctions','measures','discount'};
 else
-    % inquire sheet names from .xls
-    [~,sheet_names] = xlsfinfo(damagefunction_filename);
+    try
+        % inquire sheet names from .xls
+        [~,sheet_names] = xlsfinfo(damagefunction_filename);
+    catch
+        sheet_names={'damagefunctions','measures','discount'};
+    end
 end
 
 try

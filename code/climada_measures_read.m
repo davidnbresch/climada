@@ -32,6 +32,7 @@ function measures = climada_measures_read(measures_filename)
 % Lea Mueller, muellele@gmail.com, 20150916, omit nans in regional_scope 
 % Lea Mueller, muellele@gmail.com, 20151016, delete nans in measures.name if there are invalid entries
 % Lea Mueller, muellele@gmail.com, 20151119, use climada_assets_read, use spreadsheet_read instead of xls_read
+% David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 %
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -68,8 +69,12 @@ if strcmp(fE,'.ods')
     % hard-wired sheet names for files of type .ods
     sheet_names = {'measures'};
 else
-    % inquire sheet names from .xls
-    [~,sheet_names] = xlsfinfo(measures_filename);
+    try
+        % inquire sheet names from .xls
+        [~,sheet_names] = xlsfinfo(measures_filename);
+    catch
+        sheet_names = {'measures'};
+    end
 end
 
 try

@@ -37,6 +37,7 @@ function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
 %   assets_save_file: the name the encoded assets got saved to
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151117, init from climada_entity_read to read only assets
+% David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 %-
 
 global climada_global
@@ -77,9 +78,13 @@ if strcmp(fE,'.ods')
     % hard-wired sheet names for files of type .ods
     sheet_names = {'assets'};
 else
-    % inquire sheet names from .xls
-    [~,sheet_names] = xlsfinfo(assets_filename);
-end  
+    try
+        % inquire sheet names from .xls
+        [~,sheet_names] = xlsfinfo(assets_filename);
+    catch
+        sheet_names = {'assets'}; % fix for Octave, david.bresch@gmail.com, 20151119
+    end
+end
 
 try
     % read assets
