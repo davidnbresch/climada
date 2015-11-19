@@ -40,6 +40,7 @@ function output_report = climada_EDS_ED_per_category_report(entity,EDS,xls_file,
 % Jacob Anz,   j.anz@gmail.com,    20150929, add summary input so it can be executed with salvador_results_overview   
 % Lea Mueller, muellele@gmail.com, 20151106, rename to climada_EDS_ED_per_category_report from salvador_EDS_ED_per_category_report
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
+% Lea Mueller, muellele@gmail.com, 20151117, add try statement for filenames of assets, damagefunction, etc.
 %-
 output_report = []; %init
 
@@ -221,17 +222,22 @@ for EDS_i = 1:EDS_no
     end %assets_flag
     
     for f_i = 1:numel(all_filenames)
+        filename = ''; % start with an empty filename and fill it if this fieldname exists
         if strcmp(all_filenames{f_i},'EDS.hazard')
-            filename = EDS(EDS_i).hazard.filename;
+            try filename = EDS(EDS_i).hazard.filename; end
         else
-            filename = getfield(eval(all_filenames{f_i}),'filename');
+            try filename = getfield(eval(all_filenames{f_i}),'filename'); end
         end
-        if ~isempty(filename)
+        if ~isempty(filename) && numel(filename)>2
             filesep_position = strfind(filename,filesep);
-            if no_folders>=numel(filesep_position)-1
-                no_folders = numel(filesep_position)-1;
+            if ~isempty(filesep_position)
+                if no_folders>=numel(filesep_position)-1
+                    no_folders = numel(filesep_position)-1;
+                end
+                
+                filename = filename(filesep_position(end-no_folders):end);
             end
-            output_report{start_row+f_i,column_position+1} = filename(filesep_position(end-no_folders):end);
+            output_report{start_row+f_i,column_position+1} = filename;
         end
     end
 end
