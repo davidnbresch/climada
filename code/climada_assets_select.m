@@ -35,6 +35,7 @@ function [is_selected,peril_criterum,unit_criterium,category_criterium] = climad
 % Lea Mueller, muellele@gmail.com, 20150910, enhance to cope with Category names (cell) instead of numbers
 % Lea Mueller, muellele@gmail.com, 20150924, add silent_mode option
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
+% Lea Mueller, muellele@gmail.com, 20151120, make sure that category_criterium is a cell and not a char
 % -
 
 
@@ -78,6 +79,8 @@ end
 
 % find category in entity.assets.Category
 if ~isempty(category_criterium)
+    % make sure that category_criterium is a cell and not a char
+    if ischar(category_criterium), category_criterium = {category_criterium}; end
     if isfield(entity.assets, 'Category')
         if iscell(category_criterium)
             is_category  = strcmp(entity.assets.Category, category_criterium);
