@@ -32,3 +32,4 @@ country_risk.mat
 
 *.asv
 code/climada_event_damage_animation_local.m
+startup_*.m
