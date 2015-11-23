@@ -142,7 +142,7 @@ else
     entity.assets = climada_assets_read(entity_filename,hazard);
     
     % read damagefunctions
-    entity.damagefunction = climada_damagefunctions_read(entity_filename);
+    entity.damagefunctions = climada_damagefunctions_read(entity_filename);
     
     % read measures
     entity.measures = climada_measures_read(entity_filename);
