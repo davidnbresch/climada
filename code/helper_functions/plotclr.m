@@ -1,4 +1,4 @@
-function [h h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, mav, map, zero_off, v_exp)
+function [h, h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, mav, map, zero_off, v_exp)
 %FUNCTION PLOTC(X,Y,V,'MARKER') plots the values of v colour coded
 % at the positions specified by x and y, and v (z-axis) in a 3-D axis
 % system. A colourbar is added on the right side of the figure.

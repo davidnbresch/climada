@@ -94,6 +94,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150907, ...errant extrapolation leads to WRONG behaviour in case of hazard_intensity_impact_b, commented 
 % Lea Mueller, muellele@gmail.com, 20150907, add sanity_check variable to call climada_damagefunctions_check
 % Lea Mueller, muellele@gmail.com, 20150910, set sanity_check to silent_mode
+% Lea Mueller, muellele@gmail.com, 20151117, replace output string to "Calculating damage" instead of "processing"
 %-
 
 global climada_global
@@ -200,7 +201,7 @@ if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
 end
 
 if sanity_check ~=0
-    entity = climada_damagefunctions_check(entity,hazard);
+    entity = climada_damagefunctions_check(entity,hazard); %silent_mode as default
 end
 
 % initialize the event damage set (EDS)
@@ -254,7 +255,7 @@ end
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
-msgstr=sprintf('processing %i assets (>0) and %i events ',nn_assets,length(hazard.frequency));
+msgstr=sprintf('Calculating damage for %i assets (>0) and %i events ',nn_assets,length(hazard.frequency));
 
 if ~silent_mode % CLIMADA_OPT
     if climada_global.waitbar % CLIMADA_OPT
@@ -301,8 +302,8 @@ for asset_ii=1:nn_assets
         
         % to be certain of no errant extrapolation
         % leads to WRONG behaviour in case of hazard_intensity_impact_b, david.bresch@gmail.com, 20150907
-%         MDD(MDD>max(interp_y_table)) = max(interp_y_table);
-%         MDD(MDD<min(interp_x_table)) = interp_y_table(1);
+        %MDD(MDD>max(interp_y_table)) = max(interp_y_table);
+        %MDD(MDD<min(interp_x_table)) = interp_y_table(1);
         
         % figure
         % plot(interp_x_table, interp_y_table,':')
@@ -321,8 +322,8 @@ for asset_ii=1:nn_assets
         
         % to be certain of no errant extrapolation
         % leads to WRONG behaviour in case of hazard_intensity_impact_b, david.bresch@gmail.com, 20150907
-%         PAA(PAA>max(interp_y_table)) = max(interp_y_table);
-%         PAA(PAA<min(interp_x_table)) = interp_y_table(1);
+        %PAA(PAA>max(interp_y_table)) = max(interp_y_table);
+        %PAA(PAA<min(interp_x_table)) = interp_y_table(1);
 
         % figure
         % plot(interp_x_table, interp_y_table,':k')

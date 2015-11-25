@@ -31,7 +31,7 @@ global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
-if ~exist('csv_filename'),'var'),csv_filename=[];end
+if ~exist('csv_filename','var'),csv_filename=[];end
 
 % PARAMETERS
 %

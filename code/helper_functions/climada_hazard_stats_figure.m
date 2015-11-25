@@ -8,6 +8,8 @@ function fig = climada_hazard_stats_figure(hazard,return_periods)
 %     .intensity_fit
 %     .R_fit (requested return periods)
 %   previous: climada_hazard_stats before)
+% PREVIOUS STEP:
+%   climada_hazard_stats
 % CALLING SEQUENCE:
 %   fig = climada_hazard_stats_figure(hazard,return_periods)
 % EXAMPLE:
@@ -94,17 +96,16 @@ switch peril_ID
         cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
 
     case 'LS'
-        %if isfield(hazard, 'cutoff_m')
-        %    caxis_max = hazard.cutoff_m;
-        %else
-        %    caxis_max = 500;
-        %end
-        caxis_max = 400; %hazard_distance.cutoff_m;
-        xtick_    = [0:caxis_max/8:caxis_max]; 
+        %caxis_max = 400; 
+        caxis_max = 1000;
+        if isfield(hazard,'cutoff_m'), caxis_max = hazard.cutoff_m; end
+        xtick_ = [0:caxis_max/8:caxis_max]; 
         %cmap = flipud(climada_colormap(peril_ID));   
         
         % overwrite original intensites (0-1) with distance_m 
+        is_max_intensity = hazard.intensity_fit>0.999;
         hazard.intensity_fit = (1.-hazard.intensity_fit)*hazard.cutoff_m;
+        hazard.intensity_fit(is_max_intensity) = 1;
         cbar_str  = sprintf('%s Distance to landslide (m)', hazard.peril_ID);
         plotclr_on = 1;
         markersize = 2.2;
@@ -146,7 +147,7 @@ if wi>1.2
     he = 1.2/scale_tot;
 end
 
-fig2 = climada_figuresize(he+0.1, wi);
+fig = climada_figuresize(he+0.1, wi);
 subaxis(x_no, y_no, 1,'MarginTop',0.15, 'mb',0.05)
 
 % colorbar
