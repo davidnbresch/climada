@@ -83,12 +83,13 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
 % David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
 % David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
-% Lea Mueller, muelleleh@gmail.com, 20150420, include category into hazard structure
+% Lea Mueller, muelleleh@gmail.com, 20150420, include tc category into hazard structure
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
 % David N. Bresch, david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
 % David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue added to header
 % David N. Bresch, david.bresch@gmail.com, 20151008, NOSAVE option added
+% Lea Mueller, muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
 %-
 
 hazard=[]; % init
@@ -112,7 +113,11 @@ check_plot=0; % only for few tracks, please
 hazard_arr_density=0.03; % 3% sparse hazard array density (estimated)
 %
 % define the reference year for this hazard set
-hazard_reference_year = climada_global.present_reference_year; % default for present hazard is normally 2010
+hazard_reference_year = climada_global.present_reference_year; % default for present hazard is normally 2015
+%
+% define the scenario name for this hazard set
+% we assume no climate change when creating a hazard set from tc tracks
+hazard_scenario = 'no climate change'; 
 %
 % whether we create the yearset (=1, grouping events into years) or not (=0)
 % the yearset is only produced for original tracks, since probabilistic
@@ -238,7 +243,7 @@ hazard.yyyy             = zeros(1,hazard.event_count);
 hazard.mm               = zeros(1,hazard.event_count);
 hazard.dd               = zeros(1,hazard.event_count);
 hazard.datenum          = zeros(1,hazard.event_count);
-
+hazard.scenario         = hazard_scenario;
 
 % allocate the hazard array (sparse, to manage memory)
 hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...

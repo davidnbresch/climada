@@ -84,6 +84,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150915, add regional scope of measures
 % Lea Mueller, muellele@gmail.com, 20150921, add measures check to ensure size of regional_scope is aligned with number of assets
 % Lea Mueller, muellele@gmail.com, 20150921, save entity as .mat if assets are switched (in entity.assets.filename)
+% Lea Mueller, muellele@gmail.com, 20151127, add measures_impact.scenario
 %-
 
 global climada_global
@@ -107,16 +108,17 @@ debug_measure_i=0; % default=0 (switched off, no debugging)
 
 
 % prompt for entity if not given
+% entity = climada_entity_load(entity);
 if isempty(entity) % local GUI
     entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
     [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
     if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
+       return; % cancel
     else
-        entity=fullfile(pathname,filename);
+       entity=fullfile(pathname,filename);
     end
 end
-% load the entity, if a filename has been passed
+load the entity, if a filename has been passed
 if ~isstruct(entity)
     entity_file=entity;entity=[];
     vars = whos('-file', entity_file);
@@ -128,13 +130,14 @@ if ~isstruct(entity)
 end
 
 % prompt for hazard if not given
+% hazard = climada_hazard_load(hazard);
 if isempty(hazard) % local GUI
     hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
     [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:');
     if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
+       return; % cancel
     else
-        hazard=fullfile(pathname,filename);
+       hazard=fullfile(pathname,filename);
     end
 end
 % load the hazard, if a filename has been passed
@@ -175,8 +178,8 @@ if ~isempty(measures_impact_reference)
             end
         end
     end
-    if ~isempty(measures_impact_reference) & ~strcmp(measures_impact_reference,'no')
-        % reference is aleays today, warn if not
+    if ~isempty(measures_impact_reference) && ~strcmp(measures_impact_reference,'no')
+        % reference is already today, warn if not
         reference_year = measures_impact_reference.EDS(end).reference_year;
         if reference_year ~= climada_global.present_reference_year
             %fprintf('WARNING: reference year for reference results is %i (should be %i)\n',reference_year,climada_global.present_reference_year);
@@ -440,6 +443,7 @@ else
     measures_impact.Value_unit   = climada_global.Value_unit;
 end
 
+
 % calculate the cost/benefit ratio also here (so we have all results in one)
 measures_impact = climada_measures_impact_discount(entity,measures_impact,measures_impact_reference);
 
@@ -455,6 +459,9 @@ measures_impact.risk_premium_net*100);
 fprintf('total climate risk premium reduction (relative) %2.2f%%\n',...
 -(measures_impact.risk_premium_net/measures_impact.risk_premium_fgu-1)*100);
 measures_impact.risk_premium_comment = 'total climate risk divided by the total value of assets';
+
+% add scenario name
+measures_impact.scenario = climada_scenario_name(entity,hazard);
 
 % prepare annotation (title_str) and filename
 [~,hazard_name]   = fileparts(EDS(1).hazard.filename);

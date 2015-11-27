@@ -95,6 +95,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20150907, add sanity_check variable to call climada_damagefunctions_check
 % Lea Mueller, muellele@gmail.com, 20150910, set sanity_check to silent_mode
 % Lea Mueller, muellele@gmail.com, 20151117, replace output string to "Calculating damage" instead of "processing"
+% Lea Mueller, muellele@gmail.com, 20151127, add EDS.scenario, EDS.assets.reference_year and EDS.assets.region, add EDS.hazard.refence_year and EDS.hazard.scenario
 %-
 
 global climada_global
@@ -220,6 +221,8 @@ EDS.orig_event_flag   = hazard.orig_event_flag;
 EDS.peril_ID          = char(hazard.peril_ID);
 EDS.hazard.peril_ID   = EDS.peril_ID; % backward compatibility
 EDS.Value_unit        = ''; % init
+% EDS.scenario          = climada_scenario_name(entity,hazard);
+
 if climada_global.EDS_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
@@ -401,6 +404,16 @@ EDS.comment         = msgstr;
 % sure it can later be referenced (with filesep and hence fileparts):
 EDS.hazard.filename = strrep(char(hazard.filename),'\',filesep); % from PC
 EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % from MAC
+if isfield(hazard,'refence_year')
+    EDS.hazard.refence_year = hazard.refence_year; 
+else
+    EDS.hazard.refence_year = climada_global.present_reference_year; 
+end
+if isfield(hazard,'scenario')
+    EDS.hazard.scenario = hazard.scenario; 
+else
+    EDS.hazard.scenario = 'no climate change'; 
+end
 EDS.hazard.comment  = char(hazard.comment);
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.lat = entity.assets.lat;
@@ -410,6 +423,12 @@ if isfield(entity.assets,'admin0_name'),EDS.assets.admin0_name=entity.assets.adm
 if isfield(entity.assets,'admin0_ISO3'),EDS.assets.admin0_ISO3=entity.assets.admin0_ISO3;end
 if isfield(entity.assets,'admin1_name'),EDS.assets.admin1_name=entity.assets.admin1_name;end
 if isfield(entity.assets,'admin1_code'),EDS.assets.admin1_code=entity.assets.admin1_code;end
+if isfield(entity.assets,'region'),EDS.assets.region=entity.assets.region;end
+if isfield(entity.assets,'reference_year')
+    EDS.assets.reference_year=entity.assets.reference_year;
+else
+    EDS.assets.reference_year=climada_global.present_reference_year;
+end
 EDS.damagefunctions.filename = entity.damagefunctions.filename;
 if isempty(annotation_name)
     [~,name]        = fileparts(EDS.hazard.filename);

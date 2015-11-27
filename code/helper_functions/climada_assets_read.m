@@ -38,6 +38,7 @@ function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151117, init from climada_entity_read to read only assets
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
+% Lea Mueller, muellele@gmail.com, 20151127, add assets.region and assets.refence_year
 %-
 
 global climada_global
@@ -122,6 +123,27 @@ end
 if ~isfield(assets,'Value_unit')
     assets.Value_unit = repmat({climada_global.Value_unit},size(assets.Value));
 end
+
+% add assets.region, use only first entry
+% rename .Region to .region
+if isfield(assets,'Region'),assets.region=assets.Region;assets=rmfield(assets,'Region');end
+if isfield(assets,'region')
+    assets.region=assets.region{1};
+else
+    assets.region='unknown region';
+end
+
+% add assets.refence_year, that describes the time horizon of the assets, use only first entry
+% rename .Reference_year to .reference_year
+if isfield(assets,'Reference_year'),assets.reference_year=assets.Reference_year;assets=rmfield(assets,'Reference_year');end
+if isfield(assets,'reference_year')
+    if ~isnumeric(assets.reference_year)
+        assets=rmfield(assets,'reference_year');
+    else
+        assets.reference_year=assets.reference_year(1);
+    end
+end
+if ~isfield(assets,'reference_year'),assets.reference_year=climada_global.present_reference_year;end  
 
 % check for OLD naming convention, VulnCurveID -> DamageFunID
 if isfield(assets,'VulnCurveID')
