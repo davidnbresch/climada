@@ -24,6 +24,7 @@ function entity=climada_entity_load(entity_file)
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150820, memory use optimized, filename checked
 % Lea Mueller, muellele@gmail.com, 20151124, check that field .assets exist
+% Lea Mueller, muellele@gmail.com, 20151127, enhance to work with complete entity as input
 %-
 
 entity=[]; % init output
@@ -36,6 +37,9 @@ if ~exist('entity_file','var'),entity_file=[];end
 
 % PARAMETERS
 %
+
+% if already a complete entity, return
+if isfield(entity_file,'assets'), entity = entity_file; return, end
 
 % prompt for entity_file if not given
 if isempty(entity_file) % local GUI

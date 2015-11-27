@@ -21,6 +21,7 @@ function hazard=climada_hazard_load(hazard_file)
 % David N. Bresch, david.bresch@gmail.com, 20140302
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150820, check for correct filename
+% Lea Mueller, muellele@gmail.com, 20151127, enhance to work with complete hazard as input
 %-
 
 hazard=[]; % init output
@@ -32,7 +33,10 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('hazard_file','var'),hazard_file=[];end
 
 % PARAMETERS
-%
+
+% if already a complete hazard, return
+if isfield(hazard_file,'lon'), hazard = hazard_file; return, end
+
 
 % prompt for hazard_file if not given
 if isempty(hazard_file) % local GUI

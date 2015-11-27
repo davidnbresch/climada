@@ -19,6 +19,8 @@ function measures_impact=climada_measures_impact_load(measures_impact_file)
 %   measures_impact_out: a struct, see e.g. salvador_calc_measures for details
 % MODIFICATION HISTORY:
 % Jacob Anz, j.anz@gmx.net, 20151106, init
+% Lea Mueller, muellele@gmail.com, 20151127, enhance to work with complete measures_impact as input
+%-
 
 measures_impact=[]; % init output
 
@@ -30,6 +32,10 @@ if ~exist('measures_impact_file','var'),measures_impact_file=[];end
 
 % PARAMETERS
 %
+
+% if already a complete entity, return
+if isfield(measures_impact_file,'EDS'), measures_impact = measures_impact_file; return, end
+
 
 % prompt for entity_file if not given
 if isempty(measures_impact_file) % local GUI

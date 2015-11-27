@@ -53,6 +53,12 @@ if ~exist('criterium','var'),criterium = 0;end
 
 % PARAMETERS
 
+% entity = climada_entity_load(entity);
+% measures_impact = climada_measures_impact_load(measures_impact);
+% [measures_impact_reference, original_struct_name] = climada_load(measures_impact_reference,'results');
+% if ~strcmp(original_struct_name,'measures_impact'), fprintf('You have not selected a measures_impact file.\n'); return,end
+
+
 % prompt for entity if not given
 if isempty(entity) % local GUI
     entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
@@ -111,13 +117,17 @@ if ~isempty(measures_impact_reference)
         end
     end
     if ~isempty(measures_impact_reference) & ~strcmp(measures_impact_reference,'no')
-        % reference is aleays today, warn if not
+        % reference is already today, warn if not
         reference_year = measures_impact_reference.EDS(end).reference_year;
         if reference_year ~= climada_global.present_reference_year
             %fprintf('WARNING: reference year for reference results is %i (should be %i)\n',reference_year,climada_global.present_reference_year);
         end
     end
 end
+
+% make sure we have only one of these structures
+if numel(measures_impact)>1 measures_impact = measures_impact(1);end
+if numel(measures_impact_reference)>1 measures_impact_reference = measures_impact_reference(1);end
 
 
 % calculate the cost/benefit ratio also here (so we have all results in one

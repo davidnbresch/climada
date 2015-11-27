@@ -114,47 +114,50 @@ if ~exist('sanity_check','var'),sanity_check=0;end
 % PARAMETERS
 %
 
-% prompt for entity if not given
-if isempty(entity) % local GUI
-    entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
-    [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        entity=fullfile(pathname,filename);
-    end
-end
-% load the entity, if a filename has been passed
-if ~isstruct(entity)
-    entity_file=entity;entity=[];
-    
-    % complete path, if missing
-    [fP,fN,fE]=fileparts(entity_file);
-    if isempty(fP),entity_file=[climada_global.data_dir filesep 'entities' filesep fN fE];end
-    
-    load(entity_file);
-end
+
+% % prompt for entity if not given
+entity = climada_entity_load(entity);
+% if isempty(entity) % local GUI
+%     entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
+%     [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
+%     if isequal(filename,0) || isequal(pathname,0)
+%         return; % cancel
+%     else
+%         entity=fullfile(pathname,filename);
+%     end
+% end
+% % load the entity, if a filename has been passed
+% if ~isstruct(entity)
+%     entity_file=entity;entity=[];
+%     
+%     % complete path, if missing
+%     [fP,fN,fE]=fileparts(entity_file);
+%     if isempty(fP),entity_file=[climada_global.data_dir filesep 'entities' filesep fN fE];end
+%     
+%     load(entity_file);
+% end
 
 % prompt for hazard_set if not given
-if isempty(hazard) % local GUI
-    hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
-    [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:');
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        hazard=fullfile(pathname,filename);
-    end
-end
-% load the hazard set, if a filename has been passed
-if ~isstruct(hazard)
-    hazard_file=hazard;hazard=[];
-    
-    % complete path, if missing
-    [fP,fN,fE]=fileparts(hazard_file);
-    if isempty(fP),hazard_file=[climada_global.data_dir filesep 'hazards' filesep fN fE];end
-    
-    load(hazard_file);
-end
+hazard = climada_hazard_load(hazard);
+% if isempty(hazard) % local GUI
+%     hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
+%     [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:');
+%     if isequal(filename,0) || isequal(pathname,0)
+%         return; % cancel
+%     else
+%         hazard=fullfile(pathname,filename);
+%     end
+% end
+% % load the hazard set, if a filename has been passed
+% if ~isstruct(hazard)
+%     hazard_file=hazard;hazard=[];
+%     
+%     % complete path, if missing
+%     [fP,fN,fE]=fileparts(hazard_file);
+%     if isempty(fP),hazard_file=[climada_global.data_dir filesep 'hazards' filesep fN fE];end
+%     
+%     load(hazard_file);
+% end
 
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
