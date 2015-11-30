@@ -30,6 +30,7 @@ function [h, h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, ma
 % Uli Theune, University of Alberta, 2004
 % modified by Stephanie Contardo, British Oceanographic Data Centre, 2006
 % Lea Mueller, muellele@gmail.com, 20150728, plot values above threshold mav 
+% Lea Mueller, muellele@gmail.com, 20151130, bugfix colorbar if all values are equal
 %-
 
 if ~exist('marker'     , 'var'), marker      = [];end
@@ -107,7 +108,9 @@ if colorbar_on
     caxis([miv-clrstep mav])
     colormap(map)
     %h = colorbar('ylim',[miv-clrstep mav]);
+    if miv == mav, mav = miv+1; end
     h = colorbar('ylim',[miv mav]);
+
     if v_exp
         ytick_ = get(h,'ytick');
         set(h,'YTick',ytick_,'YTickLabel',10.^ytick_)

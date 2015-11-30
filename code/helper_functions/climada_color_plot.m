@@ -21,7 +21,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % OPTIONAL INPUT PARAMETERS:
 %   figure_name: name of the figure window, if set to 'none', no figure is opened
 %   title_str:plot title
-%   plot_method: 'pcolor' or 'contour', default is matrix
+%   plot_method: 'pcolor', 'contour', 'plotclr', default is matrix
 %   interp_method: method in griddata, like 'linear', 'cubic',...
 %   npoints: the number of points used
 %   plot_centroids: if set to 0, do not plot dentroids as red dots
@@ -36,6 +36,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20120430
 % Lea Mueller, muellele@gmail.com, 20151124, add fig output
+% Lea Mueller, muellele@gmail.com, 20151130, add plotclr option
 %-
 
 fig = []; %init
@@ -122,7 +123,8 @@ switch plot_method
         colormap(cmap)
     case 'plotclr'
         marker = 's';
-        markersize = ''; colorbar_on = 1; miv = ''; mav = ''; 
+        markersize = ''; colorbar_on = 1; miv = ''; mav = '';
+        if numel(caxis_range)>1; miv = caxis_range(1); mav = caxis_range(2); end
         plotclr(lon,lat,values,marker, markersize, colorbar_on, miv, mav, cmap);
         box on; grid off %hold on;axis equal; % filled contour plot
     otherwise
