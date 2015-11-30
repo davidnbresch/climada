@@ -25,6 +25,7 @@ function entity=climada_entity_load(entity_file)
 % David N. Bresch, david.bresch@gmail.com, 20150820, memory use optimized, filename checked
 % Lea Mueller, muellele@gmail.com, 20151124, check that field .assets exist
 % Lea Mueller, muellele@gmail.com, 20151127, enhance to work with complete entity as input
+% Lea Mueller, muellele@gmail.com, 20151127, set entity_file to empty if a struct without .assets
 %-
 
 entity=[]; % init output
@@ -40,6 +41,7 @@ if ~exist('entity_file','var'),entity_file=[];end
 
 % if already a complete entity, return
 if isfield(entity_file,'assets'), entity = entity_file; return, end
+if isstruct(entity_file), entity_file = ''; end
 
 % prompt for entity_file if not given
 if isempty(entity_file) % local GUI

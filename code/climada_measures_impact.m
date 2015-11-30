@@ -85,6 +85,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150921, add measures check to ensure size of regional_scope is aligned with number of assets
 % Lea Mueller, muellele@gmail.com, 20150921, save entity as .mat if assets are switched (in entity.assets.filename)
 % Lea Mueller, muellele@gmail.com, 20151127, add measures_impact.scenario
+% Lea Mueller, muellele@gmail.com, 20151130, invoke climada_hazard_load and climada_entity_load
 %-
 
 global climada_global
@@ -108,48 +109,48 @@ debug_measure_i=0; % default=0 (switched off, no debugging)
 
 
 % prompt for entity if not given
-% entity = climada_entity_load(entity);
-if isempty(entity) % local GUI
-    entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
-    [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
-    if isequal(filename,0) || isequal(pathname,0)
-       return; % cancel
-    else
-       entity=fullfile(pathname,filename);
-    end
-end
-load the entity, if a filename has been passed
-if ~isstruct(entity)
-    entity_file=entity;entity=[];
-    vars = whos('-file', entity_file);
-    load(entity_file);
-    if ~strcmp(vars.name,'entity')
-        entity = eval(vars.name);
-        clear (vars.name)
-    end
-end
+entity = climada_entity_load(entity);
+% if isempty(entity) % local GUI
+%     entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
+%     [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
+%     if isequal(filename,0) || isequal(pathname,0)
+%        return; % cancel
+%     else
+%        entity=fullfile(pathname,filename);
+%     end
+% end
+% % load the entity, if a filename has been passed
+% if ~isstruct(entity)
+%     entity_file=entity;entity=[];
+%     vars = whos('-file', entity_file);
+%     load(entity_file);
+%     if ~strcmp(vars.name,'entity')
+%         entity = eval(vars.name);
+%         clear (vars.name)
+%     end
+% end
 
 % prompt for hazard if not given
-% hazard = climada_hazard_load(hazard);
-if isempty(hazard) % local GUI
-    hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
-    [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:');
-    if isequal(filename,0) || isequal(pathname,0)
-       return; % cancel
-    else
-       hazard=fullfile(pathname,filename);
-    end
-end
-% load the hazard, if a filename has been passed
-if ~isstruct(hazard)
-    hazard_file=hazard;hazard=[];
-    vars = whos('-file', hazard_file);
-    load(hazard_file);
-    if ~strcmp(vars.name,'hazard')
-        hazard = eval(vars.name);
-        clear (vars.name)
-    end
-end
+hazard = climada_hazard_load(hazard);
+% if isempty(hazard) % local GUI
+%     hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
+%     [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:');
+%     if isequal(filename,0) || isequal(pathname,0)
+%        return; % cancel
+%     else
+%        hazard=fullfile(pathname,filename);
+%     end
+% end
+% % load the hazard, if a filename has been passed
+% if ~isstruct(hazard)
+%     hazard_file=hazard;hazard=[];
+%     vars = whos('-file', hazard_file);
+%     load(hazard_file);
+%     if ~strcmp(vars.name,'hazard')
+%         hazard = eval(vars.name);
+%         clear (vars.name)
+%     end
+% end
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % prompt for reference result if not given
