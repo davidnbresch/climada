@@ -26,6 +26,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150729, add measures colormap
 % Lea Mueller, muellele@gmail.com, 20150922, add benefit for adaptation bar chart colormap
 % Lea Mueller, muellele@gmail.com, 20150924, special case if only one colour is required
+% Lea Mueller, muellele@gmail.com, 20151201, update benefit colors (grey, yellow, green, turqoise)
 %-
 
 cmap    = []; %init output
@@ -206,14 +207,28 @@ switch peril_ID
     case 'benefit'
         % create colormap for climada_MI_plot (averted damage)
         c_ax = [ ];
-        startcolor   = [193	205	193]/255; %honeydew 4
-        middlecolor  = [  0	201	 87]/255; %emeraldgreen
-        endcolor     = [ 61	145	 64]/255; %cobaltgreen
-        for i=1:3
-            cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
-            cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
-        end
-        cmap = [cmap1; cmap2];
+        
+        beginColor1  = [232 232 232]/255; %light grey
+        middleColor1 = [105 105 105]/255; %dark grey
+          
+        beginColor2  = [255 236 139]/255; %lightgolden 
+        %beginColor2  = [255 215   0]/255; %gold 1
+        middleColor2 = [102 205 0 ]/255; %chartreuse3
+        beginColor3 = [32 178 170 ]/255; %lightseagreen
+        middleColor3  = [ 0 134 139]/255; %turquoise 4
+        cmap1 = makeColorMap(beginColor1, middleColor1, 3);
+        cmap2 = makeColorMap(beginColor2, middleColor2, 8); %[255 153 18]/255 yellow
+        cmap3 = makeColorMap(beginColor3, middleColor3, 2); %[255 153 18]/255 yellow
+        cmap  = [cmap1(1:end-1,:); cmap2; cmap3];
+        
+        %startcolor   = [193	205	193]/255; %honeydew 4
+        %middlecolor  = [  0	201	 87]/255; %emeraldgreen
+        %endcolor     = [ 61	145	 64]/255; %cobaltgreen
+        %for i=1:3
+        %    cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
+        %    cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
+        %end
+        %cmap = [cmap1; cmap2];
         
      case 'measures'
         % create colormap for measures (adaptation_cost_curve)
