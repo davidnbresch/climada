@@ -33,6 +33,7 @@ function [struct_data, struct_name] = climada_load(struct_file,struct_type,silen
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151124, init from climada_entity_load
 % Lea Mueller, muellele@gmail.com, 20151130, move to climada/code/helper_functions
+% Lea Mueller, muellele@gmail.com, 20151202, enhance to work with multiple variables within one matfile
 %-
 
 % init output
@@ -76,6 +77,11 @@ if isfield(struct_file,'benefit')
     struct_name = 'measures_impact';
     return
 end
+
+% if it is still a struct, but we did not find the necessary fields for a
+% specific climada hazard file, we overwrite it and make the user select it
+% once more
+if isstruct(struct_file), struct_file = ''; end
 
 % struct_type defines the type of climada struct, either 'entity',
 % 'hazard', 'EDS', 'measures_impact', etc
@@ -149,20 +155,33 @@ if isempty(struct_file), fprintf('File not found.\n'); return, end
 
 % get information about the variable
 vars = whos('-file', struct_file);
-
+   
 % get name of the climada structure as a char
-struct_name = vars.name;
+struct_name = {vars.name};
 
 % finally load the file 
 load(struct_file);
-
-% rename the file to the selected struct_name
-eval_str = sprintf('struct_data = %s;',vars.name);
-eval(eval_str);
-clear(vars.name)
+   
+% default case, only one variable save in a filename
+if numel(struct_name)==1 
+    % rename the file to the selected struct_name
+    v_i = 1;
+    eval_str = sprintf('struct_data = %s;',struct_name{v_i});
+    eval(eval_str);
+    clear(struct_name{v_i})
+    
+else
+    % loop over variables
+    for v_i = 1:numel(struct_name)
+        % rename the file to the selected struct_name
+        eval_str = sprintf('struct_data.%s = %s;',struct_name{v_i},struct_name{v_i});
+        eval(eval_str);
+        clear(struct_name{v_i})
+    end
+end
 
 if ~silent_mode
-    fprintf('You have loaded a climada struct, originally named %s.\n', struct_name);
+    fprintf('You have loaded a climada struct, originally named %s.\n', struct_name{:});
 end
 
 

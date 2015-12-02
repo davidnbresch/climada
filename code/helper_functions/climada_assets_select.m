@@ -36,6 +36,7 @@ function [is_selected,peril_criterum,unit_criterium,category_criterium] = climad
 % Lea Mueller, muellele@gmail.com, 20150924, add silent_mode option
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
 % Lea Mueller, muellele@gmail.com, 20151120, make sure that category_criterium is a cell and not a char
+% Lea Mueller, muellele@gmail.com, 20151202, replace strcmp with ismember for multiple category_criterium as a cell
 % -
 
 
@@ -83,7 +84,11 @@ if ~isempty(category_criterium)
     if ischar(category_criterium), category_criterium = {category_criterium}; end
     if isfield(entity.assets, 'Category')
         if iscell(category_criterium)
-            is_category  = strcmp(entity.assets.Category, category_criterium);
+            if numel(category_criterium)>1
+                is_category  = ismember(entity.assets.Category, category_criterium);
+            else
+                is_category  = strcmp(entity.assets.Category, category_criterium);
+            end
         elseif isnumeric(category_criterium)
             is_category  = ismember(entity.assets.Category, category_criterium);
         end

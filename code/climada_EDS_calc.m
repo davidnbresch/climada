@@ -96,7 +96,9 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20150910, set sanity_check to silent_mode
 % Lea Mueller, muellele@gmail.com, 20151117, replace output string to "Calculating damage" instead of "processing"
 % Lea Mueller, muellele@gmail.com, 20151127, add EDS.scenario, EDS.assets.reference_year and EDS.assets.region, add EDS.hazard.refence_year and EDS.hazard.scenario
+% Lea Mueller, muellele@gmail.com, 20151127, add EDS.assets.Category
 %-
+
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -421,11 +423,12 @@ EDS.hazard.comment  = char(hazard.comment);
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.lat = entity.assets.lat;
 EDS.assets.lon = entity.assets.lon;
-EDS.assets.Value     = entity.assets.Value; % note EDS.Value is sum of...
+EDS.assets.Value = entity.assets.Value; % note EDS.Value is sum of...
 if isfield(entity.assets,'admin0_name'),EDS.assets.admin0_name=entity.assets.admin0_name;end
 if isfield(entity.assets,'admin0_ISO3'),EDS.assets.admin0_ISO3=entity.assets.admin0_ISO3;end
 if isfield(entity.assets,'admin1_name'),EDS.assets.admin1_name=entity.assets.admin1_name;end
 if isfield(entity.assets,'admin1_code'),EDS.assets.admin1_code=entity.assets.admin1_code;end
+if isfield(entity.assets,'Category'), EDS.assets.Category = entity.assets.Category; end
 if isfield(entity.assets,'region'),EDS.assets.region=entity.assets.region;end
 if isfield(entity.assets,'reference_year')
     EDS.assets.reference_year=entity.assets.reference_year;

@@ -1,7 +1,7 @@
-function measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2)
+function measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2,combine_modus)
 % climada measures impact combine
 % MODULE:
-%   core
+%   core/helper_functions
 % NAME:
 %   climada_measures_impact_combine
 % PURPOSE:
@@ -26,13 +26,18 @@ function measures_impact=climada_measures_impact_combine(measures_impact1,measur
 %       by climada_measures_impact) if measures_impact2 is an array of 
 %       measures_impact2(i), the code will recursively treat them
 % OPTIONAL INPUT PARAMETERS:
+%   combine_modus: a string, either 'add_measures' or 'delete_measures' to
+%   add impacts from measures that only exist in measures_impact1 or
+%       measures_impact2, or to delete measures that do not exist in both
+%       measures_impacts
 % OUTPUTS:
 %   measures_impact: the combined measures_impact
 %       Please note that assets are likely not meaningful, since just taken
 %       from measures_impact1 (in order to allow to store resulting measures_impact back into an
 %       array of measures_impacts if needed)
 % MODIFICATION HISTORY:
-% Lea Mueller, muellele@gmail.com, 20150617, init, based on climada_EDS_combine
+% Lea Mueller, muellele@gmail.com, 20150617, init based on climada_EDS_combine
+% Lea Mueller, muellele@gmail.com, 20151202, combine also EDS, add 'delete_measures' option
 %-
 
 measures_impact=[]; % init output
@@ -44,12 +49,17 @@ if ~climada_init_vars,return;end % init/import global variables
 % and to set default value where  appropriate
 if ~exist('measures_impact1','var'),return;end
 if ~exist('measures_impact2','var'),measures_impact2=[];end
+if ~exist('combine_modus','var'),combine_modus='';end
+
 
 % PARAMETERS
 %
 % define all parameters here - no parameters to be defined in code below
 %
 % set default value for param2 if not given
+
+if isempty(combine_modus),combine_modus ='add_measures';end
+
 
 if isempty(measures_impact2)
     if length(measures_impact1)==1
@@ -73,43 +83,111 @@ if length(measures_impact1)>1 || length(measures_impact2)>1
     return
 end
 
+% init output
+measures_impact = measures_impact1; 
 
-measures_impact=measures_impact1; % init output
+% get names of all measures
+measure_name_list = unique({measures_impact1.measures.name{:} measures_impact2.measures.name{:}},'stable');
 
 %loop over all measures from measures_impact1
-for m_i = 1:length(measures_impact1.ED)-1
+for m_i = 1:numel(measure_name_list) %length(measures_impact1.ED)-1
     
-    %find same measure in measures_impact2
-    indx = find(strcmp(measures_impact1.measures.name(m_i),measures_impact2.measures.name));
-    if indx>0 & numel(indx)==1
-        % add expectedd damage from different perils
-        measures_impact.ED(m_i)               = measures_impact1.ED(m_i)               + measures_impact2.ED(indx);
-        % add benefits, risk_transfer, ED_cb_ratio
-        measures_impact.ED_benefit(m_i)       = measures_impact1.ED_benefit(m_i)       + measures_impact2.ED_benefit(indx);
-        measures_impact.ED_risk_transfer(m_i) = measures_impact1.ED_risk_transfer(m_i) + measures_impact2.ED_risk_transfer(indx);
-        measures_impact.benefit(m_i)          = measures_impact1.benefit(m_i)          + measures_impact2.benefit(indx);
-        measures_impact.risk_transfer(m_i)    = measures_impact1.risk_transfer(m_i)    + measures_impact2.risk_transfer(indx);
+    %find same measure in measures_impact1 and measures_impact2
+    is_measure_1 = find(strcmp(measure_name_list{m_i},measures_impact1.measures.name));
+    is_measure_2 = find(strcmp(measure_name_list{m_i},measures_impact2.measures.name));
+    
+    if ~isempty(is_measure_1) && ~isempty(is_measure_2)
+        if numel(is_measure_2)==1 && numel(is_measure_1)==1
+            
+            fprintf('Similar measure (%s), combine damage \n\t - %s \n\t - %s \n',measure_name_list{m_i},measures_impact1.peril_ID,measures_impact2.peril_ID)
+            
+            % add EDS damage from different perils
+            measures_impact.EDS(is_measure_1).ED_at_centroid = measures_impact1.EDS(is_measure_1).ED_at_centroid + ...
+                                                               measures_impact2.EDS(is_measure_2).ED_at_centroid; 
+            measures_impact.EDS(is_measure_1).ED             = measures_impact1.EDS(is_measure_1).ED + ...
+                                                               measures_impact2.EDS(is_measure_2).ED;    
+            measures_impact.EDS(is_measure_1).peril_ID       = ['Combined ' measures_impact1.EDS(is_measure_1).peril_ID ', ' ...
+                                                                measures_impact2.EDS(is_measure_2).peril_ID];                                               
+            % do not add EDS.Value
 
-        % do NOT add costs, as most often the cost of a measure is already the total cost
-        % measures_impact.measures.cost(m_i)  = measures_impact1.measures.cost(m_i)    + measures_impact2.measures.cost(indx) ; 
-    
-        %recalculate CB_ratio
-        %costs are costs as in measures table plus expected damage (for risk transfer only)
-        measures_impact.cb_ratio(m_i)         = ( measures_impact1.measures.cost(m_i) +measures_impact1.risk_transfer(m_i)...
-                                                 +measures_impact2.measures.cost(indx)+measures_impact2.risk_transfer(indx))...
-                                                /measures_impact.benefit(m_i);
-        measures_impact.ED_cb_ratio(m_i)      = ( measures_impact1.measures.cost(m_i) +measures_impact1.risk_transfer(m_i)...
-                                                 +measures_impact2.measures.cost(indx)+measures_impact2.risk_transfer(indx))...
-                                                /measures_impact.benefit(m_i);                        
+            % add expected damage from different perils
+            measures_impact.ED(is_measure_1)               = measures_impact1.ED(is_measure_1)               + measures_impact2.ED(is_measure_2);
+            % add benefits, risk_transfer, ED_cb_ratio
+            measures_impact.ED_benefit(is_measure_1)       = measures_impact1.ED_benefit(is_measure_1)       + measures_impact2.ED_benefit(is_measure_2);
+            measures_impact.ED_risk_transfer(is_measure_1) = measures_impact1.ED_risk_transfer(is_measure_1) + measures_impact2.ED_risk_transfer(is_measure_2);
+            measures_impact.benefit(is_measure_1)          = measures_impact1.benefit(is_measure_1)          + measures_impact2.benefit(is_measure_2);
+            measures_impact.risk_transfer(is_measure_1)    = measures_impact1.risk_transfer(is_measure_1)    + measures_impact2.risk_transfer(is_measure_2);
+
+            % do NOT add costs, as most often the cost of a measure is already the total cost
+            % measures_impact.measures.cost(m_i)  = measures_impact1.measures.cost(m_i)    + measures_impact2.measures.cost(indx) ; 
+
+            %recalculate CB_ratio
+            %costs are costs as in measures table plus expected damage (for risk transfer only)
+            measures_impact.cb_ratio(is_measure_1)    = ( measures_impact1.measures.cost(is_measure_1) +measures_impact1.risk_transfer(is_measure_1)...
+                                                         +measures_impact2.measures.cost(is_measure_2)+measures_impact2.risk_transfer(is_measure_2))...
+                                                         /measures_impact.benefit(is_measure_1);
+            measures_impact.ED_cb_ratio(is_measure_1) = ( measures_impact1.measures.cost(is_measure_1) +measures_impact1.risk_transfer(is_measure_1)...
+                                                         +measures_impact2.measures.cost(is_measure_2)+measures_impact2.risk_transfer(is_measure_2))...
+                                                         /measures_impact.benefit(is_measure_1);   
+        end
+                                                 
+    else
+        if strcmp(combine_modus,'add_measures')
+            % measure exists in measures_impact2, but not in measures_impact1,
+            % ADD this measure to the combined measures_impact
+            if isempty(is_measure_1) && numel(is_measure_2)==1
+                measures_impact.EDS(end+1) = measures_impact.EDS(end); % append a copy of 'control'
+                measures_impact.EDS(end-1) = measures_impact2.EDS(is_measure_2); %overwrite second last with new measure
+
+                measures_impact.ED(end+1) = measures_impact.ED(end); % append a copy of 'control'
+                measures_impact.ED(end-1) = measures_impact2.ED(is_measure_2); %overwrite second last with new measure
+
+                measures_impact.ED_benefit(end+1) = measures_impact2.ED_benefit(is_measure_2);
+                measures_impact.ED_risk_transfer(end+1) = measures_impact2.ED_risk_transfer(is_measure_2);
+                measures_impact.benefit(end+1) = measures_impact2.benefit(is_measure_2);
+                measures_impact.risk_transfer(end+1) = measures_impact2.risk_transfer(is_measure_2);
+                measures_impact.cb_ratio(end+1) = measures_impact2.cb_ratio(is_measure_2);
+                measures_impact.ED_cb_ratio(end+1) = measures_impact2.ED_cb_ratio(is_measure_2); 
+            end
+        end %add_measures                                          
     end
 end
-% add expectedd damage from different perils, without measures
+
+% at the end, delete unwated measures
+if strcmp(combine_modus,'delete_measures')
+    %loop over all measures from measures_impact1
+    for m_i = 1:numel(measure_name_list) 
+        %find same measure in measures_impact1 and measures_impact2
+        is_measure_1 = find(strcmp(measure_name_list{m_i},measures_impact1.measures.name));
+        is_measure_2 = find(strcmp(measure_name_list{m_i},measures_impact2.measures.name));
+        
+        % measure exists in measures_impact2, but not in measures_impact1,
+        % DELETE this measure from the combined measures_impact
+        if isempty(is_measure_1) || isempty(is_measure_2)
+            measures_impact.EDS(is_measure_1) = [];
+            measures_impact.ED(is_measure_1) = [];
+            measures_impact.ED_benefit(is_measure_1) = [];
+            measures_impact.ED_risk_transfer(is_measure_1) = [];
+            measures_impact.benefit(is_measure_1) = [];
+            measures_impact.risk_transfer(is_measure_1) = [];
+            measures_impact.cb_ratio(is_measure_1) = [];
+            measures_impact.ED_cb_ratio(is_measure_1) = [];
+        end
+    end
+end %delete_measures
+        
+% add expected damage from different perils, without measures
+measures_impact.EDS(end).ED_at_centroid  = measures_impact1.EDS(end).ED_at_centroid + measures_impact2.EDS(end).ED_at_centroid;
+measures_impact.EDS(end).ED              = sum(measures_impact.EDS(end).ED_at_centroid);
+measures_impact.EDS(end).peril_ID        = ['Combined ' measures_impact1.EDS(end).peril_ID ', ' measures_impact2.EDS(end).peril_ID];    
+
+% add expected damage from different perils, without measures
 measures_impact.ED(end)  = measures_impact1.ED(end) + measures_impact2.ED(end);
 % add total climate risk
 measures_impact.NPV_total_climate_risk = measures_impact1.NPV_total_climate_risk + measures_impact2.NPV_total_climate_risk;
 
 % append all perils
-measures_impact.peril_ID = ['Combined' measures_impact1.peril_ID ', ' measures_impact2.peril_ID];
+measures_impact.peril_ID = ['Combined ' measures_impact1.peril_ID ', ' measures_impact2.peril_ID];
 % measures_impact.peril_ID = {measures_impact1.peril_ID measures_impact2.peril_ID};
 
 % add up risk premiums
