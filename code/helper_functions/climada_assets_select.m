@@ -37,6 +37,7 @@ function [is_selected,peril_criterum,unit_criterium,category_criterium] = climad
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
 % Lea Mueller, muellele@gmail.com, 20151120, make sure that category_criterium is a cell and not a char
 % Lea Mueller, muellele@gmail.com, 20151202, replace strcmp with ismember for multiple category_criterium as a cell
+% Lea Mueller, muellele@gmail.com, 20151203, set print_cat to 0 if category-criterium is a cell (and not numeric)
 % -
 
 
@@ -121,10 +122,10 @@ end
 % set empty unit or category criterium if not given, that goes together
 % with the selected unit/category criterium
 print_cat = 1;
-if isfield(entity.assets, 'Category') & isfield(entity.assets, 'Value_unit')
+if isfield(entity.assets, 'Category') && isfield(entity.assets, 'Value_unit')
     unit_criterium = unique(entity.assets.Value_unit(is_selected));
     category_criterium = unique(entity.assets.Category(is_selected));
-elseif isfield(entity.assets, 'Category') & ~isfield(entity.assets, 'Value_unit')
+elseif isfield(entity.assets, 'Category') && ~isfield(entity.assets, 'Value_unit')
     category_criterium = unique(entity.assets.Category(is_selected));
     print_cat = 0;
 end
@@ -154,7 +155,10 @@ if isnumeric(category_criterium)
     category_criterium_str = sprintf('%d, ',category_criterium);
     category_criterium_str(end-1:end) = [];
 else
-    category_criterium_str = category_criterium;
+    %category_criterium_str = category_criterium;
+    %category_criterium_str = char(category_criterium);
+    category_criterium_str = category_criterium{1};
+    %print_cat = 0;
 end
         
 if ~silent_mode
