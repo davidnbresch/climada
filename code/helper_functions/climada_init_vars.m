@@ -35,6 +35,7 @@ function ok=climada_init_vars(reset_flag)
 % Lea Mueller, muellele@gmail.com, 20150831, introduce climada_global.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20150906, climada_global.font_scale
 % Lea Mueller, muellele@gmail.com, 20150924, introduce climada_global.max_distance_to_hazard
+% Lea Mueller, muellele@gmail.com, 20151204, introduce climada_global.markersize, for climada_color_plot and plotclr
 %
 
 global climada_global
@@ -189,6 +190,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % to scale (some) fonts in plots, usefule to create eg ppt visuals
     % (larger fonts than on the screen for expert users)
     climada_global.font_scale=1; % integer only, please, default=1, useful for ppt is 2 or 3
+    climada_global.markersize=5; % integer only, please, default=4, used in climada_color_plot and plotclr
     
     climada_vars_initialised=1; % indicate we have initialized all vars
     

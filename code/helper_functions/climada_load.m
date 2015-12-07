@@ -5,8 +5,8 @@ function [struct_data, struct_name] = climada_load(struct_file,struct_type,silen
 % NAME:
 %   climada_load
 % PURPOSE:
-%   load any climada struct (entity, EDS, hazard, centroids) and set
-%   variable_name yourself with struct_data
+%   Load any climada struct (entity, EDS, hazard, centroids) and set
+%   variable_name yourself with struct_data. Identify variable type.
 % CALLING SEQUENCE:
 %   [struct_data, struct_name] = climada_load(struct_file,struct_type)
 % EXAMPLE:
@@ -34,6 +34,7 @@ function [struct_data, struct_name] = climada_load(struct_file,struct_type,silen
 % Lea Mueller, muellele@gmail.com, 20151124, init from climada_entity_load
 % Lea Mueller, muellele@gmail.com, 20151130, move to climada/code/helper_functions
 % Lea Mueller, muellele@gmail.com, 20151202, enhance to work with multiple variables within one matfile
+% Lea Mueller, muellele@gmail.com, 20151207, identify any given struct_file as input, identify entity with .ED field
 %-
 
 % init output
@@ -51,7 +52,7 @@ if ~exist('silent_mode','var'),silent_mode=0;end
 
 
 % if already a complete entity, return
-if isfield(struct_file,'Value')
+if isfield(struct_file,'assets') && ~isfield(struct_file,'ED')
     struct_data = struct_file;
     struct_name = 'entity';
     return

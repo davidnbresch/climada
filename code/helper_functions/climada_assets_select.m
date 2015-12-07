@@ -38,7 +38,8 @@ function [is_selected,peril_criterum,unit_criterium,category_criterium] = climad
 % Lea Mueller, muellele@gmail.com, 20151120, make sure that category_criterium is a cell and not a char
 % Lea Mueller, muellele@gmail.com, 20151202, replace strcmp with ismember for multiple category_criterium as a cell
 % Lea Mueller, muellele@gmail.com, 20151203, set print_cat to 0 if category-criterium is a cell (and not numeric)
-% -
+% Lea Mueller, muellele@gmail.com, 20151207, invoke climada_assets_category_ID (use assets.Category_name and assets.Category_ID)
+%-
 
 
 % poor man's version to check arguments
@@ -84,15 +85,24 @@ if ~isempty(category_criterium)
     % make sure that category_criterium is a cell and not a char
     if ischar(category_criterium), category_criterium = {category_criterium}; end
     if isfield(entity.assets, 'Category')
-        if iscell(category_criterium)
-            if numel(category_criterium)>1
-                is_category  = ismember(entity.assets.Category, category_criterium);
-            else
-                is_category  = strcmp(entity.assets.Category, category_criterium);
-            end
-        elseif isnumeric(category_criterium)
-            is_category  = ismember(entity.assets.Category, category_criterium);
-        end
+        
+        if ~isfield(entity.assets,'Category_name')
+            % assign category IDs and create category names in a table
+            entity.assets = climada_assets_category_ID(entity.assets);
+        end 
+        is_category_name = ismember(entity.assets.Category_name, category_criterium);
+        is_category = ismember(entity.assets.Category,entity.assets.Category_ID(is_category_name));
+                
+        %if iscell(category_criterium)
+        %    if numel(category_criterium)>1
+        %        is_category_name = ismember(entity.assets.Category_name, category_criterium);
+        %        is_category = ismember(entity.assets.Category,entity.assets.Category_ID(is_category_name));
+        %    %else
+        %        %is_category  = strcmp(entity.assets.Category, category_criterium);
+        %    end
+        %elseif isnumeric(category_criterium)
+        %    is_category  = ismember(entity.assets.Category, category_criterium);
+        %end
     end
 end
 
@@ -127,14 +137,14 @@ if isfield(entity.assets, 'Category') && isfield(entity.assets, 'Value_unit')
     category_criterium = unique(entity.assets.Category(is_selected));
 elseif isfield(entity.assets, 'Category') && ~isfield(entity.assets, 'Value_unit')
     category_criterium = unique(entity.assets.Category(is_selected));
-    print_cat = 0;
+    %print_cat = 0;
 end
 
 
 % create strings for fprintf
 if iscell(peril_criterum)
     peril_criterum_str = sprintf('%s, ',peril_criterum{:});
-    if numel(peril_criterum)>1
+    if numel(peril_criterum)>=1
         peril_criterum_str(end-1:end) = [];
     end
 else
@@ -143,27 +153,38 @@ end
 
 if iscell(unit_criterium)
     unit_criterium_str = sprintf('%s, ',unit_criterium{:});
-    if numel(unit_criterium)>1
+    if numel(unit_criterium)>=1
         unit_criterium_str(end-1:end) = [];
     end
 else
     unit_criterium_str = unit_criterium;
 end
 
-% transform num to string
-if isnumeric(category_criterium)
-    category_criterium_str = sprintf('%d, ',category_criterium);
+is_category_ID = ismember(entity.assets.Category_ID,category_criterium);
+category_criterium = entity.assets.Category_name(is_category_ID);
+category_criterium_str = sprintf('%s, ',category_criterium{:});
+if numel(category_criterium)>=1
     category_criterium_str(end-1:end) = [];
-else
-    %category_criterium_str = category_criterium;
-    %category_criterium_str = char(category_criterium);
-    category_criterium_str = category_criterium{1};
-    %print_cat = 0;
 end
+    
+% transform num to string
+% if isnumeric(category_criterium)
+%     category_criterium_str = sprintf('%d, ',category_criterium);
+%     category_criterium_str(end-1:end) = [];
+% else
+%     %category_criterium_str = category_criterium;
+%     %category_criterium_str = char(category_criterium);
+%     category_criterium_str = category_criterium{1};
+%     %print_cat = 0;
+% end
         
 if ~silent_mode
     if print_cat
-        fprintf('%d locations selected (%s, %s, %s)\n',sum(is_selected),peril_criterum_str, unit_criterium_str, category_criterium_str)
+        try
+            fprintf('%d locations selected (%s, %s, %s)\n',sum(is_selected),peril_criterum_str, unit_criterium_str, category_criterium_str)
+        catch
+            fprintf('%d locations selected (%s, %s)\n',sum(is_selected),peril_criterum_str, unit_criterium_str)
+        end
     else
         fprintf('%d locations selected (%s, %s)\n',sum(is_selected),peril_criterum_str, unit_criterium_str)
     end

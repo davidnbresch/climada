@@ -97,6 +97,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20151117, replace output string to "Calculating damage" instead of "processing"
 % Lea Mueller, muellele@gmail.com, 20151127, add EDS.scenario, EDS.assets.reference_year and EDS.assets.region, add EDS.hazard.refence_year and EDS.hazard.scenario
 % Lea Mueller, muellele@gmail.com, 20151127, add EDS.assets.Category
+% Lea Mueller, muellele@gmail.com, 20151127, invoke climada_assets_category_ID, add EDS.assets.Category_name and EDS.assets.Category_ID
 %-
 
 
@@ -429,6 +430,8 @@ if isfield(entity.assets,'admin0_ISO3'),EDS.assets.admin0_ISO3=entity.assets.adm
 if isfield(entity.assets,'admin1_name'),EDS.assets.admin1_name=entity.assets.admin1_name;end
 if isfield(entity.assets,'admin1_code'),EDS.assets.admin1_code=entity.assets.admin1_code;end
 if isfield(entity.assets,'Category'), EDS.assets.Category = entity.assets.Category; end
+if isfield(entity.assets,'Category_name'), EDS.assets.Category_name = entity.assets.Category_name; end
+if isfield(entity.assets,'Category_ID'), EDS.assets.Category_ID = entity.assets.Category_ID; end
 if isfield(entity.assets,'region'),EDS.assets.region=entity.assets.region;end
 if isfield(entity.assets,'reference_year')
     EDS.assets.reference_year=entity.assets.reference_year;
