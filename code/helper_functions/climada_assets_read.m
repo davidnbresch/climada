@@ -39,6 +39,8 @@ function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
 % Lea Mueller, muellele@gmail.com, 20151117, init from climada_entity_read to read only assets
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 % Lea Mueller, muellele@gmail.com, 20151127, add assets.region and assets.refence_year
+% Lea Mueller, muellele@gmail.com, 20151207, return if already a complete assets structure as input
+% Lea Mueller, muellele@gmail.com, 20151207, invoke climada_assets_category_ID
 %-
 
 global climada_global
@@ -56,6 +58,12 @@ if ~exist('hazard','var'),hazard=[];end
 % PARAMETERS
 %
 
+% if already a complete assets, return
+if isfield(assets_filename,'lon') && isfield(assets_filename,'lat') && isfield(assets_filename,'Value')
+    assets = assets_filename; return
+end
+if isstruct(assets_filename), assets_filename = ''; end
+
 % prompt for entity_filename if not given
 if isempty(assets_filename) % local GUI
     assets_filename      = [climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
@@ -66,6 +74,8 @@ if isempty(assets_filename) % local GUI
         assets_filename = fullfile(pathname,filename);
     end
 end
+
+
 
 % figure out the file type
 [fP,fN,fE] = fileparts(assets_filename);
@@ -123,6 +133,8 @@ end
 if ~isfield(assets,'Value_unit')
     assets.Value_unit = repmat({climada_global.Value_unit},size(assets.Value));
 end
+
+if isfield(assets,'Category'), assets = climada_assets_category_ID; end
 
 % add assets.region, use only first entry
 % rename .Region to .region

@@ -1,4 +1,4 @@
-function measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2,combine_modus)
+function measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2,combine_modus,silent_mode)
 % climada measures impact combine
 % MODULE:
 %   core/helper_functions
@@ -16,9 +16,9 @@ function measures_impact=climada_measures_impact_combine(measures_impact1,measur
 %
 %   call before: climada_adaptation_cost_curve
 % CALLING SEQUENCE:
-%   measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2)
+%   measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2,combine_modus,silent_mode)
 % EXAMPLE:
-%   measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2)
+%   measures_impact=climada_measures_impact_combine(measures_impact1,measures_impact2,combine_modus,silent_mode)
 % INPUTS:
 %   measures_impact1: a climada measures_impact structure (as returned eg 
 %       by climada_measures_impact).
@@ -38,6 +38,7 @@ function measures_impact=climada_measures_impact_combine(measures_impact1,measur
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150617, init based on climada_EDS_combine
 % Lea Mueller, muellele@gmail.com, 20151202, combine also EDS, add 'delete_measures' option
+% Lea Mueller, muellele@gmail.com, 20151202, add option silent_mode
 %-
 
 measures_impact=[]; % init output
@@ -50,6 +51,7 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('measures_impact1','var'),return;end
 if ~exist('measures_impact2','var'),measures_impact2=[];end
 if ~exist('combine_modus','var'),combine_modus='';end
+if ~exist('silent_mode','var'), silent_mode = ''; end
 
 
 % PARAMETERS
@@ -59,6 +61,7 @@ if ~exist('combine_modus','var'),combine_modus='';end
 % set default value for param2 if not given
 
 if isempty(combine_modus),combine_modus ='add_measures';end
+if isempty(silent_mode), silent_mode = 0; end 
 
 
 if isempty(measures_impact2)
@@ -67,14 +70,14 @@ if isempty(measures_impact2)
         return % nothing to do
     else
         % measures_impact1 contains more than one measures_impact, try recursive
-        fprintf('more than one measures_impact1\n');
-        measures_impact=climada_measures_impact_combine(measures_impact1(1),measures_impact1(2:end));
+        if ~silent_mode, fprintf('more than one measures_impact1\n');end
+        measures_impact=climada_measures_impact_combine(measures_impact1(1),measures_impact1(2:end),'',silent_mode);
         return
     end
 elseif length(measures_impact2)>1
     % measures_impact2 contains more than one measures_impact, try recursive
-    fprintf('more than one measures_impact2\n');
-    measures_impact2=climada_measures_impact_combine(measures_impact2(1),measures_impact2(2:end));
+    if ~silent_mode,fprintf('more than one measures_impact2\n');end
+    measures_impact2=climada_measures_impact_combine(measures_impact2(1),measures_impact2(2:end),'',silent_mode);
 end
 
 % by now, measures_impact1 and measures_impact2 should be one measures_impact each
@@ -87,7 +90,7 @@ end
 measures_impact = measures_impact1; 
 
 % get names of all measures
-measure_name_list = unique({measures_impact1.measures.name{:} measures_impact2.measures.name{:}},'stable');
+measure_name_list = unique({measures_impact.measures.name{:} measures_impact2.measures.name{:}},'stable');
 
 %loop over all measures from measures_impact1
 for m_i = 1:numel(measure_name_list) %length(measures_impact1.ED)-1
@@ -99,7 +102,9 @@ for m_i = 1:numel(measure_name_list) %length(measures_impact1.ED)-1
     if ~isempty(is_measure_1) && ~isempty(is_measure_2)
         if numel(is_measure_2)==1 && numel(is_measure_1)==1
             
-            fprintf('Similar measure (%s), combine damage \n\t - %s \n\t - %s \n',measure_name_list{m_i},measures_impact1.peril_ID,measures_impact2.peril_ID)
+            if ~silent_mode,
+                fprintf('Similar measure (%s), combine damage \n\t - %s \n\t - %s \n',measure_name_list{m_i},measures_impact1.peril_ID,measures_impact2.peril_ID)
+            end
             
             % add EDS damage from different perils
             measures_impact.EDS(is_measure_1).ED_at_centroid = measures_impact1.EDS(is_measure_1).ED_at_centroid + ...
@@ -113,6 +118,11 @@ for m_i = 1:numel(measure_name_list) %length(measures_impact1.ED)-1
             % add expected damage from different perils
             measures_impact.ED(is_measure_1)               = measures_impact1.ED(is_measure_1)               + measures_impact2.ED(is_measure_2);
             % add benefits, risk_transfer, ED_cb_ratio
+            if ~silent_mode,
+                fprintf('Measure %s\n',measure_name_list{m_i})
+                fprintf('MI1: %s, %s\n',measures_impact1.scenario.name, measures_impact1.peril_ID)
+                fprintf('MI2: %s, %s\n',measures_impact2.scenario.name, measures_impact2.peril_ID)
+            end
             measures_impact.ED_benefit(is_measure_1)       = measures_impact1.ED_benefit(is_measure_1)       + measures_impact2.ED_benefit(is_measure_2);
             measures_impact.ED_risk_transfer(is_measure_1) = measures_impact1.ED_risk_transfer(is_measure_1) + measures_impact2.ED_risk_transfer(is_measure_2);
             measures_impact.benefit(is_measure_1)          = measures_impact1.benefit(is_measure_1)          + measures_impact2.benefit(is_measure_2);
@@ -159,11 +169,12 @@ if strcmp(combine_modus,'delete_measures')
     for m_i = 1:numel(measure_name_list) 
         %find same measure in measures_impact1 and measures_impact2
         is_measure_1 = find(strcmp(measure_name_list{m_i},measures_impact1.measures.name));
-        is_measure_2 = find(strcmp(measure_name_list{m_i},measures_impact2.measures.name));
+        is_measure_2 = find(strcmp(measure_name_list{m_i},measures_impact2.measures.name), 1);
         
         % measure exists in measures_impact2, but not in measures_impact1,
         % DELETE this measure from the combined measures_impact
         if isempty(is_measure_1) || isempty(is_measure_2)
+            if ~silent_mode, fprintf('Delete measure %s\n',measure_name_list{m_i}), end
             measures_impact.EDS(is_measure_1) = [];
             measures_impact.ED(is_measure_1) = [];
             measures_impact.ED_benefit(is_measure_1) = [];
@@ -187,7 +198,7 @@ measures_impact.ED(end)  = measures_impact1.ED(end) + measures_impact2.ED(end);
 measures_impact.NPV_total_climate_risk = measures_impact1.NPV_total_climate_risk + measures_impact2.NPV_total_climate_risk;
 
 % append all perils
-measures_impact.peril_ID = ['Combined ' measures_impact1.peril_ID ', ' measures_impact2.peril_ID];
+measures_impact.peril_ID = ['Combined ' measures_impact1.peril_ID ', ' strrep(measures_impact2.peril_ID,'Combined ','')];
 % measures_impact.peril_ID = {measures_impact1.peril_ID measures_impact2.peril_ID};
 
 % add up risk premiums

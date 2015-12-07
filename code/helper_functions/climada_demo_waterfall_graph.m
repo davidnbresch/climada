@@ -66,6 +66,8 @@ end
 % get the entity (note that climada_entity_read only reads if .xls is more
 % recent than an eventually existing .mat)
 entity_present = climada_entity_read(climada_demo_entity_excel_file,hazard_present);
+% add reference_year
+% entity_present.assets.reference_year = climada_global.present_reference_year;
 
 % update entity (we start from entity_today, kind of the 'template')
 % -------------
@@ -76,6 +78,8 @@ delta_years                = climada_global.future_reference_year - climada_glob
 growth_factor              = (1+climada_demo_params.growth)^delta_years;
 entity_future.assets.Value = entity_present.assets.Value.*growth_factor;
 entity_future.assets.Cover = entity_future.assets.Value;
+% add reference_year
+% entity_future.assets.reference_year = climada_global.future_reference_year;
 
 %fprintf('CAGR of %2.1f%% leads to cumulated growth of %3.0f%% until %i\n',...
 %    climada_demo_params.growth*100,...

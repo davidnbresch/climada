@@ -1,4 +1,4 @@
-function measures_impact = climada_measures_impact_combine_scenario(measures_impact1,measures_impact2,measures_impact3,peril_list)
+function measures_impact = climada_measures_impact_combine_scenario(measures_impact1,measures_impact2,measures_impact3,peril_list,silent_mode)
 % climada measures impact combine scenario
 % MODULE:
 %   core/helper_functions
@@ -12,9 +12,9 @@ function measures_impact = climada_measures_impact_combine_scenario(measures_imp
 %
 %   invokes: climada_measures_impact_combine
 % CALLING SEQUENCE:
-%   measures_impact=climada_measures_impact_combine_scenario(measures_impact1,measures_impact2,measures_impact3)
+%   measures_impact=climada_measures_impact_combine_scenario(measures_impact1,measures_impact2,measures_impact3,peril_list,silent_mode)
 % EXAMPLE:
-%   measures_impact=climada_measures_impact_combine_scenario(measures_impact1)
+%   measures_impact=climada_measures_impact_combine_scenario(measures_impact1,'','',{'TC' 'FL'})
 % INPUTS:
 %   measures_impact1: a climada measures_impact structure (as returned eg 
 %       by climada_measures_impact).
@@ -34,6 +34,7 @@ function measures_impact = climada_measures_impact_combine_scenario(measures_imp
 %       array of measures_impacts if needed)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151202, init
+% Lea Mueller, muellele@gmail.com, 20151202, add option silent_mode
 %-
 
 measures_impact=[]; % init output
@@ -47,6 +48,8 @@ if ~exist('measures_impact1','var'),return;end
 if ~exist('measures_impact2','var'),measures_impact2=[];end
 if ~exist('measures_impact3','var'),measures_impact3=[];end
 if ~exist('peril_list','var'),peril_list='';end
+if ~exist('silent_mode','var'), silent_mode = ''; end
+
 
 
 % PARAMETERS
@@ -56,6 +59,7 @@ if ~exist('peril_list','var'),peril_list='';end
 % set default value for param2 if not given
 
 if ~isfield(measures_impact1,'scenario'),return, end
+if isempty(silent_mode), silent_mode = 0; end 
 
 measures_impact = measures_impact1;
 if ~isempty(measures_impact2) 
@@ -88,11 +92,13 @@ for s_i = 1:numel(scenario_unique)
     is_peril    = ismember(peril_list_all,peril_list);
     is_selected = logical(is_scenario .* is_peril);
     
-    measures_impact_temp = [];
-    measures_impact_temp = measures_impact(is_selected);
+    if sum(is_selected)>0
+        measures_impact_temp = [];
+        measures_impact_temp = measures_impact(is_selected);
 
-    combine_modus = 'delete_measures';
-    measures_impact_combined(s_i) = climada_measures_impact_combine(measures_impact_temp(1),measures_impact_temp(2:end),combine_modus);
+        combine_modus = 'delete_measures';
+        measures_impact_combined(s_i) = climada_measures_impact_combine(measures_impact_temp(1),measures_impact_temp(2:end),combine_modus,silent_mode);
+    end
 end
 
 measures_impact = measures_impact_combined;

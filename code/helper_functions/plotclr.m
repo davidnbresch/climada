@@ -31,7 +31,11 @@ function [h, h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, ma
 % modified by Stephanie Contardo, British Oceanographic Data Centre, 2006
 % Lea Mueller, muellele@gmail.com, 20150728, plot values above threshold mav 
 % Lea Mueller, muellele@gmail.com, 20151130, bugfix colorbar if all values are equal
+% Lea Mueller, muellele@gmail.com, 20151207, include climada_global.markersize
 %-
+
+global climada_global
+if ~climada_init_vars, return; end
 
 if ~exist('marker'     , 'var'), marker      = [];end
 if ~exist('markersize' , 'var'), markersize  = [];end
@@ -50,7 +54,7 @@ end
 
 
 if isempty(marker)    , marker     = '.'     ; end
-if isempty(markersize), markersize = 5'      ; end
+if isempty(markersize), markersize = climada_global.markersize; end
 if isempty(miv)       , miv        = min(v)  ; end
 if isempty(mav)       , mav        = max(v)  ; end
 if isempty(zero_off)  , zero_off   = 0       ; end
