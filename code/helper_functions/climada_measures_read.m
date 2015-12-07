@@ -33,7 +33,8 @@ function measures = climada_measures_read(measures_filename)
 % Lea Mueller, muellele@gmail.com, 20151016, delete nans in measures.name if there are invalid entries
 % Lea Mueller, muellele@gmail.com, 20151119, use climada_assets_read, use spreadsheet_read instead of xls_read
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
-%
+% Jacob Anz, j.anz@gmx.net, 20151204, remove measures.damagefunctions if empty
+%-
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
@@ -110,7 +111,11 @@ try
     % measures.damagefunctions = climada_xlsread('no',measures_filename,'damagefunctions',1);
     fprintf('Special damagefunctions for measures found\n')
     % delete nans if there are
-    measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID');
+    if isempty(measures.damagefunctions)
+        measures = rmfield(measures, 'damagefunctions');
+    else        
+        measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID');
+    end
 catch
     fprintf('No damagefunction sheet found\n')
 end
