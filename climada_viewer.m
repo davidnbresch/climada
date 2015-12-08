@@ -234,8 +234,17 @@ if ~isempty(container.measures_impact)
     end
     measure_list = unique(measure_list,'stable');
     measure_list{end+1} = 'no measure';
+    
+    % find original selected measures name and keep it selected also with
+    % the new measure list
+    orig_measure_list = get(handles.listbox1,'String');
+    orig_selected = get(handles.listbox1,'Value');
+    if orig_selected> numel(orig_measure_list);orig_selected = numel(orig_measure_list);end
+    orig_measure_selected = orig_measure_list(orig_selected);
+    is_currently_selected = find(strcmp(orig_measure_selected,measure_list));
+    if isempty(is_currently_selected); is_currently_selected = numel(measure_list);end
+    set(handles.listbox1,'Value',is_currently_selected);
     set(handles.listbox1,'String',measure_list);
-    %set(handles.listbox1,'Value',numel(measure_list));
 else
     pushbutton1_Callback(hObject, eventdata, handles)
 end
