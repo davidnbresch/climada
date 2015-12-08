@@ -22,6 +22,7 @@ function assets = climada_assets_category_ID(assets)
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151207, init
+% Lea Mueller, muellele@gmail.com, 20151208, add Category_name and Category_ID also if field Category does not exist (.Category_name = 'All categories'; .Category_ID = ''; .Category = '';)
 %-
 
 global climada_global
@@ -40,10 +41,19 @@ if ~exist('assets','var'), assets = ''; end
 % assets check: do nothing if we already have an assets structure, read assets if assets are empty
 assets = climada_assets_read(assets);
 if isempty(assets), return, end % no spreadsheet assets selected
-if ~isfield(assets,'Category'), return, end
-%category_IDs are already assigned
+% if ~isfield(assets,'Category'), return, end
+
+% category_IDs are already assigned
 if isfield(assets,'Category_name') && isfield(assets,'Category_ID'), return, end 
 
+if ~isfield(assets,'Category')
+    assets.Category = '';
+    assets.Category_name = 'All categories';
+    assets.Category_ID = '';
+    return
+end
+        
+     
 % get unique category values
 [Category_list,~,is_located] = unique(assets.Category);
 

@@ -114,8 +114,8 @@ set(handles.radiobutton1,'Value',1); %damage
 set(handles.radiobutton3,'Value',0); %benefit
 
 axes(handles.axes1);
-cla(handles.axes1,'reset'); 
-text(0.5, 0.5, {'Welcome to the climada results viewer:'; 'Please load a measures impact file (top right).'},...
+cla(handles.axes1,'reset'); title('')
+text(0.5, 0.5, {'Welcome to the climada results viewer!'; 'Please load a measures impact file (top right).'},...
     'fontsize',12,'horizontalalignment','center');
 
 
@@ -173,7 +173,9 @@ if ~isempty(container.measures_impact)
     scenario_list = unique(scenario_list);
     set(handles.popupmenu5,'String',scenario_list);    
 else
-    pushbutton1_Callback(hObject, eventdata, handles)
+    fprintf('You have not selected a measures_impact file.\n');
+    return
+    %pushbutton1_Callback(hObject, eventdata, handles)
 end
 
 % set listbox4: PERILS
@@ -186,34 +188,34 @@ if ~isempty(container.measures_impact)
     if ~isempty(container.measures_impact)
         peril_list = {container.measures_impact(is_scenario).peril_ID};
     end
-    peril_list = {'All perils' peril_list{:}};
+    if numel(peril_list)>1; peril_list = {'All perils' peril_list{:}}; end
     set(handles.listbox4,'String',peril_list);
 else
-    pushbutton1_Callback(hObject, eventdata, handles)
+    fprintf('You have not selected a measures_impact file.\n');
+    return
+    %pushbutton1_Callback(hObject, eventdata, handles)
 end
 
 % set listbox2: CATEGORIES
 function category_list = set_category_list(hObject, eventdata, handles)
 global container
 % global climada_global 
-category_list = '';
+category_list = {''};
 if ~isempty(container.measures_impact)
-    if isfield(container.measures_impact(1).EDS(1).assets,'Category_name')
-        category_list = container.measures_impact(1).EDS(1).assets.Category_name;
-    else
+    if ~isfield(container.measures_impact(1).EDS(1).assets,'Category_name')
+        % add assets.Category_name and assets.Category_ID
         assets = climada_assets_category_ID(container.measures_impact(1).EDS(1).assets);
         container.measures_impact(1).EDS(1).assets = assets;
     end
-    %entity_temp.assets.lon = container.measures_impact(1).EDS(1).assets.lon;
-    %entity_temp.assets.lat = container.measures_impact(1).EDS(1).assets.lat;
-    %entity_temp.assets.Category = container.measures_impact(1).EDS(1).assets.Category;
-    %peril_criterum = ''; unit_criterium = ''; category_criterium = ''; silent_mode = 1;
-    %[is_selected,peril_criterum,unit_criterium,category_list] = ...
-    %    climada_assets_select(entity_temp,peril_criterum,unit_criterium,category_criterium,silent_mode);
+    if isfield(container.measures_impact(1).EDS(1).assets,'Category_name')
+        category_list = container.measures_impact(1).EDS(1).assets.Category_name;
+    end
 else
-    pushbutton1_Callback(hObject, eventdata, handles)
+    fprintf('You have not selected a measures_impact file.\n');
+    return
+    %pushbutton1_Callback(hObject, eventdata, handles)
 end
-category_list = {'All categories' category_list{:}};
+if ~strcmp(category_list,'All categories'), category_list = {'All categories' category_list{:}}; end
 set(handles.listbox2,'Max',length(category_list));
 set(handles.listbox2,'String',category_list);
 
@@ -246,7 +248,9 @@ if ~isempty(container.measures_impact)
     set(handles.listbox1,'Value',is_currently_selected);
     set(handles.listbox1,'String',measure_list);
 else
-    pushbutton1_Callback(hObject, eventdata, handles)
+    fprintf('You have not selected a measures_impact file.\n');
+    return
+    %pushbutton1_Callback(hObject, eventdata, handles)
 end
 
 
@@ -415,6 +419,11 @@ global container
 %load measures impact file
 container.measures_impact = climada_measures_impact_load('',1);
 
+if isempty(container.measures_impact)
+    fprintf('You have not selected a measures_impact file.\n');
+    return
+end
+    
 set_scenario_list(hObject, eventdata, handles);
 set_peril_list(hObject, eventdata, handles);
 set_category_list(hObject, eventdata, handles);
@@ -511,7 +520,7 @@ function pushbutton2_Callback(hObject, eventdata, handles)
     is_selected = strcmp(scenario_list,scenario_selected);
     
     axes(handles.axes1);
-    cla;
+    cla; title('')
     
     if sum(is_selected)==1
         measures_impact_selected = measures_impact_perils(is_selected);
