@@ -1,4 +1,4 @@
-function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_printplot)
+function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_printplot,legend_on)
 % waterfall figure, expected damage for specified return period for
 % - today,
 % - increase from economic development,
@@ -38,6 +38,7 @@ function  fig = climada_waterfall_graph(EDS1,EDS2,EDS3,return_period,check_print
 % Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
 % Lea Mueller, muellele@gmail.com, 20151020, add TIV for future reference year
 % Lea Mueller, muellele@gmail.com, 20151030, bugfix in climada_arrow
+% Lea Mueller, muellele@gmail.com, 20151209, set no_fig=1, add legend_on=1
 %-
 
 global climada_global
@@ -49,9 +50,12 @@ if ~exist('EDS2'           ,'var'), EDS2 = []; end
 if ~exist('EDS3'           ,'var'), EDS3 = []; end
 if ~exist('return_period'  ,'var'), return_period   = 9999; end
 if ~exist('check_printplot','var'), check_printplot = 0; end
+if ~exist('legend_on','var'), legend_on = ''; end
 
 
+no_fig = 1;
 
+if isempty(legend_on), legend_on = 1; end
 %---------------------------------------------
 %% load EVENT damage SET if not given
 %---------------------------------------------
@@ -80,16 +84,16 @@ if isempty(EDS1) % local GUI
         EDS(3) = EDS3;
     end
 else
-    % check if statistics are given, if not add statistics
-    if ~isfield(EDS1,'damage_sort')
-        EDS1 = climada_EDS_stats(EDS1, 0);
-    end
-    if ~isfield(EDS2,'damage_sort')
-        EDS2   = climada_EDS_stats(EDS2, 0);
-    end
-    if ~isfield(EDS3,'damage_sort')
-        EDS3 = climada_EDS_stats(EDS3, 0);
-    end
+%     % check if statistics are given, if not add statistics
+%     if ~isfield(EDS1,'damage_sort')
+%         EDS1 = climada_EDS_stats(EDS1, 0);
+%     end
+%     if ~isfield(EDS2,'damage_sort')
+%         EDS2   = climada_EDS_stats(EDS2, 0);
+%     end
+%     if ~isfield(EDS3,'damage_sort')
+%         EDS3 = climada_EDS_stats(EDS3, 0);
+%     end
     EDS    = struct([]);
     EDS    = EDS1;
     EDS(2) = EDS2;
@@ -231,7 +235,9 @@ fontsize_3  = 12; % does not scale, since additional labels
 % stretch    = 0.3;
 stretch    = 0.3;
 
-fig        = climada_figuresize(0.57,0.7);
+if ~no_fig
+    fig = climada_figuresize(0.57,0.7);
+end
 % yellow - red color scheme
 color_     = [255 215   0 ;...   %today
     255 127   0 ;...   %eco
@@ -296,14 +302,7 @@ text(2-dED, damage(2)+ (damage(3)-damage(2))/2, num2str(damage_disp(2),strfmt), 
 text(3-dED, damage(3)+ (damage(4)-damage(3))/2, num2str(damage_disp(3),strfmt), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
 text(4, damage(4)                     , num2str(damage_disp(4),strfmt), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
 
-% %damages above barsn -- int2str
-% dED = 0.0;
-% text(1, damage(2)                     , int2str(damage_disp(1)), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
-% text(2-dED, damage(2)+ (damage(3)-damage(2))/2, int2str(damage_disp(2)), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
-% text(3-dED, damage(3)+ (damage(4)-damage(3))/2, int2str(damage_disp(3)), 'color','w', 'HorizontalAlignment','center', 'VerticalAlignment','middle','FontWeight','bold','fontsize',fontsize_);
-% text(4, damage(4)                     , int2str(damage_disp(4)), 'color','k', 'HorizontalAlignment','center', 'VerticalAlignment','bottom','FontWeight','bold','fontsize',fontsize_);
-
-%remove xlabEDS and ticks
+%remove xlabels and ticks
 set(gca,'xticklabel',[],'FontSize',10,'XTick',zeros(1,0),'layer','top');
 
 %axis range and ylabel
@@ -378,9 +377,11 @@ text(4-stretch, damage(1)-max(damage)*0.02, {['Risk ' num2str(climada_global.fut
 %L = legend(h,legend_str(index),'location','NorthOutside','fontsize',fontsize_2);
 %set(L,'Box', 'off')
 if check_printplot>=0
-    L=legend(h, legend_str(index),'Location','NorthEast');
-    set(L,'Box', 'off')
-    set(L,'Fontsize',fontsize_3)
+    if legend_on
+        L=legend(h, legend_str(index),'Location','NorthEast');
+        set(L,'Box', 'off')
+        set(L,'Fontsize',fontsize_3)
+    end
 end
 
 
