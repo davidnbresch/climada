@@ -84,16 +84,16 @@ if isempty(EDS1) % local GUI
         EDS(3) = EDS3;
     end
 else
-%     % check if statistics are given, if not add statistics
-%     if ~isfield(EDS1,'damage_sort')
-%         EDS1 = climada_EDS_stats(EDS1, 0);
-%     end
-%     if ~isfield(EDS2,'damage_sort')
-%         EDS2   = climada_EDS_stats(EDS2, 0);
-%     end
-%     if ~isfield(EDS3,'damage_sort')
-%         EDS3 = climada_EDS_stats(EDS3, 0);
-%     end
+    % check if statistics are given, if not add statistics
+    if ~isfield(EDS1,'damage_sort')
+        EDS1 = climada_EDS_stats(EDS1, 0);
+    end
+    if ~isfield(EDS2,'damage_sort')
+        EDS2   = climada_EDS_stats(EDS2, 0);
+    end
+    if ~isfield(EDS3,'damage_sort')
+        EDS3 = climada_EDS_stats(EDS3, 0);
+    end
     EDS    = struct([]);
     EDS    = EDS1;
     EDS(2) = EDS2;

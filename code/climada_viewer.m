@@ -103,6 +103,8 @@ set(handles.figure1,'Name','climada results viewer');
 global container
 global climada_global
 
+container.measures_impact = []; %init
+
 %set all initial paramters
 init_str = 'Load a measures_impact file';
 % set(handles.popupmenu5,'String',init_str); %scenarios
@@ -501,6 +503,8 @@ global climada_global
 set(handles.pushbutton2,'Value',1) %select plot map
 set(handles.pushbutton9,'Value',0) %unselect plot waterfall
 
+if isempty(container.measures_impact), fprintf('Please load a measures impact file first.\n'); return, end
+    
 [scenario_selected, peril_selected, category_selected, measure_selected] = ...
          get_selection(hObject, eventdata, handles);
 fieldname_to_plot = get_fieldname(hObject, eventdata, handles);
@@ -569,6 +573,8 @@ function pushbutton9_Callback(hObject, eventdata, handles)
 
 global container
 global climada_global
+
+if isempty(container.measures_impact), fprintf('Please load a measures impact file first.\n'); return, end
 
 set(handles.pushbutton9,'Value',1) %select plot waterfall
 set(handles.pushbutton2,'Value',0) %unselect plot map
