@@ -163,7 +163,7 @@ if ~isempty(container.measures_impact)
         peril_selected = peril_list(2:end);
     end
     is_peril = ismember(peril_list_long,peril_selected);   
-    is_peril = is_peril.*is_scenario;
+    is_peril = logical(is_peril.*is_scenario);
 else
     fprintf('You have not selected a measures_impact file.\n');
     return
@@ -173,7 +173,7 @@ end
 
 
 % set listbox5 (previous popupmenu5): SCENARIOS
-function scenario_list= set_scenario_list(hObject, eventdata, handles)
+function scenario_list = set_scenario_list(hObject, eventdata, handles)
 global container
 % global climada_global 
 if ~isempty(container.measures_impact)
@@ -192,6 +192,7 @@ end
 
 % set listbox4: PERILS
 function peril_list = set_peril_list(hObject, eventdata, handles)
+
 global container
 % global climada_global 
 if ~isempty(container.measures_impact)
@@ -199,6 +200,7 @@ if ~isempty(container.measures_impact)
     peril_list = '';
     if ~isempty(container.measures_impact)
         peril_list = {container.measures_impact(is_scenario).peril_ID};
+        peril_list = unique(peril_list);
     end
     if numel(peril_list)>1; peril_list = {'All perils' peril_list{:}}; end
     set(handles.listbox4,'String',peril_list);
@@ -212,16 +214,31 @@ end
 function category_list = set_category_list(hObject, eventdata, handles)
 global container
 % global climada_global 
-category_list = {''};
+category_list = {''}; category_list_temp = {''};
 if ~isempty(container.measures_impact)
-    if ~isfield(container.measures_impact(1).EDS(1).assets,'Category_name')
-        % add assets.Category_name and assets.Category_ID
-        assets = climada_assets_category_ID(container.measures_impact(1).EDS(1).assets);
-        container.measures_impact(1).EDS(1).assets = assets;
+    
+    %is_scenario = get_scenario(hObject, eventdata, handles);
+    is_peril = get_peril(hObject, eventdata, handles);	% for the selected scenario
+    is_peril = find(is_peril);
+    %if sum(is_peril)>1; is_peril = find(is_peril); end
+    for s_i = 1:numel(is_peril)
+        if ~isfield(container.measures_impact(is_peril(s_i)).EDS(1).assets,'Category_name')
+            % add assets.Category_name and assets.Category_ID
+            assets = climada_assets_category_ID(container.measures_impact(is_peril(s_i)).EDS(1).assets);
+            container.measures_impact(is_peril(s_i)).EDS(1).assets = assets;
+        end
+        if isfield(container.measures_impact(is_peril(s_i)).EDS(1).assets,'Category_name')
+            category_list_temp = container.measures_impact(is_peril(s_i)).EDS(1).assets.Category_name;
+            if s_i == 1
+                category_list = category_list_temp;
+            else
+                category_list = {category_list{:} category_list_temp{:}};
+            end
+            
+        end
     end
-    if isfield(container.measures_impact(1).EDS(1).assets,'Category_name')
-        category_list = container.measures_impact(1).EDS(1).assets.Category_name;
-    end
+    category_list = unique(category_list);
+    
 else
     fprintf('You have not selected a measures_impact file.\n');
     return
@@ -475,6 +492,16 @@ set(handles.listbox1,'Value',numel(measure_list));
 
 
 function identify_plot_map_plot_waterfall(hObject, eventdata, handles)
+
+set_peril_list(hObject, eventdata, handles);
+set_category_list(hObject, eventdata, handles);
+set_measure_list(hObject, eventdata, handles);
+measure_list = get(handles.listbox1,'String');
+if get(handles.listbox1,'Value')>numel(measure_list)
+    set(handles.listbox1,'Value',numel(measure_list));
+end
+
+
 if get(handles.pushbutton2,'Value')
     set(handles.pushbutton9,'Value',0)
     pushbutton2_Callback(hObject, eventdata, handles) % plot map
@@ -539,8 +566,8 @@ if sum(is_selected)==1
     % get the measures
     measures_list = {measures_impact_selected.EDS.annotation_name};
     is_measure = find(strcmp(measure_selected,measures_list));
-    if strcmp(measure_selected,'no measure'), is_measure = numel(measures_list); end
-
+    if strcmp(measure_selected,'no measure'), is_measure = numel(measures_list); end    
+    
     % special case for assets plot
     if strcmp(fieldname_to_plot,'Value')
         % create fake entity
@@ -551,6 +578,12 @@ if sum(is_selected)==1
         climada_global.Value_unit = Value_unit;
         measures_impact_selected = entity; is_measure = 1;
     end
+    
+    % special case for USD/people
+    if ~isempty(category_selected)
+        if strfind(category_selected{1},'People'), climada_global.Value_unit = 'People'; end
+    end
+
     plot_method = 'plotclr';
     climada_map_plot(measures_impact_selected,fieldname_to_plot,plot_method,is_measure,category_selected);
 else
@@ -711,7 +744,9 @@ if get(handles.pushbutton2,'Value'); fprintf('\n\nPLOT MAP\n'); end
 if get(handles.pushbutton9,'Value'); fprintf('\n\nPLOT WATERFALL\n'); end
 
 fprintf('Scenario selected: %s\n', scenario_selected{1});
-fprintf('Peril selected: %s\n', peril_selected{1});
+peril_string = sprintf('%s, ',peril_selected{:}); peril_string(end-1:end) = [];
+fprintf('Peril selected: %s\n', peril_string);
+% fprintf('Peril selected: %s\n', peril_selected{1});
 if isempty(category_selected)
     fprintf('Category selected: %s\n', category_selected)
 else
