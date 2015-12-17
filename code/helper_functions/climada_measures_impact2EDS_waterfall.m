@@ -36,6 +36,7 @@ function [EDS1, EDS2, EDS3, is_today, is_eco, is_cc] = climada_measures_impact2E
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151202, init
 % Lea Mueller, muellele@gmail.com, 20151202, add option silent_mode
+% Lea Mueller, muellele@gmail.com, 20151217, bugfix if no scenarios identified
 %-
 
 EDS1 = []; EDS2 = []; EDS3 = [];% init output
@@ -65,6 +66,10 @@ is_today = 1; is_eco = 2; is_cc = 3;
 if numel(measures_impact)>3
     [is_today, is_eco, is_cc] = climada_scenario_waterfall_identify(measures_impact);
 end
+if isempty(is_today);is_today = 1;end
+if isempty(is_eco);is_eco = 2;end
+if isempty(is_cc);is_cc = 3;end
+
 clear EDS
 EDS(1) = measures_impact(is_today).EDS(measure_no);
 EDS(2) = measures_impact(is_eco).EDS(measure_no);
