@@ -134,7 +134,7 @@ if ~isfield(assets,'Value_unit')
     assets.Value_unit = repmat({climada_global.Value_unit},size(assets.Value));
 end
 
-if isfield(assets,'Category'), assets = climada_assets_category_ID; end
+if isfield(assets,'Category'), assets = climada_assets_category_ID(assets); end
 
 % add assets.region, use only first entry
 % rename .Region to .region

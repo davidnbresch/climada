@@ -41,6 +41,7 @@ function output_report = climada_EDS_ED_per_category_report(entity,EDS,xls_file,
 % Lea Mueller, muellele@gmail.com, 20151106, rename to climada_EDS_ED_per_category_report from salvador_EDS_ED_per_category_report
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
 % Lea Mueller, muellele@gmail.com, 20151117, add try statement for filenames of assets, damagefunction, etc.
+% Lea Mueller, muellele@gmail.com, 20151217, get category_criterium from entity.assets.Category_name
 %-
 output_report = []; %init
 
@@ -121,6 +122,7 @@ unit_criterium = '';
 category_criterium = '';
 [is_selected,~,unit_list,category_criterium]...
              = climada_assets_select(entity,EDS(1).peril_ID,unit_criterium,category_criterium,silent_mode);
+if isfield(entity.assets,'Category_name'), category_criterium = entity.assets.Category_name; end       
 if ~any(is_selected)    
     fprintf('Invalid selection. \n'),return
 end  
@@ -261,14 +263,15 @@ for EDS_i = 1:EDS_no
     for c_i = 1:numel(category_criterium)
         %[is_selected,peril_criterum,unit_criterium] = climada_assets_select(entity,EDS(EDS_i).peril_ID,'',category_criterium(c_i));
         [is_selected,peril_criterum,unit_criterium] =...
-            climada_assets_select(entity,EDS(EDS_i).peril_ID,'',category_criterium(c_i),silent_mode);
+            climada_assets_select(entity,EDS(EDS_i).peril_ID,'',category_criterium{c_i},silent_mode);
         if any(is_selected)  
             if EDS_i==1 % fill static columns
-                if category_cell
-                    output_report{c_i+1,1} = category_criterium{c_i};
-                else
-                    output_report(c_i+1,1) = num2cell(category_criterium(c_i));
-                end
+                %if category_cell
+                %    output_report{c_i+1,1} = category_criterium{c_i};
+                %else
+                %    output_report(c_i+1,1) = num2cell(category_criterium(c_i));
+                %end
+                output_report{c_i+1,1} = category_criterium{c_i};
                 output_report(c_i+1,2) = num2cell(sum(entity.assets.Value(is_selected)));
                 if ~isempty(unit_criterium); output_report{c_i+1,3} = unit_criterium{1};end      
                 if ~isempty(peril_criterum); output_report{c_i+1,4} = peril_criterum;end
@@ -320,7 +323,8 @@ if unit_on
                 climada_assets_select(entity,EDS(EDS_i).peril_ID,unit_list{u_i},'',silent_mode);
             if any(is_selected)
                 if EDS_i==1
-                    output_report{c_i+u_i+1+1,1} = sprintf('%d, ',category_criterium);
+                    category_string = sprintf('%s, ',category_criterium{:}); category_string(end-1:end) = [];
+                    output_report{c_i+u_i+1+1,1} = category_string; %sprintf('%d, ',category_criterium);
                     output_report(c_i+u_i+1+1,2) = num2cell(sum(entity.assets.Value(is_selected)));
                     output_report{c_i+u_i+1+1,3} = unit_list{u_i};       
                     output_report{c_i+u_i+1+1,4} = peril_criterum; 

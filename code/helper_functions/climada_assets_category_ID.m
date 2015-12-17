@@ -23,6 +23,7 @@ function assets = climada_assets_category_ID(assets)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151207, init
 % Lea Mueller, muellele@gmail.com, 20151208, add Category_name and Category_ID also if field Category does not exist (.Category_name = 'All categories'; .Category_ID = ''; .Category = '';)
+% Lea Mueller, muellele@gmail.com, 20151217, make sure assets.Category_name is a cell
 %-
 
 global climada_global
@@ -56,6 +57,15 @@ end
      
 % get unique category values
 [Category_list,~,is_located] = unique(assets.Category);
+
+% make sure Category_list is a cell
+if isnumeric(Category_list)
+    Category_list_num = Category_list; clear Category_list
+    for i = 1:numel(Category_list_num)
+        Category_list{i,1} = sprintf('Cat. %d',Category_list_num(i));
+    end
+    %Category_list = num2cell(Category_list); 
+end
 
 % create table for category names
 n_Category = numel(Category_list);
