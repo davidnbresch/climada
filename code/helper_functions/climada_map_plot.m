@@ -42,6 +42,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20151207, invoke climada_load to identify input structure
 % Lea Mueller, muellele@gmail.com, 20151207, invoke climada_assets_category_ID to identify input structure
 % Lea Mueller, muellele@gmail.com, 20151207, do not create a new figure, so we can use it in climada_viewer (gui)
+% Lea Mueller, muellele@gmail.com, 20151217, return if ED_at_centroid control and measure do not have same dimension
 % -
 
 fig = []; % init
@@ -273,6 +274,7 @@ for f_i = 1:numel(fieldname_to_plot)
         % special case for benefit, difference of AED control and AED measure
         if is_benefit(f_i)
             if ~isempty(ED_at_centroid_control)
+                if numel(ED_at_centroid_control) ~= numel(values), fprintf('Dimensions ED measure and ED control do not agree.\n'); return, end
                 values = ED_at_centroid_control - values;
                 fieldname_to_plot{f_i} = 'benefit';
             else

@@ -87,17 +87,19 @@ scenario_unique = unique(scenario_all);
 
 
 % loop over the unique scenarios
+counter = 0;
 for s_i = 1:numel(scenario_unique)
     is_scenario = strcmp(scenario_all,scenario_unique{s_i});
     is_peril    = ismember(peril_list_all,peril_list);
     is_selected = logical(is_scenario .* is_peril);
     
     if sum(is_selected)>0
+        counter = counter+1;
         measures_impact_temp = [];
         measures_impact_temp = measures_impact(is_selected);
 
         combine_modus = 'delete_measures';
-        measures_impact_combined(s_i) = climada_measures_impact_combine(measures_impact_temp(1),measures_impact_temp(2:end),combine_modus,silent_mode);
+        measures_impact_combined(counter) = climada_measures_impact_combine(measures_impact_temp(1),measures_impact_temp(2:end),combine_modus,silent_mode);
     end
 end
 
