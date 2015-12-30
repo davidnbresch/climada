@@ -90,7 +90,7 @@ income_group_factors = [2 3 4 5];
 % Check if economic data file is available
 if ~exist(economic_data_file,'file')
     fprintf('Error: economic_indicators_mastertable.xls is missing.\n')
-    fprintf('Please download it from the <a href="https://github.com/davidnbresch/climada_module_country_risk/tree/master/data">Climada country risk repository on Github\n</a>');
+    fprintf('Please download it from the <a href="https://github.com/davidnbresch/climada_module_country_risk/tree/master/data">country risk module on Github\n</a>');
     return;
 end
 

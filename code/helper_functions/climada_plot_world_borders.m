@@ -18,10 +18,10 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %   See also: climada_shaperead
 %
 %   Programmers hint:
-%   In case you only need the borders (quick&dirty, order of 10 times faster), 
+%   In case you only need the borders (quick&dirty, order of 10 times faster),
 %   you might consider the following code bit instead of
 %   climada_plot_world_borders (especially in subsequent calls, as
-%   climada_plot_world_borders does also set up the .mat file if missing etc.)  
+%   climada_plot_world_borders does also set up the .mat file if missing etc.)
 %
 %       shapes=climada_shaperead(climada_global.map_border_file,1,1); % reads .mat
 %       border.X=[];for i=1:length(shapes),border.X=[border.X shapes(i).X];end
@@ -58,6 +58,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % David N. Bresch, david.bresch@gmail.com, 20141211, initial, supersedes old version (which read a .gen file)
 % David N. Bresch, david.bresch@gmail.com, 20141223, fill debugged
 % David N. Bresch, david.bresch@gmail.com, 20150916, hint for speedup in header added
+% David N. Bresch, david.bresch@gmail.com, 20151230, links in ERROR prompts referenced
 %-
 
 % import/setup global variables
@@ -72,7 +73,7 @@ if ~exist('map_shape_file'  , 'var'), map_shape_file   = ''; end
 if ~exist('keep_boundary'   , 'var'), keep_boundary    = 0;  end
 if ~exist('country_color'   , 'var'), country_color    = []; end
 if isempty(linewidth), linewidth = 1; end
-    
+
 % PARAMETERS
 %
 border_color =                           [81  81  81 ]/255;    % dark gray
@@ -102,10 +103,12 @@ end
 if ~(exist(map_shape_file,'file') || exist(map_mat_shape_file,'file'))
     % it does definitely not exist
     fprintf('ERROR %s: file with map border shape information not found: %s\n',mfilename,map_shape_file);
-    fprintf(' - consider installing climada module country_risk from\n');
-    fprintf('   https://github.com/davidnbresch/climada_module_country_risk\n');
-    fprintf(' - consider to obtain shape file(s) from\n');
-    fprintf('   www.naturalearthdata.com\n');
+    fprintf([' - consider obtaining it from ' ...
+        '<a href="https://github.com/davidnbresch/climada_module_country_risk">'...
+        'climada_module_country_risk</a> from Github.\n'])
+    fprintf([' - consider to obtain shape file(s) from ' ...
+        '<a href="www.naturalearthdata.com">'...
+        'www.naturalearthdata.com</a>\n'])
     return
 end
 
@@ -119,7 +122,7 @@ end
 shapes=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
 
 for shape_i = 1:length(shapes)
-    if isfield(shapes(shape_i),'X_ALL') 
+    if isfield(shapes(shape_i),'X_ALL')
         % special case since we had to restrict to domestic
         % see climada_shaperead, SYSTEM_ADMIN0 and special_shape
         if ~isempty(shapes(shape_i).X_ALL)
@@ -169,4 +172,4 @@ else
     set(gcf,'Color',[1 1 1])
 end
 
-end
+end % climada_plot_world_borders

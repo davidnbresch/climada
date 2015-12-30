@@ -52,7 +52,8 @@ if ~exist(climada_global.coastline_file,'file')
     % it does definitely not exist
     fprintf('ERROR %s: file with coastline information not found: %s\n',mfilename,climada_global.coastline_file);
     fprintf(' - consider installing climada module country_risk from\n');
-    fprintf('   https://github.com/davidnbresch/climada_module_country_risk\n');
+    fprintf(['   <a href="https://github.com/davidnbresch/climada_module_country_risk">'...
+        'climada_module_country_risk</a> from Github.\n'])
     return
 end
 

@@ -408,8 +408,9 @@ if strcmp(shape_filename,'SYSTEM_ADMIN0') % Special case
     % ../system/admin0.mat)
     if isempty(which('country_risk_calc'))
         fprintf('ERROR %s: file with admin0 shape information not found: ne_10m_admin_0_countries.shp\n',mfilename);
-        fprintf(' - consider installing climada module country_risk from\n');
-        fprintf('   https://github.com/davidnbresch/climada_module_country_risk\n');
+        fprintf([' - consider installing ' ...
+            '<a href="https://github.com/davidnbresch/climada_module_country_risk">'...
+            'climada_module_country_risk</a> from Github.\n'])
         return
     end
     country_risk_module_data_dir=[fileparts(fileparts(which('country_risk_calc'))) filesep 'data'];
