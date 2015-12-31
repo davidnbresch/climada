@@ -20,7 +20,7 @@ function [EDS,ok]=climada_EDS_combine(EDS,EDS2,force_combination,verbose)
 %       EDS(1)=climada_EDS_calc, EDS(2)=climada_EDS_calc ...
 %   see also: country_risk_EDS_combine (climada module country_risk)
 % CALLING SEQUENCE:
-%   EDS=climada_EDS_combine(EDS,EDS2)
+%   [EDS,ok]=climada_EDS_combine(EDS,EDS2,force_combination,verbose)
 % EXAMPLE:
 %   EDS=climada_EDS_combine(EDS)
 % INPUTS:
@@ -42,9 +42,8 @@ function [EDS,ok]=climada_EDS_combine(EDS,EDS2,force_combination,verbose)
 %       errors, othwerwise silent
 % OUTPUTS:
 %   EDS: the combined EDS
-%       Please note that assets are likely not meaningful, since just taken
-%       from EDS (in order to allow to store resulting EDS back into an
-%       array of EDSs if needed)
+%       Please note that assets are just taken from the first EDS(i) of each
+%       (sub) hazard. 
 %   ok: =1 if combination successful, =0 otherwise, also if the basic
 %       combination worked (same length of damage vector), but some issues
 %       with either ED_at_centroid, reference_year, frequency or event_ID
