@@ -1,4 +1,4 @@
-function res=climada_template(param1,param2)
+function res=climada_template(param1,param2);
 % climada template
 % MODULE:
 %   module name
