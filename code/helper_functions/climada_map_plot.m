@@ -43,6 +43,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20151207, invoke climada_assets_category_ID to identify input structure
 % Lea Mueller, muellele@gmail.com, 20151207, do not create a new figure, so we can use it in climada_viewer (gui)
 % Lea Mueller, muellele@gmail.com, 20151217, return if ED_at_centroid control and measure do not have same dimension
+% Lea Mueller, muellele@gmail.com, 20160107, add workaround to avoid prctile that uses statistics toolbox
 % -
 
 fig = []; % init
@@ -307,8 +308,14 @@ for f_i = 1:numel(fieldname_to_plot)
                 elseif strcmp(fieldname_to_plot{f_i},'ED_at_centroid'), cmap = climada_colormap('damage');
                 else cmap = jet(64); 
                 end
-                %caxis_range = [0 max(values)*0.8]; 
-                caxis_range = [0 prctile(values_sum,99.5)];                
+                try %uses statistics toolbox
+                   caxis_max = prctile(values_sum,99.5);
+                catch 
+                    requested_rank = round(numel(values_sum)*(1-0.995))+1;
+                    values_ordered = sort(values_sum,'descend');
+                    caxis_max = values_ordered(requested_rank);
+                end
+                caxis_range = [0 caxis_max]; 
                 title_str = sprintf('%s %s',title_str_1,title_str_2);
                 if no_fig
                     climada_color_plot(values_sum,lon_unique,lat_unique,'none',...
