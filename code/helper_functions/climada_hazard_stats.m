@@ -271,6 +271,7 @@ if calc
     
 end % if calc
 
+if ~isfield(hazard,'units'),hazard.units='';end
 
 % FIGURE
 % ------
