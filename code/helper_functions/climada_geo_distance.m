@@ -5,10 +5,10 @@ function dist_m = climada_geo_distance(lon1,lat1,lon2,lat2)
 % PURPOSE:
 %   calculate distance between two points or a point and a series of points
 % CALLING SEQUENCE:
-%   climada_geo_distance(lon1,lat1,lon2,lat2);
+%   dist_m=climada_geo_distance(lon1,lat1,lon2,lat2);
 % EXAMPLE:
-%   climada_geo_distance(0.0,45.0,1.0,45.0); % two points
-%   climada_geo_distance(0.0,45.0,[1.0 2.0 2.0],[45.0 45.0 46.0]); % point and a series of points
+%   dist_m=climada_geo_distance(0.0,45.0,1.0,45.0); % two points
+%   dist_m=climada_geo_distance(0.0,45.0,[1.0 2.0 2.0],[45.0 45.0 46.0]); % point and a series of points
 % INPUTS:
 %   lon1,lat1: longitude and latitude of first point
 %   lon2,lat2: longitude and latitude of second point

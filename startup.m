@@ -1,5 +1,6 @@
 % startup file to set environment for climada
-% (c) David N. Bresch, 2008, 2014, david.bresch@gmail.com
+% (c) David N. Bresch, 2008, 2014, 2016, david.bresch@gmail.com
+% 20160122: 2nd level of sub-folders for code added
 %
 % define the climada root directory
 % --------------------------------
@@ -39,9 +40,23 @@ if exist(climada_modules_dir,'dir')
                 if add_subdir(as_i).isdir && length(add_subdir(as_i).name)>2 && isempty(strfind(add_subdir(as_i).name,'@'))
                     addpath([sub_dir filesep add_subdir(as_i).name]);
                     fprintf('\t\t%s\n',add_subdir(as_i).name);
+                    
+                    
+                    % checking for sub-folders within code (only one more level)
+                    subsub_dir=[sub_dir filesep add_subdir(as_i).name];
+                    add_subsubdir  = dir(subsub_dir);
+                    for ass_i = 1:length(add_subsubdir)
+                        if add_subsubdir(ass_i).isdir && length(add_subsubdir(ass_i).name)>2 ...
+                                && isempty(strfind(add_subsubdir(ass_i).name,'@')) && isempty(strfind(add_subsubdir(ass_i).name,'private'))
+                            addpath([subsub_dir filesep add_subsubdir(ass_i).name]);
+                            fprintf('\t\t\t%s\n',add_subsubdir(ass_i).name);
+                        end
+                    end
+            
+                    
                 end
             end
-            clear add_subdir as_i sub_dir
+            clear add_subdir as_i sub_dir add_subsubdir ass_i subsub_dir
             
         end
     end
