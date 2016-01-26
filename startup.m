@@ -37,7 +37,8 @@ if exist(climada_modules_dir,'dir')
             sub_dir=[climada_modules_dir filesep add_dir(a_i).name filesep 'code'];
             add_subdir  = dir(sub_dir);
             for as_i = 1:length(add_subdir)
-                if add_subdir(as_i).isdir && length(add_subdir(as_i).name)>2 && isempty(strfind(add_subdir(as_i).name,'@'))
+                if add_subdir(as_i).isdir && length(add_subdir(as_i).name)>2 ...
+                        && isempty(strfind(add_subdir(as_i).name,'@')) && isempty(strfind(add_subdir(as_i).name,'private'))
                     addpath([sub_dir filesep add_subdir(as_i).name]);
                     fprintf('\t\t%s\n',add_subdir(as_i).name);
                     
