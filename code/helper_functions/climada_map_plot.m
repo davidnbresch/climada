@@ -44,6 +44,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20151207, do not create a new figure, so we can use it in climada_viewer (gui)
 % Lea Mueller, muellele@gmail.com, 20151217, return if ED_at_centroid control and measure do not have same dimension
 % Lea Mueller, muellele@gmail.com, 20160107, add workaround to avoid prctile that uses statistics toolbox
+% Lea Mueller, muellele@gmail.com, 20160129, invoke climada_find_most_severe_event
 % -
 
 fig = []; % init
@@ -60,7 +61,7 @@ if ~exist('struct_no', 'var'), struct_no = []; end
 if ~exist('category_criterium','var'), category_criterium = []; end
 
 if isempty(plot_method), plot_method = 'plotclr'; end 
-if isempty(event_no), event_no = 1; end 
+% if isempty(event_no), event_no = 1; end 
 if isempty(category_criterium), category_criterium = ''; end 
 
 
@@ -102,6 +103,7 @@ scenario_name = ''; peril_ID = ''; region = ''; assets_year = ''; hazard_units =
 switch struct_name
     case 'measures_impact'
         % extract measures_impact.EDS
+        if isempty(event_no), event_no = 1; end 
         if isfield(input_structure,'EDS')
             if isfield(input_structure,'scenario'),scenario_name = input_structure.scenario.name_simple;end
             input_structure = input_structure.EDS;
@@ -143,6 +145,7 @@ switch struct_name
         
     case 'EDS'
         % extract longitudes, latitudes
+        if isempty(event_no), event_no = 1; end 
         if isfield(input_structure,'assets')
             lon = input_structure.assets.lon; lat = input_structure.assets.lon;
             %if isfield(input_structure.assets,'Category'), Category = input_structure.assets.Category;end
@@ -164,6 +167,7 @@ switch struct_name
         
     case 'entity'
         % extract entity.assets
+        if isempty(event_no), event_no = 1; end 
         required_fieldname_to_plot = {'Value'};
         if isempty(fieldname_to_plot),fieldname_to_plot = required_fieldname_to_plot; end
         if isfield(input_structure,'assets')
@@ -188,14 +192,22 @@ switch struct_name
     case 'hazard'
         % nothing special to extract
         % just set title_str
-        if isfield(input_structure,'units'),hazard_units = input_structure.units;end
+        if isfield(input_structure,'units'),hazard_units = input_structure.units;end 
         if isfield(input_structure,'peril_ID'),peril_ID = input_structure.peril_ID;end
         if isfield(input_structure,'name'),event_name = strrep(input_structure.name{event_no},'_',' ');end
-        title_str_2 = sprintf('\nEvent %d: %s', event_no,event_name); 
+        if isempty(event_no) % find most severe event
+            event_no = climada_find_most_severe_event(input_structure,-1);            
+        end 
+        if event_no<0
+            event_no = climada_find_most_severe_event(input_structure,event_no);    
+        end
+        title_str_2 = sprintf('\nEvent %d: %s', event_no,event_name);
         %title_str_1 = sprintf('%s (%s %s)',fieldname_to_plot_str, peril_ID, hazard_units);
         
+
     case 'centroids'
         % nothing special
+        if isempty(event_no), event_no = 1; end 
 end
 
 % make sure that we have .lon and .lat information
@@ -302,7 +314,7 @@ for f_i = 1:numel(fieldname_to_plot)
                 % special colormap for hazard intensities, benefit, asset Value, damage
                 if strcmp(fieldname_to_plot{f_i},'intensity') && isfield(input_structure,'peril_ID'),
                     cmap = climada_colormap(input_structure.peril_ID);
-                    title_str_1 = sprintf('%s (%s %s)',fieldname_to_plot_str, peril_ID, units);
+                    title_str_1 = sprintf('%s (%s %s)',fieldname_to_plot_str, peril_ID, hazard_units);
                 elseif strcmp(fieldname_to_plot{f_i},'benefit'), cmap = climada_colormap('benefit');
                 elseif strcmp(fieldname_to_plot{f_i},'Value'), cmap = climada_colormap('assets');
                 elseif strcmp(fieldname_to_plot{f_i},'ED_at_centroid'), cmap = climada_colormap('damage');
