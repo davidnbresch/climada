@@ -27,6 +27,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150922, add benefit for adaptation bar chart colormap
 % Lea Mueller, muellele@gmail.com, 20150924, special case if only one colour is required
 % Lea Mueller, muellele@gmail.com, 20151201, update benefit colors (grey, yellow, green, turqoise)
+% Lea Mueller, muellele@gmail.com, 20160201, add excess or rain (XR), lack of rain (LR) and greenness index (GI)
 %-
 
 cmap    = []; %init output
@@ -67,7 +68,7 @@ switch peril_ID
             0.4078    0.1333    0.5451;
             0.3333    0.1020    0.5451];
         
-    case 'TR'
+    case {'TR','XR'}
         % create colormap for rain
         c_ax = [20 80];
         startcolor   = [0.89	0.93	0.89];
@@ -147,6 +148,23 @@ switch peril_ID
         cmap = flipud(jet(15));
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
+        
+     case {'GI','LR'}
+        % create colormap for greenness index (NDVI) and lack of rain (LR)
+        c_ax = [ ];
+        cmap = [  1.0000    1.0000    1.0000;
+            %0.8100    0.8100    0.8100;
+            0.6300    0.6300    0.6300;
+            1.0000    0.8000    0.2000;
+            %0.9420    0.6667    0.1600;
+            0.8839    0.5333    0.1200;
+            0.8259    0.4000    0.0800;
+            %0.7678    0.2667    0.0400;
+            0.7098    0.1333         0;
+            0.5412    0.1020         0;
+            0.4078    0.1333    0.5451;
+            0.3333    0.1020    0.5451];
+        cmap = flipud(cmap);
         
     case 'assets'
         beginColor  = [232 232 232 ]/255; %light grey
