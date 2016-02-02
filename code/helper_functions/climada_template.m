@@ -1,4 +1,4 @@
-function res=climada_template(param1,param2);
+function res=climada_template(param1,param2)
 % climada template
 % MODULE:
 %   module name
@@ -6,6 +6,7 @@ function res=climada_template(param1,param2);
 %   climada_template
 % PURPOSE:
 %   Describe the purpouse in a few sentences
+%   here: template for header and simple argument checks
 % CALLING SEQUENCE:
 %   climada_template(param1,param2);
 % EXAMPLE:
@@ -13,6 +14,8 @@ function res=climada_template(param1,param2);
 % INPUTS:
 %   param1: 
 %       > promted for if not given
+%   OPTION param1: a structure with the fields...
+%       this way, parameters can be passed on a fields
 % OPTIONAL INPUT PARAMETERS:
 %   param2: as an example
 % OUTPUTS:
@@ -29,7 +32,8 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 % and to set default value where  appropriate
-if ~exist('param1','var'),param1=[];end
+if ~exist('param1','var'),param1=[];end % OR:
+if ~exist('param1','var'),param1=struct;end % in case we want to pass all parameters as structure
 if ~exist('param2','var'),param2=[];end
 
 % locate the module's (or this code's) data folder (usually  afolder
@@ -42,6 +46,12 @@ module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 %
 % set default value for param2 if not given
 if isempty(param2),param2=2;end
+%
+% if we want to pass all parameters via the first argument, we can do so:
+if isstruct(param1)
+    if ~isfield(param1,'field1'),param1.field1='param1_field1';end
+    if ~isfield(param1,'field2'),param1.field2=2;end
+end
 
 % template to prompt for filename if not given
 if isempty(param1) % local GUI
@@ -53,6 +63,11 @@ if isempty(param1) % local GUI
         param1=fullfile(pathname,filename);
     end
 end
+
+% just to show what's in (should one call climada_template ;-)
+param1
+param2
+module_data_dir
 
 % template for-loop with waitbar or progress to stdout
 t0       = clock;
