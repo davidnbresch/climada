@@ -1,4 +1,4 @@
-function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode,sanity_check)
+function EDS=climada_EDS_calc_parfor(entity,hazard,annotation_name,force_re_encode,silent_mode,sanity_check)
 % climada calculate event damage set
 % NAME:
 %   climada_EDS_calc
@@ -17,10 +17,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   fast, hence climada_code_optimizer does usually not bring huge
 %   improvements.
 %
-%   Search for 'TEST output' in code to show output for VERY SMALL entities
-%
-%   next (likely): climada_EDS_DFC or climada_EDS2DFC, climada_EDS_DFC_report
-%   See also climada_EDS_calc_parfor for a parallelized version (beta)
+%   next (likely): climada_EDS_DFC, climada_EDS_DFC_report
 % CALLING SEQUENCE:
 %   EDS=climada_EDS_calc(entity,hazard,annotation_name)
 % EXAMPLE:
@@ -90,11 +87,11 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20150320, spfun replaced with explicit call, turns out to be >50% faster. Further speedup, see loop_mod_step
 % Gilles Stassen, gillesstassen@hotmail.com, 20150622, use complete peril_ID in asset_damfun_pos refinement (1:2) -> (:), MDD, PAA  explicitly capped at max value
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for entoity and hazard set name on input
-% Lea Mueller, muellele@gmail.com, 20150805, allow centroid_index to be zero, do not integrate such assets in valid_asset_pos, no damage will be calculated
-% Lea Mueller, muellele@gmail.com, 20150819, use only unique values in interp_x_table, so that interp1 works (interp_x_table is monotonically increasing)
-% Lea Mueller, muellele@gmail.com, 20150819, set minimum damage to min defined in damage function (probably 0)
+% Lea Mueller, muellele@gmail.com, 20150805, allow centroid_index to be zero, do not integrate such assets in valid_asset_pos, no damage will be calculated           
+% Lea Mueller, muellele@gmail.com, 20150819, use only unique values in interp_x_table, so that interp1 works (interp_x_table is monotonically increasing)        
+% Lea Mueller, muellele@gmail.com, 20150819, set minimum damage to min defined in damage function (probably 0)  
 % Lea Mueller, muellele@gmail.com, 20150831, EDS.ED, EDS.damage, EDS.Value is the sum only of the first Value_unit encountered, all other units are not included
-% David N. Bresch, david.bresch@gmail.com, 20150907, ...errant extrapolation leads to WRONG behaviour in case of hazard_intensity_impact_b, commented
+% David N. Bresch, david.bresch@gmail.com, 20150907, ...errant extrapolation leads to WRONG behaviour in case of hazard_intensity_impact_b, commented 
 % Lea Mueller, muellele@gmail.com, 20150907, add sanity_check variable to call climada_damagefunctions_check
 % Lea Mueller, muellele@gmail.com, 20150910, set sanity_check to silent_mode
 % Lea Mueller, muellele@gmail.com, 20151117, replace output string to "Calculating damage" instead of "processing"
@@ -102,8 +99,9 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20151127, add EDS.assets.Category
 % Lea Mueller, muellele@gmail.com, 20151127, invoke climada_assets_category_ID, add EDS.assets.Category_name and EDS.assets.Category_ID
 % David N. Bresch, david.bresch@gmail.com, 20160202, cleanup
-% David N. Bresch, david.bresch@gmail.com, 20160210, is_unit removed and substantial speedup (damagefunctions made unique before calc)
+% David N. Bresch, david.bresch@gmail.com, 20160210, is_unit removed
 %-
+
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -124,7 +122,6 @@ if ~exist('sanity_check','var'),sanity_check=0;end
 % check/process input
 entity = climada_entity_load(entity); % prompt for entity if not given
 hazard = climada_hazard_load(hazard); % prompt for hazard_set if not given
-if isempty(hazard) || isempty(entity),return;end
 hazard = climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % check for consistency of entity and the hazard set it has been encoded to
@@ -154,7 +151,7 @@ if force_re_encode % re-encode entity to hazard
 end
 
 if ~isfield(entity.assets,'Deductible'),...
-        entity.assets.Deductible=entity.assets.Value*0;
+    entity.assets.Deductible=entity.assets.Value*0;
 end
 
 if isfield(entity.assets,'Cover')
@@ -181,7 +178,7 @@ else
     EDS.reference_year=climada_global.present_reference_year;
 end
 EDS.event_ID          = hazard.event_ID;
-EDS.damage            = zeros(1,size(hazard.intensity,1));
+%EDS.damage            = zeros(1,size(hazard.intensity,1));
 n_assets              = length(entity.assets.centroid_index);
 EDS.ED_at_centroid    = zeros(n_assets,1); % expected damage per centroid
 EDS.Value             = 0;
@@ -196,13 +193,17 @@ if climada_global.EDS_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
     EDS.damage_at_centroid     = spalloc(n_assets, hazard.event_count,...
-        ceil(hazard.event_count*n_assets*damage_at_centroid_density));
+                                 ceil(hazard.event_count*n_assets*damage_at_centroid_density));
     [i,j,x]           = find(EDS.damage_at_centroid);
 end
 
 % temp variables
 MDD_0                 = zeros(size(hazard.intensity,1),1);
 PAA_0                 = zeros(size(hazard.intensity,1),1);
+
+% start the calculation
+% THIS CODE MIGHT NEED FUTURE OPTIMIZATION
+% see also climada_code_optimizer, which removes all slowing code...
 
 % only process Value>0 and centroid_index>0, since otherwise no damage anyway
 valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
@@ -225,9 +226,9 @@ entity_damagefunctions_PAA         = entity.damagefunctions.PAA(peril_damfun_pos
 DamageFunID=unique(entity_damagefunctions_DamageFunID);
 full_unique=[];
 for i=1:length(DamageFunID)
-    damfun_pos    = find(entity_damagefunctions_DamageFunID == DamageFunID(i));
+    damfun_pos = find(entity_damagefunctions_DamageFunID == DamageFunID(i));
     [~,is_unique] = unique(entity_damagefunctions_Intensity(damfun_pos));
-    full_unique   = [full_unique;is_unique+damfun_pos(1)-1];
+    full_unique= [full_unique;is_unique+damfun_pos(1)-1];
 end % i
 full_unique=sort(full_unique);
 entity_damagefunctions_DamageFunID=entity_damagefunctions_DamageFunID(full_unique);
@@ -235,7 +236,16 @@ entity_damagefunctions_Intensity=entity_damagefunctions_Intensity(full_unique);
 entity_damagefunctions_MDD=entity_damagefunctions_MDD(full_unique);
 entity_damagefunctions_PAA=entity_damagefunctions_PAA(full_unique);
 % now, we only have the single-peril damagefunctions with no double entries
-       
+
+% reduce relevant variables to EXACTLY the size of the outer (par)for-loop 
+% to speed up parallelization
+entity_assets_Value=entity.assets.Value(valid_assets_pos);
+entity_assets_Deductible=entity.assets.Deductible(valid_assets_pos);
+entity_assets_Cover=entity.assets.Cover(valid_assets_pos);
+entity_assets_DamageFunID=entity.assets.DamageFunID(valid_assets_pos);
+entity_assets_centroid_index=entity.assets.centroid_index(valid_assets_pos);
+climada_global_octave_mode=climada_global.octave_mode; % also faster
+
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
@@ -255,104 +265,112 @@ mod_step=2; % first time estimate after 2 calcs, then every 100
 
 loop_mod_step=max(ceil(nn_assets/20),100);
 
-% start the calculation
-% ---------------------
-% see also climada_code_optimizer, which removes all slowing code...
+damage_collector = zeros(1,size(hazard.intensity,1));
+Value_collector  = 0;
+%%ED_at_centroid_collector = entity.assets.centroid_index*0;
+%%EDS_frequency=EDS.frequency; % sliced
 
-for asset_ii=1:nn_assets
-    
-    asset_i=valid_assets_pos(asset_ii);
-    
+parfor asset_ii=1:nn_assets
+        
     % the index of the centroid for given asset in the hazard set
-    asset_hazard_pos = entity.assets.centroid_index(asset_i);
+    asset_hazard_pos = entity_assets_centroid_index(asset_ii);
     
     % find the damagefunctions for the asset under consideration
-    asset_damfun_pos = find(entity_damagefunctions_DamageFunID == entity.assets.DamageFunID(asset_i));
-    
+    asset_damfun_pos = find(entity_damagefunctions_DamageFunID == entity_assets_DamageFunID(asset_ii));
+   
     if ~isempty(asset_damfun_pos)
         
         % convert hazard intensity into MDD
         interp_x_table = entity_damagefunctions_Intensity(asset_damfun_pos);
         interp_y_table = entity_damagefunctions_MDD(asset_damfun_pos);
-        [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
+        % take only unique values, so that interp1 works (x is monotonically increasing)
+        [interp_x_table,is_unique] = unique(interp_x_table);
+        interp_y_table = interp_y_table(is_unique);
+        [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos)); % UNAVOIDABLE
         MDD=MDD_0;
-        if climada_global.octave_mode
+        if climada_global_octave_mode
             MDD(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         else
             MDD(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         end
         
-        % figure % TEST output
+        % to be certain of no errant extrapolation
+        % leads to WRONG behaviour in case of hazard_intensity_impact_b, david.bresch@gmail.com, 20150907
+        %MDD(MDD>max(interp_y_table)) = max(interp_y_table);
+        %MDD(MDD<min(interp_x_table)) = interp_y_table(1);
+        
+        % figure
         % plot(interp_x_table, interp_y_table,':')
         % hold on
         % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
         
         % convert hazard intensity into PAA
         interp_y_table = entity_damagefunctions_PAA(asset_damfun_pos);
+        interp_y_table = interp_y_table(is_unique);
         PAA=PAA_0;
-        if climada_global.octave_mode
+        if climada_global_octave_mode
             PAA(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         else
             PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         end
         
-        % figure % TEST output
+        % figure
         % plot(interp_x_table, interp_y_table,':k')
         % hold on
         % plot(hazard.intensity(:,asset_hazard_pos), PAA,'ok')
         
         % calculate the from ground up (fgu) damage
-        temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
-        
+        temp_damage      = entity_assets_Value(asset_ii)*MDD.*PAA; % damage=value*MDD*PAA
+
         if any(full(temp_damage)) % if at least one damage>0
-            if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
+            if entity_assets_Deductible(asset_ii)>0 || entity_assets_Cover(asset_ii) < entity_assets_Value(asset_ii)
                 % apply Deductible and Cover
-                temp_damage=min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
-            end
-            EDS.damage = EDS.damage+temp_damage'; % add to the EDS
-            
-            if climada_global.EDS_at_centroid
-                %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
-                index_ = j == asset_i; %index_ = i == asset_i;
-                i(index_) = [];
-                j(index_) = [];
-                x(index_) = [];
-                
-                i = [i; find(temp_damage)];
-                j = [j; zeros(nnz(temp_damage),1)+asset_i];
-                x = [x; nonzeros(temp_damage)];
-            else
-                EDS.ED_at_centroid(asset_i,1) = temp_damage'*EDS.frequency';
+                temp_damage=min(max(temp_damage-entity_assets_Deductible(asset_ii)*PAA,0),entity_assets_Cover(asset_ii));
             end
             
+            damage_collector = damage_collector+temp_damage'; % add to the EDS
         end
-        EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
+        
+        %         if climada_global.EDS_at_centroid
+        %             %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
+        %             index_ = j == asset_i; %index_ = i == asset_i;
+        %             i(index_) = [];
+        %             j(index_) = [];
+        %             x(index_) = [];
+        %
+        %             i = [i; find(temp_damage)];
+        %             j = [j; zeros(nnz(temp_damage),1)+asset_i];
+        %             x = [x; nonzeros(temp_damage)];
+        %         else
+        %%%ED_at_centroid_collector(asset_i) = full(sum(temp_damage' .* EDS_frequency));
+        %         end
+            
+        Value_collector = Value_collector+entity_assets_Value(asset_ii);
         
         % TEST output
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
-        if ~silent_mode % CLIMADA_OPT
-            if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
-                mod_step         = loop_mod_step; % CLIMADA_OPT
-                t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
-                calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
-                t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-                msgstr           = sprintf('est. %i seconds left (%i/%i assets>0)',ceil(t_projected_calc),asset_ii,nn_assets); % CLIMADA_OPT
-                
-                if climada_global.waitbar % CLIMADA_OPT
-                    waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
-                else % CLIMADA_OPT
-                    fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
-                    format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
-                end % CLIMADA_OPT
-                
-            end % CLIMADA_OPT
-        end % CLIMADA_OPT
+%         if ~silent_mode % CLIMADA_OPT
+%             if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
+%                 mod_step         = loop_mod_step; % CLIMADA_OPT
+%                 t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
+%                 calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
+%                 t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
+%                 msgstr           = sprintf('est. %i seconds left (%i/%i assets>0)',ceil(t_projected_calc),asset_ii,nn_assets); % CLIMADA_OPT
+%                 
+%                 if climada_global.waitbar % CLIMADA_OPT
+%                     waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+%                 else % CLIMADA_OPT
+%                     fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
+%                     format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
+%                 end % CLIMADA_OPT
+%                 
+%             end % CLIMADA_OPT
+%         end % CLIMADA_OPT
         
     end % ~isempty(asset_damfun_pos)
     
 end % asset_ii
-
 if ~silent_mode % CLIMADA_OPT
     if climada_global.waitbar % CLIMADA_OPT
         close(h) % dispose waitbar % CLIMADA_OPT
@@ -360,6 +378,10 @@ if ~silent_mode % CLIMADA_OPT
         fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
     end % CLIMADA_OPT
 end % CLIMADA_OPT
+
+EDS.damage=damage_collector;
+EDS.Value =Value_collector;
+%%EDS.ED_at_centroid=ED_at_centroid_collector;
 
 t_elapsed = etime(clock,t0);
 msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
@@ -370,14 +392,14 @@ EDS.comment         = msgstr;
 EDS.hazard.filename = strrep(char(hazard.filename),'\',filesep); % from PC
 EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % from MAC
 if isfield(hazard,'refence_year')
-    EDS.hazard.refence_year = hazard.refence_year;
+    EDS.hazard.refence_year = hazard.refence_year; 
 else
-    EDS.hazard.refence_year = climada_global.present_reference_year;
+    EDS.hazard.refence_year = climada_global.present_reference_year; 
 end
 if isfield(hazard,'scenario')
-    EDS.hazard.scenario = hazard.scenario;
+    EDS.hazard.scenario = hazard.scenario; 
 else
-    EDS.hazard.scenario = 'no climate change';
+    EDS.hazard.scenario = 'no climate change'; 
 end
 EDS.hazard.comment  = char(hazard.comment);
 EDS.assets.filename = entity.assets.filename;
