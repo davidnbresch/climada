@@ -1,21 +1,21 @@
-function [damagefunction,dmf_info_str]=climada_damagefunction_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
-% climada template
+function [damagefunctions,dmf_info_str]=climada_damagefunctions_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
+% climada_damagefunctions_generate
 % MODULE:
 %   core
 % NAME:
-%   climada_damagefunction_generate
+%   climada_damagefunctions_generate
 % PURPOSE:
-%   Generate damagefunction
+%   Generate damagefunctions
 %
-%   See also: climada_damagefunction_map and _plot ...
+%   See also: climada_damagefunctions_map and _plot ...
 % CALLING SEQUENCE:
-%   damagefunction=climada_damagefunction_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
+%   damagefunction=climada_damagefunctions_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
 % EXAMPLE:
-%   damagefunction=climada_damagefunction_generate(0:10:120,20,3,1,'exp','TC')
-%   damagefunction=climada_damagefunction_generate([],20,1,0.5,'s-shape','TC',1)
+%   damagefunction=climada_damagefunctions_generate(0:10:120,20,3,1,'exp','TC')
+%   damagefunction=climada_damagefunctions_generate([],20,1,0.5,'s-shape','TC',1)
 % INPUTS:
 %   intensity: the hazard intensity scale, i.e. the horizontal axis of the
-%       damage function. Any vector of intensities, acending in value,
+%       damage function. Any vector of intensities, ascending in value,
 %       such as 1:10:100
 %   dmf_min_intens: minimum intensity for MDD and PPA >0, default=0
 %   dmf_exp: the exponent of the damage function, see also shape
@@ -34,7 +34,7 @@ function [damagefunction,dmf_info_str]=climada_damagefunction_generate(intensity
 %       comparison of say two options
 % OUTPUTS:
 %   damagefunction: a structure with
-%       filename: just for information, here 'climada_damagefunction_generate'
+%       filename: just for information, here 'climada_damagefunctions_generate'
 %       Intensity(i): the hazard intensity (a vector)
 %       DamageFunID(i): =ones(1,length(Intensity)
 %       peril_ID{i}: a cell array with peril_ID
@@ -44,9 +44,10 @@ function [damagefunction,dmf_info_str]=climada_damagefunction_generate(intensity
 %       in the form 'shape dmf_max*(i-dmf_min_intens)^dmf_exp'
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150211, initial
+% Lea Mueller, muellele@gmail.com, 20160212, rename to climada_damagefunctionS_generate instead of without s
 %-
 
-damagefunction=[]; % init output
+damagefunctions=[]; % init output
 dmf_info_str=''; % init output
 
 %global climada_global
@@ -78,34 +79,34 @@ dmf_info_str=sprintf('%s %s %3.3f*(i-%i)**%2.2f',peril_ID,dmf_shape,dmf_max,dmf_
 
 if size(intensity,1)<size(intensity,2),intensity=intensity';end
 
-damagefunction.filename=mfilename;
-damagefunction.Intensity=intensity;
-damagefunction.DamageFunID=damagefunction.Intensity*0+1;
-damagefunction.peril_ID=cellstr(repmat(peril_ID,length(damagefunction.Intensity),1));
+damagefunctions.filename=mfilename;
+damagefunctions.Intensity=intensity;
+damagefunctions.DamageFunID=damagefunctions.Intensity*0+1;
+damagefunctions.peril_ID=cellstr(repmat(peril_ID,length(damagefunctions.Intensity),1));
 
 switch dmf_shape
     case 'exp'
         % polynomial damage function
-        damagefunction.MDD=max(damagefunction.Intensity-dmf_min_intens,0).^dmf_exp;
-        damagefunction.MDD=dmf_max*damagefunction.MDD/damagefunction.MDD(end);
-        damagefunction.PAA=max(damagefunction.Intensity-dmf_min_intens,0).^dmf_exp;
-        damagefunction.PAA=damagefunction.PAA/damagefunction.PAA(end);
+        damagefunctions.MDD=max(damagefunctions.Intensity-dmf_min_intens,0).^dmf_exp;
+        damagefunctions.MDD=dmf_max*damagefunctions.MDD/damagefunctions.MDD(end);
+        damagefunctions.PAA=max(damagefunctions.Intensity-dmf_min_intens,0).^dmf_exp;
+        damagefunctions.PAA=damagefunctions.PAA/damagefunctions.PAA(end);
     case 's-shape'
         % S-shaped damage function
-        damagefunction.MDD=damagefunction.Intensity*0; % init
-        damagefunction.PAA=damagefunction.Intensity*0; % init
-        Intensity_pos=damagefunction.Intensity>dmf_min_intens;
+        damagefunctions.MDD=damagefunctions.Intensity*0; % init
+        damagefunctions.PAA=damagefunctions.Intensity*0; % init
+        Intensity_pos=damagefunctions.Intensity>dmf_min_intens;
         n_x=sum(Intensity_pos);
         x = -2:4/n_x:2;y = erf(x);y=y-y(1);y=y/max(y); % erf to get S-shape
-        damagefunction.MDD(Intensity_pos)=y(1:end-1);
-        damagefunction.PAA(Intensity_pos)=y(1:end-1);
-        damagefunction.MDD=dmf_max*(damagefunction.MDD.^dmf_exp);
-        damagefunction.PAA=(damagefunction.PAA.^dmf_exp);
+        damagefunctions.MDD(Intensity_pos)=y(1:end-1);
+        damagefunctions.PAA(Intensity_pos)=y(1:end-1);
+        damagefunctions.MDD=dmf_max*(damagefunctions.MDD.^dmf_exp);
+        damagefunctions.PAA=(damagefunctions.PAA.^dmf_exp);
     otherwise
         fprintf('Error: %s not implemented yet\n',dmf_shape)
         return
 end % switch dmf_shape
 
-if check_plot,climada_damagefunctions_plot(damagefunction);end
+if check_plot,climada_damagefunctions_plot(damagefunctions);end
 
-end % climada_damagefunction_generate
+end % climada_damagefunctions_generate

@@ -6,7 +6,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 %   Plot the damage functions within entity (if a damagefunctions struct is
 %   passed, it works, too).
 %
-%   See also climada_damagefunctions_read and climada_damagefunction_generate
+%   See also climada_damagefunctions_read and climada_damagefunctions_generate
 % CALLING SEQUENCE:
 %   climada_damagefunctions_plot(entity,unique_ID_sel)
 %   climada_damagefunctions_plot(climada_damagefunctions_read)
