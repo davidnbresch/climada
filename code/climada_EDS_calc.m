@@ -15,7 +15,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   using the climada_code_optimizer, which removes all slowing code, i.e.
 %   all code lines marked by % CLIMADA_OPT - but by now, the code is pretty
 %   fast, hence climada_code_optimizer does usually not bring huge
-%   improvements.
+%   improvements (i.e. less than 4% speedup).
 %
 %   Search for 'TEST output' in code to show output for VERY SMALL entities
 %
@@ -290,11 +290,11 @@ for asset_ii=1:nn_assets
         % convert hazard intensity into PAA
         interp_y_table = entity_damagefunctions_PAA(asset_damfun_pos);
         PAA=PAA_0;
-        if climada_global.octave_mode
-            PAA(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
-        else
+        if climada_global.octave_mode % CLIMADA_OPT
+            PAA(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
+        else % CLIMADA_OPT
             PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
-        end
+        end % CLIMADA_OPT
         
         % figure % TEST output
         % plot(interp_x_table, interp_y_table,':k')
@@ -311,19 +311,19 @@ for asset_ii=1:nn_assets
             end
             EDS.damage = EDS.damage+temp_damage'; % add to the EDS
             
-            if climada_global.EDS_at_centroid
-                %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids
-                index_ = j == asset_i; %index_ = i == asset_i;
-                i(index_) = [];
-                j(index_) = [];
-                x(index_) = [];
+            if climada_global.EDS_at_centroid % CLIMADA_OPT
+                %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids % CLIMADA_OPT
+                index_ = j == asset_i; %index_ = i == asset_i; % CLIMADA_OPT
+                i(index_) = []; % CLIMADA_OPT
+                j(index_) = []; % CLIMADA_OPT
+                x(index_) = []; % CLIMADA_OPT
                 
-                i = [i; find(temp_damage)];
-                j = [j; zeros(nnz(temp_damage),1)+asset_i];
-                x = [x; nonzeros(temp_damage)];
-            else
+                i = [i; find(temp_damage)]; % CLIMADA_OPT
+                j = [j; zeros(nnz(temp_damage),1)+asset_i]; % CLIMADA_OPT
+                x = [x; nonzeros(temp_damage)]; % CLIMADA_OPT
+            else % CLIMADA_OPT
                 EDS.ED_at_centroid(asset_i,1) = temp_damage'*EDS.frequency';
-            end
+            end % CLIMADA_OPT
             
         end
         EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
