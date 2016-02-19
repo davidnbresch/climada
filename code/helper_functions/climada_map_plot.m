@@ -45,6 +45,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20151217, return if ED_at_centroid control and measure do not have same dimension
 % Lea Mueller, muellele@gmail.com, 20160107, add workaround to avoid prctile that uses statistics toolbox
 % Lea Mueller, muellele@gmail.com, 20160129, invoke climada_find_most_severe_event
+% Lea Mueller, muellele@gmail.com, 20160219, bugfix for hazard
 % -
 
 fig = []; % init
@@ -147,7 +148,7 @@ switch struct_name
         % extract longitudes, latitudes
         if isempty(event_no), event_no = 1; end 
         if isfield(input_structure,'assets')
-            lon = input_structure.assets.lon; lat = input_structure.assets.lon;
+            lon = input_structure.assets.lon; lat = input_structure.assets.lat;
             %if isfield(input_structure.assets,'Category'), Category = input_structure.assets.Category;end
             if isfield(input_structure.assets,'Category')
                 Category = getfield(input_structure.assets,'Category');
@@ -194,13 +195,13 @@ switch struct_name
         % just set title_str
         if isfield(input_structure,'units'),hazard_units = input_structure.units;end 
         if isfield(input_structure,'peril_ID'),peril_ID = input_structure.peril_ID;end
-        if isfield(input_structure,'name'),event_name = strrep(input_structure.name{event_no},'_',' ');end
         if isempty(event_no) % find most severe event
             event_no = climada_find_most_severe_event(input_structure,-1);            
         end 
         if event_no<0
             event_no = climada_find_most_severe_event(input_structure,event_no);    
         end
+        if isfield(input_structure,'name'),event_name = strrep(input_structure.name{event_no},'_',' ');end
         title_str_2 = sprintf('\nEvent %d: %s', event_no,event_name);
         %title_str_1 = sprintf('%s (%s %s)',fieldname_to_plot_str, peril_ID, hazard_units);
         
