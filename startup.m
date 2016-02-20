@@ -18,6 +18,7 @@ end
 % these last to be top in path list
 addpath([climada_root_dir filesep 'code']);
 addpath([climada_root_dir filesep 'code' filesep 'helper_functions']);
+addpath([climada_root_dir filesep 'code' filesep 'data_import']);
 addpath([climada_root_dir filesep 'code' filesep 'old']);
 
 % pass the global root directory
