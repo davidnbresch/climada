@@ -179,6 +179,9 @@ end
 % get TC track (prompting for file to be selected)
 [tc_track,track_filename]=climada_tc_read_unisys_track(track_filename);
 
+% resolve issue with +/-180 at dateline
+tc_track.lon=climada_dateline_resolve(tc_track.lon);
+
 % automatically detec country/ies
 country_list={};
 shapes=climada_shaperead(climada_global.map_border_file); % get country shapes
@@ -214,6 +217,10 @@ for country_i=1:length(country_list)
     entity=climada_entity_load([country_ISO3 '_' strrep(country_name,' ','') '_entity']);
     centroids=climada_centroids_load([country_ISO3 '_' strrep(country_name,' ','') '_centroids']);
     %entity=climada_assets_encode(entity,centroids);
+    
+    % resolve issue with +/-180 at dateline
+    entity.assets.lon=climada_dateline_resolve(entity.assets.lon);
+    centroids.lon=climada_dateline_resolve(centroids.lon);
     
     if isempty(call_from_GUI)
         figure('Name',['TC ensemble ' country_name],'Position',[199 55 1076 618],'Color',[1 1 1]);
@@ -254,6 +261,7 @@ for country_i=1:length(country_list)
         %fprintf('%i seconds calculation remaining\n',ceil((length(tc_tracks)-track_i)*calc_sec));
     end % track_i
     
+    cla(call_from_GUI.axes_right) % clear
     hist(damage); % plot
     [counts,~]=hist(damage); % get info
     set(gca,'FontSize',FontSize),xlabel('damage [USD]','FontSize',FontSize),ylabel('event count','FontSize',FontSize)
