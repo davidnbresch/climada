@@ -10,10 +10,20 @@ function lon=climada_dateline_resolve(lon,hemisphere,margin)
 %   default). By default, a margin of 20 degrees is used, such that if
 %   hemisphere='E', a value of -161 gets converted to +199, 
 %   while -160 remains.
+%
+%   For Fiji for example, after creating the entity and/or centroids (e.g.
+%   using climada_GDP_entity, see module country_risk), run:
+%       entity.assets.lon=climada_dateline_resolve(entity.assets.lon);
+%       centroids.lon=climada_dateline_resolve(centroids.lon);
+%   and save these 'clean' structures for further use.
+%
+%   For tropical cyclone tracks in the datelone region, similarly (after
+%   e.g. using tc_track=climada_tc_read_unisys_track)
+%       tc_track.lon=climada_dateline_resolve(tc_track.lon);
 % CALLING SEQUENCE:
-%   climada_template(param1,param2);
+%   lon=climada_dateline_resolve(lon,hemisphere,margin)
 % EXAMPLE:
-%   climada_template(param1,param2);
+%   tc_track.lon=climada_dateline_resolve(tc_track.lon)
 % INPUTS:
 %   lon: a (vector of) longitude values (in degrees) to be resolved
 % OPTIONAL INPUT PARAMETERS:
@@ -24,7 +34,7 @@ function lon=climada_dateline_resolve(lon,hemisphere,margin)
 %       if hemisphere='E', a value of -161 gets converted to +199, while
 %       -160 remains.  
 % OUTPUTS:
-%   lon: same as on input, with values 'switched' as described
+%   lon: same as on input, with values 'mapped' as described
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160221
 %-
