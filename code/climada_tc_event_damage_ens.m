@@ -1,4 +1,4 @@
-function [damage,track_filename]=climada_tc_event_damage_ens(UNISYS_regi,UNISYS_year,UNISYS_name,n_tracks,call_from_GUI)
+function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi,UNISYS_year,UNISYS_name,n_tracks,call_from_GUI)
 % MODULE:
 %   advanced
 % NAME:
@@ -52,7 +52,7 @@ function [damage,track_filename]=climada_tc_event_damage_ens(UNISYS_regi,UNISYS_
 % David N. Bresch, david.bresch@gmail.com, 20151019, converted into a function, see also climada_tc_event_damage_ens_gui
 % David N. Bresch, david.bresch@gmail.com, 20151021, special case for no web access added
 
-damage=[];track_filename=''; % init output
+damage=[];track_filename='';err_msg=''; % init output
 
 % init global variables
 global climada_global
@@ -214,9 +214,45 @@ for country_i=1:length(country_list)
     tc_tracks=climada_tc_random_walk(tc_track,n_tracks-1,0.1,pi/30); % /15
     
     % get entity and centroids
-    entity=climada_entity_load([country_ISO3 '_' strrep(country_name,' ','') '_entity']);
-    centroids=climada_centroids_load([country_ISO3 '_' strrep(country_name,' ','') '_centroids']);
-    %entity=climada_assets_encode(entity,centroids);
+    entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_entity'];
+    entity_file=[climada_global.entities_dir filesep entity_filename '.mat'];
+    centroids_file=[climada_global.centroids_dir filesep country_ISO3 '_' strrep(country_name,' ','') '_centroids.mat'];
+
+    if exist(entity_file,'file')
+        entity=climada_entity_load(entity_file);
+        if exist(centroids_file,'file')
+            centroids=climada_centroids_load(centroids_file);
+            %entity=climada_assets_encode(entity,centroids);
+        else
+            % use geo locations of entity.assets
+            centroids.lon=entity.assets.lon;
+            centroids.lat=entity.assets.lat;
+            centroids.centroid_ID=1:length(centroids.lon);
+        end % exist(centroids_file,'file')
+    else
+        % try to create the entity
+        if exist('climada_create_GDP_entity','file')
+            % invoke the country_risk module to generate centroids and entity
+            fprintf('*** creating %s (takes a moment)\n\n',entity_filename)
+            if ~isempty(call_from_GUI)
+                cla(call_from_GUI.axes_left)
+                axes(call_from_GUI.axes_left);
+                text(0.1,0.5,'creating assets (takes a moment) ...','FontSize',FontSize);drawnow
+            end
+            [centroids,entity] = climada_create_GDP_entity(country_name,[],0,1);
+            save(centroids_file,'centroids');
+            save(entity_file,'entity');
+            climada_entity_value_GDP_adjust(entity_file); % assets based on GDP
+            entity=climada_entity_load(entity_file);
+            fprintf('%s created\n\n',entity_filename)
+        else
+            fprintf(['%s not found. Please download ' ...
+                '<a href="https://github.com/davidnbresch/climada_module_country_risk">' ...
+                'climada_module_country_risk</a> from Github in order to create it.\n'],entity_filename)
+            err_msg=sprintf('Please create %s entity first, see command line',country_name);
+            return
+        end
+    end % exist(entity_file,'file')
     
     % resolve issue with +/-180 at dateline
     entity.assets.lon=climada_dateline_resolve(entity.assets.lon);
@@ -270,7 +306,8 @@ for country_i=1:length(country_list)
     text(damage(1)+ddamage,1,'damage','Rotation',90,'Color','red','FontSize',FontSize);
     [~,track_i] = max(damage);
     tc_track_name=lower(tc_track.name);
-    title([[upper(tc_track_name(1)) tc_track_name(2:end)]  ' @ ' country_name],'FontSize',FontSize,'FontWeight','normal');drawnow
+    title([[upper(tc_track_name(1)) tc_track_name(2:end)]  ' @ ' country_name],'FontSize',FontSize,'FontWeight','normal');
+    drawnow
     %plot(damage(track_i),0,'xb');
     %text(damage(track_i),0,'max ensemble damage','Rotation',90);
     if isempty(call_from_GUI)

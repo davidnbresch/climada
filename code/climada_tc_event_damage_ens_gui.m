@@ -85,6 +85,7 @@ function popupmenu_region_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from popupmenu_region
 get_UNISYS_name_list(hObject,eventdata,handles);
 set(handles.pushbutton_calculate,'Enable','off');
+set(handles.pushbutton_calculate,'BackgroundColor','red'); % make inactive
 set(handles.popupmenu_year,'Enable','on'); % first a name region to be selected
 
 % --- Executes during object creation, after setting all properties.
@@ -108,7 +109,7 @@ climada_tc_event_damage_ens_vars.UNISYS_regis{4}='s_pacific';
 climada_tc_event_damage_ens_vars.UNISYS_regis{5}='s_indian';
 climada_tc_event_damage_ens_vars.UNISYS_regis{6}='n_indian';
 set(hObject,'String',climada_tc_event_damage_ens_vars.UNISYS_regis);
-fprintf('popupmenu_region_CreateFcn\n');
+%fprintf('popupmenu_region_CreateFcn\n');
 
 
 % --- Executes on selection change in popupmenu_year.
@@ -153,6 +154,7 @@ function popupmenu_name_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_name contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu_name
 set(handles.pushbutton_calculate,'Enable','on');
+set(handles.pushbutton_calculate,'BackgroundColor','green'); % make inactive
 
 
 % --- Executes during object creation, after setting all properties.
@@ -230,8 +232,12 @@ fprintf('%s %s %s - %i\n',UNISYS_regi,UNISYS_year,UNISYS_name,ens_n);
 
 call_from_GUI.axes_left=handles.axes_left;
 call_from_GUI.axes_right=handles.axes_right;
-damages=climada_tc_event_damage_ens(UNISYS_regi,UNISYS_year,UNISYS_name,ens_n,call_from_GUI);
-fprintf('original track: %g [USD], min/max: %g/%g\n',damages(1),min(damages),max(damages));
+[damages,~,err_msg]=climada_tc_event_damage_ens(UNISYS_regi,UNISYS_year,UNISYS_name,ens_n,call_from_GUI);
+if isempty(err_msg)  && ~isempty(damages)
+    fprintf('original track: %g [USD], min/max: %g/%g\n',damages(1),min(damages),max(damages));
+else
+    fprintf('%s\n',err_msg);
+end % isempty(err_msg)
 
 
 function get_UNISYS_name_list(hObject,eventdata,handles)
@@ -260,9 +266,11 @@ if STATUS
         end % black_red
     end % event_i
     set(handles.pushbutton_calculate,'Enable','off'); % first a name needs to be selected
+    set(handles.pushbutton_calculate,'BackgroundColor','red'); % make inactive
 else
     UNISYS_names{1}='no web access > press Calculate button';
     set(handles.pushbutton_calculate,'Enable','on');
+    set(handles.pushbutton_calculate,'BackgroundColor','green'); % make inactive
 end
 
 climada_tc_event_damage_ens_vars.UNISYS_names=UNISYS_names;

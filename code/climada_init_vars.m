@@ -36,7 +36,8 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20150906, climada_global.font_scale
 % Lea Mueller, muellele@gmail.com, 20150924, introduce climada_global.max_distance_to_hazard
 % Lea Mueller, muellele@gmail.com, 20151204, introduce climada_global.markersize, for climada_color_plot and plotclr
-%
+% David N. Bresch, david.bresch@gmail.com, 20160222, entities_dir added
+%-
 
 global climada_global
 
@@ -103,16 +104,18 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     if ~exist(climada_global.data_dir,'dir')
         fprintf('WARNING: please create %s manually\n',climada_global.data_dir);
     end
+    
     climada_global.system_dir=[climada_global.data_dir filesep 'system'];
     if ~exist(climada_global.system_dir,'dir')
         fprintf('WARNING: please create %s manually\n',climada_global.system_dir);
     end
+    
     climada_global.centroids_dir=[climada_global.data_dir filesep 'centroids']; % added 20150819
-    if ~exist(climada_global.centroids_dir,'dir')
-        fprintf('WARNING: please create %s manually\n',climada_global.centroids_dir);
-        climada_global.centroids_dir=climada_global.system_dir;
-        fprintf('--> ad interim centroids in system folder (backward compatibility, too)\n');
-    end
+    if ~isdir(climada_global.centroids_dir),mkdir(climada_global.data_dir,'centroids');end % added 20160222
+
+    climada_global.entities_dir=[climada_global.data_dir filesep 'entities']; % added 20160222
+    if ~isdir(climada_global.entities_dir),mkdir(climada_global.data_dir,'entities');end
+    
     % the map border file as used by climada_plot_world_borders
     % (see the short documentation in climada_global.system_dir/admin0.txt)
     climada_global.map_border_file=[climada_global.system_dir filesep 'admin0.mat'];
