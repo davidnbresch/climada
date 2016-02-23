@@ -27,7 +27,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150922, add benefit for adaptation bar chart colormap
 % Lea Mueller, muellele@gmail.com, 20150924, special case if only one colour is required
 % Lea Mueller, muellele@gmail.com, 20151201, update benefit colors (grey, yellow, green, turqoise)
-% Lea Mueller, muellele@gmail.com, 20160201, add excess or rain (XR), lack of rain (LR) and greenness index (GI)
+% Lea Mueller, muellele@gmail.com, 20160201, add excess or rain (XR), lack of rain (LR) and lack of greenness (LG)
 %-
 
 cmap    = []; %init output
@@ -149,7 +149,7 @@ switch peril_ID
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
         
-     case {'GI','LR'}
+     case {'LG','LR'}
         % create colormap for greenness index (NDVI) and lack of rain (LR)
         c_ax = [ ];
         cmap = [  1.0000    1.0000    1.0000;
