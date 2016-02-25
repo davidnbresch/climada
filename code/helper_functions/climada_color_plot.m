@@ -37,6 +37,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % David N. Bresch, david.bresch@gmail.com, 20120430
 % Lea Mueller, muellele@gmail.com, 20151124, add fig output
 % Lea Mueller, muellele@gmail.com, 20151130, add plotclr option
+% Lea Mueller, muellele@gmail.com, 20151130, set marker to '' so it is taken from climada_global.marker
 %-
 
 fig = []; %init
@@ -122,10 +123,10 @@ switch plot_method
         contourf(X,Y,full(gridded_VALUE));hold on;axis equal; % filled contour plot
         colormap(cmap)
     case 'plotclr'
-        marker = 's';
+        marker = '';
         markersize = ''; colorbar_on = 1; miv = ''; mav = '';
         if numel(caxis_range)>1; miv = caxis_range(1); mav = caxis_range(2); end
-        plotclr(lon,lat,values,marker, markersize, colorbar_on, miv, mav, cmap);
+        plotclr(lon,lat,values,marker,markersize,colorbar_on,miv,mav,cmap);
         box on; grid off %hold on;axis equal; % filled contour plot
     otherwise
         pcolor(X,Y,gridded_VALUE);hold on;shading flat;axis equal;

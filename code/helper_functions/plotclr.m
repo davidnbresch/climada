@@ -32,6 +32,7 @@ function [h, h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, ma
 % Lea Mueller, muellele@gmail.com, 20150728, plot values above threshold mav 
 % Lea Mueller, muellele@gmail.com, 20151130, bugfix colorbar if all values are equal
 % Lea Mueller, muellele@gmail.com, 20151207, include climada_global.markersize
+% Lea Mueller, muellele@gmail.com, 20151207, include climada_global.marker
 %-
 
 global climada_global
@@ -53,7 +54,7 @@ if v_exp;
 end
 
 
-if isempty(marker)    , marker     = '.'     ; end
+if isempty(marker)    , marker     = climada_global.marker; end  %'s'; '.'
 if isempty(markersize), markersize = climada_global.markersize; end
 if isempty(miv)       , miv        = min(v)  ; end
 if isempty(mav)       , mav        = max(v)  ; end

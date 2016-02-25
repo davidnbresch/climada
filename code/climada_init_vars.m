@@ -37,6 +37,7 @@ function ok=climada_init_vars(reset_flag)
 % Lea Mueller, muellele@gmail.com, 20150924, introduce climada_global.max_distance_to_hazard
 % Lea Mueller, muellele@gmail.com, 20151204, introduce climada_global.markersize, for climada_color_plot and plotclr
 % David N. Bresch, david.bresch@gmail.com, 20160222, entities_dir added
+% Lea Mueller, muellele@gmail.com, 20160225, introduce climada_global.marker, for climada_color_plot and plotclr
 %-
 
 global climada_global
@@ -194,7 +195,8 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % (larger fonts than on the screen for expert users)
     climada_global.font_scale=1; % integer only, please, default=1, useful for ppt is 2 or 3
     climada_global.markersize=5; % integer only, please, default=4, used in climada_color_plot and plotclr
-    
+    climada_global.marker = 's'; % marker, i.e. 's','.','o', used in climada_color_plot and plotclr
+   
     climada_vars_initialised=1; % indicate we have initialized all vars
     
     % whether we run on Octave
