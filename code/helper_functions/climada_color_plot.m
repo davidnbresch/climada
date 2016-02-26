@@ -38,6 +38,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % Lea Mueller, muellele@gmail.com, 20151124, add fig output
 % Lea Mueller, muellele@gmail.com, 20151130, add plotclr option
 % Lea Mueller, muellele@gmail.com, 20151130, set marker to '' so it is taken from climada_global.marker
+% Lea Mueller, muellele@gmail.com, 20150226, correct type (contourF instead of contour)
 %-
 
 fig = []; %init
@@ -119,8 +120,13 @@ if ~strcmp(plot_method,'plotclr')
 end %~strcmp(plot_method,'plotclr')
     
 switch plot_method
-    case 'contour'
-        contourf(X,Y,full(gridded_VALUE));hold on;axis equal; % filled contour plot
+    case 'contourf'
+        centroids.lon = lon; centroids.lat = lat;
+        [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
+        gridded_VALUE(gridded_VALUE<(0.1)) = NaN; %gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
+        contourf(X, Y, gridded_VALUE,200,'edgecolor','none');hold on;axis equal; % filled contour plot   
+        
+        %contourf(X,Y,full(gridded_VALUE));hold on;axis equal; % filled contour plot
         colormap(cmap)
     case 'plotclr'
         marker = '';

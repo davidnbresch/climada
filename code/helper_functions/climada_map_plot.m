@@ -46,6 +46,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20160107, add workaround to avoid prctile that uses statistics toolbox
 % Lea Mueller, muellele@gmail.com, 20160129, invoke climada_find_most_severe_event
 % Lea Mueller, muellele@gmail.com, 20160219, bugfix for hazard
+% Lea Mueller, muellele@gmail.com, 20160226, start title_str with uppercase
 % -
 
 fig = []; % init
@@ -320,7 +321,9 @@ for f_i = 1:numel(fieldname_to_plot)
                 elseif strcmp(fieldname_to_plot{f_i},'Value'), cmap = climada_colormap('assets');
                 elseif strcmp(fieldname_to_plot{f_i},'ED_at_centroid'), cmap = climada_colormap('damage');
                 else cmap = jet(64); 
+                    try cmap = climada_colormap(input_structure.peril_ID);end
                 end
+                title_str_1(1) = upper(title_str_1(1));
                 try %uses statistics toolbox
                    caxis_max = prctile(values_sum,99.5);
                 catch 

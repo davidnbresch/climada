@@ -1,4 +1,4 @@
-function fig = climada_hazard_stats_figure(hazard,return_periods)
+function fig = climada_hazard_stats_figure(hazard,return_periods,intensity_xtick,plot_method)
 % NAME:
 %   climada_hazard_stats_figure
 % PURPOSE:
@@ -7,14 +7,14 @@ function fig = climada_hazard_stats_figure(hazard,return_periods)
 %     .intensity_fit_ori
 %     .intensity_fit
 %     .R_fit (requested return periods)
-%   previous: climada_hazard_stats before)
+%   previous withing climada_hazard_stats
 % PREVIOUS STEP:
 %   climada_hazard_stats
 % CALLING SEQUENCE:
 %   fig = climada_hazard_stats_figure(hazard,return_periods)
 % EXAMPLE:
 %   climada_hazard_stats_figure
-%   climada_hazard_stats_figure(climada_hazard_stats(hazard),[10 50])
+%   climada_hazard_stats_figure(climada_hazard_stats(hazard),[10 50],[0:20:100],'contourf')
 % INPUTS:
 %   hazard with hazard stats (.intensity_fit, .R)
 % OPTIONAL INPUT PARAMETERS:
@@ -23,10 +23,13 @@ function fig = climada_hazard_stats_figure(hazard,return_periods)
 %   return_periods: vector containing the requested return periods
 %       (e.g. [1 5 10 25 50 100 500 1000])
 %       if empty, taken from default as defined in climada_init_vars
+%   intensity_xtick: set xtick of intensity values
+%   plot_method: 'contourf', 'pcolor', 'plotclr', default is contourf
 % OUTPUTS:
 %   a figure with the intensity per return period
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150914, separate from climada_hazard_stats
+% Lea Mueller, muellele@gmail.com, 20160226, add intensity_xtick and plot_method
 %-
 
 % init global variables
@@ -36,11 +39,11 @@ if ~climada_init_vars, return; end
 % poor man's version to check arguments
 if ~exist('hazard'        , 'var'), hazard         = []; end
 if ~exist('return_periods', 'var'), return_periods = []; end
+if ~exist('intensity_xtick', 'var'), intensity_xtick = []; end
+if ~exist('plot_method', 'var'), plot_method = []; end
 
-% prompt for hazard if not given
-if isempty(hazard) % local GUI
-    hazard = climada_hazard_load;
-end
+if isempty(plot_method), plot_method = 'contourf'; end
+hazard = climada_hazard_load(hazard); % prompt for hazard if not given
 hazard = climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % set return periods if not given
@@ -52,8 +55,9 @@ else
     return_periods_show = return_periods;
 end
 
+
 % check if statistics are available
-if ~isfield(hazard,'intensity_fit') | ~isfield(hazard,'R_fit') 
+if ~isfield(hazard,'intensity_fit') || ~isfield(hazard,'R_fit') 
     fprintf('Add hazard statistics.\n')
     hazard = climada_hazard_stats(hazard,return_periods);
 end
@@ -107,17 +111,30 @@ switch peril_ID
         hazard.intensity_fit = (1.-hazard.intensity_fit)*hazard.cutoff_m;
         hazard.intensity_fit(is_max_intensity) = 1;
         cbar_str  = sprintf('%s Distance to landslide (m)', hazard.peril_ID);
-        plotclr_on = 1;
-        markersize = 2.2;
-        marker = 's';
+        plot_method = 'plotclr'; 
+        %markersize = 2.2; marker = 's';
 
     otherwise
         % use default colormap, hence no cmap defined  
         caxis_max = full(max(max(hazard.intensity_fit)));
         %xtick_    = [];
         xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+        xtick_    = round(xtick_*1)/1;
         cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
 end
+
+% overwrite xtick with user_input if given
+if ~isempty(intensity_xtick), xtick_ = intensity_xtick; end
+        
+admin1_plot = 0;
+% % ----special case for Vietnam-----
+% admin1_plot = 1;
+% admin0_name = 'Vietnam';
+% admin1_name = {'VNM-5483' 'VNM-458'};
+% admin1_shape_selection = eos_admin1_get_shapes(admin0_name,admin1_name);
+% admin1_shapes = admin1_shape_selection;
+% % --------------------------------
+
 
 
 % FIGURE
@@ -137,7 +154,8 @@ scale2= (max(centroids.lon)-min(centroids.lon)+scale*2/30)...
 
 return_count = length(return_periods_show);
 if return_count < 3; y_no = return_count; else y_no  = 3; end
-x_no         = ceil(return_count/3);
+if return_count == 4; y_no = 2; end % special case for 4 return periods
+x_no = ceil(return_count/3);
 
 scale_tot = (y_no*scale2)/x_no;
 he = 0.7;
@@ -169,21 +187,30 @@ for i=1:return_count %x_no*y_no %return_count
     subaxis(i)
 
     fit_index = return_periods_show(i) == hazard.R_fit;
-    
-    if ~plotclr_on
-        values    = full(hazard.intensity_fit(fit_index,:));
-        if sum(values(not(isnan(values))))>0 % nansum(values)>0
-            [X, Y, gridded_VALUE] = climada_gridded_VALUE(values, centroids);
-            gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
-            contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
-        else
-            text(mean([min(centroids.lon) max(centroids.lon)]),...
-                mean([min(centroids.lat ) max(centroids.lat )]),...
-                'no data for this return period available','fontsize',8,...
-                'HorizontalAlignment','center')
+    values    = full(hazard.intensity_fit(fit_index,:));
+    if sum(values(not(isnan(values))))>0 % nansum(values)>0
+        switch plot_method
+            case 'contourf'
+                [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
+                gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
+                contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
+            case 'plotclr'
+                marker = ''; markersize = ''; colorbar_on = 0; miv = ''; mav = ''; % mav = caxis_max;
+                plotclr(centroids.lon,centroids.lat,values,marker,markersize,colorbar_on,miv,mav,cmap);
+                %box on; grid off %hold on;axis equal; % filled contour plot
+        end
+        hold on
+        if admin1_plot
+            for admin1_i = 1:length(admin1_shapes)
+                plot(admin1_shapes(admin1_i).X,admin1_shapes(admin1_i).Y,'-r','LineWidth',1);
+                %text(admin1_shapes(admin1_i).longitude,admin1_shapes(admin1_i).latitude,admin1_shapes(admin1_i).name);     
+            end
         end
     else
-        plotclr(centroids.lon, centroids.lat, hazard.intensity_fit(fit_index,:),marker,markersize,0,0,caxis_max,cmap);
+        text(mean([min(centroids.lon) max(centroids.lon)]),...
+            mean([min(centroids.lat ) max(centroids.lat )]),...
+            'no data for this return period available','fontsize',8,...
+            'HorizontalAlignment','center')
     end
     hold on
     climada_plot_world_borders(0.7)
