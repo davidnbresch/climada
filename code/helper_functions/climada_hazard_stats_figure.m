@@ -131,7 +131,7 @@ admin1_plot = 0;
 % admin1_plot = 1;
 % admin0_name = 'Vietnam';
 % admin1_name = {'VNM-5483' 'VNM-458'};
-% admin1_shape_selection = eos_admin1_get_shapes(admin0_name,admin1_name);
+% admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_name);
 % admin1_shapes = admin1_shape_selection;
 % % --------------------------------
 

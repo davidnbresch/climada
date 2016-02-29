@@ -79,6 +79,7 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 % David N. Bresch, david.bresch@gmail.com, 20141212, SYSTEM_ADMIN0 added
 % David N. Bresch, david.bresch@gmail.com, 20141221, restriction to domestic for SYSTEM_ADMIN0
 % David N. Bresch, david.bresch@gmail.com, 20141225, SYSTEM_COASTLINE added
+% Lea Mueller, muellele@gmail.com, 20160229, add semicolon
 %-
 
 shapes=[]; % init output
@@ -415,7 +416,7 @@ if strcmp(shape_filename,'SYSTEM_ADMIN0') % Special case
     end
     country_risk_module_data_dir=[fileparts(fileparts(which('country_risk_calc'))) filesep 'data'];
     shape_filename=[country_risk_module_data_dir ...
-        filesep 'ne_10m_admin_0_countries' filesep 'ne_10m_admin_0_countries.shp'] % no ; to show hard-wired
+        filesep 'ne_10m_admin_0_countries' filesep 'ne_10m_admin_0_countries.shp']; % no ; to show hard-wired
     fprintf('Note: %s, special case, system admin0.mat file re-created\n',mfilename);
     force_reread=1;
 else
@@ -435,7 +436,7 @@ if strcmp(shape_filename,'SYSTEM_COASTLINE') % Special case
     end
     country_risk_module_data_dir=[fileparts(fileparts(which('country_risk_calc'))) filesep 'data'];
     shape_filename=[country_risk_module_data_dir ...
-        filesep 'ne_10m_coastline' filesep 'ne_10m_coastline.shp'] % no ; to show hard-wired
+        filesep 'ne_10m_coastline' filesep 'ne_10m_coastline.shp']; % no ; to show hard-wired
     fprintf('Note: %s, special case, system coastline.mat file re-created\n',mfilename);
     force_reread=1;
 else

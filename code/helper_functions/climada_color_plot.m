@@ -39,12 +39,14 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % Lea Mueller, muellele@gmail.com, 20151130, add plotclr option
 % Lea Mueller, muellele@gmail.com, 20151130, set marker to '' so it is taken from climada_global.marker
 % Lea Mueller, muellele@gmail.com, 20150226, correct type (contourF instead of contour)
+% Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, if 1, show all admin1 lines
+% Lea Mueller, muellele@gmail.com, 20160229, rename to climada_shapeplotter from shape_plotter
 %-
 
 fig = []; %init
 
 % set defaults
-%global climada_global
+global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 if ~exist('figure_name','var'),figure_name=[];end
 if ~exist('title_str','var'),title_str=[];end
@@ -139,8 +141,16 @@ switch plot_method
         if ~isempty(caxis_range),caxis(caxis_range);end;axis off
         colormap(cmap)
 end;
+hold on; 
 if plot_centroids,plot(lon,lat,'+r','MarkerSize',1);end;% red + at each centroid
-climada_plot_world_borders(1);title(title_str,'FontSize',9);hold off;
+if climada_global.admin1_plot
+    admin1_shapes = climada_admin1_get_shapes('','all');
+    % admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_name);
+    if ~isempty(admin1_shapes)
+        climada_shapeplotter(admin1_shapes,'','X','Y','linewidth',1,'color',[ 186 186 186  ]/255) % light grey
+    end
+end
+climada_plot_world_borders(1);title(title_str,'FontSize',9); hold off;
 colorbar;
 axlim = [min(lon)-buffer max(lon)+buffer min(lat)-buffer max(lat)+buffer];
 % axis(axlim); % set axis for good zoom

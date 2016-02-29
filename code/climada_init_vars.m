@@ -38,6 +38,7 @@ function ok=climada_init_vars(reset_flag)
 % Lea Mueller, muellele@gmail.com, 20151204, introduce climada_global.markersize, for climada_color_plot and plotclr
 % David N. Bresch, david.bresch@gmail.com, 20160222, entities_dir added
 % Lea Mueller, muellele@gmail.com, 20160225, introduce climada_global.marker, for climada_color_plot and plotclr
+% Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, default is 0, do not show admin1 lines, for climada_color_plot
 %-
 
 global climada_global
@@ -196,6 +197,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.font_scale=1; % integer only, please, default=1, useful for ppt is 2 or 3
     climada_global.markersize=5; % integer only, please, default=4, used in climada_color_plot and plotclr
     climada_global.marker = 's'; % marker, i.e. 's','.','o', used in climada_color_plot and plotclr
+    climada_global.admin1_plot = 0; % set to 1 if you want to plot all admin1 shapes on a map
    
     climada_vars_initialised=1; % indicate we have initialized all vars
     
