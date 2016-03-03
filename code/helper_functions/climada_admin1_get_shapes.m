@@ -29,9 +29,9 @@ function admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_n
 % OUTPUTS:
 %   admin1_shape_selection: shape file (admin1_shapes) with selected admin1 only
 % MODIFICATION HISTORY:
-% Lea Mueller, lea_mueller@gmail.com, 20160224, init
-% Lea Mueller, lea_mueller@gmail.com, 20160229, add functionality 'all' to return the entire admin1_shape set
-% Lea Mueller, lea_mueller@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_get_shapes
+% Lea Mueller, muellele@gmail.com, 20160224, init
+% Lea Mueller, muellele@gmail.com, 20160229, add functionality 'all' to return the entire admin1_shape set
+% Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_get_shapes
 %-
 
 admin1_shape_selection = []; % init

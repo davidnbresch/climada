@@ -103,6 +103,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20151127, invoke climada_assets_category_ID, add EDS.assets.Category_name and EDS.assets.Category_ID
 % David N. Bresch, david.bresch@gmail.com, 20160202, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20160210, is_unit removed and substantial speedup (damagefunctions made unique before calc)
+% Lea Mueller, muellele@gmail.com, 20160303, bugfix if EDS_at_centroid and state ED in fprint commandline output
 %-
 
 global climada_global
@@ -197,7 +198,7 @@ if climada_global.EDS_at_centroid
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
     EDS.damage_at_centroid     = spalloc(n_assets, hazard.event_count,...
         ceil(hazard.event_count*n_assets*damage_at_centroid_density));
-    [i,j,x]           = find(EDS.damage_at_centroid);
+    [i_index,j_index,x_index] = find(EDS.damage_at_centroid);
 end
 
 % temp variables
@@ -224,7 +225,7 @@ entity_damagefunctions_PAA         = entity.damagefunctions.PAA(peril_damfun_pos
 % make entries unique (for speedup in interp1)
 DamageFunID=unique(entity_damagefunctions_DamageFunID);
 full_unique=[];
-for i=1:length(DamageFunID)
+for i = 1:length(DamageFunID)
     damfun_pos    = find(entity_damagefunctions_DamageFunID == DamageFunID(i));
     [~,is_unique] = unique(entity_damagefunctions_Intensity(damfun_pos));
     full_unique   = [full_unique;is_unique+damfun_pos(1)-1];
@@ -251,9 +252,8 @@ if ~silent_mode % CLIMADA_OPT
     end % CLIMADA_OPT
 end % CLIMADA_OPT
 
-mod_step=2; % first time estimate after 2 calcs, then every 100
-
-loop_mod_step=max(ceil(nn_assets/20),100);
+mod_step = 2; % first time estimate after 2 calcs, then every 100
+loop_mod_step = max(ceil(nn_assets/20),100);
 
 % start the calculation
 % ---------------------
@@ -274,12 +274,12 @@ for asset_ii=1:nn_assets
         % convert hazard intensity into MDD
         interp_x_table = entity_damagefunctions_Intensity(asset_damfun_pos);
         interp_y_table = entity_damagefunctions_MDD(asset_damfun_pos);
-        [rows,~,intensity]=find(hazard.intensity(:,asset_hazard_pos));
+        [rows,~,intensity] = find(hazard.intensity(:,asset_hazard_pos));
         MDD=MDD_0;
         if climada_global.octave_mode
-            MDD(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+            MDD(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         else
-            MDD(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+            MDD(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         end
         
         % figure % TEST output
@@ -289,11 +289,11 @@ for asset_ii=1:nn_assets
         
         % convert hazard intensity into PAA
         interp_y_table = entity_damagefunctions_PAA(asset_damfun_pos);
-        PAA=PAA_0;
+        PAA = PAA_0;
         if climada_global.octave_mode % CLIMADA_OPT
-            PAA(rows)=interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
+            PAA(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
         else % CLIMADA_OPT
-            PAA(rows)=climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+            PAA(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
         end % CLIMADA_OPT
         
         % figure % TEST output
@@ -307,20 +307,20 @@ for asset_ii=1:nn_assets
         if any(full(temp_damage)) % if at least one damage>0
             if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
                 % apply Deductible and Cover
-                temp_damage=min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
+                temp_damage = min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
             end
             EDS.damage = EDS.damage+temp_damage'; % add to the EDS
             
             if climada_global.EDS_at_centroid % CLIMADA_OPT
                 %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids % CLIMADA_OPT
-                index_ = j == asset_i; %index_ = i == asset_i; % CLIMADA_OPT
-                i(index_) = []; % CLIMADA_OPT
-                j(index_) = []; % CLIMADA_OPT
-                x(index_) = []; % CLIMADA_OPT
+                index_ = j_index == asset_i; %index_ = i == asset_i; % CLIMADA_OPT
+                i_index(index_) = []; % CLIMADA_OPT
+                j_index(index_) = []; % CLIMADA_OPT
+                x_index(index_) = []; % CLIMADA_OPT
                 
-                i = [i; find(temp_damage)]; % CLIMADA_OPT
-                j = [j; zeros(nnz(temp_damage),1)+asset_i]; % CLIMADA_OPT
-                x = [x; nonzeros(temp_damage)]; % CLIMADA_OPT
+                i_index = [i_index; find(temp_damage)]; % CLIMADA_OPT
+                j_index = [j_index; zeros(nnz(temp_damage),1)+asset_i]; % CLIMADA_OPT
+                x_index = [x_index; nonzeros(temp_damage)]; % CLIMADA_OPT
             else % CLIMADA_OPT
                 EDS.ED_at_centroid(asset_i,1) = temp_damage'*EDS.frequency';
             end % CLIMADA_OPT
@@ -359,6 +359,12 @@ if ~silent_mode % CLIMADA_OPT
     else % CLIMADA_OPT
         fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
     end % CLIMADA_OPT
+    ED = full(sum(EDS.damage.*EDS.frequency));
+    AED = ED/sum(entity.assets.Value)*100;
+    fprintf('Annual expected damage is %2.2f%%\n',AED);
+    [~, ~, result_str] = climada_digit_set(ED);
+    [~, ~, result_str_value] = climada_digit_set(sum(entity.assets.Value));
+    fprintf('Annual expected damage is (%s) %s from total %s\n',entity.assets.Value_unit, result_str, result_str_value);
 end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);
@@ -405,9 +411,9 @@ end
 EDS.annotation_name = annotation_name;
 EDS.ED              = full(sum(EDS.damage.*EDS.frequency)); % calculate annual expected damage
 if climada_global.EDS_at_centroid
-    EDS.damage_at_centroid = sparse(i,j,x,hazard.event_count,n_assets);
+    EDS.damage_at_centroid = sparse(i_index,j_index,x_index,hazard.event_count,n_assets);
     EDS.damage_at_centroid = EDS.damage_at_centroid';
-    EDS.ED_at_centroid     = full(sum(bsxfun(@times, EDS.damage_at_centroid, EDS.frequency),2));
+    EDS.ED_at_centroid = full(sum(bsxfun(@times, EDS.damage_at_centroid, EDS.frequency),2));
 end
 
 end % climada_EDS_calc
