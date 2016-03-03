@@ -35,6 +35,7 @@ function [struct_data, struct_name] = climada_load(struct_file,struct_type,silen
 % Lea Mueller, muellele@gmail.com, 20151130, move to climada/code/helper_functions
 % Lea Mueller, muellele@gmail.com, 20151202, enhance to work with multiple variables within one matfile
 % Lea Mueller, muellele@gmail.com, 20151207, identify any given struct_file as input, identify entity with .ED field
+% Lea Mueller, muellele@gmail.com, 20160203, identify centroids with .centroid_ID
 %-
 
 % init output
@@ -76,6 +77,13 @@ end
 if isfield(struct_file,'benefit')
     struct_data = struct_file;
     struct_name = 'measures_impact';
+    return
+end
+
+% if already complete centroids, return
+if isfield(struct_file,'centroid_ID')
+    struct_data = struct_file;
+    struct_name = 'centroids';
     return
 end
 

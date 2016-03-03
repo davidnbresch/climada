@@ -47,6 +47,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20160129, invoke climada_find_most_severe_event
 % Lea Mueller, muellele@gmail.com, 20160219, bugfix for hazard
 % Lea Mueller, muellele@gmail.com, 20160226, start title_str with uppercase
+% Lea Mueller, muellele@gmail.com, 20160303, plot damagemap if strfind(damage) somewhere in the fieldname_to_plot
 % -
 
 fig = []; % init
@@ -320,6 +321,7 @@ for f_i = 1:numel(fieldname_to_plot)
                 elseif strcmp(fieldname_to_plot{f_i},'benefit'), cmap = climada_colormap('benefit');
                 elseif strcmp(fieldname_to_plot{f_i},'Value'), cmap = climada_colormap('assets');
                 elseif strcmp(fieldname_to_plot{f_i},'ED_at_centroid'), cmap = climada_colormap('damage');
+                elseif any(strfind(fieldname_to_plot{f_i},'damage')), cmap = climada_colormap('damage');
                 else cmap = jet(64); 
                     try cmap = climada_colormap(input_structure.peril_ID);end
                 end
