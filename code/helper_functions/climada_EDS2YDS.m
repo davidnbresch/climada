@@ -239,7 +239,7 @@ YDS.frequency=YDS.damage*0+1/length(YDS.damage); % each year occurrs once...
 % final check whether we picked up all damage
 YDS_ED=sum(YDS.damage)/n_years/(ens_size+1);
 if abs(YDS_ED-EDS.ED)/EDS.ED>0.0001 % not zero, as we deal with large numbers
-    fprintf('Warning: expected damage mismatch (EDS: %f, YDS: %f)\n',EDS.ED,YDS_ED);
+    fprintf('Warning: expected damage mismatch (EDS: %g, YDS: %g)\n',EDS.ED,YDS_ED);
 end
 
 % follows a hands-on way to obtain target length yearsets (one could do

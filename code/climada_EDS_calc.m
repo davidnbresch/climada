@@ -103,6 +103,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20151127, invoke climada_assets_category_ID, add EDS.assets.Category_name and EDS.assets.Category_ID
 % David N. Bresch, david.bresch@gmail.com, 20160202, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20160210, is_unit removed and substantial speedup (damagefunctions made unique before calc)
+% David N. Bresch, david.bresch@gmail.com, 20160306, EDS.ED=EDS.damage*EDS.frequency'
 %-
 
 global climada_global
@@ -403,7 +404,8 @@ if isempty(annotation_name)
     annotation_name = name;
 end
 EDS.annotation_name = annotation_name;
-EDS.ED              = full(sum(EDS.damage.*EDS.frequency)); % calculate annual expected damage
+EDS.ED              = EDS.damage*EDS.frequency';
+%EDS.ED              = full(sum(EDS.damage.*EDS.frequency)); % calculate annual expected damage
 if climada_global.EDS_at_centroid
     EDS.damage_at_centroid = sparse(i,j,x,hazard.event_count,n_assets);
     EDS.damage_at_centroid = EDS.damage_at_centroid';
