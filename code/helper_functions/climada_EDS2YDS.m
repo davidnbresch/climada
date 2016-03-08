@@ -1,4 +1,4 @@
-function YDS=climada_EDS2YDS(EDS,hazard,number_of_years)
+function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling_vect)
 % climada template
 % MODULE:
 %   core
@@ -39,6 +39,11 @@ function YDS=climada_EDS2YDS(EDS,hazard,number_of_years)
 %       contain. If shorter than the yearset in the hazard set, just cut,
 %       otherwise replicate until target length is reached. No advanced
 %       technique, such as re-sampling, is performed (yet).
+%   sampling_vect: the sampling vector, techincal, see code (can be used to
+%       re-create the exact same yearset). Needs to be obtained in a first
+%       call, i.e. [YDS,sampling_vect]=climada_EDS2YDS(...) and then
+%       provided in subsequent calls(s) to obtain the exact same sampling
+%       structure of yearset, i.e YDS=climada_EDS2YDS(...,sampling_vect)
 % OUTPUTS:
 %   YDS: the year damage set (YDS), a struct with same fields as EDS (such
 %       as Value, ED, ...) plus yyyy and orig_year_flag. All fields same
@@ -51,12 +56,15 @@ function YDS=climada_EDS2YDS(EDS,hazard,number_of_years)
 %       orig_year_flag(i): =1 if year i is an original year, =0 else
 %       Hint: if you want to staore a YDS back into an EDS, note that there
 %       are two more fields in YDS than EDS: yyyy and orig_year_flag
+%   sampling_vect: the sampling vector, techincal, see code (can be used to
+%       re-create the exact same yearset)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141226, initial
 % David N. Bresch, david.bresch@gmail.com, 20150116, YDS fields same order as in EDS
 % David N. Bresch, david.bresch@gmail.com, 20150204, automatic hazard set detection
 % David N. Bresch, david.bresch@gmail.com, 20150721, EDS is proxy for output, i.e. YDS=EDS to start with
 % David N. Bresch, david.bresch@gmail.com, 20151231, artifical yearsets and number_of_years implemented
+% David N. Bresch, david.bresch@gmail.com, 20160307, sampling_vect as optional output
 %-
 
 YDS=[]; % init output
@@ -71,6 +79,7 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('EDS','var'),return;end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('number_of_years','var'),number_of_years=[];end
+if ~exist('sampling_vect','var'),sampling_vect=[];end
 
 % PARAMETERS
 %
@@ -125,7 +134,7 @@ if ~isfield(hazard,'orig_yearset')
         % randomly populate years
         sorted_damage=sort(nonzero_damage);
         % sample from the sorted damage
-        sampling_vect=ceil(rand(1,n_years)*length(nonzero_pos));
+        if isempty(sampling_vect),sampling_vect=ceil(rand(1,n_years)*length(nonzero_pos));end
         YDS.damage=sorted_damage(sampling_vect);
         %adjust for sampling error (i.e. rand will not pick each damage once...)
         YDS_ED=sum(YDS.damage)/n_years;
@@ -239,7 +248,7 @@ YDS.frequency=YDS.damage*0+1/length(YDS.damage); % each year occurrs once...
 % final check whether we picked up all damage
 YDS_ED=sum(YDS.damage)/n_years/(ens_size+1);
 if abs(YDS_ED-EDS.ED)/EDS.ED>0.0001 % not zero, as we deal with large numbers
-    fprintf('Warning: expected damage mismatch (EDS: %f, YDS: %f)\n',EDS.ED,YDS_ED);
+    fprintf('Warning: expected damage mismatch (EDS: %g, YDS: %g)\n',EDS.ED,YDS_ED);
 end
 
 % follows a hands-on way to obtain target length yearsets (one could do
