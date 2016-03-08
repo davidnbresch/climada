@@ -1,5 +1,7 @@
-function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,check_plot)
+function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_period,check_plot)
 % climada
+% MODULE:
+%   climada/helper_functions
 % NAME:
 %   climada_hazard2IFC
 % PURPOSE:
@@ -20,20 +22,22 @@ function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,check_plo
 %       Can be either: a 1xN vector of centroid_IDs;  Or a structure with
 %       fields .lon and .lat to specificy coordinates of interest, i.e.
 %       geo_locations.lon=14.426;geo_locations.lat=40.821;
+%   return_period: a list of return period at which we calculate the intensities
+%   check_plot: set to 1 to show plot, default is 1
 % OUTPUTS:
 %   IFC(i): A structure (array of) to be used as input to climada_IFC_plot,
 %       containing information about the intensity-frequency
 %       properties of a given hazard. Fields are:
-%       hazard_comment: string
-%       peril_ID: the peril ID, string
-%       centroid_ID: the (integer) centroid ID
-%       intensity(n): hazard intensty for all n events
-%       return_periods(n): hazard return period for each of the n events
-%       fit_return_periods(m): the m return periods for the fit (m<<n)
-%       intensity_fit(m): the m intensities for the fit
-%       polyfit(2): the polyfit parameters, see code
-%       hist_intensity(N): the N historic intensities (if orig_event_flag...)
-%       hist_return_periods: hazard return period for each of the N historic events
+%       .hazard_comment: string
+%       .peril_ID: the peril ID, string
+%       .centroid_ID: the (integer) centroid ID
+%       .intensity(n): hazard intensty for all n events
+%       .return_periods(n): hazard return period for each of the n events
+%       .fit_return_periods(m): the m return periods for the fit (m<<n)
+%       .intensity_fit(m): the m intensities for the fit
+%       .polyfit(2): the polyfit parameters, see code
+%       .hist_intensity(N): the N historic intensities (if orig_event_flag...)
+%       .hist_return_periods: hazard return period for each of the N historic events
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150130
 % David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
@@ -41,20 +45,21 @@ function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,check_plo
 % David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array
 % Lea Mueller, muellele@gmail.com, 20150504, variable intensity threshold depending on peril_ID
 % Gilles Stassen, gillesstassen@hotmail.com, 20150615, check_plot and 'SELECT' option added, bug fix order of isstruct/isvector(geo_loc)
+% Lea Mueller, muellele@gmail.com, 20160308, introduce return_period as input
 %-
 
 IFC = []; % init
 
 %global climada_global
-if ~climada_init_vars                , return            ; end % init/import global variables
-if ~exist('hazard'            ,'var'), hazard        = []; end
-if ~exist('geo_locations'     ,'var'), geo_locations = 'SELECT'; end
-if ~exist('check_plot'        ,'var'), check_plot    = []; end
+if ~climada_init_vars , return; end % init/import global variables
+if ~exist('hazard','var'), hazard = []; end
+if ~exist('geo_locations','var'), geo_locations = 'SELECT'; end
+if ~exist('return_period','var'), return_period = []; end
+if ~exist('check_plot','var'), check_plot = []; end
 
 % prompt for hazard if not given
-if isempty(hazard) % local GUI
-    hazard=climada_hazard_load;
-end
+hazard=climada_hazard_load(hazard);
+if isempty(return_period), return_period = [1:1:100 120:20:200 250:50:1000]; end
 
 % prompt for centroid ID if not given
 if isempty(geo_locations)
@@ -146,7 +151,7 @@ IFC.centroid_ID        = poi_ID;
 IFC.intensity          = zeros(numel(poi_ID), hazard.event_count);
 IFC.return_periods     = zeros(numel(poi_ID), hazard.event_count);
 
-IFC.fit_return_periods = [1:1:100 120:20:200 250:50:1000];
+IFC.fit_return_periods = return_period;
 IFC.intensity_fit      = zeros(numel(poi_ID), numel(IFC.fit_return_periods));
 IFC.polyfit            = zeros(numel(poi_ID), 2);
 
@@ -171,8 +176,10 @@ for poi_i = 1:numel(poi_ID)
     
     %historic data only
     ori_indx = logical(hazard.orig_event_flag);
-    [IFC.hist_intensity(poi_i,:),int_ndx] = sort(full(hazard.intensity(ori_indx,poi_ndx(poi_i))),'descend');
-    IFC.hist_return_periods(poi_i,:) = 1./cumsum(hazard.frequency(int_ndx)*no_generated);
+    if any(ori_indx)
+        [IFC.hist_intensity(poi_i,:),int_ndx] = sort(full(hazard.intensity(ori_indx,poi_ndx(poi_i))),'descend');
+        IFC.hist_return_periods(poi_i,:) = 1./cumsum(hazard.frequency(int_ndx)*no_generated);
+    end
     
     %fit a Gumbel-distribution
     %8: exceedence frequency
@@ -187,7 +194,7 @@ IFC.intensity_fit(IFC.intensity_fit<0) = 0;
 
 if check_plot % for the case n_points = 1
     figure; hold on
-    climada_hazard_plot_hr(hazard,0);
+    climada_hazard_plot_hr(hazard,0); hold on
     lon_buf = (max(hazard.lon)-min(hazard.lon))*0.05;
     if isstruct(geo_locations) && isfield(geo_locations,'name')
         text(geo_locations.lon,geo_locations.lat+lon_buf,geo_locations.name,...

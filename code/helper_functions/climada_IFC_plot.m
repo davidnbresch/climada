@@ -31,6 +31,7 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 % David N. Bresch, david.bresch@gmail.com, 20150309, bugfixes
 % Lea Mueller, muellele@gmail.com, 20150318, changes according to hazard2IFC
 % David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array, white background
+% Lea Mueller, muellele@gmail.com, 20160308, bugfix if no historical data
 %-
 
 if ~exist('IFC','var'),
@@ -91,9 +92,11 @@ for poi_ii = 1:length(IFCs)
         % historical data
         if hist_check
             pos_indx = IFC.hist_intensity(poi_i,:)>0;
-            h(3) = plot(IFC.hist_return_periods(poi_i,pos_indx),IFC.hist_intensity(poi_i,pos_indx),'*' ,'markersize',5,'color',color1(color_index,:));
-            lgd_str{end+1} = sprintf('%s historical intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
-            lgd_hdl = [lgd_hdl h(3)];
+            if any(pos_indx)
+                h(3) = plot(IFC.hist_return_periods(poi_i,pos_indx),IFC.hist_intensity(poi_i,pos_indx),'*' ,'markersize',5,'color',color1(color_index,:));
+                lgd_str{end+1} = sprintf('%s historical intensity at centroid no. %i',IFC.peril_ID,IFC.centroid_ID(poi_i));
+                lgd_hdl = [lgd_hdl h(3)];
+            end
         end
         
         color_index = color_index+1;
@@ -149,6 +152,8 @@ switch IFC.peril_ID
         ylabel('Rainfall (mm)')
     case 'VQ'
         ylabel('Ash depth (cm)')
+    %case 'XR'
+    %    ylabel('Excess rain (mm in multiple days)')
     otherwise
         ylabel('Hazard intensity')
 end
