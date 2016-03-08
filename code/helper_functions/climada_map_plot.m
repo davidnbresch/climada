@@ -1,4 +1,4 @@
-function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_plot,plot_method,event_no,category_criterium)
+climadfunction [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_plot,plot_method,event_no,category_criterium)
 % Generate a map plot
 % MODULE:
 %   core/helper_functions
@@ -48,6 +48,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20160219, bugfix for hazard
 % Lea Mueller, muellele@gmail.com, 20160226, start title_str with uppercase
 % Lea Mueller, muellele@gmail.com, 20160303, plot damagemap if strfind(damage) somewhere in the fieldname_to_plot
+% Lea Mueller, muellele@gmail.com, 20160303, add date of event in title for hazard
 % -
 
 fig = []; % init
@@ -102,7 +103,7 @@ end
 
 
 title_str_2 = ''; %init
-scenario_name = ''; peril_ID = ''; region = ''; assets_year = ''; hazard_units = '';event_name = '';
+scenario_name = ''; peril_ID = ''; region = ''; assets_year = ''; hazard_units = ''; event_name = ''; date_str = '';
 switch struct_name
     case 'measures_impact'
         % extract measures_impact.EDS
@@ -204,7 +205,8 @@ switch struct_name
             event_no = climada_find_most_severe_event(input_structure,event_no);    
         end
         if isfield(input_structure,'name'),event_name = strrep(input_structure.name{event_no},'_',' ');end
-        title_str_2 = sprintf('\nEvent %d: %s', event_no,event_name);
+        if isfield(input_structure,'datenum'),date_str = datestr(input_structure.datenum(event_no));end
+        title_str_2 = sprintf('\nEvent %d: %s, %s', event_no,event_name,date_str);
         %title_str_1 = sprintf('%s (%s %s)',fieldname_to_plot_str, peril_ID, hazard_units);
         
 
