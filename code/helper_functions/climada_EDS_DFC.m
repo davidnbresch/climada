@@ -1,4 +1,4 @@
-function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
+function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
 % climada
 % NAME:
 %   climada_EDS_DFC
@@ -27,12 +27,12 @@ function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_
 %   plot_loglog: if =1, plot logarithmic scale both axes, =0 plot linear
 %       axes (default)
 % OUTPUTS:
+%   DFC: a structure with fields 
+%       .return_period
+%       .sorted_damage
+%       .ED, .Value, .Value_unit, and .annotation_name   
 %   a figure with the DFC plot
 %   legend_str: the legend string
-%   return_period: the return periods as shown (for the last DFC plottet,
-%       be careful)
-%   sorted_damage: the damage as shown (for the last DFC plottet,
-%       be careful)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20100108
 % David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
@@ -42,9 +42,10 @@ function [fig,legend_str,return_period,sorted_damage] = climada_EDS_DFC(EDS,EDS_
 % Lea Mueller, muellele@gmail.com, 20150421, legend location SouthEast instead of NorthWest
 % David N. Bresch, david.bresch@gmail.com, 20150515, line 212, legend_str{end+1}...
 % David N. Bresch, david.bresch@gmail.com, 20150906, EDS.Value_unit used
+% Lea Mueller, muellele@gmail.com, 20160308, add output DFC structure
 %-
 
-fig=[];legend_str=[];
+DFC = []; DFC_comparison = []; fig = []; legend_str = []; %init
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -55,36 +56,8 @@ if ~exist('EDS_comparison','var'),EDS_comparison='';end
 if ~exist('Percentage_Of_Value_Flag','var'),Percentage_Of_Value_Flag=0;end
 if ~exist('plot_loglog','var'),plot_loglog=0;end
 
-
 % prompt for EDS if not given
-if isempty(EDS) % local GUI
-    EDS=[climada_global.data_dir filesep 'results' filesep '*.mat'];
-    %[filename, pathname] = uigetfile(EDS, 'Select EDS:');
-    [filename, pathname] = uigetfile(EDS, 'Select EDS:','MultiSelect','on');
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        if iscell(filename)
-            for i = 1:length(filename)
-                % rename EDS to EDS1
-                vars = whos('-file', fullfile(pathname,filename{i}));
-                load(fullfile(pathname,filename{i}));
-                %temporarily save in EDS_temp
-                EDS_temp(i) = eval(vars.name);
-                clear (vars.name)
-            end
-            EDS = EDS_temp;
-        else
-            EDS = fullfile(pathname,filename);
-        end
-    end
-end
-% load the EDS, if a filename has been passed
-if ~isstruct(EDS)
-    EDS_file=EDS; EDS=[];
-    load(EDS_file);
-end
-
+EDS = climada_EDS_load(EDS);
 
 % prompt for EDS_comparison
 if strcmp(EDS_comparison,'ASK')
@@ -138,7 +111,13 @@ for EDS_i=1:length(EDS)
     sorted_damage   = sorted_damage(nonzero_pos);
     exceedence_freq = exceedence_freq(nonzero_pos);
     return_period   = 1./exceedence_freq;
-    
+    %store
+    DFC(EDS_i).return_period = return_period; %[n x 1 double]
+    DFC(EDS_i).sorted_damage = sorted_damage; %[n x 1 double]
+    DFC(EDS_i).ED = EDS(EDS_i).ED; 
+    DFC(EDS_i).Value = EDS(EDS_i).Value; 
+    DFC(EDS_i).Value_unit = EDS(EDS_i).Value_unit;
+    DFC(EDS_i).annotation_name = EDS(EDS_i).annotation_name;
     if Percentage_Of_Value_Flag,sorted_damage = sorted_damage/EDS(EDS_i).Value*100; end
     if plot_loglog
         loglog(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
@@ -212,6 +191,13 @@ if ~isempty(EDS_comparison)
         sorted_damage   = sorted_damage(nonzero_pos);
         exceedence_freq = exceedence_freq(nonzero_pos);
         return_period   = 1./exceedence_freq;
+        %store
+        DFC_comparison(EDS_i).return_period = return_period; %[n x 1 double]
+        DFC_comparison(EDS_i).sorted_damage = sorted_damage; %[n x 1 double]
+        DFC_comparison(EDS_i).ED = EDS(EDS_i).ED; 
+        DFC_comparison(EDS_i).Value = EDS(EDS_i).Value; 
+        DFC_comparison(EDS_i).Value_unit = EDS(EDS_i).Value_unit;
+        DFC_comparison(EDS_i).annotation_name = EDS(EDS_i).annotation_name;
         if Percentage_Of_Value_Flag, sorted_damage = sorted_damage/EDS(EDS_i).Value*100; end
         plot(return_period, sorted_damage, marker_(ii,:), 'color',color_(ii,:), 'LineWidth',1.2, 'markersize',msize);
         hold on
@@ -233,5 +219,11 @@ if ~isempty(EDS_comparison)
 end % comparison
 
 set(gcf,'Color',[1 1 1]) % white background
+
+% put the two together, DFC and DFC_comparison
+n_DFC = numel(DFC);
+n_DFC_comparison = numel(DFC_comparison);
+if n_DFC_comparison>0, DFC(n_DFC+1:n_DFC+n_DFC_comparison) = DFC_comparison;end
+
 
 return
