@@ -72,6 +72,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % Lea Mueller, muellele@gmail.com, 20150909, introduce factor for unit 'people', to show cb ratio as people not affected/10'000 USD 
 % David N. Bresch, david.bresch@gmail.com, 20150909, color_keep introduced
 % Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
+% Lea Mueller, muellele@gmail.com, 20160309, bugfix fprintf reverse_cb for insurance
 %-
 
 global climada_global
@@ -269,9 +270,9 @@ for measure_i = 1:n_measures
 end % measure_i
 if add_insurance_measure % NOTE: this section not relevant for lecture
     fprintf('\t Residual covered by insurance')
+    if reverse_cb,insurance_cb=1./insurance_cb;end
     fprintf([nr_format ' \t ' ['\t' nr_format_benefit] '\t\t\t\t ' nr_format_bc_ratio '\n'],...
         insurance_cost*fct, insurance_benefit*fct, insurance_cb)
-    if reverse_cb,insurance_cb=1./insurance_cb;end
     sorted_cb_ratio = [sorted_cb_ratio insurance_cb];
 else
     fprintf('\t Residual damage \n')

@@ -362,10 +362,9 @@ if ~silent_mode % CLIMADA_OPT
     end % CLIMADA_OPT
     ED = full(sum(EDS.damage.*EDS.frequency));
     AED = ED/sum(entity.assets.Value)*100;
-    fprintf('Annual expected damage is %2.2f%%\n',AED);
     [~, ~, result_str] = climada_digit_set(ED);
     [~, ~, result_str_value] = climada_digit_set(sum(entity.assets.Value));
-    fprintf('Annual expected damage is (%s) %s from total %s\n',entity.assets.Value_unit, result_str, result_str_value);
+    fprintf('Annual expected damage is %2.2f%% or (%s) %s from total %s\n',AED,entity.assets.Value_unit{1}, result_str, result_str_value);
 end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);

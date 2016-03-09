@@ -1,4 +1,4 @@
-climadfunction [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_plot,plot_method,event_no,category_criterium)
+function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_plot,plot_method,event_no,category_criterium)
 % Generate a map plot
 % MODULE:
 %   core/helper_functions
