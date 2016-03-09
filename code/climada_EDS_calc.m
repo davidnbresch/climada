@@ -43,7 +43,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       set). Default=0
 %   silent_mode: suppress any output to stdout (useful i.e. if called many times)
 %       defult=0 (output to stdout), =1: no output and no waitbar at all
-%       (neither to stdout nor as progress bar)
+%       But even with silent_mode=1, the one line progress output is shown
 % OUTPUTS:
 %   EDS, the event damage set with:
 %       ED: the total expected annual damage (=EDS.damage*EDS.frequency')
@@ -103,8 +103,9 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20151127, invoke climada_assets_category_ID, add EDS.assets.Category_name and EDS.assets.Category_ID
 % David N. Bresch, david.bresch@gmail.com, 20160202, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20160210, is_unit removed and substantial speedup (damagefunctions made unique before calc)
-% Lea Mueller, muellele@gmail.com, 20160303, bugfix if EDS_at_centroid and state ED in fprintf commandline output
+% Lea Mueller, muellele@gmail.com, 20160303, bugfix if EDS_at_centroid and state ED in fprintf command line output
 % David N. Bresch, david.bresch@gmail.com, 20160306, EDS.ED=EDS.damage*EDS.frequency'
+% David N. Bresch, david.bresch@gmail.com, 20160308, no printing of ED to stdout, some silent_mode checks slow down too much, removed
 %-
 
 global climada_global
@@ -332,39 +333,30 @@ for asset_ii=1:nn_assets
         % TEST output
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
-        if ~silent_mode % CLIMADA_OPT
-            if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
-                mod_step         = loop_mod_step; % CLIMADA_OPT
-                t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
-                calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
-                t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-                msgstr           = sprintf('est. %i seconds left (%i/%i assets>0)',ceil(t_projected_calc),asset_ii,nn_assets); % CLIMADA_OPT
-                
-                if climada_global.waitbar % CLIMADA_OPT
-                    waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
-                else % CLIMADA_OPT
-                    fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
-                    format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
-                end % CLIMADA_OPT
-                
+        if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
+            mod_step         = loop_mod_step; % CLIMADA_OPT
+            t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
+            calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
+            t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
+            msgstr           = sprintf('est. %i seconds left (%i/%i assets>0)',ceil(t_projected_calc),asset_ii,nn_assets); % CLIMADA_OPT
+            
+            if climada_global.waitbar % CLIMADA_OPT
+                waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
+            else % CLIMADA_OPT
+                fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
+                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
             end % CLIMADA_OPT
+            
         end % CLIMADA_OPT
         
     end % ~isempty(asset_damfun_pos)
     
 end % asset_ii
 
-if ~silent_mode % CLIMADA_OPT
-    if climada_global.waitbar % CLIMADA_OPT
-        close(h) % dispose waitbar % CLIMADA_OPT
-    else % CLIMADA_OPT
-        fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
-    end % CLIMADA_OPT
-    ED = full(sum(EDS.damage.*EDS.frequency));
-    AED = ED/sum(entity.assets.Value)*100;
-    [~, ~, result_str] = climada_digit_set(ED);
-    [~, ~, result_str_value] = climada_digit_set(sum(entity.assets.Value));
-    fprintf('Annual expected damage is %2.2f%% or (%s) %s from total %s\n',AED,entity.assets.Value_unit{1}, result_str, result_str_value);
+if climada_global.waitbar % CLIMADA_OPT
+    close(h) % dispose waitbar % CLIMADA_OPT
+else % CLIMADA_OPT
+    fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
 end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);
