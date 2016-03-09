@@ -35,6 +35,10 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 %       EDS.annotation_name, which often contains the filename (without
 %       path) of the hazard event set. If this is the case, this hazard is
 %       used, if not, the function prompts for the hazard event set to use.
+%       If hazard does neither contain a valid hazard struct, nor an
+%       existing hazard set name, one event per year is assumed and the EDS
+%       is just replicated enough times to result in number_of_years (or,
+%       if number_of_years is not provided, YDS=EDS)
 %   number_of_years: the target number of years the damage yearset shall
 %       contain. If shorter than the yearset in the hazard set, just cut,
 %       otherwise replicate until target length is reached. No advanced
@@ -65,6 +69,7 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 % David N. Bresch, david.bresch@gmail.com, 20150721, EDS is proxy for output, i.e. YDS=EDS to start with
 % David N. Bresch, david.bresch@gmail.com, 20151231, artifical yearsets and number_of_years implemented
 % David N. Bresch, david.bresch@gmail.com, 20160307, sampling_vect as optional output
+% David N. Bresch, david.bresch@gmail.com, 20160308, allow for no hazard set
 %-
 
 YDS=[]; % init output
@@ -86,7 +91,12 @@ if ~exist('sampling_vect','var'),sampling_vect=[];end
 
 if isempty(hazard) % try to infer from EDS
     hazard_file=[climada_global.data_dir filesep 'hazards' filesep strtok(EDS.annotation_name) '.mat'];
-    if exist(hazard_file,'file'),load(hazard_file);end % if it fails, hazard remains empty
+    if exist(hazard_file,'file')
+        load(hazard_file)
+    else
+        hazard.peril_ID=EDS.peril_ID;
+        fprintf('Warning: %s not found, hazard event set used, dummy yearset\n',hazard_file)
+    end % if it fails, hazard remains empty
 end % isempty(hazard)
 
 % prompt for hazard if not given
@@ -103,7 +113,14 @@ end
 
 if ischar(hazard) % a filename instead of a hazard set struct passed
     hazard_set_file=hazard; clear hazard
-    load(hazard_set_file) % contains hazard
+    [fP,fN]=fileparts(hazard_set_file);
+    hazard_set_file=[fP filesep fN '.mat'];
+    if exist(hazard_set_file,'file')
+        load(hazard_set_file) % contains hazard
+    else
+        hazard.peril_ID=EDS.peril_ID;
+        fprintf('Warning: no %s (%s) hazard event set used, dummy yearset\n',hazard.peril_ID,hazard_set_file)
+    end
 end
 
 if ~isfield(hazard,'orig_yearset')
