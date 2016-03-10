@@ -23,6 +23,7 @@ function climada_figure_axis_limits_equal_for_lat_lon(ax_limits)
 % Lea Mueller, muellele@gmail.com, 20150730, init
 % Lea Mueller, muellele@gmail.com, 20151106, move to advanced
 % Lea Mueller, muellele@gmail.com, 20151106, move to core/helper_functions
+% Lea Mueller, muellele@gmail.com, 20160310, workaround if ax_limits is only one lat/lon
 %-
 
 
@@ -37,6 +38,16 @@ if isempty(ax_limits) % get current limits
     ax_limits = zeros(1,4);
     ax_limits(1:2) = get(fig_axes, 'xlim');
     ax_limits(3:4) = get(fig_axes, 'ylim');
+end
+
+delta_minimum = 0.05;
+if ax_limits(1) ==  ax_limits(2)
+    ax_limits(1) = ax_limits(1)-delta_minimum/2; 
+    ax_limits(2) = ax_limits(2)+delta_minimum/2; 
+end
+if ax_limits(3) ==  ax_limits(4)
+    ax_limits(3) = ax_limits(3)-delta_minimum/2; 
+    ax_limits(4) = ax_limits(4)+delta_minimum/2; 
 end
 
 
