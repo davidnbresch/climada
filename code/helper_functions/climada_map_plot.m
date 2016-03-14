@@ -49,6 +49,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20160226, start title_str with uppercase
 % Lea Mueller, muellele@gmail.com, 20160303, plot damagemap if strfind(damage) somewhere in the fieldname_to_plot
 % Lea Mueller, muellele@gmail.com, 20160303, add date of event in title for hazard
+% Lea Mueller, muellele@gmail.com, 20160314, add climada_global.caxis_range
 % -
 
 fig = []; % init
@@ -198,14 +199,16 @@ switch struct_name
         % just set title_str
         if isfield(input_structure,'units'),hazard_units = input_structure.units;end 
         if isfield(input_structure,'peril_ID'),peril_ID = input_structure.peril_ID;end
-        if isempty(event_no) % find most severe event
-            event_no = climada_find_most_severe_event(input_structure,-1);            
-        end 
-        if event_no<0
-            event_no = climada_find_most_severe_event(input_structure,event_no);    
+        if isempty(event_no), event_no = climada_find_most_severe_event(input_structure,-1); end % find most severe event 
+        if event_no<0, event_no = climada_find_most_severe_event(input_structure,event_no); end        
+        if isfield(input_structure,'name')
+            if event_no>numel(input_structure.name), event_no = numel(input_structure.name); end
+            event_name = strrep(input_structure.name{event_no},'_',' ');
         end
-        if isfield(input_structure,'name'),event_name = strrep(input_structure.name{event_no},'_',' ');end
-        if isfield(input_structure,'datenum'),date_str = datestr(input_structure.datenum(event_no));end
+        if isfield(input_structure,'datenum')
+            if event_no>numel(input_structure.datenum), event_no = numel(input_structure.datenum); end
+            date_str = datestr(input_structure.datenum(event_no));
+        end
         title_str_2 = sprintf('\nEvent %d: %s, %s', event_no,event_name,date_str);
         %title_str_1 = sprintf('%s (%s %s)',fieldname_to_plot_str, peril_ID, hazard_units);
         
@@ -308,7 +311,7 @@ for f_i = 1:numel(fieldname_to_plot)
                 counter = counter+1;
             
                 % sum up values at every unique location
-                [lon_unique, lat_unique, values_sum]= climada_location_sum(lon, lat, values);
+                [lon_unique, lat_unique, values_sum] = climada_location_sum(lon, lat, values);
 
                 % create title string as combination of title_str_1 and title_str_2
                 [~, ~, result_str] = climada_digit_set(sum(values_sum));
@@ -328,14 +331,18 @@ for f_i = 1:numel(fieldname_to_plot)
                     try cmap = climada_colormap(input_structure.peril_ID);end
                 end
                 title_str_1(1) = upper(title_str_1(1));
-                try %uses statistics toolbox
-                   caxis_max = prctile(values_sum,99.5);
-                catch 
-                    requested_rank = round(numel(values_sum)*(1-0.995))+1;
-                    values_ordered = sort(values_sum,'descend');
-                    caxis_max = values_ordered(requested_rank);
+                caxis_range = [];
+                if isfield(climada_global,'caxis_range'), caxis_range = climada_global.caxis_range; end
+                if isempty(caxis_range)
+                    try %uses statistics toolbox
+                       caxis_max = prctile(values_sum,99.5);
+                    catch 
+                        requested_rank = round(numel(values_sum)*(1-0.995))+1;
+                        values_ordered = sort(values_sum,'descend');
+                        caxis_max = values_ordered(requested_rank);
+                    end
+                    caxis_range = [0 caxis_max]; 
                 end
-                caxis_range = [0 caxis_max]; 
                 title_str = sprintf('%s %s',title_str_1,title_str_2);
                 if no_fig
                     climada_color_plot(values_sum,lon_unique,lat_unique,'none',...

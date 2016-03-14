@@ -1,4 +1,4 @@
-function shapes = climada_shape_selector(fig,N,hold_shapes,min_dist_frac,smooth_factor,shape_file,disco_mode)
+function shapes = climada_shape_selector(fig,n_shapes,smooth_factor,hold_shapes,min_dist_frac,shape_file,disco_mode)
 % select shapes
 % MODULE:
 %   climada core
@@ -17,7 +17,7 @@ function shapes = climada_shape_selector(fig,N,hold_shapes,min_dist_frac,smooth_
 %           if not given, existing figure with largest handle number is
 %           chosen. If no figures exist, climada_plot_world_borders is
 %           called
-%   N:      number of shapes you wish to draw
+%   n_shapes:       number of shapes you wish to draw
 %   hold_shapes:    whether to keep plot of shapes on figure or remove
 %                   them. Remove by default (=0)
 %   min_dist_frac:  radius of circle within which a click would close the
@@ -26,9 +26,10 @@ function shapes = climada_shape_selector(fig,N,hold_shapes,min_dist_frac,smooth_
 %   shapes:     structure array with fields X and Y defining the coordinates
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150729 init
-% Gilles Stassen, 20150827, V2.0 :-)
+% Gilles Stassen, gillesstassen@hotmail.com, 20150827, V2.0 :-)
 % Lea Mueller, muellele@gmail.com, 20150915, set disco_mode to 0
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
+% Lea Mueller, muellele@gmail.com, 20160314, rename to n_shapes from N, change input order
 %-
 
 shapes = struct([]);
@@ -36,15 +37,23 @@ shapes = struct([]);
 global climada_global
 
 if ~climada_init_vars,  return; end % init/import global variables
-if ~exist('fig',            'var'),     fig             = [];           end
-if ~exist('N',              'var'),     N               = 1;            end
-if ~exist('hold_shapes',    'var'),     hold_shapes     = 1;            end
-if ~exist('min_dist_frac',  'var'),     min_dist_frac   = 0.02;         end
-if ~exist('smooth_factor',  'var'),     smooth_factor   = 100;          end
-if ~exist('shape_file',     'var'),     shape_file      = 'NO_SAVE';    end
-if ~exist('disco_mode',     'var'),     disco_mode      = 0;            end
+if ~exist('fig',            'var'), fig             = []; end
+if ~exist('n_shapes',       'var'), n_shapes        = []; end
+if ~exist('smooth_factor',  'var'), smooth_factor   = []; end
+if ~exist('hold_shapes',    'var'), hold_shapes     = []; end
+if ~exist('min_dist_frac',  'var'), min_dist_frac   = []; end
+if ~exist('shape_file',     'var'), shape_file      = []; end
+if ~exist('disco_mode',     'var'), disco_mode      = []; end
 
-if smooth_factor == 1,  disco_mode = 0; end % disco only when smoothing
+% set default parameters if not given
+if isempty(n_shapes), n_shapes = 1; end
+if isempty(smooth_factor), smooth_factor = 100; end
+if isempty(hold_shapes), hold_shapes = 1; end
+if isempty(min_dist_frac), min_dist_frac = 0.02; end
+if isempty(shape_file), shape_file = 'NO_SAVE'; end
+if isempty(disco_mode), disco_mode = 0; end
+  
+% if smooth_factor == 1,  disco_mode = 0; end % disco only when smoothing
 
 % get handles of all existing figures
 figs = findall(0,'Type','Figure');
@@ -71,13 +80,13 @@ hold on
 title_str=get(get(gca,'Title'),'String');
 title_fsz = get(get(gca,'Title'),'FontSize');
 title_ang = get(get(gca,'Title'),'FontAngle');
-title({sprintf('Select %i polygons:',N); 'click in circle to close shape'},'FontSize',14,'FontAngle','Italic')
+title({sprintf('Select %i polygons:',n_shapes); 'click in circle to close shape'},'FontSize',14,'FontAngle','Italic')
 
 p = []; % init
 % The try-catch block is to avoid permanent lines on plot when something 
 % goes wrong & should be commented out when developing function.
 try 
-    for n = 1:N
+    for n = 1:n_shapes
         S = 0;
         [X, Y] = ginput(1);
         
@@ -98,7 +107,7 @@ try
         
         % color
         if disco_mode
-            c_l = getelements(jet(N),n);
+            c_l = getelements(jet(n_shapes),n);
         else
             c_l = 'r';
         end
@@ -204,7 +213,7 @@ if disco_mode
     cmap = [jet(round(length(Sq)/2)+1); flipud(jet(round(length(Sq)/2)-1))];
     colormap(cmap)
     
-    for n = 1:N
+    for n = 1:n_shapes
         X = shapes(n).X;    Y = shapes(n).Y;    Sq = shapes(n).Sq;
         
         s(end+1)  = surface([X;X],[Y;Y],ones([2 length(X)]),[Sq;Sq]./max(Sq),'edgecol','interp','linew',5, 'marker','o','markersize',1);

@@ -25,6 +25,7 @@ function climada_shapeplotter(shapes,label_att,lon_fieldname,lat_fieldname,varar
 % Lea Mueller, muellele@gmail.com, 20150607, add lon_fieldname and lat_fieldname to specify fieldnames of lon/lat coordinates
 % Lea Mueller, muellele@gmail.com, 20160229, use plot instead of plot3
 % Lea Mueller, muellele@gmail.com, 20160229, rename to climada_shapeplotter from shape_plotter and move to climada/core/helper_functions
+% Lea Mueller, muellele@gmail.com, 20160314, try both, .X and .Y as well as .lon and .lat
 %-
 
 global climada_global
@@ -53,8 +54,12 @@ if isempty(lon_fieldname), lon_fieldname = 'X'; end
 if isempty(lat_fieldname), lat_fieldname = 'Y'; end
 
 if ~isfield(shapes,lon_fieldname) || ~isfield(shapes,lat_fieldname)
-    cprintf([1 0 0],'ERROR: shapes must have attributes %s and %s\n', lon_fieldname, lat_fieldname)
-    return;    
+    % give it a second try with .lon and .lat
+    lon_fieldname = 'lon'; lat_fieldname = 'lat';
+    if ~isfield(shapes,lon_fieldname) || ~isfield(shapes,lat_fieldname)
+        cprintf([1 0 0],'ERROR: shapes must have attributes %s and %s\n', lon_fieldname, lat_fieldname)
+        return; 
+    end
 end
 
 vararg_str = '';

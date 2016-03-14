@@ -46,6 +46,7 @@ function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_pe
 % Lea Mueller, muellele@gmail.com, 20150504, variable intensity threshold depending on peril_ID
 % Gilles Stassen, gillesstassen@hotmail.com, 20150615, check_plot and 'SELECT' option added, bug fix order of isstruct/isvector(geo_loc)
 % Lea Mueller, muellele@gmail.com, 20160308, introduce return_period as input
+% Lea Mueller, muellele@gmail.com, 20160314, bugfix if hazard has only one lat/lon
 %-
 
 IFC = []; % init
@@ -58,7 +59,8 @@ if ~exist('return_period','var'), return_period = []; end
 if ~exist('check_plot','var'), check_plot = []; end
 
 % prompt for hazard if not given
-hazard=climada_hazard_load(hazard);
+hazard = climada_hazard_load(hazard);
+if isempty(hazard), return, end 
 if isempty(return_period), return_period = [1:1:100 120:20:200 250:50:1000]; end
 
 % prompt for centroid ID if not given
@@ -67,7 +69,10 @@ if isempty(geo_locations)
     fprintf('Centroid_ID set to %d. Please specify otherwise, if required. \n',geo_locations)
 end
 
+if numel(hazard.lon)==1, geo_locations = 1; end
+
 if strcmp(geo_locations,'SELECT')
+
     check_plot = 1; %interactive mode, so user will probably want a plot
     msg_str = sprintf('Click on points of interest (press enter when done): ');
     figure
@@ -100,10 +105,9 @@ if n_points>1
         lon_buf = (max(hazard.lon)-min(hazard.lon))*0.05;
         if isstruct(geo_locations) && isfield(geo_locations,'name')
             text(geo_locations.lon+lon_buf,geo_locations.lat,geo_locations.name,...
-                'horizontalalignment','left',...
-                'verticalalignment','middle',...
-                'fontweight','bold',...
-                'backgroundcolor','w'); hold on
+                'horizontalalignment','left','verticalalignment','middle',...
+                'fontweight','bold','backgroundcolor','w'); 
+            hold on
             p = plot(geo_locations.lon,geo_locations.lat,'or');
             set(p,'MarkerFaceColor','r')
         else
@@ -198,10 +202,8 @@ if check_plot % for the case n_points = 1
     lon_buf = (max(hazard.lon)-min(hazard.lon))*0.05;
     if isstruct(geo_locations) && isfield(geo_locations,'name')
         text(geo_locations.lon,geo_locations.lat+lon_buf,geo_locations.name,...
-            'horizontalalignment','center',...
-            'verticalalignment','top',...
-            'fontweight','bold',...
-            'backgroundcolor','w')
+            'horizontalalignment','center','verticalalignment','top',...
+            'fontweight','bold','backgroundcolor','w')
     end
     title({sprintf('%s max intensity at centroid',hazard.peril_ID); 'Points chosen for IFC struct'})
     plot(poi_lon,poi_lat,'xy')

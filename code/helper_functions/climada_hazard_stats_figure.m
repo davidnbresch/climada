@@ -30,6 +30,7 @@ function fig = climada_hazard_stats_figure(hazard,return_periods,intensity_xtick
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150914, separate from climada_hazard_stats
 % Lea Mueller, muellele@gmail.com, 20160226, add intensity_xtick and plot_method
+% Lea Mueller, muellele@gmail.com, 20160314, add climada_global.admin1_plot
 %-
 
 % init global variables
@@ -45,6 +46,12 @@ if ~exist('plot_method', 'var'), plot_method = []; end
 if isempty(plot_method), plot_method = 'contourf'; end
 hazard = climada_hazard_load(hazard); % prompt for hazard if not given
 hazard = climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
+
+admin1_plot = 0; 
+if isfield(climada_global,'admin1_plot'), admin1_plot = climada_global.admin1_plot; end
+if admin1_plot, admin1_shapes = climada_admin1_get_shapes('','all'); end % load the shape1 files
+if isempty(admin1_shapes), admin1_plot = 0; end
+
 
 % set return periods if not given
 if isempty(return_periods)
@@ -126,7 +133,7 @@ end
 % overwrite xtick with user_input if given
 if ~isempty(intensity_xtick), xtick_ = intensity_xtick; end
         
-admin1_plot = 0;
+% admin1_plot = 0;
 % % ----special case for Vietnam-----
 % admin1_plot = 1;
 % admin0_name = 'Vietnam';
@@ -200,12 +207,12 @@ for i=1:return_count %x_no*y_no %return_count
                 %box on; grid off %hold on;axis equal; % filled contour plot
         end
         hold on
-        if admin1_plot
-            for admin1_i = 1:length(admin1_shapes)
-                plot(admin1_shapes(admin1_i).X,admin1_shapes(admin1_i).Y,'-r','LineWidth',1);
-                %text(admin1_shapes(admin1_i).longitude,admin1_shapes(admin1_i).latitude,admin1_shapes(admin1_i).name);     
-            end
-        end
+        %if admin1_plot
+        %    for admin1_i = 1:length(admin1_shapes)
+        %        plot(admin1_shapes(admin1_i).X,admin1_shapes(admin1_i).Y,'-r','LineWidth',1);
+        %        %text(admin1_shapes(admin1_i).longitude,admin1_shapes(admin1_i).latitude,admin1_shapes(admin1_i).name);     
+        %    end
+        %end
     else
         text(mean([min(centroids.lon) max(centroids.lon)]),...
             mean([min(centroids.lat ) max(centroids.lat )]),...
@@ -213,7 +220,8 @@ for i=1:return_count %x_no*y_no %return_count
             'HorizontalAlignment','center')
     end
     hold on
-    climada_plot_world_borders(0.7)
+    if admin1_plot, climada_shapeplotter(admin1_shapes,'','X','Y','linewidth',1,'color',[ 186 186 186  ]/255); end % light grey
+    climada_plot_world_borders(0.7)    
     title([int2str(hazard.R_fit(fit_index)) ' yr intensity'],'fontsize',fontsize);
     axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
         min(centroids.lat )-scale/30  max(centroids.lat )+scale/30])
