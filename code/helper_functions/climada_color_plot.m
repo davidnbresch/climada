@@ -41,6 +41,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % Lea Mueller, muellele@gmail.com, 20150226, correct type (contourF instead of contour)
 % Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, if 1, show all admin1 lines
 % Lea Mueller, muellele@gmail.com, 20160229, rename to climada_shapeplotter from shape_plotter
+% Lea Mueller, muellele@gmail.com, 20160314, add figure scale (climada_figure_scale_add)
 %-
 
 fig = []; %init
@@ -155,4 +156,5 @@ colorbar;
 axlim = [min(lon)-buffer max(lon)+buffer min(lat)-buffer max(lat)+buffer];
 % axis(axlim); % set axis for good zoom
 climada_figure_axis_limits_equal_for_lat_lon(axlim)
+climada_figure_scale_add
 drawnow;

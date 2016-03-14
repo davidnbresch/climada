@@ -1,4 +1,4 @@
-function [cmap c_ax] = climada_colormap(peril_ID, steps10)
+function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
 % climada color map
 % NAME:
 %   climada_colormap
@@ -28,6 +28,7 @@ function [cmap c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20150924, special case if only one colour is required
 % Lea Mueller, muellele@gmail.com, 20151201, update benefit colors (grey, yellow, green, turqoise)
 % Lea Mueller, muellele@gmail.com, 20160201, add excess or rain (XR), lack of rain (LR) and lack of greenness (LG)
+% Lea Mueller, muellele@gmail.com, 20160314, for TS and XR use only 8 colors (3 green, 5 blue)
 %-
 
 cmap    = []; %init output
@@ -70,13 +71,14 @@ switch peril_ID
         
     case {'TR','XR'}
         % create colormap for rain
+        % 3 green colors, 5 blue colors (instead of originally 10)
         c_ax = [20 80];
         startcolor   = [0.89	0.93	0.89];
         middlecolor1 = [0.55	0.78	0.59];
         middlecolor2 = [0.43	0.84	0.78];
         endcolor     = [0.05	0.37	0.55];
         for i=1:3
-            cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor1(i);
+            cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/4)-1):middlecolor1(i);
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
         cmap = [1.0 1.0 1.0; cmap1; cmap2];
