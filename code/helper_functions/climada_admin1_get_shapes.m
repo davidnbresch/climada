@@ -32,6 +32,7 @@ function admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_n
 % Lea Mueller, muellele@gmail.com, 20160224, init
 % Lea Mueller, muellele@gmail.com, 20160229, add functionality 'all' to return the entire admin1_shape set
 % Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_get_shapes
+% Lea Mueller, muellele@gmail.com, 20160316, make sure admin1_name is a cell
 %-
 
 admin1_shape_selection = []; % init
@@ -42,12 +43,15 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 % and to set default value where  appropriate
 if ~exist('admin0_name','var'),admin0_name=[];end
-if ~exist('admin1_name','var'),admin1_name=[];end
+if ~exist('admin1_name','var'),admin1_name='';end
 
 % locate the module's (or this code's) data folder (usually  afolder
 % 'parallel' to the code folder, i.e. in the same level as code folder)
 % module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 
+%make sure admin0_name and admin1_name are a cell
+if ~iscell(admin1_name), admin1_name = {admin1_name}; end
+% if ischar(admin0_name), admin0_name = {admin0_name}; end
 
 % PARAMETERS
 % locate the module's data
@@ -69,10 +73,10 @@ if ~exist(admin1_shape_file,'file')
 end
 admin1_shapes = climada_shaperead(admin1_shape_file); % read admin1 shape file
 
-if strcmp(admin1_name,'all'); admin1_shape_selection = admin1_shapes; return; end
+if strcmp(admin1_name{1},'all'); admin1_shape_selection = admin1_shapes; return; end
 
 % plot the map the select admin1 with the mouse
-if isempty(admin1_name)
+if isempty(admin1_name{1})
     listbox = climada_admin1_select_on_map(admin0_name,admin0_shapes,admin1_shapes);
     str = input('Press enter when you have selected one or multiple admin1 on the map. Press q to quit. [Enter]:');
     if isempty(str); str = 'Y'; end
