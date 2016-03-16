@@ -50,6 +50,8 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20160303, plot damagemap if strfind(damage) somewhere in the fieldname_to_plot
 % Lea Mueller, muellele@gmail.com, 20160303, add date of event in title for hazard
 % Lea Mueller, muellele@gmail.com, 20160314, add climada_global.caxis_range
+% Lea Mueller, muellele@gmail.com, 20160316, set nans to 0
+
 % -
 
 fig = []; % init
@@ -306,6 +308,7 @@ for f_i = 1:numel(fieldname_to_plot)
         if any(values) || ~isempty(values)            
             % select a subset of locations, based on categories
             values(~is_selected) = 0;
+            values(isnan(values)) = 0; % overwrite nans
             
             if sum(values)>0
                 counter = counter+1;

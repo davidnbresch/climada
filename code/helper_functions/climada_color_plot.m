@@ -42,6 +42,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 % Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, if 1, show all admin1 lines
 % Lea Mueller, muellele@gmail.com, 20160229, rename to climada_shapeplotter from shape_plotter
 % Lea Mueller, muellele@gmail.com, 20160314, add figure scale (climada_figure_scale_add)
+% Lea Mueller, muellele@gmail.com, 20160314, add caxis_range (also for contourf)
 %-
 
 fig = []; %init
@@ -128,7 +129,7 @@ switch plot_method
         [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
         gridded_VALUE(gridded_VALUE<(0.1)) = NaN; %gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
         contourf(X, Y, gridded_VALUE,200,'edgecolor','none');hold on;axis equal; % filled contour plot   
-        
+        if ~isempty(caxis_range),caxis(caxis_range);end
         %contourf(X,Y,full(gridded_VALUE));hold on;axis equal; % filled contour plot
         colormap(cmap)
     case 'plotclr'
