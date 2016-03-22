@@ -34,3 +34,4 @@ country_risk.mat
 code/climada_event_damage_animation_local.m
 startup_*.m
 docs/climada_viewer.pdf
+data/system/climada_*.txt
