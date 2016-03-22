@@ -30,7 +30,7 @@ function fig = climada_hazard_stats_figure(hazard,return_periods,intensity_xtick
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150914, separate from climada_hazard_stats
 % Lea Mueller, muellele@gmail.com, 20160226, add intensity_xtick and plot_method
-% Lea Mueller, muellele@gmail.com, 20160314, add climada_global.admin1_plot
+% Lea Mueller, muellele@gmail.com, 20160314, add climada_global.admin1_plot, bugfix
 %-
 
 % init global variables
@@ -47,7 +47,7 @@ if isempty(plot_method), plot_method = 'contourf'; end
 hazard = climada_hazard_load(hazard); % prompt for hazard if not given
 hazard = climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
-admin1_plot = 0; 
+admin1_plot = 0; admin1_shapes = []; init
 if isfield(climada_global,'admin1_plot'), admin1_plot = climada_global.admin1_plot; end
 if admin1_plot, admin1_shapes = climada_admin1_get_shapes('','all'); end % load the shape1 files
 if isempty(admin1_shapes), admin1_plot = 0; end
