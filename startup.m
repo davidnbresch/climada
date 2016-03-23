@@ -1,12 +1,13 @@
 % startup file to set environment for climada
 % (c) David N. Bresch, 2008, 2014, 2016, david.bresch@gmail.com
 % 20160122: 2nd level of sub-folders for code added
+% 20160323: omit clc
 %
 % define the climada root directory
 % --------------------------------
 climada_root_dir=pwd; % current directory (print working directory)
 %
-clc % clear command window
+% clc % clear command window
 
 % create the dir to find the additional modules
 climada_modules_dir=[climada_root_dir filesep 'modules'];
