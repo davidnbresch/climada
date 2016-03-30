@@ -51,7 +51,7 @@ function [input_structure, fig] = climada_map_plot(input_structure,fieldname_to_
 % Lea Mueller, muellele@gmail.com, 20160303, add date of event in title for hazard
 % Lea Mueller, muellele@gmail.com, 20160314, add climada_global.caxis_range
 % Lea Mueller, muellele@gmail.com, 20160316, set nans to 0
-
+% Lea Mueller, muellele@gmail.com, 20160330, add fprintf if no field to show found
 % -
 
 fig = []; % init
@@ -248,7 +248,7 @@ if isempty(fieldname_to_plot)
     end
 end     
 
-if isempty(fieldname_to_plot), return, end 
+if isempty(fieldname_to_plot), fprintf('No field to show found.\n'), return, end 
  
 
 % select specific locations (based on categories, or units)
@@ -357,6 +357,8 @@ for f_i = 1:numel(fieldname_to_plot)
                 values = []; values_sum = []; % reset      
             end
         end
+    else
+        fprintf('No field to show found.\n'),
     end
 end
 
