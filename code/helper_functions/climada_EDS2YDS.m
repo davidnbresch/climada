@@ -70,6 +70,7 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 % David N. Bresch, david.bresch@gmail.com, 20151231, artifical yearsets and number_of_years implemented
 % David N. Bresch, david.bresch@gmail.com, 20160307, sampling_vect as optional output
 % David N. Bresch, david.bresch@gmail.com, 20160308, allow for no hazard set
+% David N. Bresch, david.bresch@gmail.com, 20160420, orig_year_flag improved
 %-
 
 YDS=[]; % init output
@@ -270,6 +271,7 @@ end
 
 % follows a hands-on way to obtain target length yearsets (one could do
 % better, i.e. re-sample - but might want to consider multi-year patterns)
+
 if ~isempty(number_of_years)
     if length(YDS.damage)<number_of_years
         n_replicas=ceil(number_of_years/length(YDS.damage));
@@ -278,7 +280,8 @@ if ~isempty(number_of_years)
         YDS.damage=repmat(YDS.damage,1,n_replicas);
         YDS.frequency=repmat(YDS.frequency,1,n_replicas);
         YDS.yyyy=repmat(YDS.yyyy,1,n_replicas);
-        YDS.orig_year_flag=repmat(YDS.orig_year_flag,1,n_replicas);
+        %YDS.orig_year_flag=repmat(YDS.orig_year_flag,1,n_replicas); %until 20160420
+        YDS.orig_year_flag=[YDS.orig_year_flag zeros(1,length(YDS.yyyy)-length(YDS.orig_year_flag))];
         issue_warning=0; % to suppress warning when cutting to exactly number_of_years below
         YDS.comment=[YDS.comment sprintf(' %i times replicated',n_replicas)];
     else
@@ -296,7 +299,7 @@ if ~isempty(number_of_years)
         YDS.orig_year_flag=YDS.orig_year_flag(1:number_of_years);
         YDS.comment=[YDS.comment sprintf(' concatenated to %i years',number_of_years)];
     end % length(YDS.damage)>number_of_years
-    
+            
 end % ~isempty(number_of_years)
 
 return
