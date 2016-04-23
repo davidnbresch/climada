@@ -39,6 +39,7 @@ function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,
 % David N. Bresch, david.bresch@gmail.com, 20090728
 % Markus Huber, markus.huber@env.ethz.ch, 20100412
 % Omar Bellprat, mar.bellprat@env.ethz.ch, 20100412, Maxangle added as input
+% David N. Bresch, david.bresch@gmail.com, 20160423, rand('seed',0) --> rng(0)
 %-
 
 % init global variables
@@ -93,7 +94,8 @@ next_track_position = 0; % to store first one original track and then derived on
 ens_count           = 0; % init
 
 % generate random starting points for ensemble members
-if force_seed_0,rand('seed',0),end % always the same seed, in order to allow for reproduceability in exercises
+%if force_seed_0,rand('seed',0),end % until 20160423
+if force_seed_0,rng(0),end % always the same seed, in order to allow for reproduceability in exercises
 x0 = ens_amp0*(rand(ens_size*n_storms,1)-0.5);   % rand: uniformly distributed random numbers
 y0 = ens_amp0*(rand(ens_size*n_storms,1)-0.5);
 
@@ -118,7 +120,8 @@ for track_i=1:n_storms % loop over all original tracks
         
         % directed random walk
         %---------------------
-        if force_seed_0,rand('seed',0),end % always the same seed, in order to allow for reproduceability in exercises
+        %if force_seed_0,rand('seed',0),end % until 20160423
+        if force_seed_0,rng(0),end % always the same seed, in order to allow for reproduceability in exercises
         x = cumsum( ens_amp *sin( cumsum( 2*Maxangle*rand(ens_size*N,1) -Maxangle)));
         y = cumsum( ens_amp *cos( cumsum( 2*Maxangle*rand(ens_size*N,1) -Maxangle)));
         
