@@ -24,7 +24,7 @@ function listbox = climada_admin1_select_on_map(admin0_name,admin0_shapes,admin1
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20160224, init
 % Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_select_on_map
-% Lea Mueller, muellele@gmail.com, 20160426, loop over single segements of polygons divided by nan
+% Lea Mueller, muellele@gmail.com, 20160426, loop over single segments of polygons divided by nan
 %-
 
 listbox = []; %init
