@@ -23,7 +23,8 @@ function listbox = climada_admin1_select_on_map(admin0_name,admin0_shapes,admin1
 %   admin1_name = get(listbox,'UserData')
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20160224, init
-% Lea Mueller, lea_mueller@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_select_on_map
+% Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_select_on_map
+% Lea Mueller, muellele@gmail.com, 20160426, loop over single segements of polygons divided by nan
 %-
 
 listbox = []; %init
@@ -83,8 +84,10 @@ list_admin1_code = {admin1_shapes(is_selected_admin1).adm1_code};
 list_admin1_code = strcat(list_admin1_name,{' | '},list_admin1_code); %admin1_name_code_list
 % show list dialog to select admin1 (now easy as names shown on plot)
 [liststr,sort_index] = sort(list_admin1_code); 
+liststr = {'All admin1' liststr{:}};
+sort_index = [0 sort_index];
 
-f = climada_figuresize(0.6,0.8);
+f = climada_figuresize(0.6,0.8); set(f,'Name','Select admin1 on map');
 set(gca,'position',[0.4 0.11 0.5 0.815]);
 % plot admin0 (country) shape
 plot(admin0_shapes(is_selected_admin0).X,admin0_shapes(is_selected_admin0).Y,'-r','LineWidth',2);
@@ -121,11 +124,27 @@ function admin1_name = setmap(source,callbackdata)
     val = sort_index(val);
     % maps = get(source,'String'); 
     % val = source.Value; maps = source.String;
-    delete(g); g = []; %reinit
+    if val == 0, val = sort_index(2:end); end
+    delete(g); g = []; counter = 0; %reinit
     for val_i = 1:numel(val)
         X = admin1_shapes(is_selected_admin1(val(val_i))).X;Y = admin1_shapes(is_selected_admin1(val(val_i))).Y;
-        X(isnan(X)) = []; Y(isnan(Y)) = [];
-        g(val_i) = fill(X,Y,'-b','LineWidth',1);
+        %X(isnan(X)) = []; Y(isnan(Y)) = [];
+        %g(val_i) = fill(X,Y,'-b','LineWidth',1);
+        
+        nan_position = find(isnan(X));
+        if ~isempty(nan_position)
+           nan_position = [0 nan_position];
+        else
+           nan_position = [0 numel(X)+1];
+        end
+        
+        % create indx for area
+        % loop over different segments, divided by nans
+        for pos_i = 1:numel(nan_position)-1
+            counter = counter+1;
+            g(counter) = fill(X(nan_position(pos_i)+1:nan_position(pos_i+1)-1),Y(nan_position(pos_i)+1:nan_position(pos_i+1)-1),...
+               '-b','LineWidth',1);
+        end   
     end
     %h = plot(admin1_shapes(is_selected_admin1(val)).X,admin1_shapes(is_selected_admin1(val)).Y,'-b','LineWidth',2);    
     admin1_name = list_admin1_name(val);

@@ -89,6 +89,8 @@ if isempty(admin1_name{1})
     end
 end
 
+if isempty(admin1_name), fprintf('No admin1 selected.\n'), return, end
+
 % find the selected admin1 in admin1_shapes
 list_admin1_name = {admin1_shapes.name}; %admin1_name_list
 is_selected = ismember(list_admin1_name,admin1_name);
