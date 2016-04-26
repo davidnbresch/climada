@@ -30,10 +30,10 @@ function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20160201, add excess or rain (XR), lack of rain (LR) and lack of greenness (LG)
 % Lea Mueller, muellele@gmail.com, 20160314, for TS and XR use only 8 colors (3 green, 5 blue)
 % Lea Mueller, muellele@gmail.com, 20160316, add separate lack of greenness (LG) colormap (brown - yellow - green)
+% Lea Mueller, muellele@gmail.com, 20160426, finetune lack of greenness colors
 %-
 
-cmap    = []; %init output
-c_ax    = []; %init output
+cmap = []; c_ax = []; %init output
 
 %global climada_global % init global variables
 if ~climada_init_vars, return; end
@@ -43,15 +43,11 @@ if ~exist('peril_ID', 'var'), peril_ID = ''; end
 if ~exist('steps10' , 'var'), steps10  = ''; end
 
 if isempty(steps10); steps10 = 10;end
-cmap1   = [];
-cmap2   = [];
+cmap1   = []; cmap2   = [];
 
 % special case if only one colour is required
 only_one_step = 0;
-if steps10 == 1
-    steps10 = steps10+1;
-    only_one_step = 1;
-end
+if steps10 == 1, steps10 = steps10+1; only_one_step = 1; end
 
 switch peril_ID
     case 'TC'
@@ -165,8 +161,8 @@ switch peril_ID
             %0.7678    0.2667    0.0400;
             0.7098    0.1333         0;
             0.5412    0.1020         0;
-            0.4078    0.1333    0.5451;
-            0.3333    0.1020    0.5451];
+            0.4078    0.1333    0.5451];
+        %;  0.3333    0.1020    0.5451
         cmap = flipud(cmap);
         
      case 'LG'
