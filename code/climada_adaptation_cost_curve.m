@@ -73,6 +73,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20150909, color_keep introduced
 % Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
 % Lea Mueller, muellele@gmail.com, 20160309, bugfix fprintf reverse_cb for insurance
+% David N. Bresch, david.bresch@gmail.com, 20160427, total climate risk not plotted for climada_demo, fontsize_ adjusted
 %-
 
 global climada_global
@@ -140,7 +141,7 @@ if called_from_climada_demo
     scaled_AED            = 1;
     nice_numbers          = 1;
     add_insurance_measure = 1;
-    fontsize_             = 8; % 20140527, on PC, use smaller
+    fontsize_             = 10; % =8 until 20160427
     if ismac, fontsize_   = 11;end % 20140516, was 8, too small
 else
     add_insurance_measure = 0;
@@ -329,19 +330,22 @@ for measure_i = 2:n_measures+1 %first entry = 0
         text(cumulated_benefit(measure_i)-(cumulated_benefit(measure_i)-cumulated_benefit(measure_i-1))/2,...
             max(sorted_cb_ratio)/y_text_control,...
             [measures_impact.measures.name{sort_index(measure_i-1)},...
-            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_-4);
+            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_);
     end
 end
-% show net present value of total climate risk
-plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
-% tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
-if digit>0 %if million_flag
-    tcr_str = sprintf('Total climate risk\n %.1f %s %s',round(tot_climate_risk*fct/100000)/10,measures_impact.Value_unit,digit_str);
-else
-    tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk*fct,measures_impact.Value_unit);
+
+if ~called_from_climada_demo
+    % show net present value of total climate risk
+    plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
+    % tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
+    if digit>0 %if million_flag
+        tcr_str = sprintf('Total climate risk\n %.1f %s %s',round(tot_climate_risk*fct/100000)/10,measures_impact.Value_unit,digit_str);
+    else
+        tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk*fct,measures_impact.Value_unit);
+    end
+    text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
+        'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
 end
-text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
-    'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
 
 if add_insurance_measure % NOTE: this section not relevant for lecture
     %insurance to cover residual damage
@@ -503,18 +507,20 @@ if ~isempty(measures_impact_comparison)
     
 end
 
-
-plot([0 xmax],[1 1],':k');
-xlim([0 xmax*1.1])
-if called_from_climada_demo
-    set(gca,'layer','top')
-else
-    %    % until 20141231, but subaxis not clean
-    %    set(subaxis(1),'layer','top')
-end
-
-x_tick_top = get(gca,'xtick'); % top handle
-set(gca, 'XTickLabel',x_tick_top/10^digit)
+if ~called_from_climada_demo
+    
+    plot([0 xmax],[1 1],':k');
+    xlim([0 xmax*1.1])
+    if called_from_climada_demo
+        set(gca,'layer','top')
+    else
+        %    % until 20141231, but subaxis not clean
+        %    set(subaxis(1),'layer','top')
+    end
+    
+    x_tick_top = get(gca,'xtick'); % top handle
+    set(gca, 'XTickLabel',x_tick_top/10^digit)
+end % ~called_from_climada_demo
 
 box off
 %axis tight % to get max area used
