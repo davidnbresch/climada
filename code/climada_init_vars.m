@@ -39,6 +39,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160222, entities_dir added
 % Lea Mueller, muellele@gmail.com, 20160225, introduce climada_global.marker, for climada_color_plot and plotclr
 % Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, default is 0, do not show admin1 lines, for climada_color_plot
+% David N. Bresch, david.bresch@gmail.com, 20160411, climada_global.present_reference_year = 2016
 %-
 
 global climada_global
@@ -150,7 +151,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.Value_unit = 'USD';
     
     % evaluation and NPV (net present value) specific parameters
-    climada_global.present_reference_year = 2014; % yyyy
+    climada_global.present_reference_year = 2016; % yyyy, 20160411, srzdnb
     climada_global.future_reference_year  = 2030; % yyyy
     % time dependence of impacts (1 for linear, default)
     % >1 concave (eg 2: cubic), <1 for convex (eg 1/2: like quare root)

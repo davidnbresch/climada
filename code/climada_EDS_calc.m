@@ -244,13 +244,13 @@ entity_damagefunctions_PAA=entity_damagefunctions_PAA(full_unique);
 t0 = clock;
 msgstr=sprintf('Calculating damage for %i assets (>0) and %i events ',nn_assets,length(hazard.frequency));
 
+format_str='%s'; % CLIMADA_OPT
 if ~silent_mode % CLIMADA_OPT
     if climada_global.waitbar % CLIMADA_OPT
         fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
         h = waitbar(0,msgstr,'Name',sprintf('Calculating %s damage for assets',hazard.peril_ID)); % CLIMADA_OPT
     else % CLIMADA_OPT
         fprintf('%s\n',msgstr); % CLIMADA_OPT
-        format_str='%s'; % CLIMADA_OPT
     end % CLIMADA_OPT
 end % CLIMADA_OPT
 

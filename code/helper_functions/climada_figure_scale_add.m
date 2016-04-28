@@ -28,6 +28,7 @@ function climada_figure_scale_add(fig_axes,left_corner,bottom_corner)
 % Lea Mueller, muellele@gmail.com, 20150729, limit top_corner and right_corner to maximum number of tick elements
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
 % Lea Mueller, muellele@gmail.com, 20160311, start from the left and bottom
+% Lea Mueller, muellele@gmail.com, 20160404, only half of the x-tick length
 %-
 
 
@@ -68,10 +69,17 @@ if bottom_corner>numel(yticks), bottom_corner = numel(yticks);end
 if abs(left_corner)>numel(xticks), left_corner = numel(xticks)-1;end
 if abs(bottom_corner)>numel(yticks), bottom_corner = numel(yticks);end
 
+% only half of the xtick length
 % finally plot the line and the length in meter
-plot(xticks(left_corner:left_corner+1), ones(2,1)*yticks(bottom_corner),'-k','linewidth',3)
-text(mean(xticks(left_corner:left_corner+1)), yticks(bottom_corner),scale_text,...
+x_coordinate = [xticks(left_corner) mean(xticks(left_corner:left_corner+1))];
+plot([xticks(left_corner) mean(xticks(left_corner:left_corner+1))], ones(2,1)*yticks(bottom_corner),'-k','linewidth',3)
+text(mean(x_coordinate), yticks(bottom_corner),scale_text,...
     'verticalalignment','bottom','HorizontalAlignment','center','fontsize',14)
+
+% % finally plot the line and the length in meter
+% plot(xticks(left_corner:left_corner+1), ones(2,1)*yticks(bottom_corner),'-k','linewidth',3)
+% text(mean(xticks(left_corner:left_corner+1)), yticks(bottom_corner),scale_text,...
+%     'verticalalignment','bottom','HorizontalAlignment','center','fontsize',14)
 
 
 
