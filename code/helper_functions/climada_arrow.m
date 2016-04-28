@@ -65,6 +65,7 @@ function [h,yy,zz] = climada_arrow(varargin)
 %  some problems with perspective plots still exist.
 % Copyright (c)1995-2009, Dr. Erik A. Johnson <JohnsonE@usc.edu>, 5/20/2009
 % http://www.usc.edu/civil_eng/johnsone/
+% Lea Mueller, muellele@gmail.com, 20160428, update to version 2015
 %-
 
 global climada_global
@@ -370,7 +371,8 @@ if (length(page      )==1),   page       = o * page      ;   end;
 if (size(crossdir  ,1)==1),   crossdir   = o * crossdir  ;   end;
 if (length(ends      )==1),   ends       = o * ends      ;   end;
 if (length(ispatch   )==1),   ispatch    = o * ispatch   ;   end;
-ax = o * gca;
+% ax = o * gca;
+ax = repmat(gca,narrows,1); % 20160428, muellele@gmail.com, works for version 2015
 
 % if we've got handles, get the defaults from the handles
 if ~isempty(oldh),
@@ -451,7 +453,8 @@ while (any(axnotdone)),
 	curpage = page(ii);
 	% get axes limits and aspect ratio
 	axl = [get(curax,'XLim'); get(curax,'YLim'); get(curax,'ZLim')];
-	oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+	%oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [curax reshape(axl',1,6)];
+    oldaxlims(min(find(oldaxlims(:,1)==0)),:) = [ii reshape(axl',1,6)]; % 20160428, muellele@gmail.com, works for version 2015
 	% get axes size in pixels (points)
 	u = get(curax,'Units');
 	axposoldunits = get(curax,'Position');
@@ -538,7 +541,10 @@ while (any(axnotdone)),
 	end;
 	% compute the range of 2-D values
 	%curT = get(curax,'Xform'); % 20150105, david.bresch@gmail.com
-	curT = get(gca,'Xform');
+	%curT = get(gca,'Xform');
+    [azA,elA] = view(curax); % 20160428, muellele@gmail.com, works for version 2015
+    curT = viewmtx(azA,elA);
+
 	lim = curT*[0 1 0 1 0 1 0 1;0 0 1 1 0 0 1 1;0 0 0 0 1 1 1 1;1 1 1 1 1 1 1 1];
 	lim = lim(1:2,:)./([1;1]*lim(4,:));
 	curlimmin = min(lim')';
@@ -906,9 +912,11 @@ if (nargout<=1),
 	if isempty(oldaxlims),
 		ARROW_AXLIMITS = [];
 	else,
-		lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
-		lims = reshape(cat(2,lims{:}),6,size(lims,2));
-		mask = arrow_is2DXY(oldaxlims(:,1));
+		%lims = get(oldaxlims(:,1),{'XLim','YLim','ZLim'})';
+        lims = get(ax(oldaxlims(:,1)),{'XLim','YLim','ZLim'})';% 20160428, muellele@gmail.com, works for version 2015
+		lims = reshape(cat(2,lims{:}),6,size(lims,2));  
+		%mask = arrow_is2DXY(oldaxlims(:,1)); 
+        mask = arrow_is2DXY(ax(oldaxlims(:,1))); % 20160428, muellele@gmail.com, works for version 2015
 		oldaxlims(mask,6:7) = lims(5:6,mask)';
 		ARROW_AXLIMITS = oldaxlims(find(any(oldaxlims(:,2:7)'~=lims)),:);
 		if ~isempty(ARROW_AXLIMITS),
