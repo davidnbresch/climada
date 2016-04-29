@@ -41,6 +41,7 @@ function ok=climada_init_vars(reset_flag)
 % Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, default is 0, do not show admin1 lines, for climada_color_plot
 % David N. Bresch, david.bresch@gmail.com, 20160411, climada_global.present_reference_year = 2016
 % David N. Bresch, david.bresch@gmail.com, 20160429, Value_* extended and cost_* added
+% David N. Bresch, david.bresch@gmail.com, 20160429, climada_lonlat_cleanup and climada_centroids_cleanup switched off
 %-
 
 global climada_global
@@ -116,7 +117,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     climada_global.centroids_dir=[climada_global.data_dir filesep 'centroids']; % added 20150819
     if ~isdir(climada_global.centroids_dir),mkdir(climada_global.data_dir,'centroids');end % added 20160222
-
+    
     climada_global.entities_dir=[climada_global.data_dir filesep 'entities']; % added 20160222
     if ~isdir(climada_global.entities_dir),mkdir(climada_global.data_dir,'entities');end
     
@@ -145,7 +146,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % '.nc' for netCDF files
     climada_global.tc.default_raw_data_ext='.txt'; % default '.txt'
     % in climada_tc_windfield, treat the extratropical transition celerity
-    % exceeding vmax problem an issue e.g. for Northern US, where this should be set=1 
+    % exceeding vmax problem an issue e.g. for Northern US, where this should be set=1
     climada_global.tc.extratropical_transition=0; % default =0 (original Holland)
     
     % define asset value units (e.g. 'USD' or 'people')
@@ -195,12 +196,12 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.max_distance_to_hazard = 10^6;
     
     % set some parameters for climada_demo_gui (allows users to make use of
-    % the GUI for their own purpose, i.e. other entity...) 
+    % the GUI for their own purpose, i.e. other entity...)
     climada_global.demo_gui.entity_excel_file     =[climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];
     climada_global.demo_gui.hazard_present        =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
     climada_global.demo_gui.hazard_moderate_change=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
     climada_global.demo_gui.hazard_high_change    =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030high_small.mat'];
-
+    
     % set project directory, the user can this way store some data in his
     % own folders, outside of core climada (e.g. no automatic sync with GitHub)
     climada_global.project_dir = climada_global.data_dir;
@@ -211,7 +212,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.markersize=5; % integer only, please, default=4, used in climada_color_plot and plotclr
     climada_global.marker = 's'; % marker, i.e. 's','.','o', used in climada_color_plot and plotclr
     climada_global.admin1_plot = 0; % set to 1 if you want to plot all admin1 shapes on a map
-   
+    
     climada_vars_initialised=1; % indicate we have initialized all vars
     
     % whether we run on Octave
@@ -223,33 +224,30 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
         fprintf('Note: running on Octave\n')
     end
     
-    % !!!!!!!!!!!!!!!!!!!!!!!!!
-    % a temporary cleanup item (to be removed summer 2015 latest)
-    cleanup_check_file=[climada_global.system_dir filesep 'climada_lonlat_cleanup_done.txt'];
-    if ~exist(cleanup_check_file,'file')
-        if climada_lonlat_cleanup
-            fid=fopen(cleanup_check_file,'w');
-            fprintf(fid,'climada_lonlat_cleanup run at %s\n',datestr(now));
-            fclose(fid);
-        end
-    else
-        fprintf('OK: migrated to lon/lat instead of Longitude/Latitude\n');
-    end
-    
-    % !!!!!!!!!!!!!!!!!!!!!!!!!
-    % a temporary cleanup item (to be removed winter 2015 latest)
-    cleanup_check_file=[climada_global.system_dir filesep 'climada_centroids_cleanup_done.txt'];
-    if ~exist(cleanup_check_file,'file')
-        if climada_centroids_cleanup
-            fid=fopen(cleanup_check_file,'w');
-            fprintf(fid,'climada_centroids_cleanup run at %s\n',datestr(now));
-            fclose(fid);
-        end
-    else
-        fprintf('OK: centroids moved into own folder (out of system)\n');
-    end
-    % !!!!!!!!!!!!!!!!!!!!!!!!!
+    %     disabled 20160429
+    %     % a temporary cleanup item (to be removed summer 2015 latest)
+    %     cleanup_check_file=[climada_global.system_dir filesep 'climada_lonlat_cleanup_done.txt'];
+    %     if ~exist(cleanup_check_file,'file')
+    %         if climada_lonlat_cleanup
+    %             fid=fopen(cleanup_check_file,'w');
+    %             fprintf(fid,'climada_lonlat_cleanup run at %s\n',datestr(now));
+    %             fclose(fid);
+    %         end
+    %     else
+    %         fprintf('OK: migrated to lon/lat instead of Longitude/Latitude\n');
+    %     end
+    %     % a temporary cleanup item (to be removed winter 2015 latest)
+    %     cleanup_check_file=[climada_global.system_dir filesep 'climada_centroids_cleanup_done.txt'];
+    %     if ~exist(cleanup_check_file,'file')
+    %         if climada_centroids_cleanup
+    %             fid=fopen(cleanup_check_file,'w');
+    %             fprintf(fid,'climada_centroids_cleanup run at %s\n',datestr(now));
+    %             fclose(fid);
+    %         end
+    %     else
+    %         fprintf('OK: centroids moved into own folder (out of system)\n');
+    %     end
     
 end
 
-return
+end % climada_init_vars

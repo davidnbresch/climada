@@ -91,6 +91,8 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20150921, save entity as .mat if assets are switched (in entity.assets.filename)
 % Lea Mueller, muellele@gmail.com, 20151127, add measures_impact.scenario
 % Lea Mueller, muellele@gmail.com, 20151130, invoke climada_hazard_load and climada_entity_load
+% David N. Bresch, david.bresch@gmail.com, 20160429, automatic determination of display units
+% David N. Bresch, david.bresch@gmail.com, 20160429, title_str without measures name
 %-
 
 global climada_global
@@ -467,7 +469,8 @@ measures_impact.scenario = climada_scenario_name(entity,hazard);
 [~,assets_name]   = fileparts(EDS(1).assets.filename);
 [~,measures_name] = fileparts(measures.filename);
 if strcmp(measures_name,assets_name),measures_name='m';end
-measures_impact.title_str = sprintf('%s @ %s | %s',measures_name,assets_name,hazard_name);
+%measures_impact.title_str = sprintf('%s @ %s | %s',measures_name,assets_name,hazard_name);
+measures_impact.title_str = sprintf('%s | %s',assets_name,hazard_name); % 20160429
 
 if map_risk_premium
     % plot the total climate risk premium
@@ -515,11 +518,11 @@ if map_risk_premium
 end % map_risk_premium
 
 % determine display units
+% -----------------------
 measures_impact.Value_unit              = EDS(1).Value_unit;
 measures_impact.Value_display_unit_name = climada_global.Value_display_unit_name;
 measures_impact.Value_display_unit_fact = climada_global.Value_display_unit_fact;
 
-% figure useful unit range
 [digit,digit_str] = climada_digit_set(measures_impact.benefit);
 measures_impact.Value_display_unit_name=[measures_impact.Value_unit ' ' digit_str];
 measures_impact.Value_display_unit_fact=10^(-digit);
@@ -528,7 +531,6 @@ measures_impact.cost_unit               = climada_global.cost_unit;
 measures_impact.cost_display_unit_name  = climada_global.cost_display_unit_name;
 measures_impact.cost_display_unit_fact  = climada_global.cost_display_unit_fact;
 
-% figure useful unit range
 [digit,digit_str] = climada_digit_set(measures_impact.measures.cost);
 measures_impact.cost_display_unit_name=[measures_impact.cost_unit ' ' digit_str];
 measures_impact.cost_display_unit_fact=10^(-digit);
