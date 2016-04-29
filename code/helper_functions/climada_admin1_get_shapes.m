@@ -18,6 +18,7 @@ function admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_n
 %   admin1_shape_selection = climada_admin1_get_shapes('Vietnam','Y??n B??i');
 %   admin1_shape_selection = climada_admin1_get_shapes('Vietnam',{'VNM-5483' 'VNM-458'});
 %   admin1_shape_selection = climada_admin1_get_shapes('','all'); % get all admin1_shapes
+%   admin1_shape_selection = climada_admin1_get_shapes('Vietnam','all'); % get all admin1_shapes in Vietnam
 % INPUTS:
 %   admin0_name: the country name, either full or ISO3
 %       > If empty, a list dialog lets the user select (default)
@@ -34,6 +35,7 @@ function admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_n
 % Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_get_shapes
 % Lea Mueller, muellele@gmail.com, 20160316, make sure admin1_name is a cell
 % Lea Mueller, muellele@gmail.com, 20160429, bugfix in input
+% Lea Mueller, muellele@gmail.com, 20160429, add functionality 'all' to return the all admin1 for a given country
 %-
 
 admin1_shape_selection = []; % init
@@ -74,7 +76,13 @@ if ~exist(admin1_shape_file,'file')
 end
 admin1_shapes = climada_shaperead(admin1_shape_file); % read admin1 shape file
 
-if strcmp(admin1_name{1},'all'); admin1_shape_selection = admin1_shapes; return; end
+if isempty(admin0_name) && strcmp(admin1_name{1},'all'); admin1_shape_selection = admin1_shapes; return; end
+
+% find the country in the shape file
+list_admin0_name = {admin0_shapes.NAME};
+is_selected_admin0 = strcmp(list_admin0_name,admin0_name);
+adm0_a3_name = admin0_shapes(is_selected_admin0).ADM0_A3;
+list_admin1_adm_a3 = {admin1_shapes.adm0_a3};
 
 % plot the map the select admin1 with the mouse
 if isempty(admin1_name{1})
@@ -89,12 +97,21 @@ if isempty(admin1_name{1})
         admin1_name = ''; return
     end
 end
+    
+% select all admin1 in the given admin0
+if strcmpi(admin1_name{1},'all') 
+    % find the shapes that belong to the selected admin0_name
+    is_selected_admin1 = strcmp(list_admin1_adm_a3,adm0_a3_name); %admin1_shape_i
+    admin1_name = {admin1_shapes(is_selected_admin1).name}; %admin1_name_list
+    invalid_name = strcmp(admin1_name,'');
+    admin1_name(invalid_name) = [];
+end
 
 if isempty(admin1_name), fprintf('No admin1 selected.\n'), return, end
 
 % find the selected admin1 in admin1_shapes
 list_admin1_name = {admin1_shapes.name}; %admin1_name_list
-is_selected = ismember(list_admin1_name,admin1_name);
+is_selected = ismember(list_admin1_name,admin1_name) & ismember(list_admin1_adm_a3,adm0_a3_name);
 
 % look also in the code, if admin1_code (i.e. VNM-5483) 
 % instead of admin1 name is given
