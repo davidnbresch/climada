@@ -33,6 +33,7 @@ function admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_n
 % Lea Mueller, muellele@gmail.com, 20160229, add functionality 'all' to return the entire admin1_shape set
 % Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_get_shapes
 % Lea Mueller, muellele@gmail.com, 20160316, make sure admin1_name is a cell
+% Lea Mueller, muellele@gmail.com, 20160429, bugfix in input
 %-
 
 admin1_shape_selection = []; % init
@@ -78,7 +79,7 @@ if strcmp(admin1_name{1},'all'); admin1_shape_selection = admin1_shapes; return;
 % plot the map the select admin1 with the mouse
 if isempty(admin1_name{1})
     listbox = climada_admin1_select_on_map(admin0_name,admin0_shapes,admin1_shapes);
-    str = input('Press enter when you have selected one or multiple admin1 on the map. Press q to quit. [Enter]:');
+    str = input('Press enter when you have selected one or multiple admin1 on the map. Press q to quit. [Enter]:','s');
     if isempty(str); str = 'Y'; end
     if strcmp(str,'q'), return; end
     try
