@@ -27,9 +27,9 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %       If theres is a field measures_impact.y_axis_max, it defines the
 %       maximum of the vertical axis (to shape plots comparable). There are
 %       no checks any more, hence if you provide a stange number, you get a
-%       strange vertical scale ;-)   
+%       strange vertical scale ;-)
 %       If theres is a field measures_impact.x_axis_max, it defines the
-%       maximum of the horizontal axis (to shape plots comparable). 
+%       maximum of the horizontal axis (to shape plots comparable).
 %       If there is a field measures_impact.color_keep, the colors as
 %       defined in measures are kept, otherwise nice colors are assigned.
 % OPTIONAL INPUT PARAMETERS:
@@ -46,6 +46,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %       (divider of the length of the y-axis, default=50)
 %   scaled_AED: scaled annual expected damage (only used by Lea Mueller),
 %       default=0 (inactive)
+%       NOT IMPLEMENTED/IN USE ANY MORE
 %   nice_numbers: used in the special mode for the climada_play_gui, where
 %       this code is called from climada_play_adapt_cost_curve,
 %       default=0 (inactive)
@@ -69,11 +70,12 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % Lea Mueller, muellele@gmail.com, 20150617, set to bc_ratio (benefits per cost) instead of cb_ratio
 % David N. Bresch, david.bresch@gmail.com, 20150804 reverse_cb fixed for comparison plot
 % David N. Bresch, david.bresch@gmail.com, 20150907 decluttered (for presentations), i.e. label_comparison, x_axis_max and y_axis_max introduced
-% Lea Mueller, muellele@gmail.com, 20150909, introduce factor for unit 'people', to show cb ratio as people not affected/10'000 USD 
+% Lea Mueller, muellele@gmail.com, 20150909, introduce factor for unit 'people', to show cb ratio as people not affected/10'000 USD
 % David N. Bresch, david.bresch@gmail.com, 20150909, color_keep introduced
 % Lea Mueller, muellele@gmail.com, 20150930, introduce climada_digit_set
 % Lea Mueller, muellele@gmail.com, 20160309, bugfix fprintf reverse_cb for insurance
 % David N. Bresch, david.bresch@gmail.com, 20160427, total climate risk not plotted for climada_demo, fontsize_ adjusted
+% David N. Bresch, david.bresch@gmail.com, 20160429, major review, unit display etc cleaned up
 %-
 
 global climada_global
@@ -87,7 +89,6 @@ if ~exist('measures_impact'           , 'var'), measures_impact            = [];
 if ~exist('measures_impact_comparison', 'var'), measures_impact_comparison = ''; end
 if ~exist('x_text_control'            , 'var'), x_text_control             = []; end
 if ~exist('y_text_control'            , 'var'), y_text_control             = []; end
-if ~exist('scaled_AED'                , 'var'), scaled_AED                 = 0 ; end
 if ~exist('nice_numbers'              , 'var'), nice_numbers               = []; end
 if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 1; end
 if ~exist('plot_arrows'               , 'var'), plot_arrows                = 0; end
@@ -98,18 +99,15 @@ if ~exist('plot_arrows'               , 'var'), plot_arrows                = 0; 
 % length of the x/y-axis)
 if isempty(x_text_control), x_text_control=30;end
 if isempty(y_text_control), y_text_control=50;end
-
+%
+add_insurance_measure = 0; % see below, only used if called from climada_demo GUI
+%
+% set some fonts
+fontsize_             = 8.5*climada_global.font_scale;
+if ismac, fontsize_   = 12 *climada_global.font_scale;end % 20140516, was 8, too small
 
 % prompt for measures_impact if not given
-if isempty(measures_impact) % local GUI
-    measures_impact=[climada_global.data_dir filesep 'results' filesep '*.mat'];
-    [filename, pathname] = uigetfile(measures_impact, 'Select measures impacts:');
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        measures_impact=fullfile(pathname,filename);
-    end
-end
+measures_impact=climada_measures_impact_load(measures_impact);
 
 if ~isstruct(measures_impact_comparison)
     if strcmp(measures_impact_comparison,'ASK')
@@ -122,60 +120,41 @@ if ~isstruct(measures_impact_comparison)
         end
     end
 end
-% load the measures set, if a filename has been passed
-if ~isstruct(measures_impact)
-    measures_impact_file = measures_impact; measures_impact = [];
-    load(measures_impact_file);
-end
 
-% from here on, measures is definitely a struct, hence we can check for
-% fields etc.
 if ~isfield(measures_impact,'x_axis_max'),measures_impact.x_axis_max=[];end
 if ~isfield(measures_impact,'y_axis_max'),measures_impact.y_axis_max=[];end
 if ~isfield(measures_impact,'color_keep'),measures_impact.color_keep=0;end
 
+tot_climate_risk  = measures_impact.NPV_total_climate_risk; % shorter name
 
-% set the extras for climada_demo
-if called_from_climada_demo
-    measures_impact.color_keep=1; % keep demo GUI colors
-    scaled_AED            = 1;
-    nice_numbers          = 1;
+% some parameters
+n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
+xlabel_str = sprintf('NPV averted damage over %d years (%s)',n_years,measures_impact.Value_display_unit_name);
+nr_format  = '\t %4.1f';
+nr_format  = '%2.1e';
+nr_format_benefit  = nr_format;
+nr_format_bc_ratio = '%2.1f';
+
+% convert to display units
+measures_impact.cb_ratio = measures_impact.cb_ratio;
+measures_impact.benefit  = measures_impact.benefit *measures_impact.Value_display_unit_fact;
+measures_impact.ED  = measures_impact.ED *measures_impact.Value_display_unit_fact;
+measures_impact.measures.cost = measures_impact.measures.cost*measures_impact.cost_display_unit_fact;
+measures_impact.risk_transfer = measures_impact.risk_transfer*measures_impact.cost_display_unit_fact;
+tot_climate_risk         = tot_climate_risk        *measures_impact.Value_display_unit_fact;
+
+if called_from_climada_demo % only if called from climada_demo GUI
     add_insurance_measure = 1;
     fontsize_             = 10; % =8 until 20160427
     if ismac, fontsize_   = 11;end % 20140516, was 8, too small
-else
-    add_insurance_measure = 0;
-    %fontsize_             = 11;
-    fontsize_             = 8.5*climada_global.font_scale;
-    if ismac, fontsize_   = 12*climada_global.font_scale;end % 20140516, was 8, too small
-end
-
-% set Value_unit
-if isfield(measures_impact,'Value_unit')
-    Value_unit_str = measures_impact.Value_unit;
-else
-    Value_unit_str = climada_global.Value_unit;
-end
-
-if scaled_AED
-    scale_factor = measures_impact.ED(end) /measures_impact.NPV_total_climate_risk;
+    xlabel_str = sprintf('Averted damage (%s)',measures_impact.Value_display_unit_name);
+    scale_factor = measures_impact.ED(end)/tot_climate_risk;
+    scale_factor=scale_factor/100; % MAGIC, 20160429
     measures_impact.measures.cost = bsxfun(@times, measures_impact.measures.cost, scale_factor);
     measures_impact.risk_transfer = bsxfun(@times, measures_impact.risk_transfer, scale_factor);
     measures_impact.benefit       = bsxfun(@times, measures_impact.benefit      , scale_factor);
-    %total climate risk
-    tot_climate_risk  = bsxfun(@times, measures_impact.NPV_total_climate_risk, scale_factor);
-else
-    %total climate risk
-    tot_climate_risk  = measures_impact.NPV_total_climate_risk;
+    tot_climate_risk  = bsxfun(@times, tot_climate_risk, scale_factor);
 end
-
-[digit, digit_str] = climada_digit_set(tot_climate_risk);
-if digit == 3, digit = 0; digit_str = '';end
-% if tot_climate_risk>600000
-%     million_flag = 1;
-% else
-%     million_flag = 0;
-% end
 
 if add_insurance_measure % NOTE: this section not relevant for lecture
     %cover residual damage with insurance
@@ -192,29 +171,7 @@ if add_insurance_measure % NOTE: this section not relevant for lecture
     insurance_cb       = insurance_cost/insurance_benefit;
 end
 
-n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
-
-% set format for numbers (for command line output)
-if nice_numbers
-    % scaled, used if called from climada_play_adapt_cost_curve
-    if nice_numbers == 1
-        fct        = 10^-8;
-        nr_format  = '\t %4.1f';
-        xlabel_str = sprintf('Averted damage (Mio %s)',Value_unit_str);
-    else
-        fct        = 10^-nice_numbers;
-        nr_format  = '\t %4.1f';
-        xlabel_str = sprintf('NPV averted damage over %d years (10^%1.0f %s)',n_years,nice_numbers,Value_unit_str);
-    end
-else
-    fct        = 1;
-    nr_format  = '%2.1e';
-    xlabel_str = sprintf('NPV averted damage over %d years (%s %s)',n_years,Value_unit_str,digit_str);
-end
-nr_format_benefit  = nr_format;
-nr_format_bc_ratio = '%2.1f';
-
-% correct risk transfer to not cover more than actual climate risk
+% correct risk transfer to not cover more than actual climate risk (climada_demo)
 risk_transfer_idx = strcmp(measures_impact.measures.name,'risk transfer');
 if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
     fprintf('Risk transfer is corrected to cover only actual climate risk.\n')
@@ -222,23 +179,12 @@ if any(risk_transfer_idx) && sum(measures_impact.benefit)>tot_climate_risk
     %measures_impact.cb_ratio(risk_transfer_idx) = measures_impact.measures.cost(risk_transfer_idx)/measures_impact.benefit(risk_transfer_idx);
 end
 
-% special case for people, set cb_ratio as people not affected per 100'000 USD invested
-if strcmp(measures_impact.Value_unit,'people')
-    people_factor = 10000;
-    nr_format_benefit = strrep(nr_format,'.1e','.0f');
-    measures_impact.cb_ratio = measures_impact.cb_ratio/people_factor;
-end
+% special case for people, rounded numbers
+if strcmpi(measures_impact.Value_unit,'people'),nr_format_benefit = strrep(nr_format,'.1e','.0f');end
 
 title_str                    = measures_impact.title_str;
-[sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio); 
+[sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
 if reverse_cb,sorted_cb_ratio= 1./sorted_cb_ratio;end
-
-% special colormap for salvador - UUHHH, please do NOT make such changes in
-% the check in code ;-), I've fixed it as follows:
-
-if ~isfield(measures_impact,'color_keep')
-    measures_impact.color_keep=0; % default to label
-end
 
 if ~measures_impact.color_keep
     try
@@ -253,63 +199,50 @@ end
 fprintf('%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
 fprintf('\t Measure \t\t\t Cost \t\t\t Benefit \t\t BC_ratio\n');
-if scaled_AED
-    fprintf('\t \t    \t\t\t(Mio USD)\t\t(Mio %s)\t\t(%s/USD)\n',Value_unit_str,Value_unit_str);
+if called_from_climada_demo
+    fprintf('\t \t    \t\t\t(Mio USD)\t\t(Mio %s)\t\t(%s/USD)\n',measures_impact.Value_display_unit_name,measures_impact.Value_display_unit_name);
 elseif nice_numbers>1
-    fprintf('\t \t\t    \t\t(10^%1.0f USD)\t\t(10^%1.0f %s)\t\t(%s/USD)\n', nice_numbers,nice_numbers,Value_unit_str,Value_unit_str);
+    fprintf('\t \t\t    \t\t(10^%1.0f USD)\t\t(10^%1.0f %s)\t\t(%s/USD)\n', nice_numbers,nice_numbers,measures_impact.Value_display_unit_name,measures_impact.Value_display_unit_name);
 else
-    fprintf('\t \t    \t\t\t(USD)\t\t\t(%s)\t\t\t(%s/USD)\n',Value_unit_str,Value_unit_str);
+    fprintf('\t \t    \t\t\t(USD)\t\t\t(%s)\t\t\t(%s/USD)\n',measures_impact.Value_display_unit_name,measures_impact.Value_display_unit_name);
 end
 for measure_i = 1:n_measures
     m_name = [measures_impact.measures.name{measure_i} '                    '];
     m_name = m_name(1:25);
     fprintf(['\t %s ' nr_format ' \t ' ['\t' nr_format_benefit] ' \t\t\t\t ' nr_format_bc_ratio '\n'],...
         m_name,...
-        (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
-        measures_impact.benefit(measure_i)*fct,...
+        (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i)),...
+        measures_impact.benefit(measure_i),...
         1./measures_impact.cb_ratio(measure_i));
 end % measure_i
 if add_insurance_measure % NOTE: this section not relevant for lecture
     fprintf('\t Residual covered by insurance')
     if reverse_cb,insurance_cb=1./insurance_cb;end
     fprintf([nr_format ' \t ' ['\t' nr_format_benefit] '\t\t\t\t ' nr_format_bc_ratio '\n'],...
-        insurance_cost*fct, insurance_benefit*fct, insurance_cb)
+        insurance_cost, insurance_benefit, insurance_cb)
     sorted_cb_ratio = [sorted_cb_ratio insurance_cb];
 else
     fprintf('\t Residual damage \n')
     fprintf(['\t\t\t\t\t\t\t' nr_format '  \t ' ['\t ' nr_format_benefit] '\t\t\t\t ' nr_format_bc_ratio '\n'],...
-        0, (tot_climate_risk-sum(measures_impact.benefit))*fct, 0)
+        0, (tot_climate_risk-sum(measures_impact.benefit)), 0)
 end
-cumulated_benefit = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk]*fct;
+cumulated_benefit = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk];
 
 % PLOT: a dummy plot to open the figure and set the axes
 xmax      = max(cumulated_benefit);
 if ~isempty(measures_impact.x_axis_max),xmax = measures_impact.x_axis_max;end
 ymax      = max([max(sorted_cb_ratio),1.1]);
 if ~isempty(measures_impact.y_axis_max),ymax = measures_impact.y_axis_max;end
-if called_from_climada_demo
-    plot([0,xmax],[ymax,ymax],'.w'); hold on
-    set(gca,'FontSize',fontsize_);
-else
-    plot([0,xmax],[ymax,ymax],'.w'); hold on
-    set(gcf,'Color',[1 1 1])
-    set(gca,'FontSize',fontsize_);
-    %     % until 20141231, but subaxis not clean
-    %     climada_figuresize(0.5,0.7);
-    %     subaxis(1,1,1,'Mb',0.18)
-    %     set(subaxis(1),'FontSize',fontsize_);hold on
-end
+plot([0,xmax],[ymax,ymax],'.w'); hold on
+set(gca,'FontSize',fontsize_);
+if ~called_from_climada_demo,set(gcf,'Color',[1 1 1]);end
 xlabel(xlabel_str,'fontsize',fontsize_+1)
 if reverse_cb
-    ylabelstr = sprintf('Benefit/cost ratio (%s/USD)',Value_unit_str);
+    ylabelstr = sprintf('Benefit/cost ratio (%s/%s)',measures_impact.Value_display_unit_name,measures_impact.cost_display_unit_name);
 else
-    ylabelstr = sprintf('Cost/benefit ratio (USD/%s)',Value_unit_str);
-end
-if strcmp(measures_impact.Value_unit,'people')
-    ylabelstr = strrep(ylabelstr,'USD','10''000 USD');
+    ylabelstr = sprintf('Cost/benefit ratio (%s/%s)',measures_impact.cost_display_unit_name,measures_impact.Value_display_unit_name);
 end
 ylabel(ylabelstr,'fontsize',fontsize_+1)
-
 
 % plot measures
 for measure_i = 1:n_measures+add_insurance_measure
@@ -330,20 +263,15 @@ for measure_i = 2:n_measures+1 %first entry = 0
         text(cumulated_benefit(measure_i)-(cumulated_benefit(measure_i)-cumulated_benefit(measure_i-1))/2,...
             max(sorted_cb_ratio)/y_text_control,...
             [measures_impact.measures.name{sort_index(measure_i-1)},...
-            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.2f'),')'], 'Rotation',90,'FontSize',fontsize_);
+            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.1f'),')'], 'Rotation',90,'FontSize',fontsize_);
     end
 end
 
 if ~called_from_climada_demo
     % show net present value of total climate risk
-    plot(tot_climate_risk*fct,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
-    % tcr_str = sprintf('Total climate risk\n%.0f USD',tot_climate_risk*fct);
-    if digit>0 %if million_flag
-        tcr_str = sprintf('Total climate risk\n %.1f %s %s',round(tot_climate_risk*fct/100000)/10,measures_impact.Value_unit,digit_str);
-    else
-        tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk*fct,measures_impact.Value_unit);
-    end
-    text(tot_climate_risk*fct*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
+    plot(tot_climate_risk,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
+    tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk,measures_impact.Value_display_unit_name);
+    text(tot_climate_risk*0.93,max(sorted_cb_ratio)/y_text_control, tcr_str,...
         'HorizontalAlignment','center','VerticalAlignment','bottom','fontsize',fontsize_,'color',[205 0 0]/255)
 end
 
@@ -354,10 +282,6 @@ if add_insurance_measure % NOTE: this section not relevant for lecture
         max(sorted_cb_ratio)/y_text_control,...
         ['Insurance','  (', num2str(sorted_cb_ratio(measure_i-1),'%2.1f'),')'], 'Rotation',90,'FontSize',fontsize_);
 end
-% % show total unmitigated expected damage ED
-% plot(measures_impact.ED(end)*fct,0,'xr','MarkerSize',6); % red cross on x-axis
-% text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'Color','red','FontSize',fontsize_,'fontweight','bold');
-
 
 if plot_arrows
     % arrow below graph to indicate cost-efficient adaptation and residual damage
@@ -409,6 +333,7 @@ title(title_str,'FontSize',fontsize_);
 % comparison scenario
 if ~isempty(measures_impact_comparison)
     
+    fprintf('\n\nWARNING: NOT UPDATED YET\n\n');
     if ~isstruct(measures_impact_comparison)
         measures_impact_comparison_file = measures_impact_comparison;
         clear measures_impact_comparison
@@ -435,24 +360,24 @@ if ~isempty(measures_impact_comparison)
     for measure_i = 1:n_measures
         fprintf(['\t %s \t\t\t' nr_format ' \t ' ['\t' nr_format_benefit] ' \t\t\t %2.1f \n'],...
             measures_impact.measures.name{measure_i},...
-            (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i))*fct,...
-            measures_impact.benefit(measure_i)*fct,...
+            (measures_impact.measures.cost(measure_i)+measures_impact.risk_transfer(measure_i)),...
+            measures_impact.benefit(measure_i),...
             measures_impact.cb_ratio(measure_i));
     end % measure_i
     
-    if scaled_AED
+    if called_from_climada_demo
         measures_impact.measures.cost = bsxfun(@times, measures_impact.measures.cost, scale_factor);
         measures_impact.risk_transfer = bsxfun(@times, measures_impact.risk_transfer, scale_factor);
         measures_impact.benefit       = bsxfun(@times, measures_impact.benefit      , scale_factor);
         %total climate risk
-        tot_climate_risk              = bsxfun(@times, measures_impact.NPV_total_climate_risk, scale_factor);
+        tot_climate_risk              = bsxfun(@times, tot_climate_risk, scale_factor);
     else
         %total climate risk
         tot_climate_risk              = measures_impact.NPV_total_climate_risk;
     end
     [sorted_cb_ratio,sort_index] = sort(measures_impact.cb_ratio);
     if reverse_cb,sorted_cb_ratio=1./sorted_cb_ratio;end
-    cumulated_benefit            = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk]*fct;
+    cumulated_benefit            = [0, cumsum(measures_impact.benefit(sort_index)),  tot_climate_risk];
     
     % to scale such that the plot comprises both
     xmax = max([xmax, cumulated_benefit(end)]);
@@ -490,12 +415,12 @@ if ~isempty(measures_impact_comparison)
     
     % show total unmitigated expected damage ED
     if measures_impact_comparison.label_comparison
-        plot(measures_impact.ED(end)*fct,0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
-        text(measures_impact.ED(end)*fct,max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
+        plot(measures_impact.ED(end),0,'o','MarkerSize',5,'Color',[255 127 36]/255); % orange circle on x-axis
+        text(measures_impact.ED(end),max(sorted_cb_ratio)/y_text_control,'ED','Rotation',90,'FontSize',fontsize_,'Color',[255 127 36]/255);
         % show NPV of total climate risk TCR
         if isfield(measures_impact,'NPV_total_climate_risk') && measures_impact_comparison.label_comparison
-            plot(measures_impact.NPV_total_climate_risk*fct,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
-            text(measures_impact.NPV_total_climate_risk*fct,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
+            plot(measures_impact.NPV_total_climate_risk,0,'o','MarkerSize',5,'Color',[169 169 169]/255); % grey circle on x-axis
+            text(measures_impact.NPV_total_climate_risk,max(sorted_cb_ratio)/y_text_control,'TCR','Rotation',90,'Color',[169 169 169]/255,'FontSize',fontsize_);
         end
     end
     
@@ -505,24 +430,6 @@ if ~isempty(measures_impact_comparison)
     both_title_str{2} = ['comparison ' comp_title_str];
     title(both_title_str,'FontSize',fontsize_);
     
-end
+end % ~isempty(measures_impact_comparison)
 
-if ~called_from_climada_demo
-    
-    plot([0 xmax],[1 1],':k');
-    xlim([0 xmax*1.1])
-    if called_from_climada_demo
-        set(gca,'layer','top')
-    else
-        %    % until 20141231, but subaxis not clean
-        %    set(subaxis(1),'layer','top')
-    end
-    
-    x_tick_top = get(gca,'xtick'); % top handle
-    set(gca, 'XTickLabel',x_tick_top/10^digit)
-end % ~called_from_climada_demo
-
-box off
-%axis tight % to get max area used
-
-return
+end % climada_adaptation_cost_curve

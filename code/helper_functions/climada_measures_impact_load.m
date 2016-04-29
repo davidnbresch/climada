@@ -39,7 +39,7 @@ if ~exist('time_estimate','var'),time_estimate=0;end
 if isfield(measures_impact_file,'EDS'), measures_impact = measures_impact_file; return, end
 
 
-% prompt for entity_file if not given
+% prompt for measures_impact if not given
 if isempty(measures_impact_file) % local GUI
     measures_impact_file=[climada_global.data_dir filesep 'results' filesep '*.mat'];
     [filename, pathname] = uigetfile(measures_impact_file, 'Select measures_impact to open:');

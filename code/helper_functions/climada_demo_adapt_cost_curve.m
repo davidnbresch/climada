@@ -175,6 +175,14 @@ entity_present.measures.MDD_impact_a(measures_i) = entity_future.measures.MDD_im
 
 impact_present = climada_measures_impact(entity_present,hazard_present,'no');
 
+impact_present.Value_unit              = 'USD';
+impact_present.Value_display_unit_name = 'USD Mio';
+impact_present.Value_display_unit_fact = 1e-6;
+impact_present.cost_unit               = 'USD';
+impact_present.cost_display_unit_name  = 'USD Mio';
+impact_present.cost_display_unit_fact  = 1e-6;
+impact_present.color_keep=1;
+
 if climada_demo_params.scenario==0
    hazard_future = hazard_present;
 elseif climada_demo_params.scenario==1
@@ -185,6 +193,14 @@ end % climada_demo_params.scenario
 
 impact_future = climada_measures_impact(entity_future,hazard_future,impact_present);
 %impact_future=climada_measures_impact(entity_future,hazard_future,'no'); %the fast way, no real discounting
+
+impact_future.Value_unit              = 'USD';
+impact_future.Value_display_unit_name = 'USD Mio';
+impact_future.Value_display_unit_fact = 1e-6;
+impact_future.cost_unit               = 'USD';
+impact_future.cost_display_unit_name  = 'USD Mio';
+impact_future.cost_display_unit_fact  = 1e-6;
+impact_future.color_keep=1;
 
 if ~omit_plot
    % plot the adaptation cost curve

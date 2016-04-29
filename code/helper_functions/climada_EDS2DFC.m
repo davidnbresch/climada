@@ -25,6 +25,10 @@ function DFC=climada_EDS2DFC(EDS,return_period)
 % OUTPUTS:
 %   DFC: a strcture with a damage frequency curve (DFC)
 %       return_period(i): the return periods
+%           if empty, the default return periods as in
+%           climada_global.DFC_return_periods are used
+%           if =-1, all points as returned by climada_damage_exceedence are
+%           used
 %       damage(i): the damage for return_period(i)
 %       damage_of_value(i): damage as percentage of total asset value
 %       peril_ID: the peril_ID
@@ -32,6 +36,7 @@ function DFC=climada_EDS2DFC(EDS,return_period)
 %       ED: the annual expected damage
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150120, initial
+% David N. Bresch, david.bresch@gmail.com, 20160429, DFC.Value instead of DFC.value
 %-
 
 DFC=[]; % init
@@ -42,6 +47,8 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('EDS','var'),EDS=[];end
 if ~exist('return_period','var'),return_period=climada_global.DFC_return_periods;end
+
+if return_period(1)==-1;return_period=[];end % to force returning all
 
 % prompt for EDS if not given
 if isempty(EDS) % local GUI
@@ -93,14 +100,20 @@ for EDS_i=1:length(EDS)
     exceedence_freq = exceedence_freq(nonzero_pos);
     EDS_return_period   = 1./exceedence_freq;
     
-    DFC(EDS_i).value           = EDS(EDS_i).Value;
+    DFC(EDS_i).Value           = EDS(EDS_i).Value;
     DFC(EDS_i).ED              = EDS(EDS_i).ED;
     DFC(EDS_i).peril_ID        = EDS(EDS_i).peril_ID;
-    DFC(EDS_i).return_period   = return_period;
-    % simply interpolate to the standard return periods
-    DFC(EDS_i).damage          = interp1(EDS_return_period,sorted_damage,return_period);
-    if ~isempty(DFC(EDS_i).value)
-        DFC(EDS_i).damage_of_value = DFC(EDS_i).damage/DFC(EDS_i).value;
+    if isempty(return_period)
+        % return all return periods
+        DFC(EDS_i).damage          = sorted_damage;
+        DFC(EDS_i).return_period   = EDS_return_period;
+    else
+        % simply interpolate to the standard return periods
+        DFC(EDS_i).damage          = interp1(EDS_return_period,sorted_damage,return_period);
+        DFC(EDS_i).return_period   = return_period;
+    end
+    if ~isempty(DFC(EDS_i).Value)
+        DFC(EDS_i).damage_of_value = DFC(EDS_i).damage/DFC(EDS_i).Value;
     end
     
     if isfield(EDS(EDS_i),'annotation_name')

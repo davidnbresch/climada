@@ -4,10 +4,11 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 %   climada_EDS_DFC
 % PURPOSE:
 %   plot occurrence Damage exceedence Frequency Curve (DFC)
+%   mainly does plotting, uses climada_EDS2DFC to convert EDS to DFC
 %
 %   See also: climada_EDS_DFC_match and climada_DFC_compare
 % CALLING SEQUENCE:
-%   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag)
+%   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
 % EXAMPLE:
 %   climada_EDS_DFC(climada_EDS_calc(climada_entity_read))
 % INPUTS:
@@ -16,7 +17,7 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 %       SPECIAL: we also accept a structure which contains an EDS, like
 %       measures_impact.EDS
 %       if EDS has the field annotation_name, the legend will show this
-%       > promted for if not given
+%       > EDS promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   EDS_comparison: like EDS see above, plotted (fine lines) for comparison
 %       not prompted for, if not given,unless set to 'ASK'
@@ -27,10 +28,10 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 %   plot_loglog: if =1, plot logarithmic scale both axes, =0 plot linear
 %       axes (default)
 % OUTPUTS:
-%   DFC: a structure with fields 
+%   DFC: a structure with fields
 %       .return_period
 %       .sorted_damage
-%       .ED, .Value, .Value_unit, and .annotation_name   
+%       .ED, .Value, .Value_unit, and .annotation_name
 %   a figure with the DFC plot
 %   legend_str: the legend string
 % MODIFICATION HISTORY:
@@ -43,6 +44,7 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 % David N. Bresch, david.bresch@gmail.com, 20150515, line 212, legend_str{end+1}...
 % David N. Bresch, david.bresch@gmail.com, 20150906, EDS.Value_unit used
 % Lea Mueller, muellele@gmail.com, 20160308, add output DFC structure
+% David N. Bresch, david.bresch@gmail.com, 20160429, calling EDS2DFC, DFC.Value instead of DFC.value
 %-
 
 DFC = []; DFC_comparison = []; fig = []; legend_str = []; %init
@@ -80,7 +82,6 @@ if isfield(EDS,'EDS')
     EDS_temp = [];
 end
 
-
 %define figure parameters
 msize      = 5;
 legend_str = {};
@@ -101,49 +102,33 @@ end
 marker_ = ['*- ';'o- ';'p- ';'s- ';'.- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'s--';'.--';'v--';'d--'];
 ii      = 1;
 
-%create figure
-%fig = climada_figuresize(0.5,0.8);
+DFC=climada_EDS2DFC(EDS,-1); % convert EDS to DFC
 
-for EDS_i=1:length(EDS)
-    [sorted_damage,exceedence_freq]...
-        = climada_damage_exceedence(EDS(EDS_i).damage,EDS(EDS_i).frequency);
-    nonzero_pos     = find(exceedence_freq);
-    sorted_damage   = sorted_damage(nonzero_pos);
-    exceedence_freq = exceedence_freq(nonzero_pos);
-    return_period   = 1./exceedence_freq;
-    %store
-    DFC(EDS_i).return_period = return_period; %[n x 1 double]
-    DFC(EDS_i).sorted_damage = sorted_damage; %[n x 1 double]
-    DFC(EDS_i).ED = EDS(EDS_i).ED; 
-    DFC(EDS_i).Value = EDS(EDS_i).Value; 
-    DFC(EDS_i).Value_unit = EDS(EDS_i).Value_unit;
-    DFC(EDS_i).annotation_name = EDS(EDS_i).annotation_name;
-    if Percentage_Of_Value_Flag,sorted_damage = sorted_damage/EDS(EDS_i).Value*100; end
-    if plot_loglog
-        loglog(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+legend_str={};
+
+for DFC_i=1:length(DFC)
+    if Percentage_Of_Value_Flag
+        damage=DFC(DFC_i).damage_of_value;
     else
-        plot(return_period,sorted_damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+        damage=DFC(DFC_i).damage*climada_global.Value_display_unit_fact;
+    end
+    if plot_loglog
+        loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+    else
+        plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
     end
     hold on
     ii = ii+1; if ii>length(marker_), ii=1; end
-    if isfield(EDS(EDS_i),'annotation_name'),legend_str{EDS_i}=strrep(EDS(EDS_i).annotation_name,'_',' '); end
-end % EDS_i
+    if isfield(DFC(DFC_i),'annotation_name'),legend_str{end+1}=strrep(DFC(DFC_i).annotation_name,'_',' '); end
+end % DFC_i
 
-set(gca,'fontsize',12)
-% if ~isempty(legend_str),legend(legend_str,'Location','SouthEast');end % add legend %changed to SouthEast instead of NorthWest
-if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
 grid on; % show grid
-xlabel('Return period (years)')
+xlabel('Return period [years]')
 if Percentage_Of_Value_Flag
-    ylabel('Damage as percentage of value')
+    ylabel('Damage [% of value]')
 else
-    if isfield(EDS(EDS_i),'Value_unit')
-        ylabel(sprintf('Damage amount (%s)',EDS(EDS_i).Value_unit))
-    else
-        ylabel('Damage amount')
-    end
+    ylabel(['Damage [' climada_global.Value_display_unit_name ']']);
 end
-% set(gcf,'Color',[1 1 1])
 
 % add title
 [~,hazard_name] = fileparts(EDS(1).hazard.filename);
@@ -151,9 +136,7 @@ end
 title_str        = sprintf('%s | %s',assets_name,hazard_name);
 title_str        = strrep(title_str,'_',' '); % since title is LaTEX format
 title_str        = strrep(title_str,'|','\otimes'); % LaTEX format
-% title(title_str,'FontSize',12);
-
-hold off;
+title_strs{1}    = title_str;
 
 if ~isempty(EDS_comparison)
     % load the entity, if a filename has been passed
@@ -184,46 +167,41 @@ if ~isempty(EDS_comparison)
         color_ = jet(length(EDS)+1);
     end
     
-    for EDS_i=1:length(EDS)
-        [sorted_damage,exceedence_freq]...
-            = climada_damage_exceedence(EDS(EDS_i).damage,EDS(EDS_i).frequency);
-        nonzero_pos     = find(exceedence_freq);
-        sorted_damage   = sorted_damage(nonzero_pos);
-        exceedence_freq = exceedence_freq(nonzero_pos);
-        return_period   = 1./exceedence_freq;
-        %store
-        DFC_comparison(EDS_i).return_period = return_period; %[n x 1 double]
-        DFC_comparison(EDS_i).sorted_damage = sorted_damage; %[n x 1 double]
-        DFC_comparison(EDS_i).ED = EDS(EDS_i).ED; 
-        DFC_comparison(EDS_i).Value = EDS(EDS_i).Value; 
-        DFC_comparison(EDS_i).Value_unit = EDS(EDS_i).Value_unit;
-        DFC_comparison(EDS_i).annotation_name = EDS(EDS_i).annotation_name;
-        if Percentage_Of_Value_Flag, sorted_damage = sorted_damage/EDS(EDS_i).Value*100; end
-        plot(return_period, sorted_damage, marker_(ii,:), 'color',color_(ii,:), 'LineWidth',1.2, 'markersize',msize);
+    DFC_comparison=climada_EDS2DFC(EDS,-1); % convert EDS to DFC
+    
+    for DFC_i=1:length(DFC_comparison)
+        if Percentage_Of_Value_Flag
+            damage=DFC_comparison(DFC_i).damage_of_value;
+        else
+            damage=DFC_comparison(DFC_i).damage*climada_global.Value_display_unit_fact;
+        end
+        if plot_loglog
+            loglog(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+        else
+            plot(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+        end
         hold on
         ii = ii+1; if ii>length(marker_), ii=1; end
-        if isfield(EDS(EDS_i),'annotation_name'), legend_str{end+1}=strrep(EDS(EDS_i).annotation_name,'_',' '); end
-        % add title
-        [~,hazard_name]    = fileparts(EDS(EDS_i).hazard.filename);
-        [~,assets_name]    = fileparts(EDS(EDS_i).assets.filename);
-        title_str_comp      = sprintf('%s | %s',assets_name,hazard_name);
-        title_strs{EDS_i+1} = strrep(strrep(title_str_comp,'_',' '),'|','\otimes'); % since title is LaTEX format
+        if isfield(DFC_comparison(DFC_i),'annotation_name'),legend_str{end+1}=strrep(DFC_comparison(DFC_i).annotation_name,'_',' '); end
         
-    end % EDS_i
-    if ~isempty(legend_str),legend(legend_str,'Location','NorthWest');end % add legend
-    %if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
-    title_strs{1}    = title_str;
-    title(title_strs,'FontSize',12);
-    hold off
-    
+        % add title
+        [~,hazard_name]    = fileparts(EDS(DFC_i).hazard.filename);
+        [~,assets_name]    = fileparts(EDS(DFC_i).assets.filename);
+        title_str_comp      = sprintf('%s | %s',assets_name,hazard_name);
+        title_strs{DFC_i+1} = strrep(strrep(title_str_comp,'_',' '),'|','\otimes'); % since title is LaTEX format
+        
+    end % DFC_i
 end % comparison
 
+%title(title_strs,'FontSize',12);
+hold off
+set(gca,'fontsize',12)
+if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
 set(gcf,'Color',[1 1 1]) % white background
 
 % put the two together, DFC and DFC_comparison
 n_DFC = numel(DFC);
 n_DFC_comparison = numel(DFC_comparison);
 if n_DFC_comparison>0, DFC(n_DFC+1:n_DFC+n_DFC_comparison) = DFC_comparison;end
-
 
 return
