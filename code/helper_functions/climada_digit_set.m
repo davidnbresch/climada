@@ -56,13 +56,13 @@ while max(max_data) > 1000
 end
 switch digit
     case 3
-        digit_str = 'thousand';
+        digit_str = 'k';
     case 6
-        digit_str = 'million';
+        digit_str = 'mio';
     case 9
-        digit_str = 'billion';
+        digit_str = 'bn';
     case 12
-        digit_str = 'trillion';
+        digit_str = 'tn';
     otherwise
         digit_str = '';
 end

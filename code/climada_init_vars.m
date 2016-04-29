@@ -40,6 +40,7 @@ function ok=climada_init_vars(reset_flag)
 % Lea Mueller, muellele@gmail.com, 20160225, introduce climada_global.marker, for climada_color_plot and plotclr
 % Lea Mueller, muellele@gmail.com, 20160229, introduce climada_global.admin1_plot, default is 0, do not show admin1 lines, for climada_color_plot
 % David N. Bresch, david.bresch@gmail.com, 20160411, climada_global.present_reference_year = 2016
+% David N. Bresch, david.bresch@gmail.com, 20160429, Value_* extended and cost_* added
 %-
 
 global climada_global
@@ -147,8 +148,19 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % exceeding vmax problem an issue e.g. for Northern US, where this should be set=1 
     climada_global.tc.extratropical_transition=0; % default =0 (original Holland)
     
-    % define asset value units (e.g. USD or people)
+    % define asset value units (e.g. 'USD' or 'people')
     climada_global.Value_unit = 'USD';
+    % define the unit to display (i.e could be 'USD bn' or 'people thousands')
+    climada_global.Value_display_unit_name = climada_global.Value_unit;
+    % define the conversion factor from Value to displayed (i.e. could be 1e-9 or 1e-3)
+    climada_global.Value_display_unit_fact = 1;
+    
+    % define the units for costs (e.g. USD)
+    climada_global.cost_unit = climada_global.Value_unit;
+    % define the unit to display (i.e could be 'USD bn')
+    climada_global.cost_display_unit_name = climada_global.cost_unit;
+    % define the conversion factor from Value to displayed (i.e. could be 1e-9)
+    climada_global.cost_display_unit_fact = 1;
     
     % evaluation and NPV (net present value) specific parameters
     climada_global.present_reference_year = 2016; % yyyy, 20160411, srzdnb

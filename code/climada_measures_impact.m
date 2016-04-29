@@ -10,6 +10,11 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %   next step: climada_adaptation_cost_curve or
 %   climada_adaptation_event_view
 %
+%   Note on display units: consider using climada_digit_set to infer good
+%   values for measures_impact.Value_display_unit_name
+%   (measures_impact.Value_display_unit_fact) and
+%   measures_impact.cost_display_unit_name (measures_impact.cost_display_unit_fact)
+%
 %   see also: climada_measures_impact_parametric
 %
 %   Note: the risk premiums show need to be handled with UTMOST care, as
@@ -438,16 +443,9 @@ measures_impact.EDS = EDS;
 measures_impact.risk_transfer = risk_transfer;
 measures_impact.measures = measures; % store measures into res, so we have a complete set
 measures_impact.peril_ID = hazard.peril_ID;
-if isfield(EDS,'Value_unit')
-    measures_impact.Value_unit   = EDS(1).Value_unit;
-else
-    measures_impact.Value_unit   = climada_global.Value_unit;
-end
-
 
 % calculate the cost/benefit ratio also here (so we have all results in one)
 measures_impact = climada_measures_impact_discount(entity,measures_impact,measures_impact_reference);
-
 
 % last but not least, calculate risk premium
 measures_impact.risk_premium_fgu = measures_impact.NPV_total_climate_risk/measures_impact.EDS(1).Value;
@@ -470,17 +468,6 @@ measures_impact.scenario = climada_scenario_name(entity,hazard);
 [~,measures_name] = fileparts(measures.filename);
 if strcmp(measures_name,assets_name),measures_name='m';end
 measures_impact.title_str = sprintf('%s @ %s | %s',measures_name,assets_name,hazard_name);
-
-save_filename = strrep(measures_impact.title_str,' ',''); % for filename
-save_filename = strrep(save_filename,'_',''); % for filename
-save_filename = strrep(save_filename,'@','_'); % for filename
-save_filename = strrep(save_filename,'|','_'); % for filename
-save_filename = [climada_global.data_dir filesep 'results' filesep save_filename];
-
-measures_impact.filename = save_filename;
-
-save(save_filename,'measures_impact')
-fprintf('results written to %s\n',save_filename);
 
 if map_risk_premium
     % plot the total climate risk premium
@@ -527,4 +514,42 @@ if map_risk_premium
         
 end % map_risk_premium
 
-return
+% determine display units
+measures_impact.Value_unit              = EDS(1).Value_unit;
+measures_impact.Value_display_unit_name = climada_global.Value_display_unit_name;
+measures_impact.Value_display_unit_fact = climada_global.Value_display_unit_fact;
+
+% figure useful unit range
+[digit,digit_str] = climada_digit_set(measures_impact.benefit);
+measures_impact.Value_display_unit_name=[measures_impact.Value_unit ' ' digit_str];
+measures_impact.Value_display_unit_fact=10^(-digit);
+
+measures_impact.cost_unit               = climada_global.cost_unit;
+measures_impact.cost_display_unit_name  = climada_global.cost_display_unit_name;
+measures_impact.cost_display_unit_fact  = climada_global.cost_display_unit_fact;
+
+% figure useful unit range
+[digit,digit_str] = climada_digit_set(measures_impact.measures.cost);
+measures_impact.cost_display_unit_name=[measures_impact.cost_unit ' ' digit_str];
+measures_impact.cost_display_unit_fact=10^(-digit);
+
+% special case for people, set cost display unit
+if strcmpi(measures_impact.Value_unit,'people') && measures_impact.cost_display_unit_fact==1
+    measures_impact.cost_display_unit_name = [measures_impact.cost_unit ' k'];
+    measures_impact.cost_display_unit_fact = 1e-3;
+    fprintf('Note: Value unit %s, cost_display_unit_fact set to %f\n',...
+        measures_impact.Value_unit,measures_impact.cost_display_unit_fact);
+end
+
+% save to file
+save_filename = strrep(measures_impact.title_str,' ',''); % for filename
+save_filename = strrep(save_filename,'_',''); % for filename
+save_filename = strrep(save_filename,'@','_'); % for filename
+save_filename = strrep(save_filename,'|','_'); % for filename
+save_filename = [climada_global.data_dir filesep 'results' filesep save_filename];
+measures_impact.filename = save_filename;
+
+save(save_filename,'measures_impact')
+fprintf('results written to %s\n',save_filename);
+
+end % climada_measures_impact
