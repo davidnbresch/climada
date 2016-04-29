@@ -58,7 +58,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % OUTPUTS:
 %   insurance_benefit and insurance_cost: only used when called from
 %       climada_play_adapt_cost_curve, see there (in essence to write
-%       insurance cost on the GUI)
+%       insurance cost on the GUI). For illustrative purposes only!
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091228
 % David N. Bresch, david.bresch@gmail.com, 20091230 major revision, appreance similar to ECA graphs
@@ -76,6 +76,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % Lea Mueller, muellele@gmail.com, 20160309, bugfix fprintf reverse_cb for insurance
 % David N. Bresch, david.bresch@gmail.com, 20160427, total climate risk not plotted for climada_demo, fontsize_ adjusted
 % David N. Bresch, david.bresch@gmail.com, 20160429, major review, unit display etc cleaned up
+% David N. Bresch, david.bresch@gmail.com, 20160429, insurance_benefit,insurance_cost as output again
 %-
 
 global climada_global
@@ -431,5 +432,9 @@ if ~isempty(measures_impact_comparison)
     title(both_title_str,'FontSize',fontsize_);
     
 end % ~isempty(measures_impact_comparison)
+
+% convert output back to original units
+insurance_benefit = insurance_benefit/measures_impact.Value_display_unit_fact*100;
+insurance_cost    = insurance_cost   /measures_impact.Value_display_unit_fact*100;
 
 end % climada_adaptation_cost_curve
