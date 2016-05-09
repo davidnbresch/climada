@@ -27,6 +27,7 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 % Lea Mueller, muellele@gmail.com, 20141016
 % David N. Bresch, david.bresch@gmail.com, 20141209, ISO3 country code added
 % David N. Bresch, david.bresch@gmail.com, 20141211, switched to admin0 instead of world*.gen
+% Lea Mueller, muellele@gmail.com, 20141016, compare with strcmpi to find valid country names
 %-
 
 country_name='';
@@ -108,8 +109,8 @@ else
     country_name_i=[];
     country_ISO3_i=[];
     for shape_i = 1:length(shapes)
-        if strcmp(shapes(shape_i).NAME,input_name),country_name_i=shape_i;end
-        if strcmp(shapes(shape_i).ADM0_A3,input_name),country_ISO3_i=shape_i;end
+        if strcmpi(shapes(shape_i).NAME,input_name),country_name_i=shape_i;end
+        if strcmpi(shapes(shape_i).ADM0_A3,input_name),country_ISO3_i=shape_i;end
     end % shape_i
     
     

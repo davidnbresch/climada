@@ -36,6 +36,7 @@ function admin1_shape_selection = climada_admin1_get_shapes(admin0_name,admin1_n
 % Lea Mueller, muellele@gmail.com, 20160316, make sure admin1_name is a cell
 % Lea Mueller, muellele@gmail.com, 20160429, bugfix in input
 % Lea Mueller, muellele@gmail.com, 20160429, add functionality 'all' to return the all admin1 for a given country
+% Lea Mueller, muellele@gmail.com, 20160509, use case-insensitive ismember to compare admin1_names
 %-
 
 admin1_shape_selection = []; % init
@@ -76,11 +77,24 @@ if ~exist(admin1_shape_file,'file')
 end
 admin1_shapes = climada_shaperead(admin1_shape_file); % read admin1 shape file
 
-if isempty(admin0_name) && strcmp(admin1_name{1},'all'); admin1_shape_selection = admin1_shapes; return; end
+if isempty(admin0_name) && strcmpi(admin1_name{1},'all'); admin1_shape_selection = admin1_shapes; return; end
+
+% make sure it is a string not a cell
+if iscell(admin0_name), admin0_name = admin0_name{1}; end
+
+% check country name (and obtain ISO3)
+[country_name_chckd,country_ISO3] = climada_country_name(admin0_name);
+if isempty(country_name_chckd)
+    country_ISO3 = 'XXX'; % be tolerant...
+    fprintf('Warning: Might be an unorthodox country name as input - check results\n')
+else
+    admin0_name = country_name_chckd;
+end
 
 % find the country in the shape file
 list_admin0_name = {admin0_shapes.NAME};
-is_selected_admin0 = strcmp(list_admin0_name,admin0_name);
+is_selected_admin0 = strcmpi(list_admin0_name,admin0_name);
+if ~any(is_selected_admin0), fprintf('Error: No country with this name found (%s).\n', admin0_name), return, end
 adm0_a3_name = admin0_shapes(is_selected_admin0).ADM0_A3;
 list_admin1_adm_a3 = {admin1_shapes.adm0_a3};
 
@@ -89,21 +103,23 @@ if isempty(admin1_name{1})
     listbox = climada_admin1_select_on_map(admin0_name,admin0_shapes,admin1_shapes);
     str = input('Press enter when you have selected one or multiple admin1 on the map. Press q to quit. [Enter]:','s');
     if isempty(str); str = 'Y'; end
-    if strcmp(str,'q'), return; end
+    if strcmpi(str,'q'), return; end
     try
         admin1_name = get(listbox,'UserData'); % use to identify the selected admin1_name
+        if ~iscell(admin1_name), admin1_name = {admin1_name}; end
+        if isempty(admin1_name{1}), admin1_name = {'all'}; end
     catch
         fprintf('No admin1 selected.\n')
-        admin1_name = ''; return
+        admin1_name = {''}; return
     end
 end
     
 % select all admin1 in the given admin0
 if strcmpi(admin1_name{1},'all') 
     % find the shapes that belong to the selected admin0_name
-    is_selected_admin1 = strcmp(list_admin1_adm_a3,adm0_a3_name); %admin1_shape_i
+    is_selected_admin1 = strcmpi(list_admin1_adm_a3,adm0_a3_name); %admin1_shape_i
     admin1_name = {admin1_shapes(is_selected_admin1).name}; %admin1_name_list
-    invalid_name = strcmp(admin1_name,'');
+    invalid_name = strcmpi(admin1_name,'');
     admin1_name(invalid_name) = [];
 end
 
@@ -111,7 +127,7 @@ if isempty(admin1_name), fprintf('No admin1 selected.\n'), return, end
 
 % find the selected admin1 in admin1_shapes
 list_admin1_name = {admin1_shapes.name}; %admin1_name_list
-is_selected = ismember(list_admin1_name,admin1_name) & ismember(list_admin1_adm_a3,adm0_a3_name);
+is_selected = ismember(lower(list_admin1_name),lower(admin1_name)) & ismember(lower(list_admin1_adm_a3),lower(adm0_a3_name));
 
 % look also in the code, if admin1_code (i.e. VNM-5483) 
 % instead of admin1 name is given
@@ -120,7 +136,7 @@ if ~any(is_selected)
     is_selected = ismember(list_admin1_code,admin1_name);
 end
 
-if ~any(is_selected), fprintf('%s not found\n',admin1_name); end
+if ~any(is_selected), fprintf('%s not found\n',admin1_name{:}); end
     
 % cut out the selected shapes from the longlist of all admin1
 admin1_shape_selection = admin1_shapes(is_selected);
