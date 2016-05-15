@@ -1,4 +1,4 @@
-function climada_centroids_plot(centroids,country_name)
+function climada_centroids_plot(centroids,country_name,plot_all)
 % plot centroids on a map, differentiate for coastal land areas,
 % bufferzone, and further away (more inland and on sea)
 % NAME:
@@ -16,11 +16,14 @@ function climada_centroids_plot(centroids,country_name)
 %       > prompts for already read centroids if empty
 %   country_name: name of the country (cell or string)
 %       Only used to label the plot
+% OPTIONAL INPUT PARAMETERS:
+%   plot_all: if =1, plot all centroids (also grid) (default=0)
 % OUTPUTS:
 %   plot
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20140205
 % David N. Bresch, david.bresch@gmail.com, 20150203, renamed from climada_plot_centroids to climada_centroids_plot
+% David N. Bresch, david.bresch@gmail.com, 20160514, plot_all added
 %-
 
 
@@ -29,6 +32,7 @@ if ~climada_init_vars,return;end % init/import global variables
 
 if ~exist('centroids'          , 'var'), centroids    =[]; end
 if ~exist('country_name'       , 'var'), country_name =[]; end
+if ~exist('plot_all'           , 'var'), plot_all =0; end
 
 % prompt for centroids if not given
 if isempty(centroids),centroids=climada_centroids_load;end
@@ -70,6 +74,9 @@ if min(centroids.onLand) > 0
     centroids.onLand(indx) = 0;
 end
 
+if plot_all
+    hold on;plot(centroids.lon, centroids.lat,'.r','MarkerSize',1);
+end
 cbar = plotclr(centroids.lon, centroids.lat, centroids.onLand, '+',markersize, 1, [],[],cmap);
 colormap(cmap)
 caxis([0 size(cmap,1)])

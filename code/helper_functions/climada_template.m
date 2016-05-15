@@ -8,19 +8,20 @@ function res=climada_template(param1,param2)
 %   Describe the purpouse in a few sentences
 %   here: template for header and simple argument checks
 % CALLING SEQUENCE:
-%   climada_template(param1,param2);
+%   res=climada_template(param1,param2);
 % EXAMPLE:
 %   climada_template(param1,param2);
 % INPUTS:
-%   param1: 
+%   param1:
 %       > promted for if not given
 %   OPTION param1: a structure with the fields...
 %       this way, parameters can be passed on a fields
 % OPTIONAL INPUT PARAMETERS:
 %   param2: as an example
 % OUTPUTS:
+%   res: the output, empty if not successful
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20150128
+% David N. Bresch, david.bresch@gmail.com, 20160514
 %-
 
 res=[]; % init output
@@ -116,4 +117,4 @@ else
 end
 fprintf('after the loop\n')
 
-return
+end % climada_template

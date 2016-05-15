@@ -1,4 +1,4 @@
-function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color)
+function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color,border_color)
 % world border map country political
 % NAME:
 %	climada_plot_world_borders
@@ -29,7 +29,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %       plot(border.X,border.Y,'-k')
 %
 % CALLING SEQUENCE:
-%   climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color);
+%   climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_boundary,country_color,border_color);
 % EXAMPLE:
 %   climada_plot_world_borders
 %   climada_plot_world_borders(1,'','',1) % most often used that way
@@ -39,6 +39,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   linewidth: line width of borders, default is 1
+%       if negative, fill land with border_color
 %   check_country: name (field in shapes named 'NAME') of one or multiple
 %       countries, e.g. 'Germany' or {'Germany' 'Ghana'},that will be gray
 %       shaded in the world plot, default is no shading of countries.
@@ -51,6 +52,8 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %   country_color: a [R G B] triple, see PARAMETERS in code, default is
 %       [255 236 139]/255 (yellow).
 %       Currently, it does not color the shape, only draws the boundary.
+%   border_color: a [R G B] triple, see PARAMETERS in code, default is
+%       [ 81  81  81]/255 for dark gray
 % OUTPUTS:
 %   plot borders as line plot
 % RESTRICTIONS:
@@ -59,6 +62,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % David N. Bresch, david.bresch@gmail.com, 20141223, fill debugged
 % David N. Bresch, david.bresch@gmail.com, 20150916, hint for speedup in header added
 % David N. Bresch, david.bresch@gmail.com, 20151230, links in ERROR prompts referenced
+% David N. Bresch, david.bresch@gmail.com, 20160514, border_color and fill land (linewidth negative) added
 %-
 
 % import/setup global variables
@@ -72,13 +76,16 @@ if ~exist('check_country'   , 'var'), check_country    = []; end
 if ~exist('map_shape_file'  , 'var'), map_shape_file   = ''; end
 if ~exist('keep_boundary'   , 'var'), keep_boundary    = 0;  end
 if ~exist('country_color'   , 'var'), country_color    = []; end
-if isempty(linewidth), linewidth = 1; end
+if ~exist('border_color'    , 'var'), border_color = []; end
 
 % PARAMETERS
-%
-border_color =                           [81  81  81 ]/255;    % dark gray
+%           
+if isempty(linewidth),linewidth = 1; end
+if isempty(border_color),border_color  = [ 81  81  81]/255;end    % dark gray
 if isempty(country_color),country_color= [255 236 139]/255;end % default yellow
-
+%
+fill_land=0;if linewidth<0,linewidth=-linewidth;fill_land=1;end
+    
 if strcmp(map_shape_file,'ASK')
     map_shape_file=[climada_global.data_dir filesep 'system' filesep '*.shp'];
     [filename, pathname] = uigetfile(map_shape_file, 'Select shapes file:');
@@ -121,6 +128,11 @@ end
 % read the .shp border file (the first time)
 shapes=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
 
+if fill_land % plot sea in light blue
+    fill([-180 -180 180 180],[-90 90 90 -90],[0.9 0.9 .99],'LineWidth',linewidth,'EdgeColor',[0.9 0.9 .99])
+    hold on
+end
+                
 for shape_i = 1:length(shapes)
     if isfield(shapes(shape_i),'X_ALL')
         % special case since we had to restrict to domestic
@@ -132,6 +144,16 @@ for shape_i = 1:length(shapes)
     end
     plot(shapes(shape_i).X,shapes(shape_i).Y, 'color',border_color,'LineWidth',linewidth);
     hold on
+    if fill_land
+        % a bit trricky, as fill does not like NaNs:
+        isnan_pos=find(isnan(shapes(shape_i).X)); % find sub-shapes
+        i1=1; % init
+        for isnan_pos_i=1:length(isnan_pos) % plot each sub-shape without NaNs
+            i2=isnan_pos(isnan_pos_i)-1;
+            fill(shapes(shape_i).X(i1:i2),shapes(shape_i).Y(i1:i2),border_color,'LineWidth',linewidth,'EdgeColor',border_color)
+            i1=i2+2;
+        end % isnan_pos_i
+    end
     if strcmp(check_country,'LABEL')
         ok_pos=~isnan(shapes(shape_i).X);
         text(mean(shapes(shape_i).X(ok_pos)),mean(shapes(shape_i).Y(ok_pos)),char(shapes(shape_i).NAME));

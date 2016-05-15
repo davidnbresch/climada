@@ -20,15 +20,16 @@ function centroids = climada_centroids_read(centroids_filename, centroids_save_f
 %   visualize: whether we plot the centroids on a map (=1) or not (=0, default)
 %   add_regular_grid: add a regular grid for plotting purposes (default=1)
 % OUTPUTS:
-%   centroids: a structure, with 
-%       Longitude  (1,:): the longitudes   
-%       Latitude   (1,:): the latitudes   
+%   centroids: a structure, with (at least)
+%       lon  (1,:): the longitudes   
+%       lat   (1,:): the latitudes   
 %       centroid_ID(1,:): a unique ID for each centroid, simplest: 1:length(Longitude)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091229
 % Lea Mueller, 20110718
 % David N. Bresch, david.bresch@gmail.com, 20120505, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir and add_regular_grid as input parameter
+% David N. Bresch, david.bresch@gmail.com, 20160514, lon/lat in header description updated
 %-
 
 global climada_global

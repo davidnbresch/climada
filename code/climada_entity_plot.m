@@ -1,11 +1,16 @@
-function climada_entity_plot(entity,markersize,plot_centroids)
+function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_ylabel)
 % plot an entity, no detailed documentation
 % NAME:
 %   climada_entity_plot
 % PURPOSE:
 %   Plot the assets of an entity
 %
+%   Note that you can overplot, just call hold on before calling
+%   climada_entity_plot, i.e. to plot assets on top of tracks (see
+%   climada_tc_track_info)
+%
 %   See also climada_entity_read
+%   Possible prior call: climada_tc_track_info;hold on
 % CALLING SEQUENCE:
 %   climada_entity_plot(entity)
 % EXAMPLE:
@@ -19,10 +24,14 @@ function climada_entity_plot(entity,markersize,plot_centroids)
 %       resolution)
 %   plot_centroids: =1: plot centroids as small red dots
 %       =0: do not plot centroids (default)
+%   max_value: the maximum value to color
+%       default is max(entity.assets.Value)
+%   cbar_ylabel: label for the color bar, default 'Values'
 % OUTPUTS:
 %   a figure
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE initial
+% David N. Bresch, david.bresch@gmail.com, 20160514, max_value,cbar_ylabel added
 %-
 
 %global climada_global
@@ -34,6 +43,8 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('entity','var'),entity=[];end
 if ~exist('markersize','var'),markersize=[];end
 if ~exist('plot_centroids','var'),plot_centroids=0;end
+if ~exist('max_value','var'),max_value=[];end
+if ~exist('cbar_ylabel','var'),cbar_ylabel='Values';end
 
 % PARAMETERS
 %
@@ -68,7 +79,11 @@ if isempty(markersize)
     fprintf('markersize = %i\n',markersize);
 end
 
-mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
+if isempty(max_value)
+    mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
+else
+    mav=max_value*1.1;
+end
 [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
 hold on
 axis equal
@@ -77,7 +92,7 @@ ylabel('Latitude')
 %set(gca,'layer','top')
 box % box axes
 
-set(get(cbar,'ylabel'),'string','Values','fontsize',12)
+set(get(cbar,'ylabel'),'string',cbar_ylabel,'fontsize',12)
 climada_plot_world_borders(0.7);
 set(gca,'xlim',x_range,'ylim',y_range)
 if plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
