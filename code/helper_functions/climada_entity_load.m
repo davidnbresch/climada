@@ -1,4 +1,4 @@
-function entity=climada_entity_load(entity)
+function [entity,entity_file]=climada_entity_load(entity)
 % climada
 % NAME:
 %   climada_entity_load
@@ -12,13 +12,15 @@ function entity=climada_entity_load(entity)
 % INPUTS:
 %   hazard: the filename (and path, optional) of a previously saved entity
 %       structure. If no path provided, default path ../data/entities is used
-%       (and name can be without extension .mat)
+%       (and name can be without extension .mat or even without _entity.mat)
 %       > promted for if empty
 %       OR: an entity structure, in which cas it is just returned (to allow
 %       calling climada_entity_load anytime, see e.g. climada_EDS_calc)
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
-%   entity_out: a struct, see e.g. climada_assets_read for details
+%   entity: a struct, see climada_entity_read for details
+%   entity_file: the full filename the entity was loaded from
+%       useful in subsequent call climada_entity_save(entity,entity_file)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091230
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
@@ -27,6 +29,7 @@ function entity=climada_entity_load(entity)
 % Lea Mueller, muellele@gmail.com, 20151127, enhance to work with complete entity as input
 % Lea Mueller, muellele@gmail.com, 20151127, set entity_file to empty if a struct without .assets
 % David N. Bresch, david.bresch@gmail.com, 20160202, speedup if entity structure passed
+% David N. Bresch, david.bresch@gmail.com, 20160516, _entity added if needed, too. entity_file as output added
 %-
 
 global climada_global
@@ -61,6 +64,11 @@ end
 if isempty(fP),fP=[climada_global.data_dir filesep 'entities'];end
 if isempty(fE),fE='.mat';end
 entity_file=[fP filesep fN fE];
+if ~exist(entity_file,'file')
+    [fP,fN,fE]=fileparts(entity_file);
+    fN=[fN '_entity']; % append _entity
+    entity_file=[fP filesep fN fE];
+end
 
 if ~exist(entity_file,'file')
     fprintf('ERROR: entity does not exist %s\n',entity_file);

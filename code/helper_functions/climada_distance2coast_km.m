@@ -1,4 +1,4 @@
-function distance_km=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1000km)
+function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1000km,check_inpolygon)
 % climada distance km coast
 % NAME:
 %   climada_distance2coast
@@ -24,12 +24,20 @@ function distance_km=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1
 %   check_plot: =1: show circle plot for check (default=0)
 %   force_beyond_1000km: =1 to claculate all distances precisely, even for
 %       points >1000km from coast (default=0)
+%   check_inpolygon: if=1, set distance negative if inside the polygon (i.e. on land)
+%       if check_inpolygon<0, only the points closer than
+%       abs(check_inpolygon) [km] are checked and returned (see oputput
+%       arguments lon lat in this case. This options speeds up the
+%       inpolygon search substantially
 % OUTPUTS:
 %   distance_km: distance to coast in km for each lat/lon
+%   lon and lat: same as on input, except for check_inpolygon<0, whre only
+%       the points closer than abs(check_inpolygon) [km] are returned
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141225, initial
 % David N. Bresch, david.bresch@gmail.com, 20150514, progress indication for more than 1000 points added
-% David N. Bresch, david.bresch@gmail.com, 20150514, speedup factor ten implemented
+% David N. Bresch, david.bresch@gmail.com, 20150514, speedup factor ten or more implemented
+% David N. Bresch, david.bresch@gmail.com, 20150515, check_inpolygon implemented
 %-
 
 distance_km=[];
@@ -44,6 +52,7 @@ if ~exist('lon','var'),return;end
 if ~exist('lat','var'),return;end
 if ~exist('check_plot','var'),check_plot=0;end
 if ~exist('force_beyond_1000km','var'),force_beyond_1000km=0;end
+if ~exist('check_inpolygon','var'),check_inpolygon=0;end
 
 % locate the module's data
 %module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
@@ -138,6 +147,17 @@ for shape_i=1:n_shapes
         end % mod_step>0
         
     end % ll_i
+    
+    if abs(check_inpolygon)>0
+        if check_inpolygon<0 % special case, only keep points within abs(check_inpolygon) range
+            check_dist=(abs(check_inpolygon)/111.12)^2; % convert, see conversion below
+            pos=find(distance_km<=check_dist);
+            distance_km=distance_km(pos);
+            lon=lon(pos);lat=lat(pos);
+        end
+        in=inpolygon(lon,lat,shapes(shape_i).X,shapes(shape_i).Y);
+        distance_km(in)=-distance_km(in);
+    end %
     
 end % shape_i
 

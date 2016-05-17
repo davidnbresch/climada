@@ -90,6 +90,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue added to header
 % David N. Bresch, david.bresch@gmail.com, 20151008, NOSAVE option added
 % Lea Mueller, muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
+% David N. Bresch, david.bresch@gmail.com, 20160514, -v7.3 in save added
 %-
 
 hazard=[]; % init
@@ -314,7 +315,8 @@ for track_i=track0:n_tracks
             msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
         end
         hazard.track_i=track_i;
-        if isempty(strfind(hazard_set_file,'NOSAVE')),save(hazard_set_file,'hazard');end % intermediate save
+        %if isempty(strfind(hazard_set_file,'NOSAVE')),save(hazard_set_file,'hazard');end % intermediate save
+        if isempty(strfind(hazard_set_file,'NOSAVE')),save(hazard_set_file,'hazard','-v7.3');end % intermediate save, 20160514 -v7.3 added
         if climada_global.waitbar
             waitbar(track_i/n_tracks,h,msgstr); % update waitbar
         else

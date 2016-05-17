@@ -38,6 +38,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % Lea Mueller, muellele@gmail.com, 20150424, colormap according to peril_ID
 % Lea Mueller, muellele@gmail.com, 20150427, higher resolution, npoints set to 2000 (instead of 199)
 % Lea Mueller, muellele@gmail.com, 20150512, switched to griddata instead of climada_gridded_Value
+% David N. Bresch, david.bresch@gmail.com, cleanup
 %-
 
 res=[]; % init
@@ -61,15 +62,11 @@ hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);
-scale2 =(max(hazard.lon) - min(hazard.lon))/...
-    (min(max(hazard.lat),95)-max(min(hazard.lat),-60));
-height = 0.5;
-if height*scale2 > 1.2; height = 1.2/scale2; end
 
 % calculate figure characteristics
 ax_lim_buffer = scale/10;
 ax_lim = [min(hazard.lon)-ax_lim_buffer           max(hazard.lon)+ax_lim_buffer ...
-          max(min(hazard.lat),-60)-ax_lim_buffer  min(max(hazard.lat),95)+ax_lim_buffer];
+    max(min(hazard.lat),-60)-ax_lim_buffer  min(max(hazard.lat),95)+ax_lim_buffer];
 
 if event_i<0
     % search for i-thlargest event
@@ -91,41 +88,45 @@ elseif event_i==0
     title_str=sprintf('%s max intensity at each centroid',hazard.peril_ID);
 else
     values=full(hazard.intensity(event_i,:)); % extract one event
-    title_str=sprintf('%s event %i',hazard.peril_ID,event_i);
     % plot some further info to sdout:
     if (isfield(hazard,'name') && isfield(hazard,'yyyy')) && (isfield(hazard,'mm') && isfield(hazard,'dd'))
-        fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard.name{event_i},hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i),event_i);
+        hazard_name=hazard.name{event_i};
+        fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard_name,hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i),event_i);
+        gen_check=strfind(hazard_name,'gen'); % check for probabilistic event
+        if ~isempty(gen_check)
+            gen_str=[' ' hazard_name(gen_check(1):end)];
+        else
+            gen_str='';
+        end
+        title_str=sprintf('%s %4.4i%2.2i%2.2i%s (%i)\n',hazard.peril_ID,...
+            hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i),gen_str,event_i);
     end
-end
-if isfield(hazard,'units'),title_str=[title_str ' (' hazard.units ')'];end % add units
+end % isfield(hazard,'name')
 
 if sum(values(not(isnan(values))))>0 % nansum(values)>0
     
-    % create figure
-    %fig = climada_figuresize(height,height*scale2+0.15);
-    %set(fig,'Name',hazard.peril_ID);
-    [cmap,c_ax]   = climada_colormap(hazard.peril_ID);
-    centroids.lon = hazard.lon; % as the gridding routine needs centroids
-    centroids.lat = hazard.lat;
-    %npoints       = 2000;
-    %npoints       = 500;
-    %stencil_ext   = 5;
-    %[X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,'linear',npoints,stencil_ext); 
+    [cmap,~]   = climada_colormap(hazard.peril_ID);
     [X, Y]        = meshgrid(unique(hazard.lon),unique(hazard.lat));
     gridded_VALUE = griddata(hazard.lon,hazard.lat,values,X,Y);
     contourf(X, Y, gridded_VALUE,'edgecolor','none')
-    %contourf(X, Y, gridded_VALUE,'edgecolor','none')
     hold on
     box on
     climada_plot_world_borders(0.5)
     axis(ax_lim)
     axis equal
     axis(ax_lim)
-    title(title_str);
     if ~isempty(caxis_range),caxis(caxis_range);end
-    colorbar;
+    c=colorbar;
     colormap(cmap)
-
+    if isfield(hazard,'units')
+        try % . notation allowed since version 7...
+            c.Label.String = hazard.units;
+        catch
+            title_str=[title_str ' (' hazard.units ')']; % add units
+        end % try
+    end % isfield(hazard,'units')
+    title(title_str)
+    
 else
     fprintf('all intensities zero for event %i\n',event_i);
     return
@@ -143,7 +144,5 @@ res.Y=Y;
 res.VALUE=gridded_VALUE;
 
 set(gcf,'Color',[1 1 1])
- 
-return
 
-
+end % climada_hazard_plot

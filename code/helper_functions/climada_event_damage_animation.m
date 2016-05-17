@@ -33,8 +33,10 @@ function climada_event_damage_animation(animation_data_file,animation_mp4_file,s
 % INPUTS:
 %   animation_data_file: the data file (.mat) with hazard set which
 %       includes event damage information, see e.g. climada_event_damage_data_tc
+%       If specified without path, searched for in ../results and extension .mat
 %       > promted for if not given
 %   animation_mp4_file: the filename of the resulting .mp4 movie
+%       If specified without path, stored in ../results with extension .mp4
 %       > promted for if not given (if cancel pressed, the movie frames are
 %       not written to file - useful for test)
 % OPTIONAL INPUT PARAMETERS:
@@ -65,6 +67,7 @@ function climada_event_damage_animation(animation_data_file,animation_mp4_file,s
 % David N. Bresch, david.bresch@gmail.com, 20150804, switched from 'Uncompressed AVI' to 'MPEG-4' (no AVI coded on Mac)
 % David N. Bresch, david.bresch@gmail.com, 20150915, schematic_tag=2 implemented, i.e. asset distribution shown as in climada_entity_plot
 % David N. Bresch, david.bresch@gmail.com, 20150916, speedup plotting map borders directly (avoid climada_plot_world_borders)
+% David N. Bresch, david.bresch@gmail.com, 20160516, filenames without path allowed
 %-
 
 global climada_global
@@ -139,6 +142,12 @@ if isempty(animation_data_file) % local GUI
     end
 end
 
+% complete animation_data_file path, if missing
+[fP,fN,fE]=fileparts(animation_data_file);
+if isempty(fP),fP=[climada_global.data_dir filesep 'results'];end
+if isempty(fE),fE='.mat';end
+animation_data_file=[fP filesep fN fE];
+
 % prompt for animation_mp4_file if not given
 if isempty(animation_mp4_file) % local GUI
     animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
@@ -150,6 +159,12 @@ if isempty(animation_mp4_file) % local GUI
         animation_mp4_file=fullfile(pathname,filename);
     end
 end
+
+% complete animation_mp4_file path, if missing
+[fP,fN,fE]=fileparts(animation_mp4_file);
+if isempty(fP),fP=[climada_global.data_dir filesep 'results'];end
+if isempty(fE),fE='.mp4';end
+animation_mp4_file=[fP filesep fN fE];
 
 load(animation_data_file);
 

@@ -11,7 +11,20 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %   split. See climada_event_damage_animation for nice plots and movie
 %   generation.
 %
-%   Instead of uisng a track from any of the ../data/tc_tracks databases,
+%   Usual steps:
+%   0: load your tc_track and entity with 
+%   >> tc_track=climada_tc_track_load
+%   >> entity=climada_entity_load
+%   1. run once with default parameters to check, i.e. for track 777
+%   >> climada_event_damage_data_tc(tc_track(777),entity);
+%   1b. define a rectangular area (zoom in on the last plot and read off
+%   >> rect=[minlon maxlon minlat maxlat]
+%   2. run again, now to silently generate data on higher resolution, e.g.
+%   >> climada_event_damage_data_tc(tc_track(777),entity,'',0,-0.5,rect); % omit rect, if no need to zoom in
+%   3. generate the maovi, use
+%   >> climada_event_damage_animation % select the animation_data.mat file
+%
+%   Instead of using a track from any of the ../data/tc_tracks databases,
 %   you might also just download a single track from
 %   weather.unisys.com/hurricane (click trough to a single track, then
 %   save the 'tracking information' as .dat file, i.e. right click and save
@@ -66,7 +79,8 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %       =0: no plots, 6 min timestep (the best option to generate the data
 %       pretty fast)
 %       =2: (default) show plots, use 2h timestep (fast check)
-%       <0: set timestep=check_mode and omit any plots (expert use)
+%       <0: set timestep=check_mode (in hours or fractions thereof, i.e. 
+%       0.5 for 30 min) and omit any plots (expert use)
 %   focus_region: the region we're going to show [minlon maxlon minlat maxlat]
 %       default=[], automatically determined by area of entity lat/lon
 %       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
