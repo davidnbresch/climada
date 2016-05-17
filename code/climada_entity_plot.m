@@ -97,7 +97,7 @@ box % box axes
 
 if ~isempty(cbar_ylabel)
     Value_unit=climada_global.Value_unit;
-    if isfield(entity.assets,'Value_unit'),Value_unit=entity.assets.Value_unit;end
+    if isfield(entity.assets,'Value_unit'),Value_unit=entity.assets.Value_unit{1};end
     set(get(cbar,'ylabel'),'string',[cbar_ylabel ' (' Value_unit ')'],'fontsize',12);
 end
 climada_plot_world_borders(0.7);
