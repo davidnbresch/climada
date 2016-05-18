@@ -59,6 +59,8 @@ d = 1; % degree
 if isempty(entity),entity=climada_entity_load;end
 if isempty(entity),return;end
 
+if ischar(entity),entity=climada_entity_load(entity);end
+
 beginColor  = [232 232 232 ]/255;
 middleColor = [105 105 105 ]/255;
 cmap1 = makeColorMap(beginColor, middleColor, 4);
