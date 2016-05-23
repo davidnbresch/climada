@@ -88,6 +88,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % Lea Mueller, muellele@gmail.com, 20151016, delete nans if there are invalid entries
 % Lea Mueller, muellele@gmail.com, 20151119, call climada_assets_read, climada_damagefunctions_read, climada_measures_read, climada_discount_read
 % David N. Bresch, david.bresch@gmail.com, 20151229, old commented code deleted (finish 20151119 update)
+% Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
 %-
 
 global climada_global
@@ -119,7 +120,12 @@ end
 [fP,fN,fE] = fileparts(entity_filename);
 if isempty(fP) % complete path, if missing
     entity_filename = [climada_global.data_dir filesep 'entities' filesep fN fE];
-    [fP,fN] = fileparts(entity_filename);
+    [fP,fN,fE] = fileparts(entity_filename);
+    if isempty(fE) % complete extension, if missing
+        fE = '.xlsx'; 
+        if ~exist([entity_filename fE],'file'), fE = '.xls'; end
+        entity_filename = [entity_filename fE];
+    end
 end
 entity_save_file=[fP filesep fN '.mat'];
 

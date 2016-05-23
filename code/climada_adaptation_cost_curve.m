@@ -14,6 +14,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %   called_from_climada_demo), no relevance for standard use .
 %
 %   Previous call climada_measures_impact
+%   or read benefits directly from excel file with climada_measures_read
 % CALLING SEQUENCE:
 %   [~,~]=climada_adaptation_cost_curve(measures_impact,measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
 % EXAMPLE:
@@ -102,7 +103,7 @@ fontsize_             = 8.5*climada_global.font_scale;
 if ismac, fontsize_   = 12 *climada_global.font_scale;end % 20140516, was 8, too small
 
 % prompt for measures_impact if not given
-measures_impact=climada_measures_impact_load(measures_impact);
+measures_impact = climada_measures_impact_load(measures_impact);
 
 if ~isstruct(measures_impact_comparison)
     if strcmp(measures_impact_comparison,'ASK')

@@ -117,48 +117,10 @@ debug_measure_i=0; % default=0 (switched off, no debugging)
 
 % prompt for entity if not given
 entity = climada_entity_load(entity);
-% if isempty(entity) % local GUI
-%     entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
-%     [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
-%     if isequal(filename,0) || isequal(pathname,0)
-%        return; % cancel
-%     else
-%        entity=fullfile(pathname,filename);
-%     end
-% end
-% % load the entity, if a filename has been passed
-% if ~isstruct(entity)
-%     entity_file=entity;entity=[];
-%     vars = whos('-file', entity_file);
-%     load(entity_file);
-%     if ~strcmp(vars.name,'entity')
-%         entity = eval(vars.name);
-%         clear (vars.name)
-%     end
-% end
 
 % prompt for hazard if not given
 hazard = climada_hazard_load(hazard);
-% if isempty(hazard) % local GUI
-%     hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
-%     [filename, pathname] = uigetfile(hazard, 'Select hazard event set for EDS calculation:');
-%     if isequal(filename,0) || isequal(pathname,0)
-%        return; % cancel
-%     else
-%        hazard=fullfile(pathname,filename);
-%     end
-% end
-% % load the hazard, if a filename has been passed
-% if ~isstruct(hazard)
-%     hazard_file=hazard;hazard=[];
-%     vars = whos('-file', hazard_file);
-%     load(hazard_file);
-%     if ~strcmp(vars.name,'hazard')
-%         hazard = eval(vars.name);
-%         clear (vars.name)
-%     end
-% end
-hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
+hazard = climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % prompt for reference result if not given
 if isempty(measures_impact_reference)
@@ -196,9 +158,7 @@ if ~isempty(measures_impact_reference)
 end
 
 if isfield(entity,'measures')
-    if isempty(measures)
-        measures = entity.measures;
-    end
+    if isempty(measures), measures = entity.measures; end
 elseif isempty(measures)
     measures = 'ASK';
 end
@@ -216,7 +176,7 @@ if ~isstruct(measures)
 end
 % load the measures, if a filename has been passed
 if ~isstruct(measures)
-    measures_file=measures;measures=[];
+    measures_file = measures;measures=[];
     vars = whos('-file', measures_file);
     load(measures_file);
     if ~strcmp(vars.name,'measures')
@@ -241,9 +201,7 @@ else
     end
 end
 
-if force_re_encode
-    entity=climada_assets_encode(entity,hazard);
-end
+if force_re_encode, entity = climada_assets_encode(entity,hazard); end
 
 % loop over all measures and calculate the corresponding EDSs
 % -----------------------------------------------------------

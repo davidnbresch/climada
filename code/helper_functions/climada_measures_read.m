@@ -1,4 +1,4 @@
-function measures = climada_measures_read(measures_filename)
+function [measures, measures_impact] = climada_measures_read(measures_filename)
 % climada measures read import
 % NAME:
 %   climada_measures_read
@@ -34,12 +34,16 @@ function measures = climada_measures_read(measures_filename)
 % Lea Mueller, muellele@gmail.com, 20151119, use climada_assets_read, use spreadsheet_read instead of xls_read
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 % Jacob Anz, j.anz@gmx.net, 20151204, remove measures.damagefunctions if empty
+% Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
+% Lea Mueller, muellele@gmail.com, 20160523, add measures_impact, invoke climada_measures_impact_read
 %-
+
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 measures = []; %init
 assets = [];
+measures_impact = [];
 
 % poor man's version to check arguments
 if ~exist('measures_filename','var'),measures_filename=[];end
@@ -49,7 +53,7 @@ if ~exist('measures_filename','var'),measures_filename=[];end
 
 % prompt for measures_filename if not given
 if isempty(measures_filename) % local GUI
-    measures_filename=[climada_global.data_dir filesep 'measures' filesep '*.xls'];
+    measures_filename=[climada_global.data_dir filesep 'entities' filesep '*.xls'];
     [filename, pathname] = uigetfile(measures_filename, 'Select measures:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -62,8 +66,13 @@ end
 [fP,fN,fE] = fileparts(measures_filename);
 
 if isempty(fP) % complete path, if missing
-    measures_filename=[climada_global.data_dir filesep 'entities' filesep fN fE];
+    measures_filename = [climada_global.data_dir filesep 'entities' filesep fN fE];
     [fP,fN,fE] = fileparts(measures_filename);
+    if isempty(fE) % complete extension, if missing
+        fE = '.xlsx'; 
+        if ~exist([measures_filename fE],'file'), fE = '.xls'; end
+        measures_filename = [measures_filename fE];
+    end
 end
 
 if strcmp(fE,'.ods')
@@ -185,5 +194,9 @@ climada_measures_check(measures);
 % but we re-read form .xls each time this code is called
 [fP,fN] = fileparts(measures_filename);
 save([fP filesep fN],'measures')
+
+% create measures_impact struct directly if "benefit" per measure is given. 
+% shortcut instead of calculating measures_impact with climada_measures_impact
+measures_impact = climada_measures_impact_read(measures);
 
 return
