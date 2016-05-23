@@ -21,6 +21,7 @@ function varargout = climada_demo_gui(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 % david.bresch@gmail.com, 20140516, reverse_cb added
+% muellele@gmail.com, 20160523, take demo_illu1.png from climada_global.root_dir instead of climada_global.data_dir
 %
 % Edit the above text to modify the response to help climada_demo_gui
 %
@@ -84,7 +85,9 @@ climada_demo_params.discount_rate         = str2double(get(handles.edit3,'String
 axes(handles.axes2);
 cla;
 global climada_global
-image_file    = [climada_global.data_dir filesep 'system' filesep 'demo_illu1.png'];
+% take from root_dir instead from data_dir
+image_file    = [climada_global.root_dir filesep 'data' filesep 'system' filesep 'demo_illu1.png'];
+%image_file    = [climada_global.data_dir filesep 'system' filesep 'demo_illu1.png'];
 image_present = imread(image_file); % read image from file
 image(image_present); % display
 axis off
@@ -366,11 +369,14 @@ set(handles.slider1,'Value',Value);
 global climada_global % we need the global variable to access the path
 
 if Value == 0
-    image_file = [climada_global.data_dir filesep 'system' filesep 'demo_illu0.png'];
+    image_file = [climada_global.root_dir filesep 'data' filesep 'system' filesep 'demo_illu0.png'];
+    %image_file = [climada_global.data_dir filesep 'system' filesep 'demo_illu0.png'];
 elseif Value == 1
-    image_file = [climada_global.data_dir filesep 'system' filesep 'demo_illu1.png'];
+    image_file = [climada_global.root_dir filesep 'data' filesep 'system' filesep 'demo_illu1.png'];
+    %image_file = [climada_global.data_dir filesep 'system' filesep 'demo_illu1.png'];
 else
-    image_file = [climada_global.data_dir filesep 'system' filesep 'demo_illu2.png'];
+    image_file = [climada_global.root_dir filesep 'data' filesep 'system' filesep 'demo_illu2.png'];
+    %image_file = [climada_global.data_dir filesep 'system' filesep 'demo_illu2.png'];
 end
 
 % display the appropriate image
