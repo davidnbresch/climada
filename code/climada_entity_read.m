@@ -89,6 +89,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % Lea Mueller, muellele@gmail.com, 20151119, call climada_assets_read, climada_damagefunctions_read, climada_measures_read, climada_discount_read
 % David N. Bresch, david.bresch@gmail.com, 20151229, old commented code deleted (finish 20151119 update)
 % Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
+% David N. Bresch, david.bresch@gmail.com, 20160524, allow for entity without assets (e.g. called from nightlight entity)
 %-
 
 global climada_global
@@ -122,7 +123,7 @@ if isempty(fP) % complete path, if missing
     entity_filename = [climada_global.data_dir filesep 'entities' filesep fN fE];
     [fP,fN,fE] = fileparts(entity_filename);
     if isempty(fE) % complete extension, if missing
-        fE = '.xlsx'; 
+        fE = '.xlsx';
         if ~exist([entity_filename fE],'file'), fE = '.xls'; end
         entity_filename = [entity_filename fE];
     end
@@ -134,14 +135,16 @@ if climada_check_matfile(entity_filename,entity_save_file)
     load(entity_save_file)
     
     % check for valid/correct entity.assets.filename
-    if ~isfield(entity.assets,'filename'),entity.assets.filename=entity_save_file;end
-    if ~strcmp(entity_save_file,entity.assets.filename)
-        entity.assets.filename=entity_save_file;
-        entity.damagefunctions.filename=entity_save_file;
-        entity.measures.filename=entity_save_file;
-        entity.discount.filename=entity_save_file;
-        save(entity_save_file,'entity')
-    end
+    if isfield(entity,'assets')
+        if ~isfield(entity.assets,'filename'),entity.assets.filename=entity_save_file;end
+        if ~strcmp(entity_save_file,entity.assets.filename)
+            entity.assets.filename=entity_save_file;
+            entity.damagefunctions.filename=entity_save_file;
+            entity.measures.filename=entity_save_file;
+            entity.discount.filename=entity_save_file;
+            save(entity_save_file,'entity')
+        end
+    end % isfield(entity,'assets')
     
 else
     % read assets
