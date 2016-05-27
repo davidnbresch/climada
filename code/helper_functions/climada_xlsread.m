@@ -1,4 +1,4 @@
-function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_mode,misdat_value)
+function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_mode,misdat_value,misdat_out_value)
 % climada excel data import read
 % NAME:
 %   climada_xlsread
@@ -61,7 +61,7 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 %
 %   note that empty columns (like CentralPressure) are skipped
 % CALLING SEQUENCE:
-%   res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet);
+%   res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_mode,misdat_value,misdat_out_value)
 % EXAMPLE:
 %   res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet);
 % INPUTS:
@@ -75,6 +75,8 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 %   misdat_value: a missing date value, all numeric data of exatly this
 %       value are ste to NaN, default is no missing data treatment, i.e.
 %       misdat_value=[].
+%   misdat_out_value: the value missing data is set to on output,
+%       default=NaN. Only active if misdat_value is set
 % OUTPUTS:
 %   res: a structure holding the data from the selected Excel sheet. Note
 %       that colunm headers that contain a number (xxx) are named VALxxx 
@@ -87,7 +89,8 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 % David N. Bresch, david.bresch@gmail.com, 20141230, misdat_value added
 % David N. Bresch, david.bresch@gmail.com, 20150101, simplified if file and sheet provided (no check for sheet to exist)
 % David N. Bresch, david.bresch@gmail.com, 20150227, finally, column headers with numbers are named VALxxxx
-% Lea Mueller, muellele@gmail.com, 2015505, bugfix for difficult header name
+% Lea Mueller, muellele@gmail.com, 20150505, bugfix for difficult header name
+% David N. Bresch, david.bresch@gmail.com, 20160527, misdat_out_value introduced
 %-
 
 if ~exist('interactive_mode','var'),interactive_mode=[];end
@@ -95,6 +98,7 @@ if ~exist('excel_file','var'),excel_file=[];end
 if ~exist('in_excel_sheet','var'),in_excel_sheet=[];end
 if ~exist('silent_mode','var'),silent_mode=[];end
 if ~exist('misdat_value','var'),misdat_value=[];end
+if ~exist('misdat_out_value','var'),misdat_out_value=NaN;end
 
 if isempty(interactive_mode),interactive_mode='interactive';end
 if isempty(silent_mode),silent_mode=0;end
@@ -246,7 +250,7 @@ for header_i=1:size(RAW,2)
                 if ~silent_mode,fprintf('   -> converted to numeric\n');end
                 arr_values=temp;
                 if ~isempty(misdat_value)
-                    arr_values(arr_values==misdat_value)=NaN; % replace misssing data with NaN
+                    arr_values(arr_values==misdat_value)=misdat_out_value; % replace misssing data with NaN
                 end
             end
             
