@@ -26,6 +26,7 @@ function hazard=climada_hazard_load(hazard)
 % Lea Mueller, muellele@gmail.com, 20151127, enhance to work with complete hazard as input
 % Lea Mueller, muellele@gmail.com, 20151127, set hazard_file to empty if a struct without .lon
 % David N. Bresch, david.bresch@gmail.com, 20160202, speedup if hazard structure passed
+% David N. Bresch, david.bresch@gmail.com, 20160527, climada_hazard2octave added
 %-
 
 global climada_global
@@ -73,5 +74,7 @@ if ~strcmp(hazard_file,hazard.filename)
     hazard.filename=hazard_file;
     save(hazard_file,'hazard')
 end
+
+hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 end % climada_hazard_load
