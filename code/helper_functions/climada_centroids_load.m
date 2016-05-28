@@ -27,6 +27,7 @@ function centroids=climada_centroids_load(centroids_file)
 % David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150817, climada_global.centroids_dir
 % David N. Bresch, david.bresch@gmail.com, 20160516, allow for filename without _centroids
+% David N. Bresch, david.bresch@gmail.com, 20160528, fix for .mat extension
 %-
 
 centroids=[]; % init output
@@ -53,9 +54,10 @@ end
 
 % complete path, if missing
 [fP,fN,fE]=fileparts(centroids_file);
+if isempty(fE),fE='.mat';end
 if isempty(fP),centroids_file=[climada_global.centroids_dir filesep fN fE];end
 
-if ~exist('centroids_file','file') % try also appending '_centroids'
+if ~exist(centroids_file,'file') % try also appending '_centroids'
     [fP,fN,fE]=fileparts(centroids_file);
     fN=[fN '_centroids'];
     centroids_file=[fP filesep fN fE];

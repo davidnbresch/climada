@@ -283,7 +283,7 @@ for track_i=track0:n_tracks
     res                             = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
     %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,0,1,check_plot);
     
-    hazard.intensity(track_i,:)     = res.gust;
+    hazard.intensity(track_i,:)     = sparse(res.gust); % to be sure
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
     hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag;
     
@@ -305,7 +305,7 @@ for track_i=track0:n_tracks
     
     % following block only for progress measurement (waitbar or stdout)
     if mod(track_i,mod_step)==0
-        mod_step          = 100;
+        mod_step          = 500;
         t_elapsed_track   = etime(clock,t0)/(track_i-track0+1); % time per track
         tracks_remaining  = n_tracks-track_i;
         t_projected_sec   = t_elapsed_track*tracks_remaining;
