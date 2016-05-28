@@ -389,6 +389,7 @@ for step_i=min_node:max_node
         res=climada_tc_windfield(tc_track_segment,centroids,0,1,0);
     else
         res=climada_tc_windfield(tc_track_segment,centroids,0,-1,0);
+        %res=climada_tc_windfield_fast(tc_track_segment,centroids,0,-1,0);
     end
     
     hazard.intensity(step_i-min_node+1,:)=res.gust;
