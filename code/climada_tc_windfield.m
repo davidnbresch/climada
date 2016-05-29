@@ -1,4 +1,4 @@
-function res = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
+function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % TC windfield calculation
 % NAME:
 %   climada_tc_windfield
@@ -22,13 +22,13 @@ function res = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %   for the old slow version (for backward compatibility).
 %
 % CALLING SEQUENCE:
-%   [res,tc_track]=climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
+%   [gust,res]=climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % EXAMPLE:
 %   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
 %   tc_track=climada_tc_equal_timestep(tc_track);
 %   centroids=climada_centroids_load('USFL_MiamiDadeBrowardPalmBeach');
-%   res=climada_tc_windfield(tc_track(68),centroids);
-%   climada_color_plot(res.gust,res.lon,res.lat);
+%   gust=climada_tc_windfield(tc_track(68),centroids);
+%   climada_color_plot(gust,centroids.lon,centroids.lat);
 % INPUTS:
 %   tc_track: a structure with the single track information (length(tc_track)!=1)
 %       see e.g. climada_tc_read_unisys_tc_track
@@ -45,21 +45,18 @@ function res = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %       probabilistic, since hit/miss issue with closest node, see variable
 %       max_wind_at_bullseye in code).  
 % OUTPUTS:
-%   res.gust: the windfield [m/s] at all centroids, NOT sparse for speedup
+%   gust: the windfield [m/s] at all centroids, NOT sparse for speedup
 %       i.e. convert like hazard.intensity()=sparse(res.gust)...
-%   res.lon: the longitude of the centroids (=centroids.lon)
-%   res.lat: the latitude of the centroids (=centroids.lat)
-%   (res.time: the time (sec) windfield calculation used, commented out for
-%       speedup, see TIMING)
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20090728
 % David N. Bresch, david.bresch@gmail.com, 20150103, not faster than climada_tc_windfield any more
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir introduced
 % David N. Bresch, david.bresch@gmail.com, 20160529, about 20% faster than climada_tc_windfield_slow
+% David N. Bresch, david.bresch@gmail.com, 20160529, only gust returned, even faster
 %-
 
-res = []; % init output
+gust = []; % init output
 
 global climada_global
 
@@ -88,9 +85,8 @@ if silent_mode==-1,max_wind_at_bullseye=0;end % =0 only for single timestep
 if isempty(tc_track),return;end
 if isempty(centroids),return;end
 
-res.gust=centroids.lon*0; % init with zeros
-res.lon=centroids.lon;
-res.lat=centroids.lat;
+
+gust=centroids.lon*0; % init with zeros
 
 % to convert to km/h
 switch tc_track.MaxSustainedWindUnit
@@ -169,13 +165,12 @@ if isfield(centroids,'distance2coast_km')
     % treat only centrois closer than coastal_range_km to coast for speedup
     % coastal range both inland and offshore
     valid_centroid_pos=find(centroids.distance2coast_km<coastal_range_km);
-    local_lon=res.lon(valid_centroid_pos); % for parfor
-    local_lat=res.lat(valid_centroid_pos); % for parfor
-    %res.distance2coast_km=centroids.distance2coast_km;
+    local_lon=centroids.lon(valid_centroid_pos); % for parfor
+    local_lat=centroids.lat(valid_centroid_pos); % for parfor
 else
     valid_centroid_pos=1:n_centroids;
-    local_lon=res.lon; % for parfor
-    local_lat=res.lat; % for parfor
+    local_lon=centroids.lon; % for parfor
+    local_lat=centroids.lat; % for parfor
 end
 
 n_valid_centroids=length(valid_centroid_pos);
@@ -210,7 +205,7 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
         ddy          = (local_lat(centroid_i)-node_lat);
         node_Azimuth = atan2(ddy,ddx)*180/pi; % in degree
         node_Azimuth = mod(-node_Azimuth+90,360); % convert wind such that N is 0, E is 90, S is 180, W is 270
-        %res.node_Azimuth(centroid_i) = node_Azimuth; % to store
+
         M            = tc_track.MaxSustainedWind(node_i);
         
         if mod(node_Azimuth-tc_track.Azimuth(node_i)+360,360)<180
@@ -260,7 +255,7 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
     
 end % centroid_ii
 
-res.gust(valid_centroid_pos)=local_gust; % store into all valid centroids
+gust(valid_centroid_pos)=local_gust; % store into all valid centroids
 
 %res.time=etime(clock,t0); % TIMING
 

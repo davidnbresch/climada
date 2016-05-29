@@ -37,7 +37,8 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
 % Lea Mueller, muellele@gmail.com, 20150607, change tc max int. value to 80 instead of 100m/s
 % Lea Mueller, muellele@gmail.com, 20150607, add cross for San Salvador in plot, for San Salvador only
 % Lea Mueller, muellele@gmail.com, 20150716, add landslides option (LS) with specific colormap, intensities from 0 to 1
-% David N. Bresch, david.bresch@gmail.com, 20150527, complete overhaul, new field hazard.map
+% David N. Bresch, david.bresch@gmail.com, 20160527, complete overhaul, new field hazard.map
+% David N. Bresch, david.bresch@gmail.com, 20160529, otherwise in colorscale selection fixed
 %-
 
 % init global variables
@@ -206,7 +207,7 @@ if abs(check_plot)>0
             cmap = flipud(climada_colormap(peril_ID));
         otherwise
             % use default colormap, hence no cmap defined
-            caxis_max = full(max(max(hazard.intensity_fit)));
+            caxis_max = full(max(max(hazard.intensity)));
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
             cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
     end

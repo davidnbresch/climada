@@ -23,13 +23,6 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %   (i.e. different centroids). Just delete the hazard set .mat file and run
 %   climada_tr_hazard_set again.
 %
-%   CAVEAT: this is the FAST version (using parfor). For speedup reasons,
-%   it does allocate the intensity array as zeros, not sparse (this way the
-%   parfor loop can blindly store into) and then converts to sparse once it
-%   stores it as hazard.intensity. Hence for very large computations, you
-%   might run into memory problems, just search for MEMORY in the code and
-%   switch to the respective lower memory usage option (still quite fast).
-%
 %   See climada_tc_hazard_set_slow in the tropical cyclone module 
 %   (https://github.com/davidnbresch/climada_module_tropical_cyclone) 
 %   for the old slow version (for backward compatibility).
@@ -41,7 +34,8 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % EXAMPLE:
 %   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
 %   centroids=climada_centroids_load('USFL_MiamiDadeBrowardPalmBeach');
-%   hazard=climada_tr_hazard_set(tc_track,'_TC_TEST_PARFOR',centroids);
+%   %centroids=climada_entity_load('USA_UnitedStatesFlorida'); % works, too
+%   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST_PARFOR',centroids);
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   tc_track: a TC track structure, or a filename of a saved one
@@ -262,9 +256,9 @@ hazard.datenum          = zeros(1,n_tracks);
 hazard.scenario         = hazard_scenario;
 
 % allocate the hazard array (sparse, to manage MEMORY)
-% intensity = spalloc(n_tracks,n_centroids,...
-%     ceil(n_tracks*n_centroids*hazard_arr_density));
-intensity = zeros(n_tracks,n_centroids); % FASTER
+intensity = spalloc(n_tracks,n_centroids,...
+    ceil(n_tracks*n_centroids*hazard_arr_density));
+%intensity = zeros(n_tracks,n_centroids); % FASTER
 
 t0       = clock;
 fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);
@@ -277,9 +271,10 @@ end
 tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep); % make equal timesteps
     
 parfor track_i=1:n_tracks
-    res                   = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+    %res                   = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
     %intensity(track_i,:)  = sparse(res.gust); % MEMORY   
-    intensity(track_i,:)  = res.gust; % FASTER
+    %intensity(track_i,:)  = res.gust; % FASTER
+    intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
 end %track_i
 
 hazard.intensity=sparse(intensity); % store into struct, sparse() to be safe
