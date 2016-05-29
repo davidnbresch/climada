@@ -85,20 +85,20 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %       filename: the filename of the hazard event set (if passed as a
 %           struct, this is often useful)
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20090729
-% David N. Bresch, david.bresch@gmail.com, 20130506, centroids filename handling improved
-% David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
-% David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
-% David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
-% Lea Mueller, muelleleh@gmail.com, 20150420, include tc category into hazard structure
-% David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
-% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
-% David N. Bresch, david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
-% David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue added to header
-% David N. Bresch, david.bresch@gmail.com, 20151008, NOSAVE option added
-% Lea Mueller, muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
-% David N. Bresch, david.bresch@gmail.com, 20160514, -v7.3 in save added
-% David N. Bresch, david.bresch@gmail.com, 20160529, fast parfor version, about twenty times faster
+% david.bresch@gmail.com, 20090729
+% david.bresch@gmail.com, 20130506, centroids filename handling improved
+% david.bresch@gmail.com, 20140421, waitbar with secs
+% david.bresch@gmail.com, 20141226, optional fields in centroids added
+% david.bresch@gmail.com, 20150103, equal_timestep (much) improved
+% muelleleh@gmail.com, 20150420, include tc category into hazard structure
+% david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
+% david.bresch@gmail.com, 20150819, climada_global.centroids_dir
+% david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
+% david.bresch@gmail.com, 20150906, note on a frequent issue added to header
+% david.bresch@gmail.com, 20151008, NOSAVE option added
+% muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
+% david.bresch@gmail.com, 20160514, -v7.3 in save added
+% david.bresch@gmail.com, 20160529, fast parfor version, about twenty times faster
 %-
 
 hazard=[]; % init

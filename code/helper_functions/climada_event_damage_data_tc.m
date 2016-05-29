@@ -439,7 +439,7 @@ hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 
 if add_surge
     % add TS (tropical cyclone surge)
-    hazard_TS=tc_surge_hazard_create(hazard,'NO_SAVE');
+    hazard_TS=climada_ts_hazard_set(hazard,'NO_SAVE');
     
     % calculate TS damage
     hazard_TS.damage=hazard_TS.intensity*0; % init
