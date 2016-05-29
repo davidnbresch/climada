@@ -39,6 +39,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
 % Lea Mueller, muellele@gmail.com, 20150716, add landslides option (LS) with specific colormap, intensities from 0 to 1
 % David N. Bresch, david.bresch@gmail.com, 20160527, complete overhaul, new field hazard.map
 % David N. Bresch, david.bresch@gmail.com, 20160529, otherwise in colorscale selection fixed
+% David N. Bresch, david.bresch@gmail.com, 20160529, new default return periods (6)
 %-
 
 % init global variables
@@ -56,7 +57,7 @@ if ~exist('check_plot'    , 'var'), check_plot     = 1 ; end
 mat_dens=0.5; % default 0.5
 %
 % set default return periods
-if isempty(return_periods'),return_periods = [1 5 10 25 50 100 500 1000];end
+if isempty(return_periods'),return_periods = [10 25 50 100 500 1000];end
 
 
 hazard=climada_hazard_load(hazard);
