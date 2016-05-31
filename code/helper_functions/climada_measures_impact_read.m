@@ -24,6 +24,7 @@ function measures_impact = climada_measures_impact_read(measures)
 %       i.e. with fields .benefit, .cb_ratio, .measures, etc.
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20160523, init
+% Lea Mueller, muellele@gmail.com, 20160531, NVP_total_climate_risk is an array instead of a vector
 %-
 
 global climada_global
@@ -78,7 +79,7 @@ if iscell(measures.cost_display_unit_name), measures.cost_display_unit_name = me
 
 if numel(measures.Value_display_unit_fact)>1, measures.Value_display_unit_fact = measures.Value_display_unit_fact(1); end
 if numel(measures.cost_display_unit_fact)>1, measures.cost_display_unit_fact = measures.cost_display_unit_fact(1); end
-
+if numel(measures.NPV_total_climate_risk)>1, measures.NPV_total_climate_risk = measures.NPV_total_climate_risk(1); end
 
 % put fields into separate structure and revove from measures
 measures_impact.benefit = measures.benefit;

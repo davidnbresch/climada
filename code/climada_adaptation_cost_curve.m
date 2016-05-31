@@ -73,6 +73,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20160429, major review, unit display etc cleaned up
 % David N. Bresch, david.bresch@gmail.com, 20160429, insurance_benefit,insurance_cost as output again
 % David N. Bresch, david.bresch@gmail.com, 20160429, stdout cleaned up
+% Lea Mueller, muellele@gmail.com, 20160531, show x- and y-ticks
 %-
 
 global climada_global
@@ -433,5 +434,8 @@ if called_from_climada_demo % only if called from climada_demo GUI
     insurance_benefit = insurance_benefit/measures_impact.Value_display_unit_fact*100;
     insurance_cost    = insurance_cost   /measures_impact.Value_display_unit_fact*100;
 end % called_from_climada_demo
+
+% to see the x- and y-ticks
+set(gca, 'Layer','top')
 
 end % climada_adaptation_cost_curve
