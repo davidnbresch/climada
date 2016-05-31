@@ -50,7 +50,7 @@ fig = []; %init
 % set defaults
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
-if ~exist('figure_name','var'),figure_name=[];end
+if ~exist('figure_name','var'),figure_name='';end
 if ~exist('title_str','var'),title_str=[];end
 if ~exist('plot_method','var'),plot_method=[];end
 if ~exist('interp_method','var'),interp_method=[];end
@@ -63,7 +63,7 @@ if ~exist('stencil_ext','var'),stencil_ext=[];end
 % PARAMETERS
 %
 % set defaults
-if isempty(figure_name),figure_name='climada';end
+if isempty(figure_name),figure_name='none';end
 if isempty(title_str),title_str='color plot';end
 if isempty(plot_method),plot_method='pcolor';end
 if isempty(interp_method),interp_method='linear';end

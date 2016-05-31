@@ -389,6 +389,7 @@ for step_i=min_node:max_node
         res=climada_tc_windfield(tc_track_segment,centroids,0,1,0);
     else
         res=climada_tc_windfield(tc_track_segment,centroids,0,-1,0);
+        %res=climada_tc_windfield_fast(tc_track_segment,centroids,0,-1,0);
     end
     
     hazard.intensity(step_i-min_node+1,:)=res.gust;
@@ -438,7 +439,7 @@ hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 
 if add_surge
     % add TS (tropical cyclone surge)
-    hazard_TS=tc_surge_hazard_create(hazard,'NO_SAVE');
+    hazard_TS=climada_ts_hazard_set(hazard,'NO_SAVE');
     
     % calculate TS damage
     hazard_TS.damage=hazard_TS.intensity*0; % init

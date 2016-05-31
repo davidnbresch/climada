@@ -64,7 +64,8 @@ elseif  exist('EDS1','var') && exist('EDS2','var') && exist('EDS3','var')...
     
     
 else   %no valid input
-    warning('m_id','function stopped: please choose as function input 3 EDS structs or 6 EDS structs to include the EDS_rain, respectively or select the according files if no input is stated')
+    %warning('m_id','function stopped: please choose as function input 3 EDS structs or 6 EDS structs to include the EDS_rain, respectively or select the according files if no input is stated')
+    warning('function stopped: please choose as function input 3 EDS structs or 6 EDS structs to include the EDS_rain, respectively or select the according files if no input is stated')
     return;
 end
 
@@ -193,7 +194,7 @@ end
 % requested return period save all losses under loss
 for EDS_i = 1:length(EDS)
     if return_period == 9999
-        loss(EDS_i) = EDS(EDS_i).EL;
+        loss(EDS_i) = EDS(EDS_i).ED;
     else
         r_index = EDS(1).R_fit == return_period;
         if sum(r_index)<1

@@ -1,4 +1,4 @@
-function info=climada_tc_track_info(tc_track,check_plot,boundary_rect)
+function info=climada_tc_track_info(tc_track,check_plot,boundary_rect,centroids,manual_select)
 % climada tc track info
 % MODULE:
 %   core
@@ -27,12 +27,19 @@ function info=climada_tc_track_info(tc_track,check_plot,boundary_rect)
 %       the slide to show hist/prob, see boundary_rect also)
 %   boundary_rect: the boundary to plot [minlon maxlon minlat maxlat]
 %       default is whole globe
+%   centroids: a structure with centroids.lon, centroids.lat
+%       if provided, only show tracks intersecting centroids
+%   manual_select: if =1, alow for user to define point(s) on the map to
+%       select tracks in vicinity (press enter after clicking on the map)
+%       Best use is to define a 'gate', i.e. two points on the left and
+%       right of the track to select.
 % OUTPUTS:
 %   info contains some information, but to stdout is main purpose of this
 %       routine
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150118, initial
 % David N. Bresch, david.bresch@gmail.com, 20160515, check_plot and boundary_rect added
+% David N. Bresch, david.bresch@gmail.com, 20160528, centroids and manual_select added
 %-
 
 info=[]; % init output
@@ -45,11 +52,16 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('tc_track','var'),tc_track=[];end
 if ~exist('check_plot','var'),check_plot=0;end
 if ~exist('boundary_rect','var'),boundary_rect=[];end
+if ~exist('centroids','var'),centroids=[];end
+if ~exist('manual_select','var'),manual_select=0;end
 
 % PARAMETERS
 % 
 % color of land
 country_color=[.7 .7 .7]; % light gray
+%
+% border around the area shown if based on centroids
+dlim=1; % in degrees
 
 % prompt for tc_track
 tc_track_filename='';
@@ -80,6 +92,23 @@ if ~isfield(tc_track,'category')
     tc_track=climada_tc_stormcategory(tc_track); % add storm category
 end
 
+tc_track_number=1:length(tc_track);
+
+if ~isempty(centroids)
+    % restrict to tracks intersecting centroids
+    boundary_rect=[min(centroids.lon)-dlim max(centroids.lon)+dlim min(centroids.lat)-dlim max(centroids.lat)+dlim];
+    XV=[min(centroids.lon) min(centroids.lon) max(centroids.lon) max(centroids.lon)];
+    YV=[min(centroids.lat) max(centroids.lat) max(centroids.lat) min(centroids.lat)];
+    tracks_selected=1:length(tc_track);
+    for track_i=1:length(tc_track)
+        if sum(inpolygon(tc_track(track_i).lon,tc_track(track_i).lat,XV,YV))==0
+            tracks_selected(track_i)=0; % remove
+        end
+    end % track_i
+    tc_track=tc_track(tracks_selected>0);
+    tc_track_number=tc_track_number(tracks_selected>0);
+end % ~isempty(centroids)
+
 if check_plot>=0
     
     fprintf('iiii: name          yyyymmdd  category\n'); % header
@@ -87,7 +116,7 @@ if check_plot>=0
     info=cell(1,length(tc_track)); % allocate
     
     for track_i=1:length(tc_track)
-        info{track_i}=sprintf('%4.4i: %s (%4.4i%2.2i%2.2i) %i',track_i,...
+        info{track_i}=sprintf('%4.4i: %s (%4.4i%2.2i%2.2i) %i',tc_track_number(track_i),...
             char(tc_track(track_i).name),...
             tc_track(track_i).yyyy(1),tc_track(track_i).mm(1),tc_track(track_i).dd(1),...
             max(tc_track(track_i).category));
@@ -101,7 +130,7 @@ min_yyyy=1e6;max_yyyy=-1e6;
 if abs(check_plot)
     
     % plot land and ocean in light blue
-    climada_plot_world_borders(-1,'','',1,[],country_color);
+    climada_plot_world_borders(-1,'','',0,[],country_color);
     hold on
     
     % fastest two loops, first ploting probabilsitic tracks, then historic
@@ -129,10 +158,40 @@ if abs(check_plot)
     fprintf(' done\n')
     axis equal
     if ~isempty(boundary_rect),xlim(boundary_rect(1:2));ylim(boundary_rect(3:4));end
-    %climada_plot_world_borders(2,'','',1,[],[0 .7 0]);
+    if ~isempty(centroids),plot(centroids.lon,centroids.lat,'.r','MarkerSize',1);end
     hold off; drawnow
     xlabel('blue: probabilistic, red: historic');
     title(sprintf('%4.4i .. %4.4i',min_yyyy,max_yyyy));
+    
+    if manual_select
+        fprintf('select point(s) on the map using the mouse, then press enter/return\n')
+        [x,y] = ginput;
+        % restrict to tracks close the selected point(s)
+        if length(x)==1,x(2)=x(1)+0.01;y(2)=y(1)+0.01;end
+        hold on;plot(x,y,'or');
+        XV=[min(x) min(x) max(x) max(x)];
+        YV=[min(y) max(y) max(y) min(y)];
+        tracks_selected=1:length(tc_track);
+        for track_i=1:length(tc_track)
+            if sum(inpolygon(tc_track(track_i).lon,tc_track(track_i).lat,XV,YV))==0
+                tracks_selected(track_i)=0; % remove
+            end
+        end % track_i
+        tc_track=tc_track(tracks_selected>0);
+        tc_track_number=tc_track_number(tracks_selected>0);
+
+        for track_i=1:length(tc_track)
+            plot(tc_track(track_i).lon,tc_track(track_i).lat,'Color','g');
+            track_info=sprintf('%4.4i: %s (%4.4i%2.2i%2.2i) %i',tc_track_number(track_i),...
+                char(tc_track(track_i).name),...
+                tc_track(track_i).yyyy(1),tc_track(track_i).mm(1),tc_track(track_i).dd(1),...
+                max(tc_track(track_i).category));
+            fprintf('%s\n',track_info);
+        end % track_i
+        hold off; drawnow
+        
+    end % manual_select
+    
 end % check_plot
 
 end % climada_tc_track_info

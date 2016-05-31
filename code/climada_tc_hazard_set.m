@@ -1,7 +1,7 @@
 function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % climada TC hazard event set generate
 % NAME:
-%   climada_tc_hazard_set
+%   climada_tr_hazard_set
 % PURPOSE:
 %   generate a tc (tropical cyclone) hazard event set
 %
@@ -12,23 +12,30 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %
 %   Special: the hazard event set is stored every 100 tracks in order to
 %   allow for interruption of the hazard set generation. Just re-start the
-%   calculation by calling climada_tc_hazard_set with exactly the same
+%   calculation by calling climada_tr_hazard_set with exactly the same
 %   input parameters (the last track calculated is stored in hazard.track_i
 %   and the field track_i is removed in the final complete hazard event set).  
 %   Therefore, if you get errors such as 
 %       Subscripted assignment dimension mismatch.
-%       Error in climada_tc_hazard_set (line 270) % ... or nearby
+%       Error in climada_tr_hazard_set (line 270) % ... or nearby
 %       hazard.intensity(track_i,:)     = res.gust;
 %   It is VERY likely that you changed something between subsequent calls
 %   (i.e. different centroids). Just delete the hazard set .mat file and run
-%   climada_tc_hazard_set again.
+%   climada_tr_hazard_set again.
+%
+%   See climada_tc_hazard_set_slow in the tropical cyclone module 
+%   (https://github.com/davidnbresch/climada_module_tropical_cyclone) 
+%   for the old slow version (for backward compatibility).
 %
 %   previous: likely climada_random_walk
 %   next: diverse
 % CALLING SEQUENCE:
-%   res=climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
+%   res=climada_tr_hazard_set(tc_track,hazard_set_file,centroids)
 % EXAMPLE:
-%   res=climada_tc_hazard_set(tc_track)
+%   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
+%   centroids=climada_centroids_load('USFL_MiamiDadeBrowardPalmBeach');
+%   %centroids=climada_entity_load('USA_UnitedStatesFlorida'); % works, too
+%   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST_PARFOR',centroids);
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   tc_track: a TC track structure, or a filename of a saved one
@@ -78,19 +85,20 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %       filename: the filename of the hazard event set (if passed as a
 %           struct, this is often useful)
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20090729
-% David N. Bresch, david.bresch@gmail.com, 20130506, centroids filename handling improved
-% David N. Bresch, david.bresch@gmail.com, 20140421, waitbar with secs
-% David N. Bresch, david.bresch@gmail.com, 20141226, optional fields in centroids added
-% David N. Bresch, david.bresch@gmail.com, 20150103, equal_timestep (much) improved
-% Lea Mueller, muelleleh@gmail.com, 20150420, include tc category into hazard structure
-% David N. Bresch, david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
-% David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir
-% David N. Bresch, david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
-% David N. Bresch, david.bresch@gmail.com, 20150906, note on a frequent issue added to header
-% David N. Bresch, david.bresch@gmail.com, 20151008, NOSAVE option added
-% Lea Mueller, muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
-% David N. Bresch, david.bresch@gmail.com, 20160514, -v7.3 in save added
+% david.bresch@gmail.com, 20090729
+% david.bresch@gmail.com, 20130506, centroids filename handling improved
+% david.bresch@gmail.com, 20140421, waitbar with secs
+% david.bresch@gmail.com, 20141226, optional fields in centroids added
+% david.bresch@gmail.com, 20150103, equal_timestep (much) improved
+% muelleleh@gmail.com, 20150420, include tc category into hazard structure
+% david.bresch@gmail.com, 20150804, allow for filename without path for hazard set name on input
+% david.bresch@gmail.com, 20150819, climada_global.centroids_dir
+% david.bresch@gmail.com, 20150824, removed 'TCNA' from hazard.comment
+% david.bresch@gmail.com, 20150906, note on a frequent issue added to header
+% david.bresch@gmail.com, 20151008, NOSAVE option added
+% muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
+% david.bresch@gmail.com, 20160514, -v7.3 in save added
+% david.bresch@gmail.com, 20160529, fast parfor version, about twenty times faster
 %-
 
 hazard=[]; % init
@@ -106,7 +114,6 @@ if ~exist('centroids','var'),centroids=[];end
 
 % PARAMETERS
 %
-check_plot=0; % only for few tracks, please
 % check_plot commented out here and in climada_tc_windfield for speedup, see code
 %
 % since we store the hazard as sparse array, we need an a-priory estimation
@@ -222,8 +229,11 @@ end
 
 % add tc track category (saffir-simpson)
 if ~isfield(tc_track, 'category')
-    tc_track = climada_tc_stormcategory(tc_track);
+    tc_track = climada_tc_stormcategory(tc_track); % adds tc_track.category
 end
+
+n_centroids=length(centroids.lon);
+n_tracks = length(tc_track);
 
 min_year   = tc_track(1).yyyy(1);
 max_year   = tc_track(end).yyyy(1); % start time of track, as we otherwise might count one year too much
@@ -233,35 +243,25 @@ hazard.reference_year   = hazard_reference_year;
 hazard.lon              = centroids.lon;
 hazard.lat              = centroids.lat;
 hazard.centroid_ID      = centroids.centroid_ID;
-if isfield(centroids,'elevation_m'),hazard.elevation_m=centroids.elevation_m;end
 hazard.orig_years       = orig_years;
 hazard.orig_event_count = 0; % init
-hazard.event_count      = length(tc_track);
+hazard.event_count      = n_tracks;
 hazard.event_ID         = 1:hazard.event_count;
-hazard.category         = zeros(1,hazard.event_count);
-hazard.orig_event_flag  = zeros(1,hazard.event_count);
-hazard.yyyy             = zeros(1,hazard.event_count);
-hazard.mm               = zeros(1,hazard.event_count);
-hazard.dd               = zeros(1,hazard.event_count);
-hazard.datenum          = zeros(1,hazard.event_count);
+hazard.category         = zeros(1,n_tracks);
+hazard.orig_event_flag  = zeros(1,n_tracks);
+hazard.yyyy             = zeros(1,n_tracks);
+hazard.mm               = zeros(1,n_tracks);
+hazard.dd               = zeros(1,n_tracks);
+hazard.datenum          = zeros(1,n_tracks);
 hazard.scenario         = hazard_scenario;
 
-% allocate the hazard array (sparse, to manage memory)
-hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
-    ceil(hazard.event_count*length(hazard.lon)*hazard_arr_density));
+% allocate the hazard array (sparse, to manage MEMORY)
+intensity = spalloc(n_tracks,n_centroids,...
+    ceil(n_tracks*n_centroids*hazard_arr_density));
+%intensity = zeros(n_tracks,n_centroids); % FASTER
 
 t0       = clock;
-n_tracks = length(tc_track);
-msgstr   = sprintf('processing %i tracks',n_tracks);
-mod_step = 10; % first time estimate after 10 tracks, then every 100
-if climada_global.waitbar
-    fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
-    h        = waitbar(0,msgstr);
-    set(h,'Name','Hazard TC: tropical cyclones wind');
-else
-    fprintf('%s\n',msgstr);
-    format_str='%s';
-end
+fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);
 
 if n_tracks>10000
     default_min_TimeStep=2; % speeds up calculation by factor 2
@@ -269,74 +269,32 @@ else
     default_min_TimeStep=climada_global.tc.default_min_TimeStep;
 end
 tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep); % make equal timesteps
-
-track0=1;
-if exist(hazard_set_file,'file');
-    load(hazard_set_file); % restore from intermediate save
-    if isfield(hazard,'track_i'),track0=hazard.track_i;end
-    fprintf('picking up at track %i from %s\n',track0,hazard_set_file);
-end
-
-for track_i=track0:n_tracks
     
-    % calculate wind for every centroids, equal timestep within this routine
-    res                             = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
-    %res                             = climada_tc_windfield_fast(tc_track(track_i),centroids,0,1,check_plot);
-    
-    hazard.intensity(track_i,:)     = res.gust;
+parfor track_i=1:n_tracks
+    %res                   = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+    %intensity(track_i,:)  = sparse(res.gust); % MEMORY   
+    %intensity(track_i,:)  = res.gust; % FASTER
+    intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+end %track_i
+
+hazard.intensity=sparse(intensity); % store into struct, sparse() to be safe
+clear intensity % free up memory
+
+% small lop to populate additional fields
+for track_i=1:n_tracks
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
     hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag;
-    
     hazard.yyyy(track_i)            = tc_track(track_i).yyyy(1);
     hazard.mm(track_i)              = tc_track(track_i).mm(1);
     hazard.dd(track_i)              = tc_track(track_i).dd(1);
     hazard.datenum(track_i)         = tc_track(track_i).datenum(1);
     hazard.name{track_i}            = tc_track(track_i).name;
     hazard.category(track_i)        = tc_track(track_i).category;
-    
-    % if check_plot
-    %     values = res.gust;
-    %     values(values==0) = NaN; % suppress zero values
-    %     caxis_range       = [];
-    %     climada_color_plot(values,res.lon,res.lat,'none',tc_track(track_i).name,[],[],[],[],caxis_range);hold on;
-    %     plot(tc_track(track_i).lon,tc_track(track_i).lat,'xk');hold on;
-    %     set(gcf,'Color',[1 1 1]);
-    % end
-    
-    % following block only for progress measurement (waitbar or stdout)
-    if mod(track_i,mod_step)==0
-        mod_step          = 100;
-        t_elapsed_track   = etime(clock,t0)/(track_i-track0+1); % time per track
-        tracks_remaining  = n_tracks-track_i;
-        t_projected_sec   = t_elapsed_track*tracks_remaining;
-        if t_projected_sec<60
-            msgstr = sprintf('est. %3.0f sec left (%i/%i tracks)',t_projected_sec,   track_i,n_tracks);
-        else
-            msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
-        end
-        hazard.track_i=track_i;
-        %if isempty(strfind(hazard_set_file,'NOSAVE')),save(hazard_set_file,'hazard');end % intermediate save
-        if isempty(strfind(hazard_set_file,'NOSAVE')),save(hazard_set_file,'hazard','-v7.3');end % intermediate save, 20160514 -v7.3 added
-        if climada_global.waitbar
-            waitbar(track_i/n_tracks,h,msgstr); % update waitbar
-        else
-            fprintf(format_str,msgstr);
-            format_str=[repmat('\b',1,length(msgstr)) '%s'];
-        end
-    end
-        
-end %track_i
-if climada_global.waitbar
-    close(h) % dispose waitbar
-else
-    fprintf(format_str,''); % move carriage to begin of line
-end
+end % track_i
 
 t_elapsed = etime(clock,t0);
 msgstr    = sprintf('generating %i windfields took %3.2f min (%3.4f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
 fprintf('%s\n',msgstr);
-
-if isfield(hazard,'track_i'),hazard=rmfield(hazard,'track_i');end
 
 % number of derived tracks per original one
 ens_size        = hazard.event_count/hazard.orig_event_count-1;

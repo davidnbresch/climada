@@ -32,6 +32,7 @@ function tc_track=climada_tc_track_load(tc_track_filename,check_plot)
 %       climada_tc_read_unisys_database or climada_tc_read_unisys_tc_track
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160516, initial
+% David N. Bresch, david.bresch@gmail.com, 20160528, more filename completion options
 %-
 
 tc_track=[]; % init output
@@ -59,7 +60,11 @@ elseif ~exist(tc_track_filename,'file')
     % complete path, if missing
     [fP,fN,fE]=fileparts(tc_track_filename);
     if isempty(fP),fP=[climada_global.data_dir filesep 'tc_tracks'];end
-    if isempty(fE),fE='.mat';end
+    if isempty(fE)
+        fE='.mat';
+    elseif ~strcmp(fE,'.mat') % to allow for e.g. tracks.atl_hist
+        fE=[fE '.mat'];
+    end
     tc_track_filename=[fP filesep fN fE];
     if ~exist(tc_track_filename,'file')
         [fP,fN,fE]=fileparts(tc_track_filename);

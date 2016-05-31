@@ -35,16 +35,16 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 %   a figure with the DFC plot
 %   legend_str: the legend string
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20100108
-% David N. Bresch, david.bresch@gmail.com, 20100109, comparison added
-% Lea Mueller, 20120816, comparison title of all comparisons, changed markersize
-% David N. Bresch, david.bresch@gmail.com, 20130316, ELS->EDS...
-% David N. Bresch, david.bresch@gmail.com, 20130316, slight cleanup
-% Lea Mueller, muellele@gmail.com, 20150421, legend location SouthEast instead of NorthWest
-% David N. Bresch, david.bresch@gmail.com, 20150515, line 212, legend_str{end+1}...
-% David N. Bresch, david.bresch@gmail.com, 20150906, EDS.Value_unit used
-% Lea Mueller, muellele@gmail.com, 20160308, add output DFC structure
-% David N. Bresch, david.bresch@gmail.com, 20160429, calling EDS2DFC, DFC.Value instead of DFC.value
+% david.bresch@gmail.com, 20100108
+% david.bresch@gmail.com, 20100109, comparison added
+% muellele@gmail.com, 20120816, comparison title of all comparisons, changed markersize
+% david.bresch@gmail.com, 20130316, ELS->EDS...
+% david.bresch@gmail.com, 20130316, slight cleanup
+% muellele@gmail.com, 20150421, legend location SouthEast instead of NorthWest
+% david.bresch@gmail.com, 20150515, line 212, legend_str{end+1}...
+% david.bresch@gmail.com, 20150906, EDS.Value_unit used
+% muellele@gmail.com, 20160308, add output DFC structure
+% david.bresch@gmail.com, 20160429, calling EDS2DFC, DFC.Value instead of DFC.value
 %-
 
 DFC = []; DFC_comparison = []; fig = []; legend_str = []; %init
