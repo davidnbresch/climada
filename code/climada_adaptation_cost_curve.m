@@ -194,7 +194,8 @@ end
 fprintf('\n%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
 fprintf(' Measure 		   Cost (%s)  Benefit (%s)  %s\n',...
-    measures_impact.cost_display_unit_name,measures_impact.Value_display_unit_name,CostBenefit_str);
+    measures_impact.cost_display_unit_name,measures_impact.cost_display_unit_name,CostBenefit_str);
+%    measures_impact.cost_display_unit_name,measures_impact.Value_display_unit_name,CostBenefit_str);%    20160701 srzdnb
 for measure_i = 1:n_measures
     m_name = [measures_impact.measures.name{measure_i} '                    '];
     m_name = m_name(1:25);
@@ -223,7 +224,8 @@ plot([0,xmax],[ymax,ymax],'.w'); hold on
 set(gca,'FontSize',fontsize_);
 if ~called_from_climada_demo,set(gcf,'Color',[1 1 1]);end
 xlabel(xlabel_str,'fontsize',fontsize_+1)
-ylabelstr = sprintf('%s ratio (%s/%s)',CostBenefit_str,measures_impact.Value_display_unit_name,measures_impact.cost_display_unit_name);
+%ylabelstr = sprintf('%s ratio (%s/%s)',CostBenefit_str,measures_impact.Value_display_unit_name,measures_impact.cost_display_unit_name);
+ylabelstr = sprintf('%s ratio (%s/%s)',CostBenefit_str,measures_impact.Value_unit,measures_impact.cost_unit);
 ylabel(ylabelstr,'fontsize',fontsize_+1)
 
 % plot measures

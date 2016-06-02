@@ -52,6 +52,8 @@ function  fig = climada_waterfall_graph(EDS_today,EDS_dev,EDS_cc,return_period,c
 % David N. Bresch, david.bresch@gmail.com, 20160524, default legend_on=0, some simplifiactions
 %-
 
+fig=[]; % init dummy output
+
 global climada_global
 if ~climada_init_vars, return; end
 
