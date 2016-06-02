@@ -10,7 +10,7 @@ function climada_shapeplotter(shapes,label_att,lon_fieldname,lat_fieldname,varar
 %   climada_shapeplotter(shapes,label_att,varargin)
 % EXAMPLE:
 %   climada_shapeplotter(shapes,'attribute name','X','Y','linewidth',2,'color','r')
-%   climada_shapeplotter(shapes,'attribute name','x','y','linewidth',2,'color','r')
+%   climada_shapeplotter(shapes,'attribute name','x','y','linewidth',2,'color','r','plot3_level',500)
 % INPUTS: 
 %   shapes         : struct with shape file info must have fields X and Y
 % OPTIONAL INPUT PARAMETERS:
@@ -26,6 +26,7 @@ function climada_shapeplotter(shapes,label_att,lon_fieldname,lat_fieldname,varar
 % Lea Mueller, muellele@gmail.com, 20160229, use plot instead of plot3
 % Lea Mueller, muellele@gmail.com, 20160229, rename to climada_shapeplotter from shape_plotter and move to climada/core/helper_functions
 % Lea Mueller, muellele@gmail.com, 20160314, try both, .X and .Y as well as .lon and .lat
+% Lea Mueller, muellele@gmail.com, 20160314, add "plot3_level" to plot lines as plot3 on a certain plot3_level
 %-
 
 global climada_global
@@ -62,22 +63,27 @@ if ~isfield(shapes,lon_fieldname) || ~isfield(shapes,lat_fieldname)
     end
 end
 
-vararg_str = '';
+vararg_str = ''; plot3_level = 1; plot3_level_tag = 0;%init
 if ~isempty(varargin)
-    for arg_i = 1: length(varargin)
-        if isnumeric(varargin{arg_i})
-            vararg_str = [vararg_str ',' '[' num2str(varargin{arg_i}) ']'];
-        elseif ischar(varargin{arg_i})
-            vararg_str = [vararg_str ',' '''' varargin{arg_i} '''']; 
+    for arg_i = 1:length(varargin)
+        if ischar(varargin{arg_i})
+            if ~strcmp(varargin{arg_i},'plot3_level')
+                vararg_str = [vararg_str ',' '''' varargin{arg_i} ''''];
+                plot3_level_tag = 0;
+            else plot3_level_tag = 1; end
+        else
+            if isnumeric(varargin{arg_i}) && plot3_level_tag == 0, vararg_str = [vararg_str ',' '[' num2str(varargin{arg_i}) ']']; end
+        	if isnumeric(varargin{arg_i}) && plot3_level_tag == 1, plot3_level = varargin{arg_i}; end
         end
     end
-else
-    vararg_str = ',''linewidth'',1,''color'',[81 81 81]/255';
 end
+if isempty(varargin), vararg_str = ',''linewidth'',1,''color'',[81 81 81]/255'; end  
 
 eval_str = sprintf('h = plot(shapes(shape_i).%s, shapes(shape_i).%s %s);',lon_fieldname, lat_fieldname, vararg_str);
-% eval_str = sprintf('h = plot3(shapes(shape_i).%s, shapes(shape_i).%s,Z %s);',lon_fieldname, lat_fieldname, vararg_str);
-% eval_str = ['h = plot3(shapes(shape_i).X, shapes(shape_i).Y,Z' vararg_str ');'];
+if plot3_level>1
+    eval_str = sprintf('h = plot3(shapes(shape_i).%s, shapes(shape_i).%s, ones(numel(shapes(shape_i).%s),1)*%5.1f %s);',...
+        lon_fieldname, lat_fieldname, lat_fieldname, plot3_level, vararg_str);
+end
 hold on
 % legend('-DynamicLegend');
 

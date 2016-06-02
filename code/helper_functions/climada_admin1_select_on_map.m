@@ -25,6 +25,7 @@ function listbox = climada_admin1_select_on_map(admin0_name,admin0_shapes,admin1
 % Lea Mueller, muellele@gmail.com, 20160224, init
 % Lea Mueller, muellele@gmail.com, 20160229, move to climada/helper_functions, rename to climada_admin1_select_on_map
 % Lea Mueller, muellele@gmail.com, 20160426, loop over single segments of polygons divided by nan
+% Lea Mueller, muellele@gmail.com, 20160601, horizontal alignment of text in center
 %-
 
 listbox = []; %init
@@ -97,7 +98,7 @@ title(admin0_shapes(is_selected_admin0).NAME)
 for admin1_i = 1:length(is_selected_admin1)
     plot(admin1_shapes(is_selected_admin1(admin1_i)).X,admin1_shapes(is_selected_admin1(admin1_i)).Y,'-r','LineWidth',1);
     text(admin1_shapes(is_selected_admin1(admin1_i)).longitude,admin1_shapes(is_selected_admin1(admin1_i)).latitude,...
-         admin1_shapes(is_selected_admin1(admin1_i)).name);     
+         admin1_shapes(is_selected_admin1(admin1_i)).name,'Horizontalalignment','center');     
 end
    
 % Create listbox menu
