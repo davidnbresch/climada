@@ -1,7 +1,7 @@
 function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 % read CHIRPS netCDF file
 % MODULE:
-%   _LOCAL
+%   core
 % NAME:
 %   chirps_read
 % PURPOSE:
@@ -40,6 +40,7 @@ function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 %       image(res.lon,res.lat,res.precip(:,end:-1:1,1)');axis equal
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160103, initial
+% David N. Bresch, david.bresch@gmail.com, 20160603, pat of core climada
 %-
 
 res=[]; % init

@@ -41,6 +41,7 @@ function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
 % Lea Mueller, muellele@gmail.com, 20151127, add assets.region and assets.refence_year
 % Lea Mueller, muellele@gmail.com, 20151207, return if already a complete assets structure as input
 % Lea Mueller, muellele@gmail.com, 20151207, invoke climada_assets_category_ID
+% david.bresch@gmail.com, 20160603, make sure we have 1xN arrays
 %-
 
 global climada_global
@@ -128,6 +129,14 @@ if ~isfield(assets,'Value')
     end
     return
 end
+
+% make sure we have 1xN arrays
+assets.lon                                         =climasre_LOCAL_TRANSPOSE(assets.lon);
+assets.lat                                         =climasre_LOCAL_TRANSPOSE(assets.lat);
+assets.Value                                       =climasre_LOCAL_TRANSPOSE(assets.Value);
+if isfield(assets,'DamageFunID'),assets.DamageFunID=climasre_LOCAL_TRANSPOSE(assets.DamageFunID);end
+if isfield(assets,'Deductible'), assets.Deductible =climasre_LOCAL_TRANSPOSE(assets.Deductible);end
+if isfield(assets,'Cover'),      assets.Cover      =climasre_LOCAL_TRANSPOSE(assets.Cover);end
     
 % assign value units if not given in xls-entity with global values
 if ~isfield(assets,'Value_unit')
@@ -178,6 +187,8 @@ end
 %save(assets_save_file,'entity');
 % % end % climada_check_matfile
     
-return
+end % climada_assets_read
 
-
+function arr=climasre_LOCAL_TRANSPOSE(arr)
+if size(arr,1)>size(arr,2),arr=arr';end
+end % climasre_LOCAL_TRANSPOSE

@@ -35,8 +35,6 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('hazard','var'),hazard=[];end
 
-% PARAMETERS
-
 % if already a complete hazard, return
 if isstruct(hazard)
     return % already a hazard

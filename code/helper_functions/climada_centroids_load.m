@@ -1,4 +1,4 @@
-function centroids=climada_centroids_load(centroids_file)
+function centroids=climada_centroids_load(centroids)
 % climada
 % NAME:
 %   climada_centroids_load
@@ -13,33 +13,55 @@ function centroids=climada_centroids_load(centroids_file)
 % EXAMPLE:
 %   centroids_out=climada_centroids_load(centroids_file)
 % INPUTS:
-%   centroids_file: the filename (with path, optional) of previously saved centroids, see
-%       climada_centroids_read
-%       Works also if the file contains an entity.
-%       If no path provided, default path ../data/system is used (and name
-%       can be without extension .mat and even without _centroids.mat)
-%       > promted for if not given
+%   entity: the filename (and path, optional) of a previously saved centroids
+%       structure. If no path provided, default path ../data/centroids is used
+%       (and name can be without extension .mat or even without _entity.mat)
+%       > promted for if empty
+%       OR: a centroids structure, in which cas it is just returned (to allow
+%       calling climada_centroids_load anytime, see e.g. climada_EDS_calc)
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 %   centroids_out: a struct, see e.g. climada_centroids_read for details
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20130719
-% David N. Bresch, david.bresch@gmail.com, 20150804, allow for name without path on input
-% David N. Bresch, david.bresch@gmail.com, 20150817, climada_global.centroids_dir
-% David N. Bresch, david.bresch@gmail.com, 20160516, allow for filename without _centroids
-% David N. Bresch, david.bresch@gmail.com, 20160528, fix for .mat extension
+% david.bresch@gmail.com, 20130719
+% david.bresch@gmail.com, 20150804, allow for name without path on input
+% david.bresch@gmail.com, 20150817, climada_global.centroids_dir
+% david.bresch@gmail.com, 20160516, allow for filename without _centroids
+% david.bresch@gmail.com, 20160528, fix for .mat extension
+% david.bresch@gmail.com, 20160703, same full flexibility as climada_entity_load
 %-
-
-centroids=[]; % init output
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
-if ~exist('centroids_file','var'),centroids_file=[];end
+if ~exist('centroids','var'),centroids=[];end
 
-% PARAMETERS
-%
+% if already a complete hazard, return
+if isstruct(centroids)
+    
+    if isfield(centroids,'assets')
+        % centroids contains in fact an entity
+        entity=centroids; centroids=[]; % silly switch, but fastest
+        centroids.lat =entity.assets.lat;
+        centroids.lon=entity.assets.lon;
+        centroids.centroid_ID=1:length(entity.assets.lon);
+        % treat optional fields
+        if isfield(entity.assets,'distance2coast_km'),centroids.distance2coast_km=entity.assets.distance2coast_km;end
+        if isfield(entity.assets,'elevation_m'),centroids.elevation_m=entity.assets.elevation_m;end
+        if isfield(entity.assets,'country_name'),centroids.country_name=entity.assets.country_name;end
+        if isfield(entity.assets,'admin0_name'),centroids.admin0_name=entity.assets.admin0_name;end
+        if isfield(entity.assets,'admin0_ISO3'),centroids.admin0_ISO3=entity.assets.admin0_ISO3;end
+        if isfield(entity.assets,'admin1_name'),centroids.admin1_name=entity.assets.admin1_name;end
+        if isfield(entity.assets,'admin1_code'),centroids.admin1_code=entity.assets.admin1_code;end
+        clear entity
+    end
+
+    return % already a hazard
+else
+    centroids_file=centroids;centroids=[];
+    % from now on, centroids_file is the input and centroids will be output
+end
 
 % prompt for centroids_file if not given
 if isempty(centroids_file) % local GUI
@@ -54,12 +76,12 @@ end
 
 % complete path, if missing
 [fP,fN,fE]=fileparts(centroids_file);
+if isempty(fP),fP=[climada_global.data_dir filesep 'centroids'];end
 if isempty(fE),fE='.mat';end
-if isempty(fP),centroids_file=[climada_global.centroids_dir filesep fN fE];end
-
-if ~exist(centroids_file,'file') % try also appending '_centroids'
+centroids_file=[fP filesep fN fE];
+if ~exist(centroids_file,'file')
     [fP,fN,fE]=fileparts(centroids_file);
-    fN=[fN '_centroids'];
+    fN=[fN '_centroids']; % append _entity
     centroids_file=[fP filesep fN fE];
 end
 

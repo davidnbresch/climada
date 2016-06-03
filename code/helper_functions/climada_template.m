@@ -5,8 +5,10 @@ function res=climada_template(param1,param2)
 % NAME:
 %   climada_template
 % PURPOSE:
-%   Describe the purpouse in a few sentences
-%   here: template for header and simple argument checks
+%   <describe purpose and use here>
+%
+%   previous call: <note the most usual previous call here>
+%   next call: <note the most usual next function call here>
 % CALLING SEQUENCE:
 %   res=climada_template(param1,param2);
 % EXAMPLE:
@@ -15,13 +17,13 @@ function res=climada_template(param1,param2)
 %   param1:
 %       > promted for if not given
 %   OPTION param1: a structure with the fields...
-%       this way, parameters can be passed on a fields
+%       this way, parameters can be passed on a fields, see below
 % OPTIONAL INPUT PARAMETERS:
 %   param2: as an example
 % OUTPUTS:
 %   res: the output, empty if not successful
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20160514
+% David N. Bresch, david.bresch@gmail.com, 20160603
 %-
 
 res=[]; % init output
@@ -37,7 +39,7 @@ if ~exist('param1','var'),param1=[];end % OR:
 if ~exist('param1','var'),param1=struct;end % in case we want to pass all parameters as structure
 if ~exist('param2','var'),param2=[];end
 
-% locate the module's (or this code's) data folder (usually  afolder
+% locate the module's (or this code's) data folder (usually  a folder
 % 'parallel' to the code folder, i.e. in the same level as code folder)
 module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 
@@ -76,14 +78,15 @@ n_events = 10000;
 msgstr   = sprintf('processing %i events',n_events);
 mod_step = 10; % first time estimate after 10 events, then every 100
 
-if climada_global.waitbar
-    fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr);
-    h        = waitbar(0,msgstr);
-    set(h,'Name','Event loop');
-else
-    fprintf('%s (waitbar suppressed)\n',msgstr);
-    format_str='%s';
-end
+% if climada_global.waitbar % commented, as we do not recommend to use a pop-up waitbar (often a nuisance)
+%     fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr);
+%     h        = waitbar(0,msgstr);
+%     set(h,'Name','Event loop');
+% else
+%fprintf('%s (waitbar suppressed)\n',msgstr);
+fprintf('%s\n',msgstr);
+format_str='%s';
+% end
 
 for event_i=1:n_events
     
@@ -101,20 +104,20 @@ for event_i=1:n_events
         else
             msgstr = sprintf('est. %3.1f min left (%i/%i events)',t_projected_sec/60,event_i,n_events);
         end
-        if climada_global.waitbar
-            waitbar(event_i/n_events,h,msgstr); % update waitbar
-        else
-            fprintf(format_str,msgstr); % write progress to stdout
-            format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
-        end
+        % if climada_global.waitbar
+        %    waitbar(event_i/n_events,h,msgstr); % update waitbar
+        % else
+        fprintf(format_str,msgstr); % write progress to stdout
+        format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
+        % end
     end
     
 end % event_i
-if climada_global.waitbar
-    close(h) % dispose waitbar
-else
-    fprintf(format_str,''); % move carriage to begin of line
-end
+% if climada_global.waitbar
+%     close(h) % dispose waitbar
+% else
+fprintf(format_str,''); % move carriage to begin of line
+% end
 fprintf('after the loop\n')
 
 end % climada_template

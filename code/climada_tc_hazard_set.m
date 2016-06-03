@@ -64,6 +64,9 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %       hazard set is stored as hazard_set_file, see code
 %       lon(centroid_i): the longitude of each centroid
 %       lat(centroid_i): the latitude of each centroid
+%       intensity(event_i,centroid_i), sparse: the hazard intensity of 
+%           event_i at centroid_i
+%       frequency(event_i): the frequency of each event
 %       centroid_ID(centroid_i): a unique ID for each centroid
 %       peril_ID: just an ID identifying the peril, e.g. 'TC' for
 %       tropical cyclone or 'ET' for extratropical cyclone
@@ -77,9 +80,6 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %           (1) or probabilistic (0) one
 %       event_ID: a unique ID for each event
 %       date: the creation date of the set
-%       arr(event_i,centroid_i),sparse: the hazard intensity of event_i at
-%           centroid_i
-%       frequency(event_i): the frequency of each event
 %       matrix_density: the density of the sparse array hazard.intensity
 %       windfield_comment: a free comment, not in all hazard event sets
 %       filename: the filename of the hazard event set (if passed as a
@@ -99,6 +99,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % muelleleh@gmail.com, 20151127, add hazard.scenario, default is 'no climate change'
 % david.bresch@gmail.com, 20160514, -v7.3 in save added
 % david.bresch@gmail.com, 20160529, fast parfor version, about twenty times faster
+% david.bresch@gmail.com, 20160603, header: comment added
 %-
 
 hazard=[]; % init

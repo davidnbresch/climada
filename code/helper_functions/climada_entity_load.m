@@ -10,11 +10,11 @@ function [entity,entity_file]=climada_entity_load(entity)
 % EXAMPLE:
 %   entity=climada_entity_load('demo_today')
 % INPUTS:
-%   hazard: the filename (and path, optional) of a previously saved entity
+%   entity: the filename (and path, optional) of a previously saved entity
 %       structure. If no path provided, default path ../data/entities is used
 %       (and name can be without extension .mat or even without _entity.mat)
 %       > promted for if empty
-%       OR: an entity structure, in which cas it is just returned (to allow
+%       OR: an entity structure, in which case it is just returned (to allow
 %       calling climada_entity_load anytime, see e.g. climada_EDS_calc)
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
@@ -37,8 +37,6 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('entity','var'),entity=[];end
-
-% PARAMETERS
 
 % if already a complete hazard, return
 if isstruct(entity)
