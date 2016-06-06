@@ -18,15 +18,16 @@ function dist_m = climada_geo_distance(lon1,lat1,lon2,lat2)
 %   dist_m: distance(s) between points in [m]
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20091227
+% David N. Bresch, david.bresch@gmail.com, 20160606, degree2km used
 %-
 
 dist_m=[]; % init
 
 % check arguments
-if ~exist('lon1'),fprintf('ERROR: enter lon1\n');return;end
-if ~exist('lat1'),fprintf('ERROR: enter lat1\n');return;end
-if ~exist('lon2'),fprintf('ERROR: enter lon2\n');return;end
-if ~exist('lat2'),fprintf('ERROR: enter lat2\n');return;end
+if ~exist('lon1','var'),fprintf('ERROR: enter lon1\n');return;end
+if ~exist('lat1','var'),fprintf('ERROR: enter lat1\n');return;end
+if ~exist('lon2','var'),fprintf('ERROR: enter lon2\n');return;end
+if ~exist('lat2','var'),fprintf('ERROR: enter lat2\n');return;end
 if length(lon2)~=length(lat2),fprintf('ERROR: 2nd point vector not same length\n');return;end
 
 % PARAMETERS
@@ -36,6 +37,6 @@ degree2km = 111.12;
 
 dist_m    =  sqrt( ((lon2-lon1).*cos(lat1./180.*pi) ).^2 + ...
                     (lat2-lat1)                      .^2)...
-             .* 111.12 * 1000; % [in meter]
+             .* degree2km * 1000; % [in meter]
 
 return

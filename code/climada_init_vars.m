@@ -42,6 +42,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160411, climada_global.present_reference_year = 2016
 % David N. Bresch, david.bresch@gmail.com, 20160429, Value_* extended and cost_* added
 % David N. Bresch, david.bresch@gmail.com, 20160429, climada_lonlat_cleanup and climada_centroids_cleanup switched off
+% David N. Bresch, david.bresch@gmail.com, 20160606, max_encoding_distance_m (renamed from max_distance_to_hazard) set to 1e5, not 1e6 any more
 %-
 
 global climada_global
@@ -191,9 +192,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % =1: if ~all(diff(entity.assets.centroid_index) == 1) etc., re-encoded
     climada_global.re_check_encoding = 0; % default =0
     
-    % define maximum distance to hazard when encoding assets to centroids
-    % 1000 km, in [m]
-    climada_global.max_distance_to_hazard = 10^6;
+    % define maximum encoding distance to hazard centroids [in meters]
+    % only the default value, hazard.max_encoding_distance_m is used if defined
+    climada_global.max_encoding_distance_m = 1e5; % default 1e6, 100km
     
     % set some parameters for climada_demo_gui (allows users to make use of
     % the GUI for their own purpose, i.e. other entity...)

@@ -27,6 +27,7 @@ function climada_assets_encode_check(assets,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20141219, initial
 % David N. Bresch, david.bresch@gmail.com, 20141230, hazard as input option added
 % David N. Bresch, david.bresch@gmail.com, 20150716, logical (line 72) fixed
+% David N. Bresch, david.bresch@gmail.com, 20160606, small error in plot fixed
 %-
 
 global climada_global
@@ -97,14 +98,22 @@ plot(hazard.lon,hazard.lat,'xb','MarkerSize',MarkerSize);
 legend({'assets','centroids'})
 
 nonencoded_pos=find(entity.assets.centroid_index<=0);
-if ~isempty(nonencoded_pos),fprintf('Warning: %i asset snot encoded\n',length(nonencoded_pos));end
-entity.assets.centroid_index=entity.assets.centroid_index(entity.assets.centroid_index>0);
-entity.assets.lon     =entity.assets.lon(entity.assets.centroid_index>0);
-entity.assets.lat      =entity.assets.lat(entity.assets.centroid_index>0);
+if ~isempty(nonencoded_pos)
+    fprintf('Warning: %i assets not encoded\n',length(nonencoded_pos));
+    plot(entity.assets.lon(nonencoded_pos),entity.assets.lat(nonencoded_pos),'xr','MarkerSize',MarkerSize);
+    legend({'assets','centroids','non-encoded'})
+end
+
+% remove them to plot only encoded ones
+encoded_pos=entity.assets.centroid_index>0;
+entity.assets.lon           =entity.assets.lon(encoded_pos);
+entity.assets.lat           =entity.assets.lat(encoded_pos);
+entity.assets.centroid_index=entity.assets.centroid_index(encoded_pos);
 
 for asset_i=1:length(entity.assets.centroid_index)
+    %text(entity.assets.lon(asset_i),entity.assets.lat(asset_i),num2str(entity.assets.centroid_index(asset_i)));
     plot([entity.assets.lon(asset_i) hazard.lon(entity.assets.centroid_index(asset_i))],...
-        [entity.assets.lat(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
+         [entity.assets.lat(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
 end % asset_i
 
 climada_plot_world_borders(2,'','',1);

@@ -1,4 +1,4 @@
-function entityORassets = climada_assets_encode(entityORassets,hazard,max_distance_to_hazard)
+function entityORassets = climada_assets_encode(entityORassets,hazard,max_encoding_distance_m)
 % climada assets encode
 % NAME:
 %   climada_assets_encode
@@ -14,9 +14,9 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_distan
 %   normally called from: climada_entity_read
 %   see also: climada_assets_encode_check
 % CALLING SEQUENCE:
-%   entityORassets=climada_assets_encode(entityORassets,hazard)
+%   entityORassets=climada_assets_encode(entityORassets,hazard,max_encoding_distance_m)
 % EXAMPLE:
-%   assets=climada_assets_encode(climada_entity_load,hazard)
+%   assets=climada_assets_encode(climada_entity_load)
 % INPUTS:
 %   entityORassets: an assets structure (such as entity.assets), see
 %       climada_entity_read. Or just the full entity (with assets in entity.assets)
@@ -39,6 +39,10 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_distan
 %       centroid_ID=-1)
 %       NOTE: if isfield(centroids,'peril_ID') and FL some special rules apply
 % OPTIONAL INPUT PARAMETERS:
+%   max_encoding_distance_m: the maximum distance to encode an asset
+%       location to a centroid (in meters, e.g. 1e5 for 100km). Default
+%       is climada_global.max_encoding_distance_m, or, if there is a field
+%       hazard.max_encoding_distance_m.
 % OUTPUTS:
 %   the encoded assets, means locations mapped to calculation centroids
 %       new field assets.centroid_index added
@@ -55,8 +59,9 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_distan
 % David N. Bresch, david.bresch@gmail.com, 20150618, Lea's speedup fixed 2nd time (line 134)
 % Lea Mueller, muellele@gmail.com, 20150805, define a maximum distance to hazard, otherwise centroid_index is set to 0 and no damage wil be calculated (see climada_EDS_calc)             
 % David N. Bresch, david.bresch@gmail.com, 20150825, bug-fix to use centroids instead of hazard
-% Lea Mueller, muellele@gmail.com, 20150915, set max_distance_to_hazard as input variable
+% Lea Mueller, muellele@gmail.com, 20150915, set max_encoding_distance_m as input variable
 % Lea Mueller, muellele@gmail.com, 20150916, add max_distance in waitbar text
+% David N. Bresch, david.bresch@gmail.com, 20160606, max_distance_to_hazard renamed to max_encoding_distance_m and speedup
 %-
 
 global climada_global
@@ -65,19 +70,11 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('entityORassets','var'),entityORassets=[];end
 if ~exist('hazard','var'),hazard=[];end
-if ~exist('max_distance_to_hazard','var'),max_distance_to_hazard=[];end
+if ~exist('max_encoding_distance_m','var'),max_encoding_distance_m=[];end
 
 
 % PARAMETERS
 %
-% whether we print all encoded centroids (=1) or not (=0), rather to TEST
-verbose=0; % default =0
-
-
-% set max_distance_to_hazard = 10^6; % 1000 km, in [m]
-if isempty(max_distance_to_hazard)
-    max_distance_to_hazard = climada_global.max_distance_to_hazard; %max_distance_to_hazard = 10^6; 
-end
 
 
 % prompt for assets (entity) if not given
@@ -94,22 +91,17 @@ if isempty(entityORassets) % local GUI
 end
 
 % prompt for hazard if not given
-if isempty(hazard) % local GUI
-    hazard=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
-    [filename, pathname] = uigetfile(hazard, 'Select hazard event set (or centroids) to encode to:');
-    if isequal(filename,0) || isequal(pathname,0)
-        return; % cancel
-    else
-        hazard=fullfile(pathname,filename);
-    end
-elseif ischar(hazard)
-    if strcmp(hazard,'SKIP'),return;end % special case, see climad_entity_read
-end
+if ischar(hazard),if strcmp(hazard,'SKIP'),return;end;end % special case, see e.g. climad_entity_read
 
-% load the hazard, if a filename has been passed
-if ~isstruct(hazard)
-    hazard_file=hazard;hazard=[];
-    load(hazard_file);
+hazard=climada_hazard_load(hazard);
+
+if isempty(max_encoding_distance_m)
+    if isfield(hazard,'max_encoding_distance_m')
+        % hazard set contains a max diatance
+        max_encoding_distance_m=hazard.max_encoding_distance_m;
+    else
+    max_encoding_distance_m = climada_global.max_encoding_distance_m; %max_encoding_distance_m = 10^6; 
+    end
 end
 
 % figure whether we got an entity OR assets as input
@@ -145,34 +137,23 @@ end
 
 
 % check lat lon dimension (1xn or nx1), now the concatenations works for both dimensions
-[lon_i lon_j] = size(assets.lon);
+[lon_i,lon_j] = size(assets.lon);
 % find unique lat lons
 if lon_j == 1 % was lon_i
-    [lon_lat,indx, indx2] = unique([assets.lon assets.lat],'rows');
+    [~,indx, indx2] = unique([assets.lon assets.lat],'rows');
 elseif lon_i == 1 % was lon_j
-    [lon_lat,indx, indx2] = unique([assets.lon;assets.lat]','rows');
+    [~,indx, indx2] = unique([assets.lon;assets.lat]','rows');
 else
     fprintf('Please check the dimensions of assets.lon and assets.lat.\n')
     return
 end
 
-
 % start encoding
 n_assets              = length(indx);
-% n_assets            = length(assets.Value);
 assets.centroid_index = assets.Value*0; % init
 
-% define a minimum distance to hazard position (in m). assets that are too
-% far away from hazard, will get centroid_index =0 and no damage will be
-% calculated for this asset
-% max_distance_to_hazard = 10^6; % 1000 km, in [m]
-% if isfield(centroids,'peril_ID') % switched to centroids, david.bresch@gmail.com, 20150825
-%     if strcmp(centroids.peril_ID,'FL'),max_distance_to_hazard = 20;end % in [m]
-% end
-    
-    
 t0       = clock;
-msgstr   = sprintf('Encoding %i assets (max distance %d m)... ',n_assets,max_distance_to_hazard);
+msgstr   = sprintf('Encoding %i assets (max distance %d m)... ',n_assets,max_encoding_distance_m);
 mod_step = 10; % first time estimate after 10 assets, then every 100
 if climada_global.waitbar
     fprintf('%s (updating waitbar with estimation of time remaining every 100th asset)\n',msgstr);
@@ -183,20 +164,23 @@ else
     format_str='%s';
 end
 
+cos_centroids_lat = cos(centroids.lat/180*pi); % calculate once for speedup
+
 for asset_i=1:n_assets
     if climada_global.waitbar,waitbar(asset_i/n_assets,h);end
     
-    dist_m                       = climada_geo_distance(assets.lon(indx(asset_i)),assets.lat(indx(asset_i)),centroids.lon,centroids.lat);
-    [min_dist,min_dist_index]    = min(dist_m);
+    % we used climada_geo_distance before (slower, since cos(lat) calculated each time)
+    dd=((centroids.lon-assets.lon(indx(asset_i))).*cos_centroids_lat).^2+(centroids.lat-assets.lat(indx(asset_i))).^2; % in km^2
+    [min_dist,min_dist_index]    = min(dd);
+    min_dist=sqrt(min_dist)*111.12*1000; % to km, then to m
     % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
-    if min_dist>max_distance_to_hazard 
+    if min_dist>max_encoding_distance_m
         min_dist_index = 0;
     end
-    indx3                        = find(indx2 == asset_i);
+    %indx3                        = find(indx2 == asset_i); until 20160606
+    indx3                        = indx2 == asset_i;
     assets.centroid_index(indx3) = min_dist_index;
-    
-    %if verbose,fprintf('%f/%f --> %f/%f\n',assets.lon(asset_i),assets.lat(asset_i),centroids.lon(min_dist_index),centroids.lat(min_dist_index));end
-    
+        
     % the progress management
     if mod(asset_i,mod_step)==0
         mod_step          = 100;
