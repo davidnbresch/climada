@@ -93,6 +93,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % Lea Mueller, muellele@gmail.com, 20151130, invoke climada_hazard_load and climada_entity_load
 % David N. Bresch, david.bresch@gmail.com, 20160429, automatic determination of display units
 % David N. Bresch, david.bresch@gmail.com, 20160429, title_str without measures name
+% David N. Bresch, david.bresch@gmail.com, 20160606, display units synchronized if same unit_name
 %-
 
 global climada_global
@@ -492,6 +493,18 @@ measures_impact.cost_display_unit_fact  = climada_global.cost_display_unit_fact;
 [digit,digit_str] = climada_digit_set(measures_impact.measures.cost);
 measures_impact.cost_display_unit_name=[measures_impact.cost_unit ' ' digit_str];
 measures_impact.cost_display_unit_fact=10^(-digit);
+
+% if same unit (e.g. both USD) use same display units
+if strcmp(measures_impact.cost_unit,measures_impact.Value_unit)
+    % use the smaller unit (e.g. if mio and bn, use mio)
+    if measures_impact.cost_display_unit_fact>measures_impact.Value_display_unit_fact
+        measures_impact.Value_display_unit_fact=measures_impact.cost_display_unit_fact;
+        measures_impact.Value_display_unit_name=measures_impact.cost_display_unit_name;
+    else
+        measures_impact.cost_display_unit_fact=measures_impact.Value_display_unit_fact;
+        measures_impact.cost_display_unit_name=measures_impact.Value_display_unit_name;
+    end
+end
 
 % special case for people, set cost display unit
 if strcmpi(measures_impact.Value_unit,'people') && measures_impact.cost_display_unit_fact==1

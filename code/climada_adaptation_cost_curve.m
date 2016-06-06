@@ -74,6 +74,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20160429, insurance_benefit,insurance_cost as output again
 % David N. Bresch, david.bresch@gmail.com, 20160429, stdout cleaned up
 % Lea Mueller, muellele@gmail.com, 20160531, show x- and y-ticks
+% David N. Bresch, david.bresch@gmail.com, 20160606, display units synchronized if same unit_name
 %-
 
 global climada_global
@@ -130,12 +131,12 @@ xlabel_str = sprintf('NPV averted damage over %d years (%s)',n_years,measures_im
 
 % convert to display units
 % only local, avoids very long lines with conversion factors
-measures_impact.cb_ratio = measures_impact.cb_ratio;
-measures_impact.benefit  = measures_impact.benefit *measures_impact.Value_display_unit_fact;
-measures_impact.ED       = measures_impact.ED      *measures_impact.Value_display_unit_fact;
+measures_impact.cb_ratio      = measures_impact.cb_ratio; % no conversion
+measures_impact.benefit       = measures_impact.benefit      *measures_impact.Value_display_unit_fact;
+measures_impact.ED            = measures_impact.ED           *measures_impact.Value_display_unit_fact;
+tot_climate_risk              = tot_climate_risk             *measures_impact.Value_display_unit_fact;
 measures_impact.measures.cost = measures_impact.measures.cost*measures_impact.cost_display_unit_fact;
 measures_impact.risk_transfer = measures_impact.risk_transfer*measures_impact.cost_display_unit_fact;
-tot_climate_risk         = tot_climate_risk        *measures_impact.Value_display_unit_fact;
 
 if called_from_climada_demo % only if called from climada_demo GUI
     add_insurance_measure = 1;
@@ -163,6 +164,9 @@ if add_insurance_measure % NOTE: this section not relevant for lecture
     end
     insurance_cost     = insurance_cost*insurance_benefit;
     insurance_cb       = insurance_cost/insurance_benefit;
+    
+    % convert to cost display units
+    insurance_cost=insurance_cost/measures_impact.Value_display_unit_fact*measures_impact.cost_display_unit_fact;
 end
 
 % correct risk transfer to not cover more than actual climate risk (climada_demo)
@@ -194,8 +198,7 @@ end
 fprintf('\n%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
 fprintf(' Measure 		   Cost (%s)  Benefit (%s)  %s\n',...
-    measures_impact.cost_display_unit_name,measures_impact.cost_display_unit_name,CostBenefit_str);
-%    measures_impact.cost_display_unit_name,measures_impact.Value_display_unit_name,CostBenefit_str);%    20160701 srzdnb
+    measures_impact.cost_display_unit_name,measures_impact.Value_display_unit_name,CostBenefit_str);
 for measure_i = 1:n_measures
     m_name = [measures_impact.measures.name{measure_i} '                    '];
     m_name = m_name(1:25);
