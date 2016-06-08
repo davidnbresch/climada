@@ -9,6 +9,8 @@ function compile_all_function_headers(output_file)
 %   This code calls compile_function_header_doc recursively for core
 %   climada and all modules
 %
+%   RESTRICTION: the present code does NOT process code sub-folders
+%
 %   see also compile_function_header_doc
 % CALLING SEQUENCE:
 %   compile_all_function_headers(output_file)
