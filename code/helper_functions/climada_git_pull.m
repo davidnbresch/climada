@@ -10,7 +10,7 @@ function climada_git_pull(TEST_mode)
 %   avoids all modules where name starts with '_' or which contain 'TEST',
 %   like _local_module, _local_TEST or local_TEST
 %
-%   Note: climada_git_push is nt implemented yet, as this might cause
+%   Note: climada_git_push is not implemented, as this might cause
 %   trouble, i.e. as it might automatically check in (large) .mat files or
 %   other stuff one did nort check. For the time, use a git tool or operate
 %   git add, git commit and gut push on the command line yourself.

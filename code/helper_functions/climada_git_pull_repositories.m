@@ -6,8 +6,8 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 %   Execute a git pull on core climada and all repositories
 %
 %   NEW version: see climada_git_pull. The code here just calls
-%   climada_git_pull, the rest of it kep for backward compatiblility (old
-%   MATLAB version)
+%   climada_git_pull, the rest of it kept for backward compatiblility (old
+%   MATLAB version, which had no built-in git support)
 %
 %   OLD VERSION: this is the OLD approach, using a c-shell (csh) to issue
 %   the git commands (hence needed a local git installation). Please do NOT

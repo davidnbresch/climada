@@ -43,6 +43,7 @@ function output_report = climada_EDS_ED_per_category_report(entity,EDS,xls_file,
 % Lea Mueller, muellele@gmail.com, 20151117, add try statement for filenames of assets, damagefunction, etc.
 % Lea Mueller, muellele@gmail.com, 20151217, get category_criterium from entity.assets.Category_name
 %-
+
 output_report = []; %init
 
 global climada_global

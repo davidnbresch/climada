@@ -5,14 +5,10 @@ function compile_all_function_headers(output_file)
 % PURPOSE:
 %   Crawl through all active climada code and modules and compile a file
 %   with ALL function headers (comes very handy as a raw documentation).
-%   Omits modules starting with _
 %
-%   This code calls compile_function_header_doc recursively for core
-%   climada and all modules
+%   Omits modules starting with _ (underscore) and code subfolders
+%   starting with @
 %
-%   RESTRICTION: the present code does NOT process code sub-folders
-%
-%   see also compile_function_header_doc
 % CALLING SEQUENCE:
 %   compile_all_function_headers(output_file)
 % EXAMPLE:
@@ -26,6 +22,7 @@ function compile_all_function_headers(output_file)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141107, initial (on flight to Dubai)
 % David N. Bresch, david.bresch@gmail.com, 20160609, standardized, one sub-code level
+% David N. Bresch, david.bresch@gmail.com, 20160609, relative paths for source code
 %-
 
 global climada_global
@@ -74,7 +71,7 @@ for module_i=1:length(D)
         subfolder_dir=folders{end};
         D_sub=dir(subfolder_dir);
         for subfolder_i=1:length(D_sub)
-            if D_sub(subfolder_i).isdir && ~strcmp(D_sub(subfolder_i).name(1),'.')
+            if D_sub(subfolder_i).isdir && ~strcmp(D_sub(subfolder_i).name(1),'.') && ~strcmp(D_sub(subfolder_i).name(1),'@')
                 folders{end+1}=[subfolder_dir filesep D_sub(subfolder_i).name];
                 
                 % 2nd sub-folder switched off, as this level is used to
@@ -164,9 +161,10 @@ fprintf(out_fid,'<HR>\r\n');
 fprintf(out_fid,' \r\n');
 fprintf(out_fid,'<H1>Routine Descriptions</H1>\r\n');
 fprintf(out_fid,'<PRE>\r\n');
-                
+
 % fifth, write the function headers
 % ---------------------------------
+climada_parent_dir=fileparts(climada_global.root_dir);
 total_line_count=0; % init
 for function_i=1:n_files
     routine_name=code_file{function_i};
@@ -177,6 +175,8 @@ for function_i=1:n_files
     total_line_count=total_line_count+line_count;
     full_name=which(routine_name); % only show link to source for routines in MATLAB path
     full_name=strrep(full_name,filesep,'/'); % switch to for html-separator
+    % switch full_name to relative path
+    full_name=strrep(full_name,climada_parent_dir,'../..');
     fprintf(out_fid,'View <A HREF=file:%s>source</A>\r\n',full_name);
     fprintf(out_fid,'<A HREF="#ROUTINELIST">[List of Routines]</A>\r\n');
     fprintf(out_fid,'<PRE>\r\n');
@@ -224,13 +224,17 @@ try
     while not(feof(in_fid))
         line=fgetl(in_fid); % skip first function... line
         line_count=line_count+1;
-        if length(line)>0 % line not empty
+        if ~isempty(line) % line not empty
             if strcmp(line(1),'%') % is a comment
                 if length(line)>1
                     if strcmp(line(1:2),'%-')
                         read_next_line=0; % header ended
                     end
                 end
+            end
+            
+            if (strcmp(deblank(line),' ') || strcmp(deblank(line),'')) && line_count>2
+                read_next_line=0; % header ended
             end
             
             if read_next_line
@@ -248,7 +252,7 @@ try
                 end
             end
         else
-            %%read_next_line=0; % empty line reached, header has ended
+            if line_count>2,read_next_line=0;end % empty line reached, header has ended
         end
         
     end % while

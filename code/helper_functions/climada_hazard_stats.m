@@ -7,6 +7,8 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
 %
 %   If called with the output hazard on subsequent calls, only the plotting
 %   needs to be done (e.g. to further improve plots)
+%   
+%   See also climada_IFC_plot for a local hazard intensity/frequency plot
 %
 %   previous call: e.g. climada_tc_hazard_set
 % CALLING SEQUENCE:

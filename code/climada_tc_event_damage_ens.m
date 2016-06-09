@@ -51,6 +51,7 @@ function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi
 % David N. Bresch, david.bresch@gmail.com, 20151018, automatic country detection
 % David N. Bresch, david.bresch@gmail.com, 20151019, converted into a function, see also climada_tc_event_damage_ens_gui
 % David N. Bresch, david.bresch@gmail.com, 20151021, special case for no web access added
+%-
 
 damage=[];track_filename='';err_msg=''; % init output
 

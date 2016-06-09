@@ -6,6 +6,9 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 %   Plots the intensity frequency curve of a given hazard set. See
 %   climada_hazard2IFC to create the IFC structure to be plotted from a
 %   climada hazard set.
+%
+%   See also: climada_hazard_stats to plot reuturn period maps
+%
 %   Previous call: climada_hazard2IFC
 % CALLING SEQUENCE:
 %   climada_IFC_plot(IFC,hist_check,prob_check,Gumbel_check,check_log,color_index)
@@ -32,6 +35,7 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 % Lea Mueller, muellele@gmail.com, 20150318, changes according to hazard2IFC
 % David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array, white background
 % Lea Mueller, muellele@gmail.com, 20160308, bugfix if no historical data
+% david.bresch@gmail.com, 20160609, bugfix if no historical data improved
 %-
 
 if ~exist('IFC','var'),
@@ -90,7 +94,7 @@ for poi_ii = 1:length(IFCs)
         lgd_hdl = [lgd_hdl h(1:2)];
         
         % historical data
-        if hist_check
+        if hist_check && isfield(IFC,'hist_intensity')
             pos_indx = IFC.hist_intensity(poi_i,:)>0;
             if any(pos_indx)
                 h(3) = plot(IFC.hist_return_periods(poi_i,pos_indx),IFC.hist_intensity(poi_i,pos_indx),'*' ,'markersize',5,'color',color1(color_index,:));

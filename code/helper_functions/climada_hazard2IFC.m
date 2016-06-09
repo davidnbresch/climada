@@ -47,6 +47,7 @@ function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_pe
 % Gilles Stassen, gillesstassen@hotmail.com, 20150615, check_plot and 'SELECT' option added, bug fix order of isstruct/isvector(geo_loc)
 % Lea Mueller, muellele@gmail.com, 20160308, introduce return_period as input
 % Lea Mueller, muellele@gmail.com, 20160314, bugfix if hazard has only one lat/lon
+% david.bresch@gmail.com, 20160609, bugfix if no historical data
 %-
 
 IFC = []; % init
@@ -67,6 +68,10 @@ if isempty(return_period), return_period = [1:1:100 120:20:200 250:50:1000]; end
 if isempty(geo_locations)
     geo_locations = 1;
     fprintf('Centroid_ID set to %d. Please specify otherwise, if required. \n',geo_locations)
+end
+
+if ~isfield(hazard,'orig_event_flag')
+    hazard.orig_event_flag=hazard.lon*0;
 end
 
 if numel(hazard.lon)==1, geo_locations = 1; end
@@ -145,7 +150,11 @@ switch hazard.peril_ID
     case 'TR' % for torrential rain use 10 mm as intensity threshold
         int_threshod = 10;
 end
-no_generated = hazard.event_count / hazard.orig_event_count;
+if isfield(hazard,'orig_event_count')
+    no_generated = hazard.event_count / hazard.orig_event_count;
+else
+    no_generated=0;
+end
 
 % initiate IFC
 IFC.hazard_comment     = hazard.comment;
@@ -159,9 +168,10 @@ IFC.fit_return_periods = return_period;
 IFC.intensity_fit      = zeros(numel(poi_ID), numel(IFC.fit_return_periods));
 IFC.polyfit            = zeros(numel(poi_ID), 2);
 
-IFC.hist_intensity     = zeros(numel(poi_ID), hazard.orig_event_count);
-IFC.hist_return_periods= zeros(numel(poi_ID), hazard.orig_event_count);
-
+if isfield(hazard,'orig_event_count')
+    IFC.hist_intensity     = zeros(numel(poi_ID), hazard.orig_event_count);
+    IFC.hist_return_periods= zeros(numel(poi_ID), hazard.orig_event_count);
+end
 
 % calculate for each point of interest
 for poi_i = 1:numel(poi_ID)
@@ -178,11 +188,13 @@ for poi_i = 1:numel(poi_ID)
     IFC.polyfit(poi_i,:)       = polyfit(log10(IFC.return_periods(poi_i,rel_indx)), IFC.intensity(poi_i,rel_indx), 1);
     IFC.intensity_fit(poi_i,:) = polyval(IFC.polyfit(poi_i,:), log10(IFC.fit_return_periods));
     
-    %historic data only
-    ori_indx = logical(hazard.orig_event_flag);
-    if any(ori_indx)
-        [IFC.hist_intensity(poi_i,:),int_ndx] = sort(full(hazard.intensity(ori_indx,poi_ndx(poi_i))),'descend');
-        IFC.hist_return_periods(poi_i,:) = 1./cumsum(hazard.frequency(int_ndx)*no_generated);
+    if isfield(hazard,'orig_event_count')
+        %historic data only
+        ori_indx = logical(hazard.orig_event_flag);
+        if any(ori_indx)
+            [IFC.hist_intensity(poi_i,:),int_ndx] = sort(full(hazard.intensity(ori_indx,poi_ndx(poi_i))),'descend');
+            IFC.hist_return_periods(poi_i,:) = 1./cumsum(hazard.frequency(int_ndx)*no_generated);
+        end
     end
     
     %fit a Gumbel-distribution
