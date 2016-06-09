@@ -20,9 +20,9 @@ function compile_all_function_headers(output_file)
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   output_file: file to write (.txt or .html)
-%       set to ../climada/docs/_code_overview.html by default
+%       set to ../climada/docs/code_overview.html by default
 % OUTPUTS:
-%   writes the file ../climada/docs/_code_overview.html
+%   writes the file ../climada/docs/code_overview.html
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141107, initial (on flight to Dubai)
 % David N. Bresch, david.bresch@gmail.com, 20160609, standardized, one sub-code level
@@ -36,7 +36,7 @@ if ~exist('output_file','var'), output_file = '';end
 
 % PARAMETERS
 %
-if isempty(output_file),output_file=[climada_global.root_dir filesep 'docs' filesep '_code_overview.html'];end
+if isempty(output_file),output_file=[climada_global.root_dir filesep 'docs' filesep 'code_overview.html'];end
 
 % not interactive any more
 % if isempty(output_file)
