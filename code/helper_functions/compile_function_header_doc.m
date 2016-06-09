@@ -35,6 +35,8 @@ function compile_function_header_doc(folder,recursive_flag,output_file,req_outpu
 % David N. Bresch, david.bresch@gmail.com, 20160608, new e-mail
 %-
 
+fprintf('OBSOLETE\n')
+return
 
 % PARAMETERS
 %
@@ -110,8 +112,9 @@ total_line_count=0; % init
 
 if ~isempty(m_files)
     if ~exist('out_fid','var')
-        fprintf('appending to: %s\n',output_file);
-        out_fid=fopen(output_file,'a'); % open output file in append mode
+        %fprintf('appending to: %s\n',output_file);
+        %out_fid=fopen(output_file,'a'); % open output file in append mode
+        out_fid=fopen(output_file,'w'); % open output file overwrite
     end
     
     if length(req_output_mode)>1
@@ -143,6 +146,8 @@ if ~isempty(m_files)
         end % html
     end
     
+    output_mode=1
+    
     for output_mode_i=1:length(req_output_mode)
         
         output_mode=req_output_mode(output_mode_i);
@@ -150,11 +155,13 @@ if ~isempty(m_files)
         % output_mode=2: full function header
         
         % loop over all files
-        for file_i=1:length(m_files)
+        for file_i=1:50
+            % for file_i=1:length(m_files)
             m_file_name=m_files(file_i).name;
-            if not(m_files(file_i).isdir)
+            if ~m_files(file_i).isdir
                 % we have a file
                 [~,fN,fE]=fileparts(m_file_name);
+                
                 if strcmp(fE,'.m') && ~strcmp(fN,'Contents')
                     % we have a .m file
                     fprintf('processing %s ...\n',m_file_name);
@@ -195,6 +202,7 @@ if ~isempty(m_files)
                     end % output_mode
                 end % m-file
             else
+                fprintf('*** FOLDER %s ...\n',m_file_name);
                 if recursive_flag && length(m_file_name)>2
                     subfolder=char([folder filesep m_files(file_i).name]);
                     if isdir(subfolder)

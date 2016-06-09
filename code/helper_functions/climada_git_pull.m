@@ -15,6 +15,11 @@ function climada_git_pull(TEST_mode)
 %   other stuff one did nort check. For the time, use a git tool or operate
 %   git add, git commit and gut push on the command line yourself.
 %
+%   OLD VERSION: there is still climada_git_pull_repositories, which used a
+%   c-shell (csh) to issue the git commands (hence needed a local git
+%   installation). Please do NOT use climada_git_pull_repositories any
+%   more.
+%
 %   previous call: startup (usually already executed)
 %   next call: See Note above
 % CALLING SEQUENCE:
@@ -29,6 +34,7 @@ function climada_git_pull(TEST_mode)
 %   all messaging to stdout
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20160606, initial
+% david.bresch@gmail.com, 20160609, added remark about old climada_git_pull_repositories
 %-
 
 global climada_global

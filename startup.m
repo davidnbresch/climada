@@ -2,6 +2,7 @@
 % (c) David N. Bresch, 2008, 2014, 2016, david.bresch@gmail.com
 % 20160122: 2nd level of sub-folders for code added
 % 20160323: omit clc
+% 20160609: do not add climada core's code/old any more
 %
 % define the climada root directory
 % --------------------------------
@@ -20,7 +21,7 @@ end
 addpath([climada_root_dir filesep 'code']);
 addpath([climada_root_dir filesep 'code' filesep 'helper_functions']);
 addpath([climada_root_dir filesep 'code' filesep 'data_import']);
-addpath([climada_root_dir filesep 'code' filesep 'old']);
+%addpath([climada_root_dir filesep 'code' filesep 'old']); % 20160609
 
 % pass the global root directory
 global climada_global

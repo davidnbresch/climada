@@ -5,6 +5,14 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 % PURPOSE:
 %   Execute a git pull on core climada and all repositories
 %
+%   NEW version: see climada_git_pull. The code here just calls
+%   climada_git_pull, the rest of it kep for backward compatiblility (old
+%   MATLAB version)
+%
+%   OLD VERSION: this is the OLD approach, using a c-shell (csh) to issue
+%   the git commands (hence needed a local git installation). Please do NOT
+%   use climada_git_pull_repositories any more.  
+%
 %   Automatically updates all local repositories' code, including core
 %   climada. Only prerequisite: git installed locally (such that the system
 %   command 'git pull' is valied, see OPTIONAL INPUT git_pull_command)
@@ -30,9 +38,10 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 % David N. Bresch, david.bresch@gmail.com, 20141102, initial
 % David N. Bresch, david.bresch@gmail.com, 20141107, TEST_mode added
 % David N. Bresch, david.bresch@gmail.com, 20150305, csh script option added
+% David N. Bresch, david.bresch@gmail.com, 20160609, switch to climada_git_pull
 %-
 
-global climada_global
+%global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
@@ -40,6 +49,15 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('TEST_mode','var'), TEST_mode = 0;end
 if ~exist('git_pull_command','var'), git_pull_command = 'git pull';end
+
+climada_git_pull_repositories(TEST_mode);
+return
+
+% BELOW: OLD CODE, NOT USED ANY MORE
+% ----------------------------------
+
+
+
 
 % PARAMETERS
 %
