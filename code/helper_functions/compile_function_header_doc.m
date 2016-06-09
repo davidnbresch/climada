@@ -126,7 +126,7 @@ if ~isempty(m_files)
             fprintf(out_fid,'Use <i>Find in page</i> ... from the Edit Menu to search for any text in all help-files.<P>\r\n');
             fprintf(out_fid,'Use the <i>which</i> command in MATLAB to locate the specific function.<P>\r\n');
             fprintf(out_fid,'This page has been automatically created by <i>compile_function_header_doc</i>.<P>\r\n');
-            fprintf(out_fid,'Please consult <A HREF="docs/climada_manual.pdf">docs/climada_manual.pdf</A> for more information.<P>\r\n');
+            fprintf(out_fid,'Please consult <A HREF="climada_manual.pdf">climada_manual.pdf</A> for more information.<P>\r\n');
             fprintf(out_fid,'<P>\r\n');
             %%fprintf(out_fid,'<A HREF="%s">Back to top</A>\r\n',parent_file);
             fprintf(out_fid,'<P>');
