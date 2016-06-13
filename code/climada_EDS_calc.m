@@ -212,7 +212,7 @@ valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
 nn_assets=length(valid_assets_pos);
 
 % restrict damage functions to what we need
-% Note: quite some effort, but results in speedup 
+% Note: quite some effort, but results in speedup
 %       (no need to carefully study this to understand basic EDS calc)
 if isfield(entity.damagefunctions,'peril_ID') % refine for peril
     % only keep single peril specific damage functions (speedup)
@@ -238,7 +238,7 @@ entity_damagefunctions_Intensity=entity_damagefunctions_Intensity(full_unique);
 entity_damagefunctions_MDD=entity_damagefunctions_MDD(full_unique);
 entity_damagefunctions_PAA=entity_damagefunctions_PAA(full_unique);
 % now, we only have the single-peril damagefunctions with no double entries
-       
+
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
