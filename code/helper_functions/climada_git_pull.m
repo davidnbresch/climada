@@ -35,6 +35,7 @@ function climada_git_pull(TEST_mode)
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20160606, initial
 % david.bresch@gmail.com, 20160609, added remark about old climada_git_pull_repositories
+% david.bresch@gmail.com, 20160616, pathsep
 %-
 
 global climada_global
@@ -43,9 +44,6 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('TEST_mode','var'),TEST_mode=[];end
 
 % PARAMETERS
-%
-% define the MATLAB path delimiter
-path_delimiter=':'; % default ':'
 %
 if isempty(TEST_mode),TEST_mode=0;end % default=0
 
@@ -64,7 +62,7 @@ if ~TEST_mode,git pull,end
 P=path; % get all paths
 
 while ~isempty(P)
-    [token,P] = strtok(P,path_delimiter);
+    [token,P] = strtok(P,pathsep);
     % chekc for a climada module path
     if ~isempty(strfind(token,climada_global.modules_dir)) % a module
         module_folder=strrep(token,[climada_global.modules_dir filesep],'');
