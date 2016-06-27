@@ -25,6 +25,7 @@ function measures_impact = climada_measures_impact_read(measures)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20160523, init
 % Lea Mueller, muellele@gmail.com, 20160531, NVP_total_climate_risk is an array instead of a vector
+% Lea Mueller, muellele@gmail.com, 20160624, add .Value_unit and .cost_unit
 %-
 
 global climada_global
@@ -69,12 +70,16 @@ if ~isfield(measures,'title_str'), measures.title_str = ''; end
 if ~isfield(measures,'NPV_total_climate_risk'), measures.NPV_total_climate_risk = nan; end
 
 % fill Value_display_unit_name with climada_global
+if ~isfield(measures,'Value_unit'), measures.Value_unit = climada_global.Value_unit; end
 if ~isfield(measures,'Value_display_unit_name'), measures.Value_display_unit_name = climada_global.Value_display_unit_name; end
 if ~isfield(measures,'Value_display_unit_fact'), measures.Value_display_unit_name = climada_global.Value_display_unit_fact; end
+if ~isfield(measures,'cost_unit'), measures.cost_unit = climada_global.cost_unit; end
 if ~isfield(measures,'cost_display_unit_name'), measures.cost_display_unit_name = climada_global.cost_display_unit_name; end
 if ~isfield(measures,'cost_display_unit_fact'), measures.cost_display_unit_fact = climada_global.cost_display_unit_fact; end
 
+if iscell(measures.Value_unit), measures.Value_unit = measures.Value_unit{1}; end
 if iscell(measures.Value_display_unit_name), measures.Value_display_unit_name = measures.Value_display_unit_name{1}; end
+if iscell(measures.cost_unit), measures.cost_unit = measures.cost_unit{1}; end
 if iscell(measures.cost_display_unit_name), measures.cost_display_unit_name = measures.cost_display_unit_name{1}; end
 
 if numel(measures.Value_display_unit_fact)>1, measures.Value_display_unit_fact = measures.Value_display_unit_fact(1); end
@@ -89,8 +94,10 @@ measures_impact.benefit = reshape(measures_impact.benefit,1,n_measures);
 measures_impact.cb_ratio = measures.cb_ratio;
 measures_impact.ED = measures.ED;
 measures_impact.risk_transfer = measures.risk_transfer;
+measures_impact.Value_unit = measures.Value_unit;
 measures_impact.Value_display_unit_name = measures.Value_display_unit_name;
 measures_impact.Value_display_unit_fact = measures.Value_display_unit_fact;
+measures_impact.cost_unit = measures.cost_unit;
 measures_impact.cost_display_unit_name = measures.cost_display_unit_name;
 measures_impact.cost_display_unit_fact = measures.cost_display_unit_fact;
 measures_impact.NPV_total_climate_risk = measures.NPV_total_climate_risk;
@@ -101,8 +108,10 @@ measures = rmfield(measures,'benefit');
 measures = rmfield(measures,'cb_ratio');
 measures = rmfield(measures,'ED');
 measures = rmfield(measures,'risk_transfer');
+measures = rmfield(measures,'Value_unit');
 measures = rmfield(measures,'Value_display_unit_name');
 measures = rmfield(measures,'Value_display_unit_fact');
+measures = rmfield(measures,'cost_unit');
 measures = rmfield(measures,'cost_display_unit_name');
 measures = rmfield(measures,'cost_display_unit_fact');
 measures = rmfield(measures,'NPV_total_climate_risk');
