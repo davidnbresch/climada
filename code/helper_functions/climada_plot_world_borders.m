@@ -40,6 +40,8 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % OPTIONAL INPUT PARAMETERS:
 %   linewidth: line width of borders, default is 1
 %       if negative, fill land with border_color
+%       SPECIAL: if =-999, just check for shape file(s) to exist, do not
+%       plot anything (called by e.g. country_risk_prep to 
 %   check_country: name (field in shapes named 'NAME') of one or multiple
 %       countries, e.g. 'Germany' or {'Germany' 'Ghana'},that will be gray
 %       shaded in the world plot, default is no shading of countries.
@@ -83,8 +85,7 @@ if ~exist('border_color'    , 'var'), border_color = []; end
 if isempty(linewidth),linewidth = 1; end
 if isempty(border_color),border_color  = [ 81  81  81]/255;end    % dark gray
 if isempty(country_color),country_color= [255 236 139]/255;end % default yellow
-%
-fill_land=0;if linewidth<0,linewidth=-linewidth;fill_land=1;end
+
     
 if strcmp(map_shape_file,'ASK')
     map_shape_file=[climada_global.data_dir filesep 'system' filesep '*.shp'];
@@ -119,14 +120,17 @@ if ~(exist(map_shape_file,'file') || exist(map_mat_shape_file,'file'))
     return
 end
 
+% read the .shp border file (the first time)
+shapes=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
+
+if linewidth==-999,return;end % just called to check shape file(s)
+fill_land=0;if linewidth<0,linewidth=-linewidth;fill_land=1;end
+
 if keep_boundary
     hold on
     XLim = get(get(gcf,'CurrentAxes'),'XLim');
     YLim = get(get(gcf,'CurrentAxes'),'YLim');
 end
-
-% read the .shp border file (the first time)
-shapes=climada_shaperead(map_shape_file,1,1); % reads .mat subsequent times
 
 if fill_land % plot sea in light blue
     fill([-180 -180 180 180],[-90 90 90 -90],[0.9 0.9 .99],'LineWidth',linewidth,'EdgeColor',[0.9 0.9 .99])

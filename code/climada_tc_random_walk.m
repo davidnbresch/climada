@@ -39,7 +39,9 @@ function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,
 % David N. Bresch, david.bresch@gmail.com, 20090728
 % Markus Huber, markus.huber@env.ethz.ch, 20100412
 % Omar Bellprat, mar.bellprat@env.ethz.ch, 20100412, Maxangle added as input
-% David N. Bresch, david.bresch@gmail.com, 20160423, rand('seed',0) --> rng(0)
+% David N. Bresch, david.bresch@gmail.com, 20160423, rng(0) instead of rand('seed',0)
+% David N. Bresch, david.bresch@gmail.com, 20160809, rand('seed',0) for Octave
+% David N. Bresch, david.bresch@gmail.com, 20160809, ens_amp (was 0.35) and Maxangle (was pi/7) reduced
 %-
 
 % init global variables
@@ -74,8 +76,8 @@ ens_amp0 = 1.5; % amplitude of max random starting point shift degree longitude
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %omar & markus : ens_size -> ens_amp,  Maxangle default=pi/7;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if isempty(ens_amp),ens_amp=0.35;end % amplitude of random walk wiggles in degree longitude for 'directed'
-if isempty(Maxangle),Maxangle=pi/7;end % maximum angle of variation, =pi is like undirected, pi/4 means one quadrant
+if isempty(ens_amp),ens_amp=0.1;end % amplitude of random walk wiggles in degree longitude for 'directed'
+if isempty(Maxangle),Maxangle=pi/10;end % maximum angle of variation, =pi is like undirected, pi/4 means one quadrant
 % ens_amp0=2;  %original value
 % ens_amp=0.1; %original value
 % Maxangle=pi/8; %original value
@@ -94,8 +96,13 @@ next_track_position = 0; % to store first one original track and then derived on
 ens_count           = 0; % init
 
 % generate random starting points for ensemble members
-%if force_seed_0,rand('seed',0),end % until 20160423
-if force_seed_0,rng(0),end % always the same seed, in order to allow for reproduceability in exercises
+if force_seed_0
+    if climada_global.octave_mode
+        rand("seed",0); % always the same seed, in order to allow for reproduceability in exercises
+    else
+        rng(0); % always the same seed, in order to allow for reproduceability in exercises
+    end
+end 
 x0 = ens_amp0*(rand(ens_size*n_storms,1)-0.5);   % rand: uniformly distributed random numbers
 y0 = ens_amp0*(rand(ens_size*n_storms,1)-0.5);
 
@@ -119,9 +126,15 @@ for track_i=1:n_storms % loop over all original tracks
         N    = length(lon);
         
         % directed random walk
-        %---------------------
-        %if force_seed_0,rand('seed',0),end % until 20160423
-        if force_seed_0,rng(0),end % always the same seed, in order to allow for reproduceability in exercises
+        %---------------------        
+        if force_seed_0
+            if climada_global.octave_mode
+                rand("seed",0); % always the same seed, in order to allow for reproduceability in exercises
+            else
+                rng(0); % always the same seed, in order to allow for reproduceability in exercises
+            end
+        end 
+
         x = cumsum( ens_amp *sin( cumsum( 2*Maxangle*rand(ens_size*N,1) -Maxangle)));
         y = cumsum( ens_amp *cos( cumsum( 2*Maxangle*rand(ens_size*N,1) -Maxangle)));
         

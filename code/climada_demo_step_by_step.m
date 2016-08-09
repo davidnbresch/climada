@@ -26,6 +26,7 @@
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141217, updated
 % David N. Bresch, david.bresch@gmail.com, 20141231, octave-compatible
+% David N. Bresch, david.bresch@gmail.com, 20160809, checked, compatible with Octave 4.0.3
 %-
 
 global climada_global % make global variables accessible
@@ -65,10 +66,10 @@ end % i
 centroids.centroid_ID=1:length(centroids.lat); % we later needs this, just numbering the centroids
 
 % next, calculate the windfield for this single track
-res = climada_tc_windfield(tc_track(demo_track_number),centroids);
+gust_field = climada_tc_windfield(tc_track(demo_track_number),centroids);
 title(sprintf('%s windfield',tc_track(demo_track_number).name))
 
-figure;climada_color_plot(res.gust,res.lon,res.lat,'none'); % plot the windfield
+figure;climada_color_plot(gust_field,centroids.lon,centroids.lat,'none'); % plot the windfield
 
 if ~climada_global.octave_mode
     
@@ -197,7 +198,7 @@ EDS=climada_EDS_calc(entity,hazard);
 % set (here a vector with 14450 elements), one rather refers to the damage
 % excess frequency curve:
 
-figure; climada_EDS_DFC(EDS) % show damage excess frequency curve
+figure; climada_EDS_DFC(EDS); % show damage excess frequency curve
 
 % While one would in a proper application of climada now calculate the
 % damages of future assets (to obtain the effect f economic growth) and
