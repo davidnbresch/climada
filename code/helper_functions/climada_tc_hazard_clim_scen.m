@@ -115,6 +115,7 @@ hazard.date                    = datestr(now);
 
 save(hazard_clim_file,'hazard')
 
-fprintf('\n***Climate change scenario *** \n  intensity screw = %10.2f \n  frequency_screw = %10.2f \nsaved in \n%s \n\n', intensity_screw, frequency_screw,[climada_global.data_dir hazard_clim_file])
+fprintf('\n***Climate change scenario *** \n  intensity screw = %10.2f \n  frequency_screw = %10.2f \nsaved in \n%s \n\n',...
+    intensity_screw, frequency_screw,hazard_clim_file)
 
 return
