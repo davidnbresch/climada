@@ -30,7 +30,7 @@ function [damagefunctions,dmf_info_str]=climada_damagefunctions_generate(intensi
 % OPTIONAL INPUT PARAMETERS:
 %   check_plot: =1 to show a check plot (using
 %       climada_damagefunction_plot) or not (=0, default)
-%       plots on the same plot on sunsequent calls to allow for easy
+%       plots on the same plot on subsequent calls to allow for easy
 %       comparison of say two options
 % OUTPUTS:
 %   damagefunction: a structure with

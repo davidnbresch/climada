@@ -31,6 +31,7 @@ function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20160314, for TS and XR use only 8 colors (3 green, 5 blue)
 % Lea Mueller, muellele@gmail.com, 20160316, add separate lack of greenness (LG) colormap (brown - yellow - green)
 % Lea Mueller, muellele@gmail.com, 20160426, finetune lack of greenness colors
+% Lea Mueller, muellele@gmail.com, 20160816, set number of colours to step10, in schematic, landslide and factor of safety
 %-
 
 cmap = []; c_ax = []; %init output
@@ -132,19 +133,18 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
             cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [cmap1; cmap2];  
-        
+        cmap = [cmap1; cmap2];     
         
     case 'LS' 
         % create colormap for landslide (distance to landslide)
         c_ax = [0 1];       
-        cmap = flipud(jet(15));
+        cmap = flipud(jet(steps10));
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
         
     case 'FS' %factor of safety for landslides
         c_ax = [0 10];       
-        cmap = flipud(jet(15));
+        cmap = flipud(jet(steps10));
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
         
@@ -209,9 +209,9 @@ switch peril_ID
         middlecolor1 = [193 193 193]/255; %sgi gray 76
         middlecolor2 = [255 114  86]/255; %coral 1
         endcolor     = [205   0   0]/255; %red 3
-        cmap1 = makeColorMap(startcolor, middlecolor1,10);
-        cmap2 = makeColorMap(middlecolor1, middlecolor2,10);
-        cmap3 = makeColorMap(middlecolor2, endcolor,10);
+        cmap1 = makeColorMap(startcolor, middlecolor1, steps10);
+        cmap2 = makeColorMap(middlecolor1, middlecolor2, steps10);
+        cmap3 = makeColorMap(middlecolor2, endcolor, steps10);
         cmap = [cmap1; cmap2; cmap3];  
         
     case 'waterfall'

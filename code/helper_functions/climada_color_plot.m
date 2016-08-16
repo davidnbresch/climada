@@ -158,4 +158,5 @@ axlim = [min(lon)-buffer max(lon)+buffer min(lat)-buffer max(lat)+buffer];
 % axis(axlim); % set axis for good zoom
 climada_figure_axis_limits_equal_for_lat_lon(axlim)
 climada_figure_scale_add
+% climada_figure_scale_add('',10,10)
 drawnow;

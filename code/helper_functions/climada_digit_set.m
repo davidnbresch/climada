@@ -25,7 +25,9 @@ function [digit, digit_str, result_str] = climada_digit_set(data,data2)
 % Lea Mueller, 20150924, init
 % Lea Mueller, 20150928, delete s in million, billion, etc
 % Lea Mueller, 20151202, add result_str
+% Lea Mueller, 20160816, delete k option (1'000)
 %-
+
 
 global climada_global
 if ~climada_init_vars, return; end
@@ -65,6 +67,10 @@ switch digit
         digit_str = 'tn';
     otherwise
         digit_str = '';
+end
+
+if strcmp(digit_str,'k') % reset to original input
+    digit_str = ''; digit = 0; max_data = max_data*1000;
 end
 
 % create the result string, e.g. '2.20 million'

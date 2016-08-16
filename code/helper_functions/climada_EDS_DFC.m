@@ -30,7 +30,8 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 % OUTPUTS:
 %   DFC: a structure with fields
 %       .return_period
-%       .sorted_damage
+%       .damage
+%       .damage_of_value (as percentage of value)
 %       .ED, .Value, .Value_unit, and .annotation_name
 %   a figure with the DFC plot
 %   legend_str: the legend string
@@ -102,7 +103,7 @@ end
 marker_ = ['*- ';'o- ';'p- ';'s- ';'.- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'s--';'.--';'v--';'d--'];
 ii      = 1;
 
-DFC=climada_EDS2DFC(EDS,-1); % convert EDS to DFC
+DFC = climada_EDS2DFC(EDS,-1); % convert EDS to DFC
 
 legend_str={};
 

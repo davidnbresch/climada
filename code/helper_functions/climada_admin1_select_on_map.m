@@ -128,7 +128,8 @@ function admin1_name = setmap(source,callbackdata)
     if val == 0, val = sort_index(2:end); end
     delete(g); g = []; counter = 0; %reinit
     for val_i = 1:numel(val)
-        X = admin1_shapes(is_selected_admin1(val(val_i))).X;Y = admin1_shapes(is_selected_admin1(val(val_i))).Y;
+        X = admin1_shapes(is_selected_admin1(val(val_i))).X; 
+        Y = admin1_shapes(is_selected_admin1(val(val_i))).Y;
         %X(isnan(X)) = []; Y(isnan(Y)) = [];
         %g(val_i) = fill(X,Y,'-b','LineWidth',1);
         
