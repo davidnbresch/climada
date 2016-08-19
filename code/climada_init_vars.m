@@ -43,6 +43,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160429, Value_* extended and cost_* added
 % David N. Bresch, david.bresch@gmail.com, 20160429, climada_lonlat_cleanup and climada_centroids_cleanup switched off
 % David N. Bresch, david.bresch@gmail.com, 20160606, max_encoding_distance_m (renamed from max_distance_to_hazard) set to 1e5, not 1e6 any more
+% David N. Bresch, david.bresch@gmail.com, 20160819, hazards_dir added
 %-
 
 global climada_global
@@ -122,6 +123,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.entities_dir=[climada_global.data_dir filesep 'entities']; % added 20160222
     if ~isdir(climada_global.entities_dir),mkdir(climada_global.data_dir,'entities');end
     
+    climada_global.hazards_dir=[climada_global.data_dir filesep 'hazards']; % added 20160819
+    if ~isdir(climada_global.hazards_dir),mkdir(climada_global.data_dir,'hazards');end
+ 
     % the map border file as used by climada_plot_world_borders
     % (see the short documentation in climada_global.system_dir/admin0.txt)
     climada_global.map_border_file=[climada_global.system_dir filesep 'admin0.mat'];
