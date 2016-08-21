@@ -14,7 +14,7 @@ function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,
 % CALLING SEQUENCE:
 %   tc_track=climada_tc_random_walk(tc_track,ens_size);
 % EXAMPLE:
-%   tc_track=climada_read_unisys_database;
+%   tc_track=climada_tc_read_unisys_database;
 %   tc_track=climada_tc_random_walk(tc_track);
 % INPUTS:
 %   tc_track: a structure with the track information for each cyclone i at
@@ -42,6 +42,7 @@ function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,
 % David N. Bresch, david.bresch@gmail.com, 20160423, rng(0) instead of rand('seed',0)
 % David N. Bresch, david.bresch@gmail.com, 20160809, rand('seed',0) for Octave
 % David N. Bresch, david.bresch@gmail.com, 20160809, ens_amp (was 0.35) and Maxangle (was pi/7) reduced
+% David N. Bresch, david.bresch@gmail.com, 20160821, rand('seed',0) from Ocatve editor was rand("seed",0) - grrr
 %-
 
 % init global variables
@@ -82,9 +83,8 @@ if isempty(Maxangle),Maxangle=pi/10;end % maximum angle of variation, =pi is lik
 % ens_amp=0.1; %original value
 % Maxangle=pi/8; %original value
 %
-max_lat_dist=10; % maximum latitudinal distance between consequent data points. if this
-%distance is larger than max_lat_dist, the storm is not
-%used (kind of second data cleaning)
+max_lat_dist=20; % maximum latitudinal distance between consequent data points. if this
+% distance is larger than max_lat_dist, the storm is not used (kind of second data cleaning)
 % 
 % whether we show a check plot
 % ----------------------------
@@ -98,7 +98,7 @@ ens_count           = 0; % init
 % generate random starting points for ensemble members
 if force_seed_0
     if climada_global.octave_mode
-        rand("seed",0); % always the same seed, in order to allow for reproduceability in exercises
+        rand('seed',0); % always the same seed, in order to allow for reproduceability in exercises
     else
         rng(0); % always the same seed, in order to allow for reproduceability in exercises
     end
@@ -122,14 +122,14 @@ for track_i=1:n_storms % loop over all original tracks
         lon  = tc_track(track_i).lon;
         lat  = tc_track(track_i).lat;
         name = tc_track(track_i).name;
-        ID   = tc_track(track_i).ID_no;
+        %ID   = tc_track(track_i).ID_no;
         N    = length(lon);
         
         % directed random walk
         %---------------------        
         if force_seed_0
             if climada_global.octave_mode
-                rand("seed",0); % always the same seed, in order to allow for reproduceability in exercises
+                rand('seed',0); % always the same seed, in order to allow for reproduceability in exercises
             else
                 rng(0); % always the same seed, in order to allow for reproduceability in exercises
             end
@@ -170,7 +170,10 @@ for track_i=1:n_storms % loop over all original tracks
             tc_track_out(next_track_position).orig_event_flag = 0;
 
         end % for ii=0:ens_size-1  %loop over derived tracks  
+    else
+        fprintf('WARNING: track %i with latitude step > %i, skipped\n',track_i,max_lat_dist);
     end % track_i
+    
 end %if isempty(find(abs(diff(tc_track(i).lat))>max_lat_dist)==1)
 
 t_elapsed = etime(clock,t0);
@@ -187,7 +190,7 @@ if check_plot
     legend('derived tracks','original tracks');
     for i=2:length(tc_track_out);plot(tc_track_out(i).lon,tc_track_out(i).lat,'-b');hold on;end;title('TC ensemble set')
     for i=2:length(tc_track);plot(tc_track(i).lon,tc_track(i).lat,'-r');hold on;end;
-    if exist('climada_plot_world_borders'),climada_plot_world_borders;end % plot coastline
+    if exist('climada_plot_world_borders','file'),climada_plot_world_borders;end % plot coastline
     set(gcf,'Color',[1 1 1]); % background to white
 end
 

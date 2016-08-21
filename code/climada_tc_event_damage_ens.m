@@ -211,7 +211,7 @@ for country_i=1:length(country_list)
     end
     country_name=char(country_name);
     country_ISO3=char(country_ISO3);
-    
+        
     tc_tracks=climada_tc_random_walk(tc_track,n_tracks-1,0.1,pi/30); % /15
     
     % get entity and centroids
@@ -267,7 +267,7 @@ for country_i=1:length(country_list)
         axes(call_from_GUI.axes_left);
     end
     
-    climada_entity_plot(entity,4)
+    climada_entity_plot(entity,4); hold on
     % plot(tc_track.lon,tc_track.lat,'-r');axis equal; hold on
     % climada_plot_world_borders(1,country_name,'',1)
     plot(tc_track.lon,tc_track.lat,'-r')
