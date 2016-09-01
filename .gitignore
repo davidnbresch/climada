@@ -36,3 +36,5 @@ startup_*.m
 docs/climada_viewer.pdf
 data/system/climada_*.txt
 matlab.mat
+
+.DS_Store
