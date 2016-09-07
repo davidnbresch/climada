@@ -66,6 +66,7 @@ function entity_adjusted=climada_entity_value_GDP_adjust(entity_file_regexp,mode
 % David N. Bresch, david.bresch@gmail.com, 20150122, mode_selector added
 % David N. Bresch, david.bresch@gmail.com, 20150122, mode_selector=3 added
 % David N. Bresch, david.bresch@gmail.com, 20150204, processing moved to climada_entity_value_GDP_adjust_one
+% David N. Bresch, david.bresch@gmail.com, 20160907, fprintf when saving shortened
 %-
 
 % initialize output
@@ -106,9 +107,8 @@ for file_i=1:length(D_entity_mat)
     try
         load(entity_file_i)
         entity=climada_entity_value_GDP_adjust_one(entity,mode_selector);
-        fprintf('saving %s in %s (by %s)\n',D_entity_mat(file_i).name,fP,mfilename)
+        if mode_selector,fprintf('saving %s (by %s)\n',entity_file_i,mfilename);end
         save(entity_file_i,'entity')
-        
     catch
         fprintf('skipped (invalid entity): %s\n',D_entity_mat(file_i).name);
         entity.assets=[]; % dummy
