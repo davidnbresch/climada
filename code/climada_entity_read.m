@@ -90,6 +90,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % David N. Bresch, david.bresch@gmail.com, 20151229, old commented code deleted (finish 20151119 update)
 % Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
 % David N. Bresch, david.bresch@gmail.com, 20160524, allow for entity without assets (e.g. called from nightlight entity)
+% David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
 %-
 
 global climada_global
@@ -109,7 +110,7 @@ if ~exist('hazard','var'), hazard = [];end
 
 % prompt for entity_filename if not given
 if isempty(entity_filename) % local GUI
-    entity_filename      = [climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
+    entity_filename      = [climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     [filename, pathname] = uigetfile(entity_filename, 'Select entity file:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -120,7 +121,7 @@ end
 
 [fP,fN,fE] = fileparts(entity_filename);
 if isempty(fP) % complete path, if missing
-    entity_filename = [climada_global.data_dir filesep 'entities' filesep fN fE];
+    entity_filename = [climada_global.entities_dir filesep fN fE];
     [fP,fN,fE] = fileparts(entity_filename);
     if isempty(fE) % complete extension, if missing
         fE = '.xlsx';

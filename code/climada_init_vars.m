@@ -12,6 +12,10 @@ function ok=climada_init_vars(reset_flag)
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   reset_flag: if set to 1, forced re-init
+%       =3 to ONLY set sub-folders of climada_global.data_dir relative
+%       again (i.e. if one switches climada_global.data_dir and wants to
+%       make sure folders sich as climada_global.entities_dir are
+%       sub-folders of it).
 % OUTPUTS:
 %	ok: =1 if no troubles, 0 else
 % MODIFICATION HISTORY:
@@ -44,6 +48,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160429, climada_lonlat_cleanup and climada_centroids_cleanup switched off
 % David N. Bresch, david.bresch@gmail.com, 20160606, max_encoding_distance_m (renamed from max_distance_to_hazard) set to 1e5, not 1e6 any more
 % David N. Bresch, david.bresch@gmail.com, 20160819, hazards_dir added
+% David N. Bresch, david.bresch@gmail.com, 20160908, results_dir added and reset_flag=3
 %-
 
 global climada_global
@@ -55,11 +60,9 @@ ok=1;
 
 persistent climada_vars_initialised % used to communicate status of initialisation
 
-if exist('reset_flag','var')
-    if reset_flag==1
-        climada_vars_initialised=[]; % force re-init
-    end
-end
+if ~exist('reset_flag','var'),reset_flag=[];end
+
+if reset_flag==1,climada_vars_initialised=[];end % force re-init
 
 if length(climada_vars_initialised)<1 % initialise and check only first time called
     
@@ -125,6 +128,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     climada_global.hazards_dir=[climada_global.data_dir filesep 'hazards']; % added 20160819
     if ~isdir(climada_global.hazards_dir),mkdir(climada_global.data_dir,'hazards');end
+    
+    climada_global.results_dir=[climada_global.data_dir filesep 'results']; % added 20160908
+    if ~isdir(climada_global.results_dir),mkdir(climada_global.data_dir,'results');end
  
     % the map border file as used by climada_plot_world_borders
     % (see the short documentation in climada_global.system_dir/admin0.txt)
@@ -253,6 +259,27 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     %         fprintf('OK: centroids moved into own folder (out of system)\n');
     %     end
     
+end
+
+if reset_flag==3 % added 20160908
+    
+    % special case, if a user sets his own climada_global.data_dir during a
+    % session and would like to make sure folders centroids, entities,
+    % hazards and results are sub-folders of this folder
+    
+    climada_global.centroids_dir=[climada_global.data_dir filesep 'centroids'];
+    if ~isdir(climada_global.centroids_dir),mkdir(climada_global.data_dir,'centroids');end
+    
+    climada_global.entities_dir=[climada_global.data_dir filesep 'entities'];
+    if ~isdir(climada_global.entities_dir),mkdir(climada_global.data_dir,'entities');end
+    
+    climada_global.hazards_dir=[climada_global.data_dir filesep 'hazards'];
+    if ~isdir(climada_global.hazards_dir),mkdir(climada_global.data_dir,'hazards');end
+    
+    climada_global.results_dir=[climada_global.data_dir filesep 'results'];
+    if ~isdir(climada_global.results_dir),mkdir(climada_global.data_dir,'results');end
+    
+    fprintf('\nNOTE: centroids, entities, hazards and results subfolders of %s\n',climada_global.data_dir);
 end
 
 end % climada_init_vars

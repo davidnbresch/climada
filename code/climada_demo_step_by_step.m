@@ -27,6 +27,8 @@
 % David N. Bresch, david.bresch@gmail.com, 20141217, updated
 % David N. Bresch, david.bresch@gmail.com, 20141231, octave-compatible
 % David N. Bresch, david.bresch@gmail.com, 20160809, checked, compatible with Octave 4.0.3
+% David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir and hazards_dir used
+% David N. Bresch, david.bresch@gmail.com, 20160911, climada_tc_equal_timestep for single track also
 %-
 
 global climada_global % make global variables accessible
@@ -66,7 +68,8 @@ end % i
 centroids.centroid_ID=1:length(centroids.lat); % we later needs this, just numbering the centroids
 
 % next, calculate the windfield for this single track
-gust_field = climada_tc_windfield(tc_track(demo_track_number),centroids);
+% climada_tc_equal_timestep interpolates to 1 hour (original from database 6h)
+gust_field = climada_tc_windfield(climada_tc_equal_timestep(tc_track(demo_track_number)),centroids);
 title(sprintf('%s windfield',tc_track(demo_track_number).name))
 
 figure;climada_color_plot(gust_field,centroids.lon,centroids.lat,'none'); % plot the windfield
@@ -75,7 +78,7 @@ if ~climada_global.octave_mode
     
     % generate the windfield not for one single hurricane, but for all events
     % and store them in an organized way, the so-called hazard event set:
-    hazard_set_file=[climada_global.data_dir filesep 'hazards' filesep 'atl_hist'];
+    hazard_set_file=[climada_global.hazards_dir filesep 'atl_hist'];
     hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids);
     
     % and now this hazard event set contains the single andrew windfield we
@@ -111,7 +114,7 @@ if ~climada_global.octave_mode
     
     % next, we generate the windfields for all 14450 probabilistic tracks
     % (takes a bit less than 2 min)
-    hazard_set_file=[climada_global.data_dir filesep 'hazards' filesep 'atl_prob.mat'];
+    hazard_set_file=[climada_global.hazards_dir filesep 'atl_prob.mat'];
     if exist(hazard_set_file,'file')
         load(hazard_set_file) % load to avoid waiting for 2 min
     else
@@ -130,7 +133,7 @@ else
     for track_i=1:length(tc_track_prob),plot(tc_track_prob(track_i).lon,tc_track_prob(track_i).lat,'-b');end
     title('probabilistic tracks')
     
-    hazard_set_file=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
+    hazard_set_file=[climada_global.hazards_dir filesep 'TCNA_today_small.mat'];
     load(hazard_set_file) % load demo hazard event set
 end
 
@@ -150,7 +153,7 @@ end
 % small asset example as used in climada_demo, the demonstration GUI as
 % shown above):
 
-entity_excel_filename=[climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];
+entity_excel_filename=[climada_global.entities_dir filesep 'demo_today.xls'];
 
 entity=climada_entity_read(entity_excel_filename,hazard);
 % Such an entity structure contains the asset, damage function and

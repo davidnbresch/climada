@@ -48,7 +48,7 @@ if ~exist('discount_filename','var'),discount_filename = [];end
 
 % prompt for discount_filename if not given
 if isempty(discount_filename) % local GUI
-    discount_filename      = [climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
+    discount_filename      = [climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     [filename, pathname] = uigetfile(discount_filename, 'Select discount file:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -61,8 +61,8 @@ end
 [fP,fN,fE] = fileparts(discount_filename);
 
 if isempty(fP) % complete path, if missing
-    discount_filename=[climada_global.data_dir filesep 'entities' filesep fN fE];
-    [fP,fN,fE] = fileparts(discount_filename);
+    discount_filename=[climada_global.entities_dir filesep fN fE];
+    [~,~,fE] = fileparts(discount_filename);
 end
 
 if strcmp(fE,'.ods')

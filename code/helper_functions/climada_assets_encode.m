@@ -79,7 +79,7 @@ if ~exist('max_encoding_distance_m','var'),max_encoding_distance_m=[];end
 
 % prompt for assets (entity) if not given
 if isempty(entityORassets) % local GUI
-    entity_file=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
+    entity_file=[climada_global.entities_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(entity_file, 'Select entity to re-encode:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel

@@ -43,7 +43,7 @@ entity_out = []; %init
         
 % prompt for entity if not given
 if isempty(entity) % local GUI
-    entity=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
+    entity=[climada_global.entities_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(entity, 'Select encoded entity:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -57,7 +57,7 @@ if ~isstruct(entity)
     
     % complete path, if missing
     [fP,fN,fE]=fileparts(entity_file);
-    if isempty(fP),entity_file=[climada_global.data_dir filesep 'entities' filesep fN fE];end
+    if isempty(fP),entity_file=[climada_global.entities_dir filesep fN fE];end
     
     load(entity_file);
 end

@@ -58,6 +58,7 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 %   and plots: adaptation cost curve, adaptation event view
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150101, initial
+% David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir and hazards_dir used
 %-
 
 measures_impact=[]; % init output
@@ -92,10 +93,10 @@ show_questdlg=0; % default=0
 %
 % the files for TEST mode
 if strcmpi(entity_today_file,'TEST_CLIMADA')
-    entity_today_file =[climada_global.data_dir filesep 'entities' filesep 'demo_today' climada_global.spreadsheet_ext];
-    entity_future_file=[climada_global.data_dir filesep 'entities' filesep 'demo_today' climada_global.spreadsheet_ext];
-    hazard_today_file =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
-    hazard_future_file=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
+    entity_today_file =[climada_global.entities_dir filesep 'demo_today' climada_global.spreadsheet_ext];
+    entity_future_file=[climada_global.entities_dir filesep 'demo_today' climada_global.spreadsheet_ext];
+    hazard_today_file =[climada_global.hazards_dir  filesep 'TCNA_today_small.mat'];
+    hazard_future_file=[climada_global.hazards_dir  filesep 'TCNA_2030med_small.mat'];
     check_plots=1;
     show_questdlg=0;
     fprintf('SPECIAL climada TEST mode\n')
@@ -106,7 +107,7 @@ end
 if isempty(entity_today_file) % local GUI
     show_questdlg=1;
     if isempty(entity_today_file_def)
-        entity_today_file=[climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
+        entity_today_file=[climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     else
         entity_today_file=entity_today_file_def;
     end
@@ -136,7 +137,7 @@ end
 if isempty(hazard_today_file) % local GUI
     show_questdlg=1;
     if isempty(hazard_today_file_def)
-        hazard_today_file=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
+        hazard_today_file=[climada_global.hazards_dir filesep '*.mat'];
     else
         hazard_today_file=hazard_today_file_def;
     end
@@ -153,7 +154,7 @@ end
 if isempty(entity_future_file) % local GUI
     show_questdlg=1;
     if isempty(entity_future_file_def)
-        entity_future_file=[climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
+        entity_future_file=[climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     else
         entity_future_file=entity_future_file_def;
         
@@ -171,7 +172,7 @@ end
 if isempty(hazard_future_file) % local GUI
     show_questdlg=1;
     if isempty(hazard_future_file_def)
-        hazard_future_file=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
+        hazard_future_file=[climada_global.hazards_dir filesep '*.mat'];
     else
         hazard_future_file=hazard_future_file_def;
     end

@@ -67,7 +67,7 @@ if isstruct(assets_filename), assets_filename = ''; end
 
 % prompt for entity_filename if not given
 if isempty(assets_filename) % local GUI
-    assets_filename      = [climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
+    assets_filename      = [climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     [filename, pathname] = uigetfile(assets_filename, 'Select assets file:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -82,8 +82,8 @@ end
 [fP,fN,fE] = fileparts(assets_filename);
 
 if isempty(fP) % complete path, if missing
-    assets_filename=[climada_global.data_dir filesep 'entities' filesep fN fE];
-    [fP,fN,fE] = fileparts(assets_filename);
+    assets_filename=[climada_global.entities_dir filesep fN fE];
+    [~,~,fE] = fileparts(assets_filename);
 end
 
 if strcmp(fE,'.ods')

@@ -57,13 +57,13 @@ if ~exist('reverse_cb'         , 'var'), reverse_cb          = 0 ; end
 % PARAMETERS
 %
 % filename and path to the entity used for the demo GUI:
-climada_demo_entity_excel_file = [climada_global.data_dir filesep 'entities' filesep 'demo_today.xls'];
-climada_demo_entity_save_file  = [climada_global.data_dir filesep 'entities' filesep 'demo_today.mat'];
+climada_demo_entity_excel_file = [climada_global.entities_dir filesep 'demo_today.xls'];
+%%climada_demo_entity_save_file  = [climada_global.entities_dir filesep 'demo_today.mat'];
 %
 % the hazard sets to be used:
-hazard_present         = [climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
-hazard_moderate_change = [climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
-hazard_high_change     = [climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030high_small.mat'];
+hazard_present         =         [climada_global.hazards_dir  filesep 'TCNA_today_small.mat'];
+hazard_moderate_change =         [climada_global.hazards_dir  filesep 'TCNA_2030med_small.mat'];
+hazard_high_change     =         [climada_global.hazards_dir  filesep 'TCNA_2030high_small.mat'];
 
 if isempty(climada_demo_params) % set for simple TEST
    climada_demo_params.growth                        = 0.02;

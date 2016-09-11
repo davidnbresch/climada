@@ -62,7 +62,7 @@ if ~exist('entity','var'), entity = [];end
 
 % prompt for damagefunction_filename if not given
 if isempty(damagefunction_filename) % local GUI
-    damagefunction_filename      = [climada_global.data_dir filesep 'entities' filesep '*' climada_global.spreadsheet_ext];
+    damagefunction_filename      = [climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     [filename, pathname] = uigetfile(damagefunction_filename, 'Select damagefunctions file:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel

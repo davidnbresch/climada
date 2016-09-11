@@ -44,7 +44,7 @@ MarkerSize=5; % default=5
 
 % prompt for assets (entity) if not given
 if isempty(assets) % local GUI
-    entity_file=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
+    entity_file=[climada_global.entities_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(entity_file, 'Select entity to check:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel

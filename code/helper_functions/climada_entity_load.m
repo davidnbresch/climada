@@ -30,6 +30,7 @@ function [entity,entity_file]=climada_entity_load(entity)
 % Lea Mueller, muellele@gmail.com, 20151127, set entity_file to empty if a struct without .assets
 % David N. Bresch, david.bresch@gmail.com, 20160202, speedup if entity structure passed
 % David N. Bresch, david.bresch@gmail.com, 20160516, _entity added if needed, too. entity_file as output added
+% David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
 %-
 
 global climada_global
@@ -48,7 +49,7 @@ end
 
 % prompt for entity_file if not given
 if isempty(entity_file) % local GUI
-    entity_file=[climada_global.data_dir filesep 'entities' filesep '*.mat'];
+    entity_file=[climada_global.entities_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(entity_file, 'Select entity to open:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -59,7 +60,7 @@ end
 
 % complete path, if missing
 [fP,fN,fE]=fileparts(entity_file);
-if isempty(fP),fP=[climada_global.data_dir filesep 'entities'];end
+if isempty(fP),fP=climada_global.entities_dir;end
 if isempty(fE),fE='.mat';end
 entity_file=[fP filesep fN fE];
 if ~exist(entity_file,'file')
