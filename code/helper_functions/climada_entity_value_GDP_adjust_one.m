@@ -9,7 +9,7 @@ function entity=climada_entity_value_GDP_adjust_one(entity,mode_selector)
 %   The total asset value is derived as follows:
 %       - normalize the asset values
 %       - multiply with the country's GDP
-%       - multiply with a factor that depends on a country's income
+%       - multiply with a scaleup factor that depends on a country's income
 %         group, i.e., its GDP per capita. This last factor is the KEY
 %         ASSUMPTION here, see income_group_factors in PARAMETERS in code
 %
@@ -59,9 +59,11 @@ function entity=climada_entity_value_GDP_adjust_one(entity,mode_selector)
 % OUTPUTS:
 %   entity_adjusted: entity with adjusted asset values, also stored as .mat
 %       file (only last entity if entity_file_regexp covers more than one)
+%       adds the fields entity.assets.GDP_value and entity.assets.scale_up_factor
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150204, switched to one entity, see also climada_entity_value_GDP_adjust
 % David N. Bresch, david.bresch@gmail.com, 20150927, economic_indicators_mastertable from climada_global.system_dir
+% David N. Bresch, david.bresch@gmail.com, 20160911, entity.assets.GDP_value and entity.assets.scale_up_factor to output
 %-
 
 % set global variables and directories
@@ -187,9 +189,11 @@ if ~isempty(country_index)
         
         % multiply with GDP
         entity.assets.Value = entity.assets.Value*GDP_value;
+        entity.assets.GDP_value = GDP_value;
         
         % multiply with scale-up factor
         entity.assets.Value = entity.assets.Value*scale_up_factor;
+        entity.assets.scale_up_factor = scale_up_factor;
         
         % special treatment for future entities
         if isfield(entity.assets,'Value_today'),entity.assets.Value_today=entity.assets.Value;end
