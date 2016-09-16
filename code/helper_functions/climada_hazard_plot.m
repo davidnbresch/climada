@@ -54,8 +54,7 @@ if ~exist('caxis_range','var'),caxis_range=[];end
 if ~exist('plot_centroids','var'),plot_centroids=0;end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
-% special, if name instead of struct is passed
-if ischar(hazard),hazard=climada_hazard_load(hazard);end
+if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
 if isempty(hazard),return;end
 
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files

@@ -27,6 +27,7 @@ function hazard=climada_hazard_load(hazard)
 % Lea Mueller, muellele@gmail.com, 20151127, set hazard_file to empty if a struct without .lon
 % David N. Bresch, david.bresch@gmail.com, 20160202, speedup if hazard structure passed
 % David N. Bresch, david.bresch@gmail.com, 20160527, climada_hazard2octave added
+% David N. Bresch, david.bresch@gmail.com, 20160916, hazards_dir used
 %-
 
 global climada_global
@@ -45,7 +46,7 @@ end
 
 % prompt for hazard_file if not given
 if isempty(hazard_file) % local GUI
-    hazard_file=[climada_global.data_dir filesep 'hazards' filesep '*.mat'];
+    hazard_file=[climada_global.hazards_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(hazard_file, 'Load hazard event set:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -56,7 +57,7 @@ end
 
 % complete path, if missing
 [fP,fN,fE]=fileparts(hazard_file);
-if isempty(fP),fP=[climada_global.data_dir filesep 'hazards'];end
+if isempty(fP),fP=climada_global.hazards_dir;end
 if isempty(fE),fE='.mat';end
 hazard_file=[fP filesep fN fE];
 

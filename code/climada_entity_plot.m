@@ -57,9 +57,9 @@ d = 1; % degree
 
 % prompt for entity if not given
 if isempty(entity),entity=climada_entity_load;end
+if ischar(entity),entity=climada_entity_load(entity);end
 if isempty(entity),return;end
 
-if ischar(entity),entity=climada_entity_load(entity);end
 
 beginColor  = [232 232 232 ]/255;
 middleColor = [105 105 105 ]/255;
