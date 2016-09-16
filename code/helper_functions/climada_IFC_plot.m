@@ -1,4 +1,4 @@
-function climada_IFC_plot(IFC,hist_check,check_log,color_index)
+function climada_IFC_plot(IFC,hist_check,check_log,color_index,new_figure)
 % climada
 % NAME:
 %   climada_IFC_plot
@@ -28,6 +28,7 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 %       4:  Violet/light violet
 %       5:  Dark orange/golden
 %       6:  Black/gray
+%   new_figure: =1 (default) create new figure, =0 create none
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150130
@@ -36,6 +37,7 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index)
 % David N. Bresch, david.bresch@gmail.com, 20150405, IFC as struct array, white background
 % Lea Mueller, muellele@gmail.com, 20160308, bugfix if no historical data
 % david.bresch@gmail.com, 20160609, bugfix if no historical data improved
+% david.bresch@gmail.com, 20160916, new figure added, helpful if called as climada_IFC_plot(climada_hazard2IFC)
 %-
 
 if ~exist('IFC','var'),
@@ -46,7 +48,10 @@ end
 if ~exist('hist_check',     'var'), hist_check  = 1;    end
 if ~exist('check_log',      'var'), check_log   = 0;    end
 if ~exist('color_index',    'var'), color_index = 1;    end
+if ~exist('new_figure',     'var'), new_figure  = 1;    end
 % if ~exist('Gumbel_check',   'var'), Gumbel_check= 1;    end
+
+if new_figure,figure;end
 
 %set colors
 color1 = [255  122  0;... % orange
