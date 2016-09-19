@@ -36,6 +36,7 @@ function [measures, measures_impact] = climada_measures_read(measures_filename)
 % Jacob Anz, j.anz@gmx.net, 20151204, remove measures.damagefunctions if empty
 % Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
 % Lea Mueller, muellele@gmail.com, 20160523, add measures_impact, invoke climada_measures_impact_read
+% David Bresch, david.bresch@gmail.com, 20160917, re-calling encode disabled
 %-
 
 global climada_global
@@ -115,18 +116,12 @@ if ~isfield(measures,'cost')
     return
 end
     
-try 
-    measures.damagefunctions = climada_damagefunctions_read(measures_filename);
-    % measures.damagefunctions = climada_xlsread('no',measures_filename,'damagefunctions',1);
-    fprintf('Special damagefunctions for measures found\n')
-    % delete nans if there are
-    if isempty(measures.damagefunctions)
-        measures = rmfield(measures, 'damagefunctions');
-    else        
-        measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID');
-    end
-catch
-    fprintf('No damagefunction sheet found\n')
+measures.damagefunctions = climada_damagefunctions_read(measures_filename);
+fprintf('Special damagefunctions for measures found\n')
+if isempty(measures.damagefunctions)
+    measures = rmfield(measures, 'damagefunctions');
+else
+    measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID'); % delete NaNs if there are
 end
 
 % rename vuln_map, since otherwise climada_measures_encode does not treat it
@@ -136,67 +131,22 @@ if isfield(measures,'vuln_map'),measures.damagefunctions_map=measures.vuln_map;m
 if isfield(measures,'vuln_MDD_impact_a'),measures.MDD_impact_a=measures.vuln_MDD_impact_a;measures=rmfield(measures,'vuln_MDD_impact_a');end
 if isfield(measures,'vuln_MDD_impact_b'),measures.MDD_impact_b=measures.vuln_MDD_impact_b;measures=rmfield(measures,'vuln_MDD_impact_b');end
 if isfield(measures,'vuln_PAA_impact_a'),measures.PAA_impact_a=measures.vuln_PAA_impact_a;measures=rmfield(measures,'vuln_PAA_impact_a');end
-if isfield(measures,'vuln_PAA_impact_b'),measures.PAA_impact_b=measures.vuln_PAA_impact_b;measures=rmfield(measures,'vuln_PAA_impact_b');end            
+if isfield(measures,'vuln_PAA_impact_b'),measures.PAA_impact_b=measures.vuln_PAA_impact_b;measures=rmfield(measures,'vuln_PAA_impact_b');end     
 
-% delete nans if there are invalid entries
-measures = climada_entity_check(measures,'name');
+% delete NaNs if there are invalid entries
+measures = climada_entity_check(measures,'name',0,'measures');
 
-try 
-    % see if assets tab is provided, which defines the regional scope of
-    % one or more measures
-    assets = climada_assets_read(measures_filename,'NOENCODE');
-    %assets = climada_xlsread('no',measures_filename,'assets',1);
-    %fprintf('asset sheet found\n');
-end
-   
-
-if ~isempty(assets)
-      
-    % number of measures
-    n_measures = numel(measures.name);
-    
-    % initialize logical index to define the regional scope of measures
-    measures.regional_scope = ones(length(assets.Value),n_measures);
-    
-    % get all fieldnames in the structure "assets"
-    asset_columns = fieldnames(assets);
-    
-    % get measures names, without brackets and replace empty spaces with underline
-    measures_names = strrep(strrep(strrep(measures.name,' ','_'),'(',''),')','');
-    
-    % find those names in the asset_columns
-    has_scope = ismember(measures_names,asset_columns);
-    
-    if any(has_scope)
-        has_scope = find(has_scope);
-        fprintf('Regional scope of measures found\n');
-        
-        % loop over measures that have a regional scope and save in matrix
-        % measures.regional_scope
-        for scope_i = 1:numel(has_scope)
-            scope = getfield(assets, measures_names{has_scope(scope_i)});     
-            scope(isnan(scope)) = 0;
-            measures.regional_scope(:,has_scope(scope_i)) = scope;
-        end 
-    end %has_scope
-    
-    % create logical 
-    measures.regional_scope = logical(measures.regional_scope);
-end
+% make sure we have all fields and they are 'correct'
+measures = climada_measures_complete(measures);
 
 % encode measures
 measures = climada_measures_encode(measures);
 
 % sanity check for measures
-climada_measures_check(measures);
-
-% save measures as .mat file for fast access
-% but we re-read form .xls each time this code is called
-[fP,fN] = fileparts(measures_filename);
-save([fP filesep fN],'measures')
+measures = climada_measures_check(measures); % 20160917, return value added
 
 % create measures_impact struct directly if "benefit" per measure is given. 
 % shortcut instead of calculating measures_impact with climada_measures_impact
 measures_impact = climada_measures_impact_read(measures);
 
-return
+end % climada_measures_read

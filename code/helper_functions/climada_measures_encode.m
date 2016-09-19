@@ -9,7 +9,9 @@ function measures=climada_measures_encode(measures)
 %   triples as string into RGB color triplets. Plus some sanity checks.
 %
 %   Previous call: climada_entity_read (usually called in there,
-%       climada_measures_encode is a low-level function)
+%   climada_measures_encode is a low-level function). It is strongly
+%   recommended to call climada_measures_complete prior to
+%   climada_measures_encode 
 %
 %   See also climada_damagefunctions_read and climada_damagefunctions_map
 % CALLING SEQUENCE:

@@ -1,4 +1,4 @@
-function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
+function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard,force_read)
 % climada entity import, read assets, damagefunctions, discount and measures
 % NAME:
 %   climada_entity_read
@@ -32,13 +32,17 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard)
 % EXAMPLE:
 %   entity = climada_entity_read;
 % INPUTS:
-%   entity_filename: the filename of the Excel (or .ods) file with the assets
+%   entity_filename: the filename of the Excel (.xls, .xlsx or .ods) file with the assets
 %       If no path provided, default path ../data/entities is used
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
 %       > promted for if not given (out of climada_assets_encode)
 %       ='NOENCODE' or 'noencode': do not encode assets, see climada_assets_encode
+%   force_read: if =1, force reading from the Excel file, do NOT use the
+%       possibly already exissting .mat file (climada does alaways read from
+%       Excel in case the Excal has been edited since last time read).
+%       Default=0.
 % OUTPUTS:
 %   entity: a structure, with
 %       assets: a structure, with
@@ -103,7 +107,8 @@ entity_save_file = [];
 
 % poor man's version to check arguments
 if ~exist('entity_filename','var'), entity_filename = [];end
-if ~exist('hazard','var'), hazard = [];end
+if ~exist('hazard','var'),          hazard = [];end
+if ~exist('force_read','var'),      force_read = 0;end
 
 % PARAMETERS
 %
@@ -120,18 +125,14 @@ if isempty(entity_filename) % local GUI
 end
 
 [fP,fN,fE] = fileparts(entity_filename);
+if isempty(fE),fE=climada_global.spreadsheet_ext;end
 if isempty(fP) % complete path, if missing
-    entity_filename = [climada_global.entities_dir filesep fN fE];
-    [fP,fN,fE] = fileparts(entity_filename);
-    if isempty(fE) % complete extension, if missing
-        fE = '.xlsx';
-        if ~exist([entity_filename fE],'file'), fE = '.xls'; end
-        entity_filename = [entity_filename fE];
-    end
+    entity_filename=[climada_global.entities_dir filesep fN fE];
 end
+[fP,fN] = fileparts(entity_filename);
 entity_save_file=[fP filesep fN '.mat'];
 
-if climada_check_matfile(entity_filename,entity_save_file)
+if climada_check_matfile(entity_filename,entity_save_file) && ~force_read
     % there is a .mat file more recent than the Excel
     load(entity_save_file)
     
@@ -150,7 +151,7 @@ if climada_check_matfile(entity_filename,entity_save_file)
 else
     % read assets
     entity.assets = climada_assets_read(entity_filename,hazard);
-    
+        
     % read damagefunctions
     entity.damagefunctions = climada_damagefunctions_read(entity_filename);
     

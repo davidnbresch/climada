@@ -5,6 +5,9 @@ function assets = climada_assets_category_ID(assets)
 % NAME:
 %   climada_assets_category_ID
 % PURPOSE:
+%   Do NOT use this function any more, since entity does already contain
+%   Category_ID, not category and more [david.bresch@gmail.com, 20160917].
+%
 %   Create category IDs (assets.Category_name, assets.Category_ID) and
 %   overwrite assets.Category with IDs. This is saves memory space.
 % CALLING SEQUENCE:
@@ -26,7 +29,7 @@ function assets = climada_assets_category_ID(assets)
 % Lea Mueller, muellele@gmail.com, 20151217, make sure assets.Category_name is a cell
 %-
 
-global climada_global
+%global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout

@@ -77,7 +77,7 @@ else
 end
 
 % check for valid/correct entity.assets.filename
-if isfield(entity,'assets')
+if isfield(entity,'assets')   
     if ~strcmp(entity_file,entity.assets.filename)
         entity.assets.filename=entity_file;
         entity.damagefunctions.filename=entity_file;

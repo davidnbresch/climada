@@ -1,21 +1,23 @@
-function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
+function assets = climada_assets_read(assets_filename,hazard)
 % climada assets read import
 % NAME:
 %   climada_assets_read
 % PURPOSE:
-%   read assets with .lon, .lat, .Values. climada_assets_encode is 
-%   automatically invoked.
+%   read assets with Longitude (lon), Latitude (lat) and Values (the
+%   mandatory fields, all other fields are automatically added if needed).
+%
+%   climada_assets_complete and climada_assets_encode are automatically invoked.
 %   usually called from climada_entity_read, see climada_entity_read for
-%   more information. The field "Value" is
-%   mandatory otherwise assets are not read.
+%   more information.
 %
 %   The code invokes climada_spreadsheet_read to really read the data,
-%   which implements .xls and .ods files
-%   For .xls, the sheet names are dynamically checked, for .ods, the sheet
-%   names are hard-wired (see code), means for .ods, the sheet
-%   'assets' needs to exist.
+%   which implements .xls, .xlsx and .ods files. For .xls, the sheet names
+%   are dynamically checked, for .ods, the sheet names are hard-wired (see
+%   code), means for .ods, the sheet 'assets' needs to exist.
+%
+%   called from: climada_entity_read
 % CALLING SEQUENCE:
-%   [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
+%   assets = climada_assets_read(assets_filename,hazard)
 % EXAMPLE:
 %   assets = climada_assets_read;
 % INPUTS:
@@ -34,7 +36,6 @@ function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
 %           Deductible: the deductible
 %           Cover: the cover
 %           DamageFunID: the damagefunction curve ID
-%   assets_save_file: the name the encoded assets got saved to
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20151117, init from climada_entity_read to read only assets
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
@@ -42,13 +43,16 @@ function [assets,assets_save_file] = climada_assets_read(assets_filename,hazard)
 % Lea Mueller, muellele@gmail.com, 20151207, return if already a complete assets structure as input
 % Lea Mueller, muellele@gmail.com, 20151207, invoke climada_assets_category_ID
 % david.bresch@gmail.com, 20160603, make sure we have 1xN arrays
+% david.bresch@gmail.com, 20160916, see remark in code
+% david.bresch@gmail.com, 20160917, Category treatment removed, since Category_ID new in Excel
+% david.bresch@gmail.com, 20160917, Region_ID and Value_unit added, assets_save_file removed
+% david.bresch@gmail.com, 20160918, climada_assets_complete added
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 assets = [];
-assets_save_file = [];
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
@@ -59,13 +63,7 @@ if ~exist('hazard','var'),hazard=[];end
 % PARAMETERS
 %
 
-% if already a complete assets, return
-if isfield(assets_filename,'lon') && isfield(assets_filename,'lat') && isfield(assets_filename,'Value')
-    assets = assets_filename; return
-end
-if isstruct(assets_filename), assets_filename = ''; end
-
-% prompt for entity_filename if not given
+% prompt for assets_filename if not given
 if isempty(assets_filename) % local GUI
     assets_filename      = [climada_global.entities_dir filesep '*' climada_global.spreadsheet_ext];
     [filename, pathname] = uigetfile(assets_filename, 'Select assets file:');
@@ -76,14 +74,10 @@ if isempty(assets_filename) % local GUI
     end
 end
 
-
-
-% figure out the file type
 [fP,fN,fE] = fileparts(assets_filename);
-
+if isempty(fE),fE=climada_global.spreadsheet_ext;end
 if isempty(fP) % complete path, if missing
     assets_filename=[climada_global.entities_dir filesep fN fE];
-    [~,~,fE] = fileparts(assets_filename);
 end
 
 if strcmp(fE,'.ods')
@@ -112,83 +106,51 @@ try
     end
     
 catch ME
-    fprintf('WARN: no assets data read, %s\n',ME.message)
+    fprintf('Error: no assets data read: %s\n',ME.message)
 end
 
-
-% rename .Longitude to .lon and .Latitude to .lat
+% rename .Longitude to .lon and .Latitude to .lat (and VulnCurveID to DamageFunID)
 if isfield(assets,'Longitude'),assets.lon=assets.Longitude;assets=rmfield(assets,'Longitude');end
 if isfield(assets,'Latitude'), assets.lat=assets.Latitude; assets=rmfield(assets,'Latitude');end
+if isfield(assets,'VulnCurveID'),assets.DamageFunID=assets.VulnCurveID;assets = rmfield(assets,'VulnCurveID');end
 
-% .Value is mandatory
+% check for mandatory fields
 if ~isfield(assets,'Value')
     fprintf('Error: no Value column in assets tab, aborted\n')
     assets = [];
-    if strcmp(fE,'.ods') && climada_global.octave_mode
+    if strcmp(fE,'.ods')
         fprintf('> make sure there are no cell comments in the .ods file, as they trouble odsread\n');
     end
     return
 end
+if ~isfield(assets,'lon'),fprintf('Error: no Longitude (lon) column in assets tab, aborted\n');assets = [];return;end
+if ~isfield(assets,'lat'),fprintf('Error: no Latitude (lat) column in assets tab, aborted\n') ;assets = [];return;end
 
-% make sure we have 1xN arrays
-assets.lon                                         =climasre_LOCAL_TRANSPOSE(assets.lon);
-assets.lat                                         =climasre_LOCAL_TRANSPOSE(assets.lat);
-assets.Value                                       =climasre_LOCAL_TRANSPOSE(assets.Value);
-if isfield(assets,'DamageFunID'),assets.DamageFunID=climasre_LOCAL_TRANSPOSE(assets.DamageFunID);end
-if isfield(assets,'Deductible'), assets.Deductible =climasre_LOCAL_TRANSPOSE(assets.Deductible);end
-if isfield(assets,'Cover'),      assets.Cover      =climasre_LOCAL_TRANSPOSE(assets.Cover);end
-    
-% assign value units if not given in xls-entity with global values
-if ~isfield(assets,'Value_unit')
-    assets.Value_unit = repmat({climada_global.Value_unit},size(assets.Value));
-end
+% delete NaNs if there are invalid entries
+assets = climada_entity_check(assets,'lon',0,'assets'); % check for lon to be complete
+assets = climada_entity_check(assets,'lat',0,'assets'); % check for lat to be complete
+assets = climada_entity_check(assets,'Value',0,'assets'); % check for Value to be complete
+assets = climada_entity_check(assets,'Value_unit',0,'assets'); % check, as this is a cell array...
 
-if isfield(assets,'Category'), assets = climada_assets_category_ID(assets); end
-
-% add assets.region, use only first entry
-% rename .Region to .region
-if isfield(assets,'Region'),assets.region=assets.Region;assets=rmfield(assets,'Region');end
-if isfield(assets,'region')
-    assets.region=assets.region{1};
-else
-    assets.region='unknown region';
-end
-
-% add assets.refence_year, that describes the time horizon of the assets, use only first entry
 % rename .Reference_year to .reference_year
 if isfield(assets,'Reference_year'),assets.reference_year=assets.Reference_year;assets=rmfield(assets,'Reference_year');end
-if isfield(assets,'reference_year')
+% add assets.refence_year, that describes the time stamp of the assets, use only first entry
+if isfield(assets,'reference_year') % if not, it is added in climada_assets_complete (see below)
     if ~isnumeric(assets.reference_year)
         assets=rmfield(assets,'reference_year');
     else
         assets.reference_year=assets.reference_year(1);
     end
 end
-if ~isfield(assets,'reference_year'),assets.reference_year=climada_global.present_reference_year;end  
 
-% check for OLD naming convention, VulnCurveID -> DamageFunID
-if isfield(assets,'VulnCurveID')
-    assets.DamageFunID = assets.VulnCurveID;
-    assets = rmfield(assets,'VulnCurveID');
-end
-
-% delete nans if there are invalid entries
-assets = climada_entity_check(assets,'lon');
+% make sure we have all fields and they are 'correct'
+assets = climada_assets_complete(assets);
 
 % encode assets
 if ischar(hazard) && strcmpi(hazard,'NOENCODE')
     fprintf('Note: assets not encoded\n')
-else 
+else
     assets = climada_assets_encode(assets,hazard);
 end
 
-% % save entity as .mat file for fast access
-%fprintf('saving entity as %s\n',assets_save_file);
-%save(assets_save_file,'entity');
-% % end % climada_check_matfile
-    
 end % climada_assets_read
-
-function arr=climasre_LOCAL_TRANSPOSE(arr)
-if size(arr,1)>size(arr,2),arr=arr';end
-end % climasre_LOCAL_TRANSPOSE

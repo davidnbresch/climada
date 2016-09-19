@@ -95,6 +95,11 @@ if ischar(hazard),if strcmp(hazard,'SKIP'),return;end;end % special case, see e.
 
 hazard=climada_hazard_load(hazard);
 
+if isempty(hazard) % user pressed Cancel when prompted for or hazard does not exist
+    fprintf('Note: assets not encoded\n');
+    return
+end 
+
 if isempty(max_encoding_distance_m)
     if isfield(hazard,'max_encoding_distance_m')
         % hazard set contains a max diatance

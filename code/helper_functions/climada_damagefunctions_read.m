@@ -44,6 +44,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % Lea Mueller, muellele@gmail.com, 20151016, delete nans if there are invalid entries
 % Lea Mueller, muellele@gmail.com, 20151119, read first sheet if sheet "damagefunctions" is not found
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
+% David Bresch, david.bresch@gmail.com, 20160918, climada_damagefunctions_complete
 %-
 
 global climada_global
@@ -129,8 +130,13 @@ damagefunctions.datenum = damagefunctions.DamageFunID*0+now; % add datenum
 if isfield(damagefunctions,'MDR'),damagefunctions=rmfield(damagefunctions,'MDR');end
 
 % delete nans if there are invalid entries
-damagefunctions = climada_entity_check(damagefunctions,'DamageFunID');
+damagefunctions = climada_entity_check(damagefunctions,'DamageFunID',0,'damagefunctions');
+damagefunctions = climada_entity_check(damagefunctions,'peril_ID',0,'damagefunctions');
+damagefunctions = climada_entity_check(damagefunctions,'Intensity_unit',0,'damagefunctions');
+damagefunctions = climada_entity_check(damagefunctions,'name',0,'damagefunctions');
 
+% make sure we have all fields and they are 'correct'
+damagefunctions = climada_damagefunctions_complete(damagefunctions);
 
 if ~isempty(entity)
     entity=rmfield(entity,'damagefunctions'); % delete OLD
@@ -145,4 +151,4 @@ if ~isempty(entity)
     end
 end
 
-end
+end % climada_damagefunctions_read
