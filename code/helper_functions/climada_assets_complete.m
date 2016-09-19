@@ -49,23 +49,27 @@ assets.lat                                         =clasco_LOCAL_TRANSPOSE(asset
 assets.Value                                       =clasco_LOCAL_TRANSPOSE(assets.Value);
 
 % add missing fields
-if ~isfield(assets,'filename'),assets.filename             ='undefined';end
-if ~isfield(assets,'reference_year'),assets.reference_year =climada_global.present_reference_year;end
-if ~isfield(assets,'Deductible'),assets.Category_ID        =assets.lon*0;end
-if ~isfield(assets,'Cover'),assets.Cover                   =assets.Value;end
+if ~isfield(assets,'filename'),   assets.filename          ='undefined';end
+if ~isfield(assets,'Deductible'), assets.Category_ID       =assets.lon*0;end
+if ~isfield(assets,'Cover'),      assets.Cover             =assets.Value;end
 if ~isfield(assets,'DamageFunID'),assets.Category_ID       =assets.lon*0+1;end
 if ~isfield(assets,'Category_ID'),assets.Category_ID       =assets.lon*0+1;end
-if ~isfield(assets,'Region_ID'),assets.Category_ID         =assets.lon*0+1;end
-if ~isfield(assets,'Value_unit'),assets.Value_unit         =repmat({climada_global.Value_unit},size(assets.Value));end
-    
+if ~isfield(assets,'Region_ID'),  assets.Category_ID       =assets.lon*0+1;end
+if ~isfield(assets,'Value_unit'), assets.Value_unit        =repmat({climada_global.Value_unit},size(assets.Value));end
+if ~isfield(assets,'reference_year'),assets.reference_year =climada_global.present_reference_year;end
+
 % make sure we have 1xN arrays (for the all the other fields)
-if isfield(assets,'Deductible'), assets.Deductible =clasco_LOCAL_TRANSPOSE(assets.Deductible);end
-if isfield(assets,'Cover'),      assets.Cover      =clasco_LOCAL_TRANSPOSE(assets.Cover);end
-if isfield(assets,'DamageFunID'),assets.DamageFunID=clasco_LOCAL_TRANSPOSE(assets.DamageFunID);end
-if isfield(assets,'Category_ID'),assets.Category_ID=clasco_LOCAL_TRANSPOSE(assets.Category_ID);end
-if isfield(assets,'Region_ID'),  assets.Region_ID  =clasco_LOCAL_TRANSPOSE(assets.Region_ID);end
-if isfield(assets,'Value_unit'), assets.Value_unit =clasco_LOCAL_TRANSPOSE(assets.Value_unit);end
-    
+if isfield(assets,'Deductible'),  assets.Deductible =clasco_LOCAL_TRANSPOSE(assets.Deductible);end
+if isfield(assets,'Cover'),       assets.Cover      =clasco_LOCAL_TRANSPOSE(assets.Cover);end
+if isfield(assets,'DamageFunID'), assets.DamageFunID=clasco_LOCAL_TRANSPOSE(assets.DamageFunID);end
+if isfield(assets,'Category_ID'), assets.Category_ID=clasco_LOCAL_TRANSPOSE(assets.Category_ID);end
+if isfield(assets,'Region_ID'),   assets.Region_ID  =clasco_LOCAL_TRANSPOSE(assets.Region_ID);end
+if isfield(assets,'Value_unit'),  assets.Value_unit =clasco_LOCAL_TRANSPOSE(assets.Value_unit);end
+% backward compatibility (until summer 2017, a remnant from ECA San Salvador, see climada release 2.0):
+if isfield(assets,'Category'),assets.Category=clasco_LOCAL_TRANSPOSE(assets.Category);end
+if isfield(assets,'Region'),  assets.Region  =clasco_LOCAL_TRANSPOSE(assets.Region);end
+if isfield(assets,'VALNaN'),  assets.VALNaN  =clasco_LOCAL_TRANSPOSE(assets.VALNaN);end
+
 end % climada_assets_complete
 
 function arr=clasco_LOCAL_TRANSPOSE(arr)

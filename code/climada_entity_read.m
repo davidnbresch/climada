@@ -5,11 +5,14 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard,
 % PURPOSE:
 %   read the file with the assets, damagefunctions, measures and discount.
 %   Calls climada_assets_read, climada_damagefunctions_read,
-%    climada_measures_read and climada_discount_read.
+%   climada_measures_read and climada_discount_read.
 %   climada_assets_encode and climada_measures_encode is automatically invoked
 %
 %   The code invokes climada_spreadsheet_read to really read the data,
 %   which implements .xls and .ods files
+%
+%   To test this code, use entity_template.xls, entity_template.xlsx or
+%   entity_template.ods. ADVANCED use: entity_template_ADVANCED.xlsx (.ods)
 %
 %   For .xls, the sheet names are dynamically checked, for .ods, the sheet
 %   names are hard-wired (see code), means for .ods, all the sheets
@@ -95,6 +98,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard,
 % Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
 % David N. Bresch, david.bresch@gmail.com, 20160524, allow for entity without assets (e.g. called from nightlight entity)
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
+% David N. Bresch, david.bresch@gmail.com, 20160919, reading tab names added
 %-
 
 global climada_global
@@ -102,8 +106,6 @@ if ~climada_init_vars,return;end % init/import global variables
 
 entity = [];
 entity_save_file = [];
-
-%%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
 % poor man's version to check arguments
 if ~exist('entity_filename','var'), entity_filename = [];end
@@ -161,10 +163,15 @@ else
     % read discount sheet
     entity.discount = climada_discount_read(entity_filename);
     
+    % read names sheet
+    entity.names = climada_names_read(entity_filename);
+    % if it exists, copy reference year to assets (where it is most likely used)
+    if isfield(entity.names,'reference_year'),...
+            entity.assets.reference_year=entity.names.reference_year;end
+    
     % save entity as .mat file for fast access
     fprintf('saving entity as %s\n',entity_save_file);
     save(entity_save_file,'entity');
-    
     
 end % climada_check_matfile
 

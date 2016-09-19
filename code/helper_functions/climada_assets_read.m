@@ -47,6 +47,7 @@ function assets = climada_assets_read(assets_filename,hazard)
 % david.bresch@gmail.com, 20160917, Category treatment removed, since Category_ID new in Excel
 % david.bresch@gmail.com, 20160917, Region_ID and Value_unit added, assets_save_file removed
 % david.bresch@gmail.com, 20160918, climada_assets_complete added
+% david.bresch@gmail.com, 20160919, assets.reference_year moved to climada_names_read
 %-
 
 global climada_global
@@ -132,7 +133,9 @@ assets = climada_entity_check(assets,'lat',0,'assets'); % check for lat to be co
 assets = climada_entity_check(assets,'Value',0,'assets'); % check for Value to be complete
 assets = climada_entity_check(assets,'Value_unit',0,'assets'); % check, as this is a cell array...
 
-% rename .Reference_year to .reference_year
+% rename .Reference_year to .reference_year (OLD, for backward
+% compatibility, does NOT work in Octave, see new tab names)
+% david.bresch@gmail.com: this code piece will be removed summer 2017
 if isfield(assets,'Reference_year'),assets.reference_year=assets.Reference_year;assets=rmfield(assets,'Reference_year');end
 % add assets.refence_year, that describes the time stamp of the assets, use only first entry
 if isfield(assets,'reference_year') % if not, it is added in climada_assets_complete (see below)
