@@ -39,6 +39,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % David N. Bresch, david.bresch@gmail.com, 20141221, MDR calculated locally and unique_ID_sel improved
 % David N. Bresch, david.bresch@gmail.com, 20150206, res returned
 % David N. Bresch, david.bresch@gmail.com, 20150225, datenum added
+% David N. Bresch, david.bresch@gmail.com, 20160920, damagefunctions.name added
 %-
 
 res=[]; % init
@@ -89,6 +90,11 @@ unique_IDs=unique(unique_ID);
 % we also show MDR, to ease understanding of MDD*PAA
 damagefunctions.MDR=damagefunctions.MDD.*damagefunctions.PAA;
 
+% backward compatibility
+if ~isfield(damagefunctions,'name')
+    damagefunctions.name=repmat({''},size(damagefunctions.MDD));
+end
+
 if ~isempty(unique_ID_sel)
     % find matching curves
     unique_pos=strncmp(unique_ID_sel,unique_IDs,length(unique_ID_sel));
@@ -105,7 +111,7 @@ for ID_i=1:length(unique_IDs)
     subplot(N_n_plots,n_N_plots,ID_i);
     dmf_pos=strmatch(unique_IDs{ID_i},unique_ID);
     if ~isempty(dmf_pos)
-        fprintf('plot %i: %s\n',ID_i,char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_ID_sel)
+        fprintf('plot %i: %s %s\n',ID_i,char(unique_IDs(ID_i)),damagefunctions.name{dmf_pos(1)}); % this way, it's easy to use them (see unique_ID_sel)
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b','LineWidth',2);
         plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),':g','LineWidth',2);
@@ -122,7 +128,7 @@ for ID_i=1:length(unique_IDs)
         legend('MDR','MDD','PAA','Location','NorthWest');
         xlabel('Intensity','FontSize',9);
         ylabel('MDR')
-        title(unique_IDs{ID_i});
+        title([unique_IDs{ID_i} ' ' damagefunctions.name{dmf_pos(1)}]);
         grid on
         grid minor
     else
