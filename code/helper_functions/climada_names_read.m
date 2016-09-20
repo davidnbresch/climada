@@ -6,7 +6,8 @@ function names = climada_names_read(names_filename)
 %   read names sheet with .item, .ID, .name
 %   usually called from climada_entity_read, see climada_entity_read for
 %   more information. Not a mandatory tab, hence very tolerant (i.e. it
-%   just returns empty in case of troubles).
+%   just returns empty in case of troubles). See climada_entity_read for a
+%   comprehensive description of output fields.
 %
 %   The names tab can alos contain definitions for climada_global
 %   parameters, see ADVANCED use in code (and manual).

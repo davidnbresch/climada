@@ -7,6 +7,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 %   climada_entity_read, which reads a full entity file, i.e. assets, 
 %   damagefunctions, discount and measures. The field "Intensity" is
 %   mandatory otherwise damagefunctions are not read.
+%   See climada_entity_read for a comprehensive description of output fields.
 %
 %   The code invokes climada_spreadsheet_read to really read the data,
 %   which implements .xls and .ods files

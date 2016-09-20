@@ -5,8 +5,8 @@ function discount = climada_discount_read(discount_filename)
 % PURPOSE:
 %   read discount sheet with .yield_ID, .year, .discount_rate. 
 %   usually called from climada_entity_read, see climada_entity_read for
-%   more information. The field "discount_rate" is
-%   mandatory otherwise discount is not read.
+%   more information. The field "discount_rate" is mandatory otherwise discount is not read.
+%   See climada_entity_read for a comprehensive description of output fields.
 %
 %   The code invokes climada_spreadsheet_read to really read the data,
 %   which implements .xls and .ods files

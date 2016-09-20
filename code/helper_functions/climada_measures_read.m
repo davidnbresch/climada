@@ -4,8 +4,8 @@ function [measures, measures_impact] = climada_measures_read(measures_filename)
 %   climada_measures_read
 % PURPOSE:
 %   read the Excel file with the list of measures, usually called from
-%   climada_entity_read. The field "cost" is
-%   mandatory otherwise measures are not read.
+%   climada_entity_read. The field "cost" is mandatory otherwise measures are not read.
+%   See climada_entity_read for a comprehensive description of output fields.
 %
 %   This code allows single Excel files with measures
 %   (and, if a tab damagefunctions exists, damage functions, and if a tab 

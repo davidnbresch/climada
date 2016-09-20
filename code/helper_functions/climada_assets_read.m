@@ -4,7 +4,8 @@ function assets = climada_assets_read(assets_filename,hazard)
 %   climada_assets_read
 % PURPOSE:
 %   read assets with Longitude (lon), Latitude (lat) and Values (the
-%   mandatory fields, all other fields are automatically added if needed).
+%   mandatory fields, all other fields are automatically added if needed). 
+%   See climada_entity_read for a comprehensive description of output fields.
 %
 %   climada_assets_complete and climada_assets_encode are automatically invoked.
 %   usually called from climada_entity_read, see climada_entity_read for
