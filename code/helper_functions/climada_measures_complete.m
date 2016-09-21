@@ -33,6 +33,7 @@ function measures = climada_measures_complete(measures)
 %    measures: same as input, with fields completed
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20160918, initial
+% david.bresch@gmail.com, 20160920, fix for bug in number of measures for assets_file
 %-
 
 %global climada_global
@@ -63,13 +64,13 @@ if ~isfield(measures,'hazard_high_frequency_cutoff'),measures.hazard_high_freque
 if ~isfield(measures,'Region_ID'),                measures.Region_ID =                 measures.MDD_impact_a*0;end
 if ~isfield(measures,'risk_transfer_attachement'),measures.risk_transfer_attachement = measures.MDD_impact_a*0;end
 if ~isfield(measures,'risk_transfer_cover'),      measures.risk_transfer_cover =       measures.MDD_impact_a*0;end
-if ~isfield(measures,'color_RGB'),                measures.color_RGB = repmat(.5,size(measures.MDD_impact_a,1),3);end
-if ~isfield(measures,'hazard_event_set'),   measures.hazard_event_set    = repmat({'nil'},size(measures.MDD_impact_a,1));end
-if ~isfield(measures,'damagefunctions_map'),measures.damagefunctions_map = repmat({'nil'},size(measures.MDD_impact_a,1));end
-if ~isfield(measures,'assets_file'),        measures.assets_file = repmat({'nil'},size(measures.MDD_impact_a,1));end
-if ~isfield(measures,'peril_ID'),           measures.assets_file = repmat({'XX'},size(measures.MDD_impact_a,1));end
-if ~isfield(measures,'name'),               measures.name = repmat({'undef'},size(measures.MDD_impact_a,1));end
-if ~isfield(measures,'color'),              measures.color = repmat({'.5 .5 .5'},size(measures.MDD_impact_a,1));end                     
+if ~isfield(measures,'color_RGB'),                measures.color_RGB = repmat(.5,max(size(measures.MDD_impact_a)),3);end
+if ~isfield(measures,'hazard_event_set'),   measures.hazard_event_set    = repmat({'nil'},size(measures.MDD_impact_a));end
+if ~isfield(measures,'damagefunctions_map'),measures.damagefunctions_map = repmat({'nil'},size(measures.MDD_impact_a));end
+if ~isfield(measures,'assets_file'),        measures.assets_file = repmat({'nil'},size(measures.MDD_impact_a));end
+if ~isfield(measures,'peril_ID'),           measures.peril_ID = repmat({'XX'},size(measures.MDD_impact_a));end
+if ~isfield(measures,'name'),               measures.name = repmat({'undef'},size(measures.MDD_impact_a));end
+if ~isfield(measures,'color'),              measures.color = repmat({'.5 .5 .5'},size(measures.MDD_impact_a));end                     
                   
 % make sure we have Nx1 arrays
 if isfield(measures,'hazard_intensity_impact_a'),measures.hazard_intensity_impact_a = clmeco_LOCAL_TRANSPOSE(measures.hazard_intensity_impact_a);end

@@ -49,6 +49,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160606, max_encoding_distance_m (renamed from max_distance_to_hazard) set to 1e5, not 1e6 any more
 % David N. Bresch, david.bresch@gmail.com, 20160819, hazards_dir added
 % David N. Bresch, david.bresch@gmail.com, 20160908, results_dir added and reset_flag=3
+% David N. Bresch, david.bresch@gmail.com, 20160921, default spreadsheet_ext='.xlsx' (best for MATLAB 9.x)
 %-
 
 global climada_global
@@ -141,10 +142,11 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % (see the short documentation in climada_global.system_dir/coastline.txt)
     climada_global.coastline_file=[climada_global.system_dir filesep 'coastline.mat'];
     
-    % the default spreadsheet type, either '.xls' (default) or '.ods'
+    % the default spreadsheet type, either '.xlsx' (default), .'xls' (e.g. for older MATLAB) or '.ods'
     % the user can always select from 'All Files', the default is only
     % used to compose the default filename.
-    climada_global.spreadsheet_ext='.xls'; % default '.xls'
+    climada_global.spreadsheet_ext='.xlsx'; % default '.xlsx' since 20160921
+    if str2double(strtok(version,'.'))<9,climada_global.spreadsheet_ext='.xls';end % for MATLAB versions before 9.x
     
     % country-specific csv delimiter (to read and convert to Excel properly)
     climada_global.csv_delimiter=';'; % ';' default
@@ -230,7 +232,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.octave_mode=0; % default=0
     
     % last but not least, check for Octave (instead of MATLAB)
-    if climada_octave
+    if climada_octave % see climada_octave.m for specific settings
         climada_global.octave_mode=1;
         fprintf('Note: running on Octave\n')
     end
