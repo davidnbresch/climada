@@ -40,6 +40,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % David N. Bresch, david.bresch@gmail.com, 20150206, res returned
 % David N. Bresch, david.bresch@gmail.com, 20150225, datenum added
 % David N. Bresch, david.bresch@gmail.com, 20160920, damagefunctions.name added
+% David N. Bresch, david.bresch@gmail.com, 20160929, damagefunctions.Intensity_unit added
 %-
 
 res=[]; % init
@@ -94,6 +95,9 @@ damagefunctions.MDR=damagefunctions.MDD.*damagefunctions.PAA;
 if ~isfield(damagefunctions,'name')
     damagefunctions.name=repmat({''},size(damagefunctions.MDD));
 end
+if ~isfield(damagefunctions,'Intensity_unit')
+    damagefunctions.Intensity_unit=repmat({''},size(damagefunctions.MDD));
+end
 
 if ~isempty(unique_ID_sel)
     % find matching curves
@@ -126,7 +130,8 @@ for ID_i=1:length(unique_IDs)
         axis tight
         set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
         legend('MDR','MDD','PAA','Location','NorthWest');
-        xlabel('Intensity','FontSize',9);
+        %xlabel('Intensity','FontSize',9);
+        xlabel(['Intensity [' entity.damagefunctions.Intensity_unit{dmf_pos(1)} ']'],'FontSize',9);
         ylabel('MDR')
         title([unique_IDs{ID_i} ' ' damagefunctions.name{dmf_pos(1)}]);
         grid on

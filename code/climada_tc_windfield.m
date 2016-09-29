@@ -85,7 +85,6 @@ if silent_mode==-1,max_wind_at_bullseye=0;end % =0 only for single timestep
 if isempty(tc_track),return;end
 if isempty(centroids),return;end
 
-
 gust=centroids.lon*0; % init with zeros
 
 % to convert to km/h
