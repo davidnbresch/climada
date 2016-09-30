@@ -110,7 +110,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     [cmap,~]   = climada_colormap(hazard.peril_ID);
     [X, Y]        = meshgrid(unique(hazard.lon),unique(hazard.lat));
     gridded_VALUE = griddata(hazard.lon,hazard.lat,values,X,Y);
-    contourf(X, Y, gridded_VALUE,'edgecolor','none')
+    contourf(X, Y, gridded_VALUE,'linecolor','none')
     hold on
     box on
     if plot_centroids

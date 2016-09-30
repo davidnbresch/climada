@@ -250,7 +250,7 @@ if abs(check_plot)>0
         if sum(values(not(isnan(values))))>0 % nansum(values)>0
             [X, Y, gridded_VALUE] = climada_gridded_VALUE(values, centroids);
             gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
-            contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
+            contourf(X, Y, gridded_VALUE,200,'linecolor','none')
         else
             text(mean([min(hazard.lon) max(hazard.lon)]),...
                 mean([min(hazard.lat ) max(hazard.lat )]),...
