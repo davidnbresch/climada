@@ -39,6 +39,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % Lea Mueller, muellele@gmail.com, 20150427, higher resolution, npoints set to 2000 (instead of 199)
 % Lea Mueller, muellele@gmail.com, 20150512, switched to griddata instead of climada_gridded_Value
 % David N. Bresch, david.bresch@gmail.com, cleanup
+% David N. Bresch, david.bresch@gmail.com, 20160930, legend added, if centroids are plotted
 %-
 
 res=[]; % init
@@ -59,6 +60,8 @@ if isempty(hazard),return;end
 
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
+if ~isfield(hazard,'units'),hazard.units='';end
+    
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);
 
@@ -110,6 +113,10 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     contourf(X, Y, gridded_VALUE,'edgecolor','none')
     hold on
     box on
+    if plot_centroids
+        plot(hazard.lon,hazard.lat,'.b','MarkerSize',1);
+        legend({['hazard intensity [' hazard.units ']'],'centroids'});
+    end % plot_centroids
     climada_plot_world_borders(0.5)
     axis(ax_lim)
     axis equal
@@ -130,8 +137,6 @@ else
     fprintf('all intensities zero for event %i\n',event_i);
     return
 end
-
-if plot_centroids,plot(hazard.lon,hazard.lat,'.b','MarkerSize',1);end
 
 if ~isempty(label)
     text(label.longitude,label.latitude,label.name)
