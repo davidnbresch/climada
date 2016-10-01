@@ -179,6 +179,10 @@ if ~isempty(country_index)
             GDP_value=econ_master_data.GDP_today(country_index);
         end
         
+        if iscell(GDP_value)
+            GDP_value=GDP_value{1}
+        end
+        
         if isnan(GDP_value)
             GDP_value=1.0;
             scale_up_factor=1.0; % in this case makes also no sense

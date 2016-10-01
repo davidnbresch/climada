@@ -145,7 +145,7 @@ else
         hazard.units = 'm';
     end
     gridded_h_int = griddata(hazard.lon,hazard.lat,hazard_intensity,x,y);
-    fig = contourf(x,y,gridded_h_int, 'edgecolor','none');
+    fig = contourf(x,y,gridded_h_int, 'linecolor','none');
 end
 
 hold on

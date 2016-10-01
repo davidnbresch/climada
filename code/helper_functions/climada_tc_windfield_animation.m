@@ -196,7 +196,7 @@ while replay == 1
     for agg_i = 1:aggregation_count
         [X, Y, gridded_VALUE] = climada_gridded_VALUE(full(res.gust_aggr(agg_i,:)), centroids);
         if sum(gridded_VALUE(:)>1)>0
-            [c,h] = contourf(X, Y, full(gridded_VALUE),[0:10:max_wind],'edgecolor','none');
+            [c,h] = contourf(X, Y, full(gridded_VALUE),[0:10:max_wind],'linecolor','none');
             climada_plot_tc_track_stormcategory(tc_track);
             plot(centroids.lon(1), centroids.lat(1), '+r','MarkerSize',0.8,'linewidth',0.1)
             climada_plot_world_borders(0.7, '', '', 1)
@@ -226,7 +226,7 @@ while replay == 1
     c = max(res.gust)';
     [X, Y, gridded_VALUE] = climada_gridded_VALUE(full(c), centroids);
     if sum(gridded_VALUE(:)>1)>0
-        [c, h]                = contourf(X, Y, full(gridded_VALUE),[0:10:max_wind],'edgecolor','none');
+        [c, h]                = contourf(X, Y, full(gridded_VALUE),[0:10:max_wind],'linecolor','none');
         climada_plot_tc_track_stormcategory(tc_track);
     else
         time_ = stormdate;

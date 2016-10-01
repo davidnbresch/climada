@@ -128,7 +128,7 @@ switch plot_method
         centroids.lon = lon; centroids.lat = lat;
         [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
         gridded_VALUE(gridded_VALUE<(0.1)) = NaN; %gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
-        contourf(X, Y, gridded_VALUE,200,'edgecolor','none');hold on;axis equal; % filled contour plot   
+        contourf(X, Y, gridded_VALUE,200,'linecolor','none');hold on;axis equal; % filled contour plot   
         if ~isempty(caxis_range),caxis(caxis_range);end
         %contourf(X,Y,full(gridded_VALUE));hold on;axis equal; % filled contour plot
         colormap(cmap)

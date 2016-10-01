@@ -200,7 +200,7 @@ for i=1:return_count %x_no*y_no %return_count
             case 'contourf'
                 [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
                 gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
-                contourf(X, Y, gridded_VALUE,200,'edgecolor','none')
+                contourf(X, Y, gridded_VALUE,200,'linecolor','none')
             case 'plotclr'
                 marker = ''; markersize = ''; colorbar_on = 0; miv = ''; mav = ''; % mav = caxis_max;
                 plotclr(centroids.lon,centroids.lat,values,marker,markersize,colorbar_on,miv,mav,cmap);
