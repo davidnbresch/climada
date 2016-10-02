@@ -31,6 +31,7 @@ function [entity,entity_file]=climada_entity_load(entity)
 % David N. Bresch, david.bresch@gmail.com, 20160202, speedup if entity structure passed
 % David N. Bresch, david.bresch@gmail.com, 20160516, _entity added if needed, too. entity_file as output added
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
+% David N. Bresch, david.bresch@gmail.com, 20161001, check for isentity
 %-
 
 global climada_global
@@ -73,18 +74,24 @@ if ~exist(entity_file,'file')
     fprintf('ERROR: entity does not exist %s\n',entity_file);
     return
 else
-    load(entity_file); % contains entity, the only line that really matters ;-)
+    try
+        load(entity_file); % contains entity, the only line that really matters ;-)
+    catch ME
+        fprintf('ERROR: entity not loaded (%s)\n',ME.message);
+    end % try
 end
 
-% check for valid/correct entity.assets.filename
-if isfield(entity,'assets')   
-    if ~strcmp(entity_file,entity.assets.filename)
-        entity.assets.filename=entity_file;
-        entity.damagefunctions.filename=entity_file;
-        entity.measures.filename=entity_file;
-        entity.discount.filename=entity_file;
-        save(entity_file,'entity')
+if isentity(entity)
+    % check for valid/correct entity.assets.filename
+    if isfield(entity,'assets')
+        if ~strcmp(entity_file,entity.assets.filename)
+            entity.assets.filename=entity_file;
+            entity.damagefunctions.filename=entity_file;
+            entity.measures.filename=entity_file;
+            entity.discount.filename=entity_file;
+            save(entity_file,'entity')
+        end
     end
-end
+end % isentity(entity)
 
 end % climada_entity_load

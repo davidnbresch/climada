@@ -36,6 +36,7 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 % David N. Bresch, david.bresch@gmail.com, 20160514, max_value,cbar_ylabel added
 % David N. Bresch, david.bresch@gmail.com, 20160516, added climada_figure_scale_add
 % David N. Bresch, david.bresch@gmail.com, 20160516, added option empty cbar_ylabel plus cleanup
+% David N. Bresch, david.bresch@gmail.com, 20161001, check for all Values=NaN added
 %-
 
 global climada_global
@@ -60,6 +61,10 @@ if isempty(entity),entity=climada_entity_load;end
 if ischar(entity),entity=climada_entity_load(entity);end
 if isempty(entity),return;end
 
+if sum(isnan(entity.assets.Value))==length(entity.assets.Value)
+    fprintf('Warning: all Values=NaN, nothing to plot, aborted\n');
+    return
+end
 
 beginColor  = [232 232 232 ]/255;
 middleColor = [105 105 105 ]/255;
