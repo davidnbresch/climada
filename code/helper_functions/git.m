@@ -51,6 +51,8 @@ function git(varargin)
 % 
 % Contributors: (MR) Manu Raghavan
 %               (TH) Timothy Hansell
+% david.bresch@gmail.com, 20161002, more(..) commented to run in Octave
+%-
 
 
 % Test to see if git is installed
@@ -73,12 +75,12 @@ function git(varargin)
         [~,result] = system(['git ',arguments,prog]);
 
         % save current status of pagination, then turn it on
-        morestatus=get(0,'More');
-        more('on')
+ %       morestatus=get(0,'More'); % 20161002 commented to run in Octave
+ %       more('on')                % 20161002 commented to run in Octave
         % show result
         disp(result)
         % revert pagination to previous status
-        more(morestatus)
+ %       more(morestatus)          % 20161002 commented to run in Octave
     end
 end
 
