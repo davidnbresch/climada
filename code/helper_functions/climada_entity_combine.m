@@ -16,21 +16,20 @@ function [entity,entity_save_file] = climada_entity_combine(entity,entity2,entit
 %   entity: a climada entity structure, as returned by climada_entity_read
 %   entity2: a climada entity structure, as returned by climada_entity_read
 % OPTIONAL INPUT PARAMETERS:
-%   entity_filename: the filename to save the combined entity to
+%   entity_save_file: the filename to save the combined entity to
 %       NOT asked if not provided, as in this case, the combined entity is
-%       NOT saves back to disk
+%       NOT saved back to disk
 %   purge_flag: =1 delete array entries where entity.assets.Value=0 in
-%       combinded assets, =0 keep all (default) 
+%       combinded assets, =0 keep all (default)
 % OUTPUTS:
 %   entity: an entity structure, see climada_entity_read
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160120, initial
+% David N. Bresch, david.bresch@gmail.com, 20161008, small fix
 %-
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
-
-entity_save_file = [];
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
@@ -45,7 +44,7 @@ if ~exist('purge_flag','var'), purge_flag = 0;end
 
 % prompt for entity if not given
 if isempty(entity) % local GUI
-    entity_filename      = [climada_global.data_dir filesep 'entities' filesep '*.mat'];
+    entity_filename      = [climada_global.entities_dir filesep '*.mat'];
     [filename, pathname] = uigetfile(entity_filename, 'Select first entity:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
@@ -56,9 +55,9 @@ if isempty(entity) % local GUI
 end
 
 % prompt for entity if not given
-if isempty(entity) % local GUI
-    entity_filename      = [climada_global.data_dir filesep 'entities' filesep '*.mat'];
-    [filename, pathname] = uigetfile(entity_filename, 'Select first entity:');
+if isempty(entity2) % local GUI
+    entity_filename      = [climada_global.entities_dir filesep '*.mat'];
+    [filename, pathname] = uigetfile(entity_filename, 'Select second entity:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % cancel
     else
@@ -74,8 +73,19 @@ entity.assets.Value=[entity.assets.Value entity2.assets.Value];
 entity.assets.DamageFunID=[entity.assets.DamageFunID entity2.assets.DamageFunID];
 entity.assets.Deductible=[entity.assets.Deductible entity2.assets.Deductible];
 entity.assets.Cover=[entity.assets.Cover entity2.assets.Cover];
+if isfield(entity.assets,'centroid_index') && isfield(entity2.assets,'centroid_index')
+    entity.assets.centroid_index=[entity.assets.centroid_index entity2.assets.centroid_index];
+elseif isfield(entity.assets,'centroid_index')
+    entity.assets=rmfield(entity.assets,'centroid_index');
+end
+if isfield(entity.assets,'isgridpoint') && isfield(entity2.assets,'isgridpoint')
+    entity.assets.isgridpoint=[entity.assets.isgridpoint entity2.assets.isgridpoint];
+elseif isfield(entity.assets,'isgridpoint')
+    entity.assets=rmfield(entity.assets,'isgridpoint');
+end
 
 fprintf('Warning: only assets (lon,lat,Value,DamageFunID,Deductible and Cover) combined\n');
+fprintf('entity.damagefunctions, entity.measures and entity.discount taken from first entity\n');
 
 if purge_flag
     nonzero_pos=find(entity.assets.Value>0);

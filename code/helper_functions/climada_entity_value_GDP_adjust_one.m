@@ -109,12 +109,12 @@ end
 
 if isfield(entity.assets,'admin0_ISO3')
     country_index = find(strcmp(econ_master_data.ISO3,char(entity.assets.admin0_ISO3)));
-    if isempty(country_index),fprintf('skipped (no admin0_ISO3 match): %s\n',D_entity_mat(file_i).name);end
+    if isempty(country_index),fprintf('skipped (no admin0_ISO3 match): %s\n',economic_data_file);end
 elseif isfield(entity.assets,'admin0_name')
     country_index = find(strcmp(econ_master_data.Country,char(entity.assets.admin0_name)));
-    if isempty(country_index),fprintf('skipped (no admin0_name match): %s\n',D_entity_mat(file_i).name);end
+    if isempty(country_index),fprintf('skipped (no admin0_name match): %s\n',economic_data_filee);end
 else
-    fprintf('skipped (no admin0_ISO3 nor admin0_name): %s\n',D_entity_mat(file_i).name);
+    fprintf('skipped (no admin0_ISO3 nor admin0_name)\n');
     country_index=[];
 end
 
@@ -124,14 +124,14 @@ if ~isempty(country_index)
     if isfield(entity.assets,'admin1_name')
         if ~isempty(entity.assets.admin1_name)
             country_index=[];
-            fprintf('skipped (admin1_name not empty): %s\n',D_entity_mat(file_i).name);
+            fprintf('skipped (admin1_name not empty)\n');
             admin1_message=0;
         end
     end
     if isfield(entity.assets,'admin1_code')
         if ~isempty(entity.assets.admin1_code)
             country_index=[];
-            if admin1_message,fprintf('skipped (admin1_code not empty): %s\n',D_entity_mat(file_i).name);end
+            if admin1_message,fprintf('skipped (admin1_code not empty)\n');end
         end
     end
 end % ~isempty(country_index)
