@@ -42,6 +42,7 @@ if ~exist('entity','var'),entity=[];end
 
 % if already a complete hazard, return
 if isstruct(entity)
+    if ~isentity(entity),fprintf('ERROR: not an entity\n');entity=[];end
     return % already a hazard
 else
     entity_file=entity;entity=[];
@@ -92,6 +93,8 @@ if isentity(entity)
             save(entity_file,'entity')
         end
     end
+else
+    entity=[];
 end % isentity(entity)
 
 end % climada_entity_load

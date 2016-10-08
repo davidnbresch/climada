@@ -81,6 +81,7 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 % David N. Bresch, david.bresch@gmail.com, 20141225, SYSTEM_COASTLINE added
 % Lea Mueller, muellele@gmail.com, 20160229, add semicolon
 % David N. Bresch, david.bresch@gmail.com, 20161007, missing (sub) countries searched for and added
+% David N. Bresch, david.bresch@gmail.com, 20161008, sub country treatement moved to climada_admin0_fix
 %-
 
 shapes=[]; % init output
@@ -223,7 +224,7 @@ else
         % Norway, New Zealand, Portugal, Russia and United States (see
         % special_shape in PARAMETERS in code)
         
-        [shapes,admin0_info]=climada_admin0_fix(shapes,~silent_mode);
+        [shapes,admin0_info]=climada_admin0_fix(shapes,~silent_mode); % admin0_info saved to .mat below
              
     elseif SYSTEM_COASTLINE
         

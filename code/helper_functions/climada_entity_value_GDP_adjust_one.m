@@ -64,6 +64,7 @@ function entity=climada_entity_value_GDP_adjust_one(entity,mode_selector)
 % David N. Bresch, david.bresch@gmail.com, 20150204, switched to one entity, see also climada_entity_value_GDP_adjust
 % David N. Bresch, david.bresch@gmail.com, 20150927, economic_indicators_mastertable from climada_global.system_dir
 % David N. Bresch, david.bresch@gmail.com, 20160911, entity.assets.GDP_value and entity.assets.scale_up_factor to output
+% David N. Bresch, david.bresch@gmail.com, 20161008, bugfix for some error messages
 %-
 
 % set global variables and directories

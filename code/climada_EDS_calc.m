@@ -106,6 +106,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20160303, bugfix if EDS_at_centroid and state ED in fprintf command line output
 % David N. Bresch, david.bresch@gmail.com, 20160306, EDS.ED=EDS.damage*EDS.frequency'
 % David N. Bresch, david.bresch@gmail.com, 20160308, no printing of ED to stdout, some silent_mode checks slow down too much, removed
+% David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
 %-
 
 global climada_global
@@ -239,6 +240,14 @@ entity_damagefunctions_MDD=entity_damagefunctions_MDD(full_unique);
 entity_damagefunctions_PAA=entity_damagefunctions_PAA(full_unique);
 % now, we only have the single-peril damagefunctions with no double entries
 
+% % add a hazard.fraction field, if not provided (often not provided, no worries)
+
+if ~isfield(hazard,'fraction')
+    fprintf('adding hazard.fraction ...');
+    hazard.fraction=spones(hazard.intensity); % fraction 100%
+    fprintf(' done\n');
+end
+
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
 t0 = clock;
@@ -276,13 +285,17 @@ for asset_ii=1:nn_assets
         % convert hazard intensity into MDD
         interp_x_table = entity_damagefunctions_Intensity(asset_damfun_pos);
         interp_y_table = entity_damagefunctions_MDD(asset_damfun_pos);
-        [rows,~,intensity] = find(hazard.intensity(:,asset_hazard_pos));
+        [rows,~,intensity] = find(hazard.intensity(:  ,asset_hazard_pos));
+        fraction =                hazard.fraction(rows,asset_hazard_pos); % get fraction for same events, added 20161008
+        % note that for speedup reasons, intensity is a vectors containing
+        % only the non-zero elements of hazard.intensity at the given
+        % centroid and fraction the corresponding elements of hazard.fraction
         MDD=MDD_0;
-        if climada_global.octave_mode
-            MDD(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
-        else
+        if climada_global.octave_mode % CLIMADA_OPT
+            MDD(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
+        else % CLIMADA_OPT
             MDD(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
-        end
+        end % CLIMADA_OPT
         
         % figure % TEST output
         % plot(interp_x_table, interp_y_table,':')
@@ -293,9 +306,9 @@ for asset_ii=1:nn_assets
         interp_y_table = entity_damagefunctions_PAA(asset_damfun_pos);
         PAA = PAA_0;
         if climada_global.octave_mode % CLIMADA_OPT
-            PAA(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
+            PAA(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap').*fraction; % CLIMADA_OPT
         else % CLIMADA_OPT
-            PAA(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+            PAA(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap').*fraction;
         end % CLIMADA_OPT
         
         % figure % TEST output

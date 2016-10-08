@@ -100,6 +100,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % david.bresch@gmail.com, 20160514, -v7.3 in save added
 % david.bresch@gmail.com, 20160529, fast parfor version, about twenty times faster
 % david.bresch@gmail.com, 20160603, header: comment added
+% david.bresch@gmail.com, 20161008, hazard.fraction added
 %-
 
 hazard=[]; % init
@@ -401,6 +402,11 @@ if create_yearset
     fprintf('%s\n',msgstr);
     
 end % create_yearset
+
+% add hazard.fraction (for FL, other perils no slowdown)
+fprintf('adding hazard.fraction ...');
+hazard.fraction=spones(hazard.intensity); % fraction 100%
+fprintf(' done\n');
 
 if isempty(strfind(hazard_set_file,'NOSAVE'))
     fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
