@@ -21,6 +21,9 @@ function [tc_track,track_filename] = climada_tc_read_unisys_track(track_filename
 % OPTIONAL INPUT PARAMETERS:
 %   track_filename: the filename with path of a UNISYS *.dat file
 %       > user gets prompted for if not specified
+%       If no path provided the default tc_track dir is used. If _track is
+%       not provided in the filename, it is added, too. I fno extension is
+%       provided, .dat is assumed.
 %   check_plot: =1 show track on map, =0 not (default)
 % OUTPUTS:
 %   tc_track: a TC track structure, see climada_tc_read_unisys_database
@@ -31,6 +34,7 @@ function [tc_track,track_filename] = climada_tc_read_unisys_track(track_filename
 % David N. Bresch, david.bresch@gmail.com, 20150220, init_vars reset removed
 % David N. Bresch, david.bresch@gmail.com, 20151018, forecast file added to output and automatic removal of backward timesteps
 % David N. Bresch, david.bresch@gmail.com, 20151102, allow for name without path on input
+% David N. Bresch, david.bresch@gmail.com, 20161009, append _track.dat if necessary
 %-
 
 global climada_global
@@ -63,6 +67,11 @@ end
 [fP,fN,fE]=fileparts(track_filename);
 if isempty(fE),fE='.dat';end
 if isempty(fP),track_filename=[climada_global.data_dir filesep 'tc_tracks' filesep fN fE];end
+if ~exist(track_filename,'file')
+    [fP,fN,fE]=fileparts(track_filename);
+    fN=[fN '_track'];
+    track_filename=[fP filesep fN fE];
+end
 
 if exist(track_filename,'file')
     

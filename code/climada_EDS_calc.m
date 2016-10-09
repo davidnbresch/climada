@@ -286,61 +286,64 @@ for asset_ii=1:nn_assets
         interp_x_table = entity_damagefunctions_Intensity(asset_damfun_pos);
         interp_y_table = entity_damagefunctions_MDD(asset_damfun_pos);
         [rows,~,intensity] = find(hazard.intensity(:  ,asset_hazard_pos));
-        fraction =                hazard.fraction(rows,asset_hazard_pos); % get fraction for same events, added 20161008
-        % note that for speedup reasons, intensity is a vectors containing
-        % only the non-zero elements of hazard.intensity at the given
-        % centroid and fraction the corresponding elements of hazard.fraction
-        MDD=MDD_0;
-        if climada_global.octave_mode % CLIMADA_OPT
-            MDD(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
-        else % CLIMADA_OPT
-            MDD(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
-        end % CLIMADA_OPT
-        
-        % figure % TEST output
-        % plot(interp_x_table, interp_y_table,':')
-        % hold on
-        % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
-        
-        % convert hazard intensity into PAA
-        interp_y_table = entity_damagefunctions_PAA(asset_damfun_pos);
-        PAA = PAA_0;
-        if climada_global.octave_mode % CLIMADA_OPT
-            PAA(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap').*fraction; % CLIMADA_OPT
-        else % CLIMADA_OPT
-            PAA(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap').*fraction;
-        end % CLIMADA_OPT
-        
-        % figure % TEST output
-        % plot(interp_x_table, interp_y_table,':k')
-        % hold on
-        % plot(hazard.intensity(:,asset_hazard_pos), PAA,'ok')
-        
-        % calculate the from ground up (fgu) damage
-        temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
-        
-        if any(full(temp_damage)) % if at least one damage>0
-            if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
-                % apply Deductible and Cover
-                temp_damage = min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
-            end
-            EDS.damage = EDS.damage+temp_damage'; % add to the EDS
-            
-            if climada_global.EDS_at_centroid % CLIMADA_OPT
-                %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids % CLIMADA_OPT
-                index_ = j_index == asset_i; %index_ = i == asset_i; % CLIMADA_OPT
-                i_index(index_) = []; % CLIMADA_OPT
-                j_index(index_) = []; % CLIMADA_OPT
-                x_index(index_) = []; % CLIMADA_OPT
-                
-                i_index = [i_index; find(temp_damage)]; % CLIMADA_OPT
-                j_index = [j_index; zeros(nnz(temp_damage),1)+asset_i]; % CLIMADA_OPT
-                x_index = [x_index; nonzeros(temp_damage)]; % CLIMADA_OPT
+        if ~isempty(rows) % if at least one event hits the centroid
+            fraction =                hazard.fraction(rows,asset_hazard_pos); % get fraction for same events, added 20161008
+            % note that for speedup reasons, intensity is a vectors containing
+            % only the non-zero elements of hazard.intensity at the given
+            % centroid and fraction the corresponding elements of hazard.fraction
+            MDD=MDD_0;
+            if climada_global.octave_mode % CLIMADA_OPT
+                MDD(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
             else % CLIMADA_OPT
-                EDS.ED_at_centroid(asset_i,1) = temp_damage'*EDS.frequency';
+                MDD(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
             end % CLIMADA_OPT
             
-        end
+            % figure % TEST output
+            % plot(interp_x_table, interp_y_table,':')
+            % hold on
+            % plot(hazard.intensity(:,asset_hazard_pos), MDD,'o')
+            
+            % convert hazard intensity into PAA
+            interp_y_table = entity_damagefunctions_PAA(asset_damfun_pos);
+            PAA = PAA_0;
+            if climada_global.octave_mode % CLIMADA_OPT
+                PAA(rows) = interp1(interp_x_table,interp_y_table,intensity,'linear','extrap'); % CLIMADA_OPT
+            else % CLIMADA_OPT
+                PAA(rows) = climada_interp1(interp_x_table,interp_y_table,intensity,'linear','extrap');
+            end % CLIMADA_OPT
+            PAA(rows)=PAA(rows).*fraction;
+            
+            % figure % TEST output
+            % plot(interp_x_table, interp_y_table,':k')
+            % hold on
+            % plot(hazard.intensity(:,asset_hazard_pos), PAA,'ok')
+            
+            % calculate the from ground up (fgu) damage
+            temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
+            
+            if any(full(temp_damage)) % if at least one damage>0
+                if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
+                    % apply Deductible and Cover
+                    temp_damage = min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));
+                end
+                EDS.damage = EDS.damage+temp_damage'; % add to the EDS
+                
+                if climada_global.EDS_at_centroid % CLIMADA_OPT
+                    %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids % CLIMADA_OPT
+                    index_ = j_index == asset_i; %index_ = i == asset_i; % CLIMADA_OPT
+                    i_index(index_) = []; % CLIMADA_OPT
+                    j_index(index_) = []; % CLIMADA_OPT
+                    x_index(index_) = []; % CLIMADA_OPT
+                    
+                    i_index = [i_index; find(temp_damage)]; % CLIMADA_OPT
+                    j_index = [j_index; zeros(nnz(temp_damage),1)+asset_i]; % CLIMADA_OPT
+                    x_index = [x_index; nonzeros(temp_damage)]; % CLIMADA_OPT
+                else % CLIMADA_OPT
+                    EDS.ED_at_centroid(asset_i,1) = temp_damage'*EDS.frequency';
+                end % CLIMADA_OPT
+                
+            end
+        end % ~isempty(rows)
         EDS.Value   = EDS.Value+entity.assets.Value(asset_i);
         
         % TEST output
