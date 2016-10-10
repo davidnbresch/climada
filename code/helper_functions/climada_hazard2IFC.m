@@ -1,4 +1,4 @@
-function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_period,check_plot)
+function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_period,check_plot,annotation_name)
 % climada
 % MODULE:
 %   climada/helper_functions
@@ -10,7 +10,7 @@ function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_pe
 %
 %   Subsequent call: climada_IFC_plot
 % CALLING SEQUENCE:
-%   climada_hazard2IFC(hazard,geo_locations)
+%   [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_period,check_plot,annotation_name)
 % EXAMPLE:
 %   climada_hazard2IFC(hazard,[23 94 51]) % pass centroid_IDs
 %   geo_locations.lon=14.426;geo_locations.lat=40.821; % pass lat/lon
@@ -24,6 +24,9 @@ function [IFC,geo_locations] = climada_hazard2IFC(hazard,geo_locations,return_pe
 %       geo_locations.lon=14.426;geo_locations.lat=40.821;
 %   return_period: a list of return period at which we calculate the intensities
 %   check_plot: set to 1 to show plot, default is 1
+%   annotation_name: an annotation name, sued e.g in climada_IFC_plot,
+%       default=filename of the hazard set, i.e. as in hazard.filename 
+%       (without path)
 % OUTPUTS:
 %   IFC(i): A structure (array of) to be used as input to climada_IFC_plot,
 %       containing information about the intensity-frequency
@@ -58,6 +61,7 @@ if ~exist('hazard','var'), hazard = []; end
 if ~exist('geo_locations','var'), geo_locations = 'SELECT'; end
 if ~exist('return_period','var'), return_period = []; end
 if ~exist('check_plot','var'), check_plot = []; end
+if ~exist('annotation_name','var'), annotation_name = ''; end
 
 % prompt for hazard if not given
 hazard = climada_hazard_load(hazard);
@@ -208,6 +212,12 @@ for poi_i = 1:numel(poi_ID)
     %IFC.return_polyval(poi_i,:) = polyval(IFC.return_polyfit(poi_i,:), log(IFC.return_freq(poi_i,:)));
 end
 IFC.intensity_fit(IFC.intensity_fit<0) = 0;
+
+if isempty(annotation_name)
+    [~,IFC.annotation_name]=fileparts(hazard.filename);
+else
+    IFC.annotation_name=annotation_name;
+end
 
 if check_plot % for the case n_points = 1
     figure; hold on

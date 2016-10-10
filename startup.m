@@ -75,8 +75,6 @@ fprintf('initializing climada... ');
 %initialises the global variables
 climada_init_vars;
 
-if strcmp(computer,'GLNXA64') % NCAR
-    climada_global.waitbar=0;
-end
+if strcmp(computer,'GLNXA64'),climada_global.waitbar=0;end % NCAR
 
 fprintf('done\n');
