@@ -298,6 +298,7 @@ for country_i=1:length(country_list)
     for track_i=1:length(tc_tracks),plot(tc_tracks(track_i).lon,tc_tracks(track_i).lat,'-b');end
     plot(tc_tracks(1).lon,tc_tracks(1).lat,'-r','LineWidth',2); % orig track
     axis off
+    ylabel('');
     xlabel('red crosses: forecast timesteps, blue:ensemble members','FontSize',8);
     title(country_name,'FontSize',FontSize,'FontWeight','normal');drawnow
     
