@@ -131,7 +131,11 @@ for ID_i=1:length(unique_IDs)
         set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
         legend('MDR','MDD','PAA','Location','NorthWest');
         %xlabel('Intensity','FontSize',9);
-        xlabel(['Intensity [' entity.damagefunctions.Intensity_unit{dmf_pos(1)} ']'],'FontSize',9);
+        if isfield(entity.damagefunctions,'Intensity_unit')
+            xlabel(['Intensity [' entity.damagefunctions.Intensity_unit{dmf_pos(1)} ']'],'FontSize',9);
+        else
+            xlabel(['Intensity'],'FontSize',9);
+        end
         ylabel('MDR')
         title([unique_IDs{ID_i} ' ' damagefunctions.name{dmf_pos(1)}]);
         grid on

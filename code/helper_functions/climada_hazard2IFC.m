@@ -142,6 +142,7 @@ if isstruct(geo_locations)
     r = climada_geo_distance(poi_lon, poi_lat,hazard.lon,hazard.lat);
     [~, poi_ndx] = min(r);
     poi_ID  = hazard.centroid_ID(poi_ndx);
+    geo_locations.centroid_ID=poi_ID;
 end
 
 % use 0 as intensity threshold for tc wind speed
