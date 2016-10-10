@@ -61,7 +61,6 @@ guidata(hObject, handles);
 % UIWAIT makes climada_tc_event_damage_ens_gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 get_UNISYS_name_list(hObject,eventdata,handles);
-handles
 set(handles.figure1,'Name','climada TC ensemble damage');
 
 
