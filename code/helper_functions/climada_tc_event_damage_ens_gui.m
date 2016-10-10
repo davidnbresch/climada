@@ -64,6 +64,7 @@ get_UNISYS_name_list(hObject,eventdata,handles);
 set(handles.figure1,'Name','climada TC ensemble damage');
 axes(handles.axes_left); box off;axis off % do not show empty axes
 axes(handles.axes_right);box off;axis off % do not show empty axes
+text(.1,.5,'Select basin, then year, then event (left to right, in this order)');
 
 
 % --- Outputs from this function are returned to the command line.

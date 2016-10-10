@@ -205,6 +205,7 @@ if ~auto_sel_assets,country_list='';end % force prompting
 
 if isempty(country_list) % prompt for country, as no direct hit
     country_list{1}=climada_country_name('SINGLE'); % obtain country
+    if isempty(country_list{1}),return;end
 end
 
 for country_i=1:length(country_list)
