@@ -62,7 +62,8 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 get_UNISYS_name_list(hObject,eventdata,handles);
 set(handles.figure1,'Name','climada TC ensemble damage');
-
+axes(handles.axes_left); box off;axis off % do not show empty axes
+axes(handles.axes_right);box off;axis off % do not show empty axes
 
 
 % --- Outputs from this function are returned to the command line.

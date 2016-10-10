@@ -340,6 +340,7 @@ for country_i=1:length(country_list)
     else
         xlim([0 1]);ylim([0 1]);
         text(.2,.5,'no damage','Color','r','FontSize',FontSize);
+        axis off
     end
     tc_track_name=lower(tc_track.name);
     title([[upper(tc_track_name(1)) tc_track_name(2:end)]  ' @ ' country_name],'FontSize',FontSize,'FontWeight','normal');
