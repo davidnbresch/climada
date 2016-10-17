@@ -12,6 +12,8 @@ function climada_git_clone(TEST_mode)
 %   This code then creates the folder climada_data and copies
 %   content of core climada's data into it.
 %
+%   DOES NOT YET WORK ON cluster, see same issue with climada_git_pull
+%
 %   previous call: startup (usually already executed)
 %   next call: climada_demo_step_by_step
 % CALLING SEQUENCE:

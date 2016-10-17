@@ -48,6 +48,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 %   see also PARAMETERS section, especially for filters
 % OPTIONAL INPUT PARAMETERS:
 %   check_plot: if =1, show plots, =0 not (default)
+%       if=2, start from initial raw *.txt database file
 % OUTPUTS:
 %   tc_track: a structure with the track information for each cyclone i and
 %           data for each node j (times are at 00Z, 06Z, 12Z, 18Z):
