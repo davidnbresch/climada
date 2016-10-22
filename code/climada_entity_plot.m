@@ -22,6 +22,7 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 %   markersize: the size of the 'tiles', one might need to experiment a
 %       bit, as the code tries (hard) to set a reasonabls default (based on
 %       resolution)
+%       If <0, plot ocean blue and land grey (takes a bit longer)
 %   plot_centroids: =1: plot centroids as small red dots
 %       =0: do not plot centroids (default)
 %   max_value: the maximum value to color
@@ -37,6 +38,7 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 % David N. Bresch, david.bresch@gmail.com, 20160516, added climada_figure_scale_add
 % David N. Bresch, david.bresch@gmail.com, 20160516, added option empty cbar_ylabel plus cleanup
 % David N. Bresch, david.bresch@gmail.com, 20161001, check for all Values=NaN added
+% David N. Bresch, david.bresch@gmail.com, 20161022, markersize<0 allowed
 %-
 
 global climada_global
@@ -91,7 +93,7 @@ else
     mav=max_value*1.1;
 end
 if ~isempty(cbar_ylabel)
-    [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',markersize, 1,0,mav,cmap,1,0);
+    [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',abs(markersize), 1,0,mav,cmap,1,0);
 else
     pos=find(entity.assets.Value>0);
     if ~isempty(pos),plot(entity.assets.lon(pos),entity.assets.lat(pos),'ok');end
@@ -113,7 +115,7 @@ if ~isempty(cbar_ylabel)
     end
     set(get(cbar,'ylabel'),'string',[cbar_ylabel ' (' Value_unit ')'],'fontsize',12);
 end
-climada_plot_world_borders(0.7);
+climada_plot_world_borders(0.7*sign(markersize));
 set(gca,'xlim',x_range,'ylim',y_range)
 if plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
 
