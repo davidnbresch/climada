@@ -1,4 +1,4 @@
-function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
+function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,noparfor,verbose_mode)
 % climada TC hazard event set generate
 % NAME:
 %   climada_tr_hazard_set
@@ -14,8 +14,8 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %   allow for interruption of the hazard set generation. Just re-start the
 %   calculation by calling climada_tr_hazard_set with exactly the same
 %   input parameters (the last track calculated is stored in hazard.track_i
-%   and the field track_i is removed in the final complete hazard event set).  
-%   Therefore, if you get errors such as 
+%   and the field track_i is removed in the final complete hazard event set).
+%   Therefore, if you get errors such as
 %       Subscripted assignment dimension mismatch.
 %       Error in climada_tr_hazard_set (line 270) % ... or nearby
 %       hazard.intensity(track_i,:)     = res.gust;
@@ -23,19 +23,19 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %   (i.e. different centroids). Just delete the hazard set .mat file and run
 %   climada_tr_hazard_set again.
 %
-%   See climada_tc_hazard_set_slow in the tropical cyclone module 
-%   (https://github.com/davidnbresch/climada_module_tropical_cyclone) 
-%   for the old slow version (for backward compatibility).
+%   NOTE: this code uses parfor for substantial speedup, set noparfor=1 to
+%   run standard for (no parallel pool started etc.)
 %
 %   previous: likely climada_random_walk
 %   next: diverse
 % CALLING SEQUENCE:
-%   res=climada_tr_hazard_set(tc_track,hazard_set_file,centroids)
+%   res=climada_tr_hazard_set(tc_track,hazard_set_file,centroids,noparfor,verbose_mode)
 % EXAMPLE:
 %   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
 %   centroids=climada_centroids_load('USFL_MiamiDadeBrowardPalmBeach');
 %   %centroids=climada_entity_load('USA_UnitedStatesFlorida'); % works, too
 %   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST_PARFOR',centroids);
+%   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST_NOPARFOR',centroids,1);
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   tc_track: a TC track structure, or a filename of a saved one
@@ -59,12 +59,16 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 %       entity.assets.lon are used as centroids.
 %       > promted for .mat or .xls filename if not given
 %       NOTE: if you then select Cancel, a regular default grid is used, see hard-wired definition in code
+%   noparfor: if =1, do NOT use parfor, default=0, use parfor
+%       If less than 100 tracks are handed over, noparfor=1, since parfor
+%       does npt speed up if less than say 100 tracks to be processed
+%   verbose_mode: default=1, =0: do not print anything to stdout
 % OUTPUTS:
 %   hazard: a struct, the hazard event set, more for tests, since the
 %       hazard set is stored as hazard_set_file, see code
 %       lon(centroid_i): the longitude of each centroid
 %       lat(centroid_i): the latitude of each centroid
-%       intensity(event_i,centroid_i), sparse: the hazard intensity of 
+%       intensity(event_i,centroid_i), sparse: the hazard intensity of
 %           event_i at centroid_i
 %       frequency(event_i): the frequency of each event
 %       centroid_ID(centroid_i): a unique ID for each centroid
@@ -101,6 +105,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids)
 % david.bresch@gmail.com, 20160529, fast parfor version, about twenty times faster
 % david.bresch@gmail.com, 20160603, header: comment added
 % david.bresch@gmail.com, 20161008, hazard.fraction added
+% david.bresch@gmail.com, 20161023, noparfor and verbose_mode added
 %-
 
 hazard=[]; % init
@@ -113,6 +118,8 @@ if ~climada_init_vars,return;end
 if ~exist('tc_track','var'),tc_track=[];end
 if ~exist('hazard_set_file','var'),hazard_set_file=[];end
 if ~exist('centroids','var'),centroids=[];end
+if ~exist('noparfor','var'),noparfor=0;end
+if ~exist('verbose_mode','var'),verbose_mode=1;end
 
 % PARAMETERS
 %
@@ -127,7 +134,7 @@ hazard_reference_year = climada_global.present_reference_year; % default for pre
 %
 % define the scenario name for this hazard set
 % we assume no climate change when creating a hazard set from tc tracks
-hazard_scenario = 'no climate change'; 
+hazard_scenario = 'no climate change';
 %
 % whether we create the yearset (=1, grouping events into years) or not (=0)
 % the yearset is only produced for original tracks, since probabilistic
@@ -180,7 +187,7 @@ if isempty(centroids) % local GUI
     [filename, pathname] = uigetfile({'*.mat;*.xls'},'Select centroids (.mat or .xls):',centroids_default);
     if isequal(filename,0) || isequal(pathname,0)
         % TEST centroids
-        fprintf('WARNING: Special mode, TEST centroids grid created in %s\n',mfilename);
+        if verbose_mode,fprintf('WARNING: Special mode, TEST centroids grid created in %s\n',mfilename);end
         ii=0;
         for lon_i=-100:1:-50
             for lat_i=20:1:50
@@ -194,7 +201,7 @@ if isempty(centroids) % local GUI
         centroids_file=fullfile(pathname,filename);
         [~,~,fE]=fileparts(centroids_file);
         if strcmp(fE,'.xls')
-            fprintf('reading centroids from %s\n',centroids_file);
+            if verbose_mode,fprintf('reading centroids from %s\n',centroids_file);end
             centroids=climada_centroids_read(centroids_file);
         else
             centroids=centroids_file;
@@ -225,7 +232,7 @@ if ~isstruct(centroids) % load, if filename given
     % complete path, if missing
     [fP,fN,fE]=fileparts(centroids_file);
     if isempty(fP),centroids_file=[climada_global.centroids_dir filesep fN fE];end
-    fprintf('centroids read from %s\n',centroids_file);
+    if verbose_mode,fprintf('centroids read from %s\n',centroids_file);end
     load(centroids_file); % contains centrois as a variable
 end
 
@@ -262,8 +269,7 @@ intensity = spalloc(n_tracks,n_centroids,...
     ceil(n_tracks*n_centroids*hazard_arr_density));
 %intensity = zeros(n_tracks,n_centroids); % FASTER
 
-t0       = clock;
-fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);
+if verbose_mode,fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);end
 
 if n_tracks>10000
     default_min_TimeStep=2; % speeds up calculation by factor 2
@@ -271,16 +277,44 @@ else
     default_min_TimeStep=climada_global.tc.default_min_TimeStep;
 end
 tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep); % make equal timesteps
-    
-parfor track_i=1:n_tracks
-    %res                   = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
-    %intensity(track_i,:)  = sparse(res.gust); % MEMORY   
-    %intensity(track_i,:)  = res.gust; % FASTER
-    intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
-end %track_i
+
+if n_tracks<100,noparfor=1;end
+t0=clock;
+
+if noparfor
+    mod_step=10;format_str='%s'; % init progress update
+    for track_i=1:n_tracks
+        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+        
+         % following block only for progress measurement (waitbar or stdout)
+        if mod(track_i,mod_step)==0
+            mod_step          = 100;
+            t_elapsed_track   = etime(clock,t0)/track_i;
+            tracks_remaining  = n_tracks-track_i;
+            t_projected_sec   = t_elapsed_track*tracks_remaining;
+            if t_projected_sec<60
+                msgstr = sprintf('est. %3.0f sec left (%i/%i tracks)',t_projected_sec,   track_i,n_tracks);
+            else
+                msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
+            end
+            if verbose_mode,fprintf(format_str,msgstr);end
+            format_str=[repmat('\b',1,length(msgstr)) '%s'];
+        end
+        
+    end %track_i
+    if verbose_mode,fprintf(format_str,'');end % move carriage to begin of line
+else
+    parfor track_i=1:n_tracks
+        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+    end %track_i
+end % noparfor
 
 hazard.intensity=sparse(intensity); % store into struct, sparse() to be safe
 clear intensity % free up memory
+
+t_elapsed = etime(clock,t0);
+msgstr    = sprintf('generating %i windfields took %3.2f min (%3.4f sec/event)',n_tracks,t_elapsed/60,t_elapsed/n_tracks);
+if verbose_mode,fprintf('%s\n',msgstr);end
 
 % small lop to populate additional fields
 for track_i=1:n_tracks
@@ -293,10 +327,6 @@ for track_i=1:n_tracks
     hazard.name{track_i}            = tc_track(track_i).name;
     hazard.category(track_i)        = tc_track(track_i).category;
 end % track_i
-
-t_elapsed = etime(clock,t0);
-msgstr    = sprintf('generating %i windfields took %3.2f min (%3.4f sec/event)',length(tc_track),t_elapsed/60,t_elapsed/length(tc_track));
-fprintf('%s\n',msgstr);
 
 % number of derived tracks per original one
 ens_size        = hazard.event_count/hazard.orig_event_count-1;
@@ -321,6 +351,8 @@ if isfield(centroids,'admin0_ISO3'),hazard.ADM0_A3=centroids.admin0_ISO3;end
 if isfield(centroids,'admin1_name'),hazard.admin1_name=centroids.admin1_name;end
 if isfield(centroids,'admin1_code'),hazard.admin1_code=centroids.admin1_code;end
 
+if n_tracks<2,create_yearset=0;end % just makes no sense
+
 if create_yearset
     
     % the beginner does not need to understand whats happening here ;-)
@@ -330,11 +362,11 @@ if create_yearset
     msgstr   = sprintf('yearset: processing %i tracks',n_tracks);
     mod_step = 10; % first time estimate after 10 tracks, then every 100
     if climada_global.waitbar
-        fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);
+        if verbose_mode,fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);end
         h        = waitbar(0,msgstr);
         set(h,'Name','Hazard TC: tropical cyclones yearset');
     else
-        fprintf('%s (waitbar suppressed)\n',msgstr);
+        if verbose_mode,fprintf('%s (waitbar suppressed)\n',msgstr);end
         format_str='%s';
     end
     
@@ -379,7 +411,7 @@ if create_yearset
             if climada_global.waitbar
                 waitbar(track_i/n_tracks,h,msgstr); % update waitbar
             else
-                fprintf(format_str,msgstr);
+                if verbose_mode,fprintf(format_str,msgstr);end
                 format_str=[repmat('\b',1,length(msgstr)) '%s'];
             end
         end
@@ -394,22 +426,22 @@ if create_yearset
     if climada_global.waitbar
         close(h) % dispose waitbar
     else
-        fprintf(format_str,''); % move carriage to begin of line
+        if verbose_mode,fprintf(format_str,'');end % move carriage to begin of line
     end
     
     t_elapsed = etime(clock,t0);
     msgstr    = sprintf('generating yearset took %3.2f sec',t_elapsed);
-    fprintf('%s\n',msgstr);
+    if verbose_mode,fprintf('%s\n',msgstr);end
     
 end % create_yearset
 
 % add hazard.fraction (for FL, other perils no slowdown)
-fprintf('adding hazard.fraction ...');
+if verbose_mode,fprintf('adding hazard.fraction ...');end
 hazard.fraction=spones(hazard.intensity); % fraction 100%
-fprintf(' done\n');
+if verbose_mode,fprintf(' done\n');end
 
 if isempty(strfind(hazard_set_file,'NOSAVE'))
-    fprintf('saving TC wind hazard set as %s\n',hazard_set_file);
+    if verbose_mode,fprintf('saving TC wind hazard set as %s\n',hazard_set_file);end
     save(hazard_set_file,'hazard')
 end
 

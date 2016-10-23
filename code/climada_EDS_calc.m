@@ -42,8 +42,9 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       side, or if the entity has been encoded t a different hazard event
 %       set). Default=0
 %   silent_mode: suppress any output to stdout (useful i.e. if called many times)
-%       defult=0 (output to stdout), =1: no output and no waitbar at all
-%       But even with silent_mode=1, the one line progress output is shown
+%       default=0 (output to stdout), =1: no output and no waitbar at all
+%       command-line progress output is still shown with silebt_mode=1, but
+%       suppressed if =2. 
 % OUTPUTS:
 %   EDS, the event damage set with:
 %       ED: the total expected annual damage (=EDS.damage*EDS.frequency')
@@ -107,6 +108,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20160306, EDS.ED=EDS.damage*EDS.frequency'
 % David N. Bresch, david.bresch@gmail.com, 20160308, no printing of ED to stdout, some silent_mode checks slow down too much, removed
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
+% David N. Bresch, david.bresch@gmail.com, 20161023, silent_mode=2
 %-
 
 global climada_global
@@ -359,7 +361,7 @@ for asset_ii=1:nn_assets
             if climada_global.waitbar % CLIMADA_OPT
                 waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
             else % CLIMADA_OPT
-                fprintf(format_str,msgstr); % write progress to stdout % CLIMADA_OPT
+                if silent_mode<2,fprintf(format_str,msgstr);end % write progress to stdout % CLIMADA_OPT
                 format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
             end % CLIMADA_OPT
             
@@ -372,7 +374,7 @@ end % asset_ii
 if climada_global.waitbar % CLIMADA_OPT
     close(h) % dispose waitbar % CLIMADA_OPT
 else % CLIMADA_OPT
-    fprintf(format_str,''); % move carriage to begin of line % CLIMADA_OPT
+    if silent_mode<2,fprintf(format_str,'');end % move carriage to begin of line % CLIMADA_OPT
 end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);

@@ -65,6 +65,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % David N. Bresch, david.bresch@gmail.com, 20150916, hint for speedup in header added
 % David N. Bresch, david.bresch@gmail.com, 20151230, links in ERROR prompts referenced
 % David N. Bresch, david.bresch@gmail.com, 20160514, border_color and fill land (linewidth negative) added
+% David N. Bresch, david.bresch@gmail.com, 20161023, ocena color set to nicer blue
 %-
 
 % import/setup global variables
@@ -133,7 +134,7 @@ if keep_boundary
 end
 
 if fill_land % plot sea in light blue
-    fill([-180 -180 180 180],[-90 90 90 -90],[0.9 0.9 .99],'LineWidth',linewidth,'EdgeColor',[0.9 0.9 .99])
+    fill([-180 -180 180 180],[-90 90 90 -90],[0.9 0.9 .99],'LineWidth',linewidth,'FaceColor',[0.6 0.7 1],'EdgeColor',[0.6 0.7 1])
     hold on
 end
                 

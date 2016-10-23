@@ -33,6 +33,7 @@ function [h, h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, ma
 % Lea Mueller, muellele@gmail.com, 20151130, bugfix colorbar if all values are equal
 % Lea Mueller, muellele@gmail.com, 20151207, include climada_global.markersize
 % Lea Mueller, muellele@gmail.com, 20151207, include climada_global.marker
+% Lea Mueller, muellele@gmail.com, 20161023, plot instead of plot3
 %-
 
 global climada_global
@@ -94,7 +95,8 @@ if zero_off
 else
     iv = find(v <= miv & v>miv+clrstep);
 end
-h_points(end+[1:length(iv)]) = plot3(x(iv),y(iv),v(iv),marker,'color',map(1,:),'markerfacecolor',map(1,:),'markersize',markersize,'linewidth',0.1);
+%h_points(end+[1:length(iv)]) = plot3(x(iv),y(iv),v(iv),marker,'color',map(1,:),'markerfacecolor',map(1,:),'markersize',markersize,'linewidth',0.1);
+h_points(end+[1:length(iv)]) = plot(x(iv),y(iv),marker,'color',map(1,:),'markerfacecolor',map(1,:),'markersize',markersize,'linewidth',0.1);
 
 color_steps = linspace(miv,mav,size(map,1));
 color_steps = [0 color_steps];
@@ -102,12 +104,14 @@ for nc = 2:size(map,1)
     %iv = find(v > miv+(nc-3)*clrstep & v <= miv+(nc-2)*clrstep) ;
     iv = find(v > color_steps(nc) & v<= color_steps(nc+1));
     h_points(end+[1:length(iv)]) = ...
-        plot3(x(iv),y(iv),v(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
+        plot(x(iv),y(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
+        %plot3(x(iv),y(iv),v(iv),marker,'color',map(nc,:),'markerfacecolor',map(nc,:),'markersize',markersize,'linewidth',0.1);
 end
 % values above threshold
 iv = find(v >= mav);
 h_points(end+[1:length(iv)]) = ...
-    plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
+    plot(x(iv),y(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
+    %plot3(x(iv),y(iv),v(iv),marker,'color',map(end,:),'markerfacecolor',map(end,:),'markersize',markersize,'linewidth',0.1);
 
 if colorbar_on    
     caxis([miv-clrstep mav])

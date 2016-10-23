@@ -39,6 +39,7 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 % David N. Bresch, david.bresch@gmail.com, 20160516, added option empty cbar_ylabel plus cleanup
 % David N. Bresch, david.bresch@gmail.com, 20161001, check for all Values=NaN added
 % David N. Bresch, david.bresch@gmail.com, 20161022, markersize<0 allowed
+% David N. Bresch, david.bresch@gmail.com, 20161023, land color defined in PARAMETERS
 %-
 
 global climada_global
@@ -57,6 +58,9 @@ if ~exist('cbar_ylabel','var'),cbar_ylabel='Value';end
 %
 % the plot is zoomed to the domain of the assets, plus d degress around
 d = 1; % degree
+%
+% color of land, only used, if markersize<0
+country_color=[.6 .6 .6]; % light gray
 
 % prompt for entity if not given
 if isempty(entity),entity=climada_entity_load;end
@@ -115,7 +119,8 @@ if ~isempty(cbar_ylabel)
     end
     set(get(cbar,'ylabel'),'string',[cbar_ylabel ' (' Value_unit ')'],'fontsize',12);
 end
-climada_plot_world_borders(0.7*sign(markersize));
+climada_plot_world_borders(0.7*sign(markersize),'','',0,[],country_color);
+
 set(gca,'xlim',x_range,'ylim',y_range)
 if plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
 
