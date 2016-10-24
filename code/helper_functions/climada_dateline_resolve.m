@@ -17,7 +17,7 @@ function lon=climada_dateline_resolve(lon,hemisphere,margin)
 %       centroids.lon=climada_dateline_resolve(centroids.lon);
 %   and save these 'clean' structures for further use.
 %
-%   For tropical cyclone tracks in the datelone region, similarly (after
+%   For tropical cyclone tracks in the dateline region, similarly (after
 %   e.g. using tc_track=climada_tc_read_unisys_track)
 %       tc_track.lon=climada_dateline_resolve(tc_track.lon);
 % CALLING SEQUENCE:

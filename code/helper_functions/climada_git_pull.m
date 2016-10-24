@@ -20,12 +20,19 @@ function climada_git_pull(TEST_mode)
 %   installation). Please do NOT use climada_git_pull_repositories any
 %   more.
 %
+%   DOES NOT YET WORK ON CLUSTER, we obtain on stdout:
+%     * updating /cluster/home/dbresch/climada
+%     error: error setting certificate verify locations:
+%       CAfile: /etc/ssl/certs/ca-certificates.crt
+%       CApath: none while accessing https://github.com/davidnbresch/climada.git/info/refs
+%     fatal: HTTP request failed
+%
 %   previous call: startup (usually already executed)
 %   next call: See Note above
 % CALLING SEQUENCE:
 %   climada_git_pull
 % EXAMPLE:
-%   climada_git_pull(1)
+%   climada_git_pull(1) % to TEST first
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   TEST_mode: =1 only show which paths will be processed, do not pull
@@ -36,6 +43,7 @@ function climada_git_pull(TEST_mode)
 % david.bresch@gmail.com, 20160606, initial
 % david.bresch@gmail.com, 20160609, added remark about old climada_git_pull_repositories
 % david.bresch@gmail.com, 20160616, pathsep
+% david.bresch@gmail.com, 20161013, note about error on cluster added
 %-
 
 global climada_global

@@ -38,3 +38,5 @@ data/system/climada_*.txt
 matlab.mat
 
 .DS_Store
+
+*.m~

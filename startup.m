@@ -3,6 +3,7 @@
 % 20160122: 2nd level of sub-folders for code added
 % 20160323: omit clc
 % 20160609: do not add climada core's code/old any more
+% 20161010: empty modules dir added
 %
 % define the climada root directory
 % --------------------------------
@@ -56,7 +57,7 @@ if exist(climada_modules_dir,'dir')
                             fprintf('\t\t\t%s\n',add_subsubdir(ass_i).name);
                         end
                     end
-            
+                    
                     
                 end
             end
@@ -65,6 +66,8 @@ if exist(climada_modules_dir,'dir')
         end
     end
     clear add_dir a_i
+else
+    climada_global.modules_dir = ''; % empty to signify not present
 end
 
 fprintf('initializing climada... ');
@@ -72,8 +75,6 @@ fprintf('initializing climada... ');
 %initialises the global variables
 climada_init_vars;
 
-if strcmp(computer,'GLNXA64') % NCAR
-    climada_global.waitbar=0;
-end
+if strcmp(computer,'GLNXA64'),climada_global.waitbar=0;end % NCAR
 
 fprintf('done\n');
