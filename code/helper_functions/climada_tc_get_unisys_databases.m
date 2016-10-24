@@ -1,4 +1,4 @@
-function climada_tc_get_unisys_databases(tc_tracks_folder)
+function climada_tc_get_unisys_databases(tc_tracks_folder,read_it)
 % climada
 % NAME:
 %   climada_tc_get_unisys_databases
@@ -6,21 +6,21 @@ function climada_tc_get_unisys_databases(tc_tracks_folder)
 %   get UNISYS databases from www, i.e. all the ocean basin files from 
 %   http://weather.unisys.com/hurricane/index.html
 %
-%   next step: see climada_tc_read_unisys_database
+%   next step: see climada_tc_read_unisys_database (see also read_it here)
 % CALLING SEQUENCE:
 %   climada_tc_get_unisys_databases
 % EXAMPLE:
 %   climada_tc_get_unisys_databases
 % INPUTS:
-%   param1: 
-%       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
-%   param2: as an example
 %   tc_tracks_folder: the place to store the data files to
 %       default the climada core /data/tc_tracks folder
+%   read_it: if =1, do read the database and save as .mat file
 % OUTPUTS:
+%   into .../tc_tracks folder
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140715
+% David N. Bresch, david.bresch@gmail.com, 20161023, read_it added
 %-
 
 global climada_global
@@ -31,6 +31,7 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('tc_tracks_folder','var')
     tc_tracks_folder = [climada_global.data_dir filesep 'tc_tracks'];
 end
+if ~exist('read_it','var'),read_it=0;end
 
 % PARAMETERS
 %
@@ -55,6 +56,8 @@ for file_i=1:length(unisys_files)
         fprintf(fid,'%s',S);
         fclose(fid);
         fprintf(' done\n')
+
+        if read_it,climada_tc_read_unisys_database(txt_filename);end 
     else
         fprintf(' FAILED\n')
         
