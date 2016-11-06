@@ -395,7 +395,7 @@ if isfield(hazard,'scenario')
 else
     EDS.hazard.scenario = 'no climate change';
 end
-EDS.hazard.comment  = char(hazard.comment);
+EDS.hazard.comment='';if isfield(hazard,'comment'),EDS.hazard.comment=char(hazard.comment);end
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.lat = entity.assets.lat;
 EDS.assets.lon = entity.assets.lon;

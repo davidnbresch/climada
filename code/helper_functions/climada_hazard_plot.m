@@ -58,6 +58,15 @@ if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, 
 if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
 if isempty(hazard),return;end
 
+% PARAMETERS
+%
+% the threshold up to which the original centroid coordinates are used to
+% create the meshgrid (using fewer points for speedup, if above)
+% see code below for details (search for max_numel_lonlat)
+max_numel_lonlat=1000;
+%
+verbose=0; % default=0
+
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 if ~isfield(hazard,'units'),hazard.units='';end
@@ -69,6 +78,8 @@ scale  = max(hazard.lon) - min(hazard.lon);
 ax_lim_buffer = scale/10;
 ax_lim = [min(hazard.lon)-ax_lim_buffer           max(hazard.lon)+ax_lim_buffer ...
     max(min(hazard.lat),-60)-ax_lim_buffer  min(max(hazard.lat),95)+ax_lim_buffer];
+
+title_str=''; % init
 
 if event_i<0
     % search for i-thlargest event
@@ -107,9 +118,22 @@ end % isfield(hazard,'name')
 
 if sum(values(not(isnan(values))))>0 % nansum(values)>0
     
-    [cmap,~]   = climada_colormap(hazard.peril_ID);
-    [X, Y]        = meshgrid(unique(hazard.lon),unique(hazard.lat));
+    [cmap,~]      = climada_colormap(hazard.peril_ID);
+    
+    ulon=unique(hazard.lon);ulat=unique(hazard.lat);
+    if max(numel(ulon),numel(ulat))>max_numel_lonlat
+        fprintf('Note: grid on appropriate resolution, not on original centroids,');
+        verbose=1;
+        ddlon=max(abs(diff(ulon)));ddlat=max(abs(diff(ulat)));
+        dlon=(max(ulon)-min(ulon))/1000;
+        dlat=(max(ulat)-min(ulat))/1000;
+        ulon=min(ulon)-ddlon:dlon:max(ulon)+ddlon;
+        ulat=min(ulat)-ddlat:dlat:max(ulat)+ddlat;
+    end
+    [X, Y]    = meshgrid(ulon,ulat);
+    if verbose,fprintf(' gridding ...');end
     gridded_VALUE = griddata(hazard.lon,hazard.lat,values,X,Y);
+    if verbose,fprintf(' done\n');end
     contourf(X, Y, gridded_VALUE,'linecolor','none')
     hold on
     box on

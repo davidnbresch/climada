@@ -65,7 +65,8 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 % David N. Bresch, david.bresch@gmail.com, 20150916, hint for speedup in header added
 % David N. Bresch, david.bresch@gmail.com, 20151230, links in ERROR prompts referenced
 % David N. Bresch, david.bresch@gmail.com, 20160514, border_color and fill land (linewidth negative) added
-% David N. Bresch, david.bresch@gmail.com, 20161023, ocena color set to nicer blue
+% David N. Bresch, david.bresch@gmail.com, 20161023, ocean color set to nicer blue
+% David N. Bresch, david.bresch@gmail.com, 20161027, ISO3 as country_name accepted, too
 %-
 
 % import/setup global variables
@@ -169,7 +170,7 @@ if strcmp(check_country,'LABEL'),check_country='';end
 
 if ~isempty(check_country) && isfield(shapes,'NAME') % shade selected country (only *.gen)
     for shape_i = 1:length(shapes)
-        if any(strcmpi(shapes(shape_i).NAME,check_country)) % shade
+        if any(strcmpi(shapes(shape_i).NAME,check_country)) || any(strcmpi(shapes(shape_i).ADM0_A3,check_country)) % shade
             
             %pos=find(~isnan(shapes(shape_i).X)); % remove NaN to fill
             % BUT: since one country can be more than one closed shape,

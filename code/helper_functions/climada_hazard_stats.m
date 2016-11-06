@@ -7,7 +7,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
 %
 %   If called with the output hazard on subsequent calls, only the plotting
 %   needs to be done (e.g. to further improve plots)
-%   
+%
 %   See also climada_IFC_plot for a local hazard intensity/frequency plot
 %
 %   previous call: e.g. climada_tc_hazard_set
@@ -42,6 +42,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
 % David N. Bresch, david.bresch@gmail.com, 20160527, complete overhaul, new field hazard.map
 % David N. Bresch, david.bresch@gmail.com, 20160529, otherwise in colorscale selection fixed
 % David N. Bresch, david.bresch@gmail.com, 20160529, new default return periods (6)
+% David N. Bresch, david.bresch@gmail.com, 20161006, minimum thresholds set for some perils
 %-
 
 % init global variables
@@ -64,8 +65,6 @@ if isempty(return_periods'),return_periods = [10 25 50 100 500 1000];end
 
 hazard=climada_hazard_load(hazard);
 
-if ~isfield(hazard,'units'),hazard.units='';end
-
 % check if based on probabilistic tc track set
 if isfield(hazard,'orig_event_flag')
     orig_event_pos=find(hazard.orig_event_flag);
@@ -73,14 +72,26 @@ else
     orig_event_pos=[]; % no original events
 end
 
-intensity_threshold = 0; % default
-if strcmp(hazard.peril_ID,'TC'),intensity_threshold = 5;end % speeds up calcs
+switch hazard.peril_ID
+    case 'TC'
+        intensity_threshold = 5;
+    case 'WS'
+        intensity_threshold = 5;
+    case 'HS'
+        intensity_threshold = 10;
+        if ~isfield(hazard,'units'),hazard.units='Ekin';end
+    case 'EQ'
+        intensity_threshold = 1;
+    otherwise
+        intensity_threshold = 0; % default
+end % speeds up calcs
+
+if ~isfield(hazard,'units'),hazard.units='';end
 
 n_return_periods         = length(return_periods);
 n_centroids              = size(hazard.intensity,2);
 
 if ~isfield(hazard,'map')
-    fprintf('calculate hazard statistics ...\n')
     
     hazard.map.return_period = return_periods;
     
@@ -92,7 +103,7 @@ if ~isfield(hazard,'map')
     t0       = clock;
     mod_step = 10; % first time estimate after 10 tracks, then every 100
     msgstr   = sprintf('processing %i centroids',n_centroids);
-    fprintf('%s (waitbar suppressed)\n',msgstr);
+    fprintf('calculate hazard statistics: %s\n',msgstr);
     format_str='%s';
     
     % % special case for LS
@@ -174,29 +185,26 @@ if abs(check_plot)>0
     else
         hist_str='';
     end
-    fprintf('plotting %sintensity vs return periods maps ',hist_str)
+    fprintf('plotting %sintensity vs return periods maps (be patient) ',hist_str)
     
     fontsize = 12;
     % some color settings
     cmap = climada_colormap(hazard.peril_ID);
+    caxis_min=0;caxis_max=max(max(max(hazard.map.intensity)));
     switch hazard.peril_ID
         case 'TC'
             caxis_max = 100;
-            %caxis_max = 80;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
-            %xtick_    = [20 40 60 80 caxis_max];
             cbar_str  = [hist_str 'wind speed (m/s)'];
             
         case 'TR'
             caxis_max = 300; %caxis_max = 500;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
-            %xtick_    = [10 50 100 200 caxis_max];
             cbar_str  = [hist_str 'rain sum (mm)'];
             
         case 'TS'
-            caxis_max = 3;
+            caxis_max = 10;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
-            %xtick_    = [1 2 4 caxis_max];
             cbar_str  = [hist_str 'surge height (m)'];
             
         case 'MS'
@@ -207,7 +215,12 @@ if abs(check_plot)>0
             caxis_max = 1;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
             cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
-            cmap = flipud(climada_colormap(peril_ID));
+            cmap = flipud(climada_colormap(hazard.peril_ID));
+        case 'HS'
+            caxis_min = 200;
+            caxis_max = 2000;
+            xtick_    = caxis_max/5:caxis_max/5:caxis_max;
+            cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
         otherwise
             % use default colormap, hence no cmap defined
             caxis_max = full(max(max(hazard.intensity)));
@@ -232,7 +245,7 @@ if abs(check_plot)>0
     dist = .06;
     hc = colorbar('location','northoutside', 'position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
     set(get(hc,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);
-    caxis([0 caxis_max])
+    caxis([caxis_min caxis_max])
     set(gca,'fontsize',fontsize)
     hold on
     
@@ -249,12 +262,12 @@ if abs(check_plot)>0
         
         if sum(values(not(isnan(values))))>0 % nansum(values)>0
             [X, Y, gridded_VALUE] = climada_gridded_VALUE(values, centroids);
-            gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
+            gridded_VALUE(gridded_VALUE<0.1) = NaN; % avoid tiny values
             contourf(X, Y, gridded_VALUE,200,'linecolor','none')
         else
             text(mean([min(hazard.lon) max(hazard.lon)]),...
                 mean([min(hazard.lat ) max(hazard.lat )]),...
-                'no data for this return period available','fontsize',8,...
+                'no data for this return period available','fontsize',10,...
                 'HorizontalAlignment','center')
         end
         hold on
