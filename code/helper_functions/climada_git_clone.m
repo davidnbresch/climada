@@ -28,6 +28,7 @@ function climada_git_clone(TEST_mode)
 %   all messaging to stdout
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20161013, initial
+% david.bresch@gmail.com, 20161109, most modules switched on
 %-
 
 global climada_global
@@ -41,16 +42,16 @@ if isempty(TEST_mode),TEST_mode=0;end % default=0
 %
 module_list={
     'https://github.com/davidnbresch/climada_advanced.git'
-    %'https://github.com/davidnbresch/climada_module_isimip.git'
+    'https://github.com/davidnbresch/climada_module_isimip.git'
     'https://github.com/davidnbresch/climada_module_tropical_cyclone.git'
     'https://github.com/davidnbresch/climada_module_country_risk.git'
-    %     'https://github.com/davidnbresch/climada_module_elevation_models.git'
-    %     'https://github.com/davidnbresch/climada_module_storm_europe.git'
-    %     'https://github.com/davidnbresch/climada_module_meteorite.git'
-    %     'https://github.com/davidnbresch/climada_module_flood.git'
-    %     'https://github.com/davidnbresch/climada_module_earthquake_volcano.git'
-    %     'https://github.com/davidnbresch/climada_module_drought_fire.git'
-    %     'https://github.com/davidnbresch/climada_module_kml_toolbox.git'
+    'https://github.com/davidnbresch/climada_module_elevation_models.git'
+    'https://github.com/davidnbresch/climada_module_storm_europe.git'
+    'https://github.com/davidnbresch/climada_module_meteorite.git'
+    'https://github.com/davidnbresch/climada_module_flood.git'
+    'https://github.com/davidnbresch/climada_module_earthquake_volcano.git'
+    'https://github.com/davidnbresch/climada_module_drought_fire.git'
+    'https://github.com/davidnbresch/climada_module_kml_toolbox.git'
     %'https://github.com/davidnbresch/climada_module_salvador_demo.git'
     %'%https://github.com/davidnbresch/climada_module_barisal_demo.git'
     };
@@ -112,8 +113,6 @@ cd(current_path)
 
 % check for climada_data folder
 % -----------------------------
-
-climada_global.data_dir='/Users/bresch/Documents/_GIT/climada/data';
 
 fP=fileparts(climada_global.root_dir);
 local_data_dir=[fP filesep 'climada_data'];
