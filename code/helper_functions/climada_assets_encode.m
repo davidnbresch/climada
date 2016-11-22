@@ -62,6 +62,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 % Lea Mueller, muellele@gmail.com, 20150915, set max_encoding_distance_m as input variable
 % Lea Mueller, muellele@gmail.com, 20150916, add max_distance in waitbar text
 % David N. Bresch, david.bresch@gmail.com, 20160606, max_distance_to_hazard renamed to max_encoding_distance_m and speedup
+% David N. Bresch, david.bresch@gmail.com, 20161120, (waitbar) comments removed
 %-
 
 global climada_global
@@ -158,14 +159,14 @@ n_assets              = length(indx);
 assets.centroid_index = assets.Value*0; % init
 
 t0       = clock;
-msgstr   = sprintf('Encoding %i assets (max distance %d m)... ',n_assets,max_encoding_distance_m);
+msgstr   = sprintf('Encoding %i assets (max distance %d m) ... ',n_assets,max_encoding_distance_m);
 mod_step = 10; % first time estimate after 10 assets, then every 100
 if climada_global.waitbar
-    fprintf('%s (updating waitbar with estimation of time remaining every 100th asset)\n',msgstr);
+    fprintf('%s\n',msgstr);
     h        = waitbar(0,msgstr);
     set(h,'Name','Encoding assets');
 else
-    fprintf('%s (waitbar suppressed)\n',msgstr);
+    fprintf('%s\n',msgstr);
     format_str='%s';
 end
 

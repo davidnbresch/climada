@@ -73,16 +73,35 @@ entity.assets.Value=[entity.assets.Value entity2.assets.Value];
 entity.assets.DamageFunID=[entity.assets.DamageFunID entity2.assets.DamageFunID];
 entity.assets.Deductible=[entity.assets.Deductible entity2.assets.Deductible];
 entity.assets.Cover=[entity.assets.Cover entity2.assets.Cover];
-if isfield(entity.assets,'centroid_index') && isfield(entity2.assets,'centroid_index')
-    entity.assets.centroid_index=[entity.assets.centroid_index entity2.assets.centroid_index];
-elseif isfield(entity.assets,'centroid_index')
-    entity.assets=rmfield(entity.assets,'centroid_index');
-end
+
+if isfield(entity.assets,'centroid_index'),entity.assets=rmfield(entity.assets,'centroid_index');end
+
 if isfield(entity.assets,'isgridpoint') && isfield(entity2.assets,'isgridpoint')
     entity.assets.isgridpoint=[entity.assets.isgridpoint entity2.assets.isgridpoint];
 elseif isfield(entity.assets,'isgridpoint')
     entity.assets=rmfield(entity.assets,'isgridpoint');
 end
+if isfield(entity.assets,'Category_ID') && isfield(entity2.assets,'Category_ID')
+    entity.assets.Category_ID=[entity.assets.Category_ID entity2.assets.Category_ID];
+elseif isfield(entity.assets,'Category_ID')
+    entity.assets=rmfield(entity.assets,'Category_ID');
+end
+if isfield(entity.assets,'Region_ID') && isfield(entity2.assets,'Region_ID')
+    entity.assets.Region_ID=[entity.assets.Region_ID entity2.assets.Region_ID];
+elseif isfield(entity.assets,'Region_ID')
+    entity.assets=rmfield(entity.assets,'Region_ID');
+end
+if isfield(entity.assets,'Values') && isfield(entity2.assets,'Values')
+    entity.assets.Values=[entity.assets.Values entity2.assets.Values];
+elseif isfield(entity.assets,'Values')
+    entity.assets=rmfield(entity.assets,'Values');
+end
+if isfield(entity.assets,'Value_unit') && isfield(entity2.assets,'Value_unit')
+    entity.assets.Value_unit=[entity.assets.Value_unit entity2.assets.Value_unit];
+elseif isfield(entity.assets,'Value_unit')
+    entity.assets=rmfield(entity.assets,'Value_unit');
+end
+
 
 fprintf('Warning: only assets (lon,lat,Value,DamageFunID,Deductible and Cover) combined\n');
 fprintf('entity.damagefunctions, entity.measures and entity.discount taken from first entity\n');

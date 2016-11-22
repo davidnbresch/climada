@@ -8,7 +8,7 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 %   convert an event (per occurrence) damage set (EDS) into a year damage
 %   set (YDS), making reference to hazard.orig_yearset (if exists). If
 %   there is no yearset in hazard, generate an artificial year damage set
-%   by sampling the EDS into n_years, where n_years is dtermined based on
+%   by sampling the EDS into n_years, where n_years is determined based on
 %   EDS.frequency (n_years=1/min(EDS.frequency), such that the yearset
 %   'spans' the period the damage is 'representative' for).
 %

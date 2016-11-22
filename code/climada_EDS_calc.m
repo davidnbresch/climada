@@ -43,7 +43,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       set). Default=0
 %   silent_mode: suppress any output to stdout (useful i.e. if called many times)
 %       default=0 (output to stdout), =1: no output and no waitbar at all
-%       command-line progress output is still shown with silebt_mode=1, but
+%       command-line progress output is still shown with silent_mode=1, but
 %       suppressed if =2. 
 % OUTPUTS:
 %   EDS, the event damage set with:

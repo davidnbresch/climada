@@ -40,6 +40,7 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 % David N. Bresch, david.bresch@gmail.com, 20161001, check for all Values=NaN added
 % David N. Bresch, david.bresch@gmail.com, 20161022, markersize<0 allowed
 % David N. Bresch, david.bresch@gmail.com, 20161023, land color defined in PARAMETERS
+% David N. Bresch, david.bresch@gmail.com, 20161121, check for sum(Values)=0
 %-
 
 global climada_global
@@ -95,6 +96,10 @@ if isempty(max_value)
     mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
 else
     mav=max_value*1.1;
+end
+if sum(entity.assets.Value)==0
+    fprintf('Note: all Values sum up to zero, nothing to plot\n');
+    return
 end
 if ~isempty(cbar_ylabel)
     [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',abs(markersize), 1,0,mav,cmap,1,0);

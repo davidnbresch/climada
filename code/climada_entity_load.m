@@ -32,6 +32,7 @@ function [entity,entity_file]=climada_entity_load(entity)
 % David N. Bresch, david.bresch@gmail.com, 20160516, _entity added if needed, too. entity_file as output added
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
 % David N. Bresch, david.bresch@gmail.com, 20161001, check for isentity
+% David N. Bresch, david.bresch@gmail.com, 20161120, try also to save with '-v7.3'
 %-
 
 global climada_global
@@ -90,7 +91,11 @@ if isentity(entity)
             entity.damagefunctions.filename=entity_file;
             entity.measures.filename=entity_file;
             entity.discount.filename=entity_file;
-            save(entity_file,'entity')
+            try
+                save(entity_file,'entity')
+            catch
+                save(entity_file,'entity','-v7.3')
+            end
         end
     end
 else
