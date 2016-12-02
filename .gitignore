@@ -40,3 +40,5 @@ matlab.mat
 .DS_Store
 
 *.m~
+
+helper_advanced_windfield_global.py
