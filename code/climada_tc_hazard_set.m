@@ -319,7 +319,7 @@ if verbose_mode,fprintf('%s\n',msgstr);end
 % small lop to populate additional fields
 for track_i=1:n_tracks
     hazard.orig_event_count         = hazard.orig_event_count+tc_track(track_i).orig_event_flag;
-    hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag;
+    hazard.orig_event_flag(track_i) = tc_track(track_i).orig_event_flag(1); % to be safe
     hazard.yyyy(track_i)            = tc_track(track_i).yyyy(1);
     hazard.mm(track_i)              = tc_track(track_i).mm(1);
     hazard.dd(track_i)              = tc_track(track_i).dd(1);
