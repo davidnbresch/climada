@@ -33,6 +33,7 @@ function tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep)
 % David N. Bresch, david_bresch@gmail.com, 20141231, datevecmx replaced
 % David N. Bresch, david_bresch@gmail.com, 20150103, simplified (a lot) and about five times faster
 % David N. Bresch, david_bresch@gmail.com, 20150119, lat/lon interpolation switched to spline
+% David N. Bresch, david_bresch@gmail.com, 20161204, RadiusMaxWind and EnvironmentalPressure added
 %-
 
 % init global variables
@@ -87,6 +88,13 @@ for track_i=1:length(tc_track)
     tc_track(track_i).mm=interp1(datenum_source,tc_track(track_i).mm,datenum_target,'linear','extrap');
     tc_track(track_i).dd=interp1(datenum_source,tc_track(track_i).dd,datenum_target,'linear','extrap');
     tc_track(track_i).hh=interp1(datenum_source,tc_track(track_i).hh,datenum_target,'linear','extrap');
+    
+    if isfield(tc_track,'EnvironmentalPressure')
+        tc_track(track_i).EnvironmentalPressure=interp1(datenum_source,tc_track(track_i).EnvironmentalPressure,datenum_target,'linear','extrap');
+    end
+    if isfield(tc_track,'RadiusMaxWind')
+        tc_track(track_i).RadiusMaxWind=interp1(datenum_source,tc_track(track_i).RadiusMaxWind,datenum_target,'linear','extrap');
+    end
     
     tc_track(track_i).datenum=datenum_target; 
     tc_track(track_i).TimeStep=tc_track(track_i).lon*0+default_min_TimeStep; % by definition

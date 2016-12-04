@@ -30,7 +30,7 @@ a         = cos(latrad)^2 * sin(delta_lon/2)^2;
 c         = 2 * atan2(sqrt(a), sqrt(1-a));              
 
 % distance in m
-lon_norm = (R * c)*1000;             
+lon_norm = (R * c)*1000; % in m             
 lat_norm = 111194.926644559;
 
 GridVect            = zeros(CUID,2);
@@ -41,6 +41,4 @@ GridVect(inreach,2) = fLat1 - fLat2;
 fDistance_km          = zeros(CUID,1);
 fDistance_km(inreach) = (sqrt((((GridVect(inreach,1)).*lon_norm).^2 + ...
                         ((GridVect(inreach,2)).*lat_norm).^2)))./1000;
-return
-
-
+end % climada_nonspheric_distance_m
