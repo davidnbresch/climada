@@ -54,6 +54,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % David N. Bresch, david.bresch@gmail.com, 20150819, climada_global.centroids_dir introduced
 % David N. Bresch, david.bresch@gmail.com, 20160529, about 20% faster than climada_tc_windfield_slow
 % David N. Bresch, david.bresch@gmail.com, 20160529, only gust returned, even faster
+% David N. Bresch, david.bresch@gmail.com, 20161205, Rmax parameters moved to PARAMETERS section
 %-
 
 gust = []; % init output
@@ -67,6 +68,10 @@ if ~exist('centroids','var'), centroids      = []; end
 if ~exist('silent_mode','var'), silent_mode  =  1; end
 
 % PARAMETERS
+%
+% Radius of max wind (in km), latitudes at which range applies
+R_min=30;R_max=75; % km
+R_lat_min=24;R_lat_max=42;
 %
 % threshold above which we calculate the windfield
 wind_threshold=15; % in m/s, default=0 until 20150124
@@ -189,11 +194,20 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
     node_lat = tc_track.lat(node_i);
     node_lon = tc_track.lon(node_i);
     
-    R = 30; % radius of max wind (in km)
-    if abs(node_lat) > 42
-        R = 75;
-    elseif abs(node_lat) > 24
-        R = 30+2.5*(abs(node_lat)-24);
+    % until 20161205, hard-wired
+    %R = 30; % radius of max wind (in km)
+    %if abs(node_lat) > 42
+    %    R = 75;
+    %elseif abs(node_lat) > 24
+    %    R = 30+2.5*(abs(node_lat)-24);
+    %end
+    
+    % since 20161205, with parameters
+    R = R_min; % radius of max wind (in km)
+    if abs(node_lat) > R_lat_max
+        R = R_max;
+    elseif abs(node_lat) > R_lat_min
+        R = R_min+(R_max-R_min)/(R_lat_max-R_lat_min)*(abs(node_lat)-R_lat_min);
     end
     
     %if D<10*R % close enough to have an impact

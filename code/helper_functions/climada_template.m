@@ -73,20 +73,19 @@ param2
 module_data_dir
 
 % template for-loop with waitbar or progress to stdout
-n_events = 10000; % to run it here
 t0       = clock;
-mod_step = 10; % first time estimate after 10 events, then every 100 (see below)
-format_str='%s';
-
+n_events = 10000;
 msgstr   = sprintf('processing %i events',n_events);
-fprintf('%s\n',msgstr);
+mod_step = 10; % first time estimate after 10 events, then every 100
 
 % if climada_global.waitbar % commented, as we do not recommend to use a pop-up waitbar (often a nuisance)
 %     fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr);
 %     h        = waitbar(0,msgstr);
 %     set(h,'Name','Event loop');
 % else
-%     fprintf('%s (waitbar suppressed)\n',msgstr);
+%fprintf('%s (waitbar suppressed)\n',msgstr);
+fprintf('%s\n',msgstr);
+format_str='%s';
 % end
 
 for event_i=1:n_events
