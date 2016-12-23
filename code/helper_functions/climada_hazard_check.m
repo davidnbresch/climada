@@ -65,20 +65,22 @@ intensity_above_thresh=hazard.intensity(hazard.intensity>=intensity_threshold);
 N = hist(intensity_above_thresh,intensity_bins);
 N=N/sum(N)*100;
 
-if ~isempty(input_res)
+if ~isempty(input_res) % add histogram of previously analysed hazard
     N=[N;input_res.N]';
     legend_str{2}=input_res.legend_str{1};
 end
 
+subplot(2,2,1)
 bar_handle=bar(intensity_bins,N,1.5,'EdgeColor','none');
 set(bar_handle(1),'FaceColor',[.5 .5 .9]);% color
 if ~isempty(input_res)
     set(bar_handle(2),'FaceColor',[.9 .5 .5]);% color comparison
 end
-
 if isfield(hazard,'units'),xlabel(hazard.units);end
 ylabel('% of nonzero elements');
 legend(legend_str);
+title([hazard.peril_ID ' intensity histogram']);
+set(gcf,'Color',[1 1 1]);
 
 pos=find(intensity_above_thresh>max(intensity_bins));
 if ~isempty(pos)
@@ -95,9 +97,19 @@ end
 
 res.bins=intensity_bins;
 res.N=N;
-res.units=hazard.units;
+if isfield(hazard,'units'),res.units=hazard.units;end
 res.legend_str=legend_str;
 
-set(gcf,'Color',[1 1 1]);
+subplot(2,2,2)
+climada_hazard_plot(hazard,0,'',[min(intensity_bins) max(intensity_bins)]);
+title('maxmium intensity');
+
+subplot(2,2,3)
+climada_hazard_plot(hazard,-1,'',[min(intensity_bins) max(intensity_bins)]);
+title('biggest event');
+
+subplot(2,2,4)
+climada_hazard_plot(hazard,-2,'',[min(intensity_bins) max(intensity_bins)]);
+title('2^{nd} biggest event');
 
 end % climada_hazard_check
