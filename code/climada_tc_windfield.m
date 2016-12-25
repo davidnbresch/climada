@@ -17,8 +17,8 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %   between parallel processes) - see climada_tc_hazard_set for another
 %   PARFOR opportunity (we use it there, not here).
 %
-%   See climada_tc_windfield_slow in the tropical cyclone module 
-%   (https://github.com/davidnbresch/climada_module_tropical_cyclone) 
+%   See climada_tc_windfield_slow in the tropical cyclone module
+%   (https://github.com/davidnbresch/climada_module_tropical_cyclone)
 %   for the old slow version (for backward compatibility).
 %
 % CALLING SEQUENCE:
@@ -27,7 +27,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
 %   tc_track=climada_tc_equal_timestep(tc_track);
 %   centroids=climada_centroids_load('USFL_MiamiDadeBrowardPalmBeach');
-%   gust=climada_tc_windfield(tc_track(68),centroids);
+%   gust=climada_tc_windfield(tc_track(68),centroids); % Andrew, 1992
 %   climada_color_plot(gust,centroids.lon,centroids.lat);
 % INPUTS:
 %   tc_track: a structure with the single track information (length(tc_track)!=1)
@@ -43,7 +43,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %   silent_mode: default=0, if =-1, use step-by-step detailed windfield,
 %       i.e. reduce wind to zero at center of the eye (not recommended for
 %       probabilistic, since hit/miss issue with closest node, see variable
-%       max_wind_at_bullseye in code).  
+%       max_wind_at_bullseye in code).
 % OUTPUTS:
 %   gust: the windfield [m/s] at all centroids, NOT sparse for speedup
 %       i.e. convert like hazard.intensity()=sparse(res.gust)...
@@ -55,6 +55,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % David N. Bresch, david.bresch@gmail.com, 20160529, about 20% faster than climada_tc_windfield_slow
 % David N. Bresch, david.bresch@gmail.com, 20160529, only gust returned, even faster
 % David N. Bresch, david.bresch@gmail.com, 20161205, Rmax parameters moved to PARAMETERS section
+% David N. Bresch, david.bresch@gmail.com, 20161225, Celerity fixed (dipole)
 %-
 
 gust = []; % init output
@@ -123,31 +124,15 @@ if isfield(tc_track,'Celerity')
     tc_track.CelerityUnit = 'km/h'; % after conversion
 end
 
-% calculate degree distance between nodes (used for both Azimuth and Celerity)
-cos_tc_track_lat = cos(tc_track.lat/180*pi); % calculate once for speedup
-%ddx                       = diff(tc_track.lon).*cos( (tc_track.lat(2:end)-0.5*diff(tc_track.lat)) /180*pi);
-ddx                       = diff(tc_track.lon).*cos_tc_track_lat(2:end);
-ddy                       = diff(tc_track.lat);
-
-if ~isfield(tc_track,'Azimuth') % direction, N is 0, E is 90, S is 180, W is 270
-    tc_track.Azimuth          = atan2(ddy,ddx)*180/pi; % in degree
-    tc_track.Azimuth          = mod(-tc_track.Azimuth+90,360); % convert wind such that N is 0, E is 90, S is 180, W is 270
-    tc_track.Azimuth          = [tc_track.Azimuth(1) tc_track.Azimuth];
-    % %%to check Azimuth
-    % subplot(2,1,1);
-    % plot(tc_track.lon,tc_track.lat,'-r');
-    % plot(tc_track.lon,tc_track.lat,'xr');
-    % subplot(2,1,2)
-    % plot(tc_track.Azimuth);title('calculated Azimuth');ylabel('degree (N=0, E=90)');
-    % return
-end % ~isfield(tc_track,'Azimuth')
-
 if ~isfield(tc_track,'Celerity') % forward speed (=celerity, km/h)
-    % calculate km distance between nodes
-    dd = sqrt(  ddy.^2 + ddx .^2 ) * 111.1; % approx. conversion into km
-    tc_track.Celerity          = dd./tc_track.TimeStep(1:length(dd)); % avoid troubles with TimeStep sometimes being one longer
-    tc_track.Celerity          = [tc_track.Celerity(1) tc_track.Celerity];
-    tc_track.CelerityUnit      = 'km/h';
+    % calculate degree distance between nodes
+    cos_tc_track_lat      = cos(tc_track.lat/180*pi); % calculate once for speedup
+    ddx                   = diff(tc_track.lon).*cos_tc_track_lat(2:end);
+    ddy                   = diff(tc_track.lat);
+    dd                    = sqrt(ddy.^2+ddx.^2 )*111.1; % approx. conversion into km
+    tc_track.Celerity     = dd./tc_track.TimeStep(1:length(dd)); % avoid troubles with TimeStep sometimes being one longer
+    tc_track.Celerity     = [tc_track.Celerity(1) tc_track.Celerity];
+    tc_track.CelerityUnit = 'km/h';
 end
 
 % keep only windy nodes
@@ -157,13 +142,13 @@ if ~isempty(pos)
     tc_track.lat              = tc_track.lat(pos);
     tc_track.MaxSustainedWind = tc_track.MaxSustainedWind(pos);
     tc_track.Celerity         = tc_track.Celerity(pos);
-    tc_track.Azimuth          = tc_track.Azimuth(pos);
     cos_tc_track_lat          = cos_tc_track_lat(pos);
 else
     return % no wind
 end
 
 n_centroids = length(centroids.lon);
+n_nodes     = length(tc_track.lon);
 
 if isfield(centroids,'distance2coast_km')
     % treat only centrois closer than coastal_range_km to coast for speedup
@@ -182,8 +167,8 @@ local_gust=valid_centroid_pos*0; % init
 
 %t0=clock; % TIMING
 for centroid_i=1:n_valid_centroids % now loop over all valid centroids
-%parfor centroid_i=1:n_valid_centroids % works with PARFOR, but not faster
-        
+    %parfor centroid_i=1:n_valid_centroids % works with PARFOR, but not faster
+    
     % find closest node (these two lines MOST TIME CONSUMING)
     dd=((tc_track.lon-local_lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track.lat-local_lat(centroid_i)).^2; % in km^2
     [~,pos] = min(dd);
@@ -193,6 +178,14 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
     
     node_lat = tc_track.lat(node_i);
     node_lon = tc_track.lon(node_i);
+    
+    if node_i<n_nodes
+        node_dx=tc_track.lon(node_i+1)-node_lon; % track forward vector
+        node_dy=tc_track.lat(node_i+1)-node_lat;
+    else
+        node_dx=node_lon-tc_track.lon(node_i-1); % last one
+        node_dy=node_lat-tc_track.lat(node_i-1);
+    end
     
     % until 20161205, hard-wired
     %R = 30; % radius of max wind (in km)
@@ -213,23 +206,40 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
     %if D<10*R % close enough to have an impact
     if D<5*R % focus on the radius that really has an impact
         
-        % calculate angle to node to determine left/right of track
-        ddx          = (local_lon(centroid_i)-node_lon)*cos(node_lat/180*pi);
-        ddy          = (local_lat(centroid_i)-node_lat);
-        node_Azimuth = atan2(ddy,ddx)*180/pi; % in degree
-        node_Azimuth = mod(-node_Azimuth+90,360); % convert wind such that N is 0, E is 90, S is 180, W is 270
-
-        M            = tc_track.MaxSustainedWind(node_i);
+        % calculate angular field to add translational wind
+        % -------------------------------------------------
         
-        if mod(node_Azimuth-tc_track.Azimuth(node_i)+360,360)<180
-            % right of track
-            T =  tc_track.Celerity(node_i);
-        else
-            % left of track
-            T = -tc_track.Celerity(node_i);
-        end
-        % switch sign for Southern Hemisphere
-        if node_lat<0,T = -T;end
+        % figure which side of track, hence add/subtract translational wind
+        node_len=sqrt(node_dx^2+node_dy^2); % length of track forward vector
+        
+        % we use the scalar product of the track forward vector and the vector
+        % towards each centroid to figure the angle between and hence whether
+        % the translational wind needs to be added (on the right side of the
+        % track for Northern hemisphere) and to which extent (100% exactly 90
+        % to the right of the track, zero in front of the track)
+        
+        % hence, rotate track forward vector 90 degrees clockwise, i.e.
+        % x2=x* cos(a)+y*sin(a), with a=pi/2,cos(a)=0,sin(a)=1
+        % y2=x*-sin(a)+Y*cos(a), therefore
+        node_tmp=node_dx;node_dx=node_dy;node_dy=-node_tmp;
+        
+        % the vector towards each centroid
+        centroids_dlon=local_lon(centroid_i)-node_lon; % vector from center
+        centroids_dlat=local_lat(centroid_i)-node_lat;
+        centroids_len=sqrt(centroids_dlon.^2+centroids_dlat.^2); % length
+        
+        % scalar product, a*b=|a|*|b|*cos(phi), phi angle between vectors
+        cos_phi=(centroids_dlon*node_dx+centroids_dlat*node_dy)./centroids_len/node_len;
+        if node_lat<0;cos_phi=-cos_phi;end % southern hemisphere
+        
+        % calculate vtrans wind field array assuming that
+        % - effect of Celerity decreases with distance from eye (r_normed)
+        % - Celerity is added 100% to the right of the track, 0% in front etc. (cos_phi)
+        r_normed=R/D;
+        r_normed(r_normed>1)=1;
+        T = tc_track.Celerity(node_i)*r_normed.*cos_phi;
+        
+        M = tc_track.MaxSustainedWind(node_i);
         
         if treat_extratropical_transition
             % special to avoid unrealistic celerity after extratropical transition
