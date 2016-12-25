@@ -1,5 +1,7 @@
 function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % TC windfield calculation
+% MODULE:
+%   core
 % NAME:
 %   climada_tc_windfield
 % PURPOSE:
@@ -273,6 +275,7 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
         end % D<10*R
         
         local_gust(centroid_i) = max((S/3.6)*1.27,0); % local_gust now in m/s, peak gust
+        %local_gust(centroid_i) = max((S/3.6)*1.00,0); % local_gust now in m/s 20161225
         
     end % D<5*R
     

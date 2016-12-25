@@ -269,7 +269,13 @@ intensity = spalloc(n_tracks,n_centroids,...
     ceil(n_tracks*n_centroids*hazard_arr_density));
 %intensity = zeros(n_tracks,n_centroids); % FASTER
 
-if verbose_mode,fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);end
+if verbose_mode
+    if noparfor
+        fprintf('processing %i tracks @ %i centroids (no parfor)\n',n_tracks,n_centroids);
+    else
+        fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);
+    end
+end
 
 if n_tracks>10000
     default_min_TimeStep=2; % speeds up calculation by factor 2

@@ -56,7 +56,7 @@ legend_str{1}=strrep(fN,'_',' ');
 switch hazard.peril_ID
     case 'TC'
         intensity_threshold=20;
-        intensity_bins=intensity_threshold:5:150;
+        intensity_bins=intensity_threshold:5:100;
     otherwise
         intensity_threshold=0;
         intensity_bins=[0:ceil(max(max(hazard.intensity)))];
@@ -69,6 +69,8 @@ if ~isempty(input_res) % add histogram of previously analysed hazard
     N=[N;input_res.N]';
     legend_str{2}=input_res.legend_str{1};
 end
+xlim([min(intensity_bins) max(intensity_bins)]);axis tight
+
 
 subplot(2,2,1)
 bar_handle=bar(intensity_bins,N,1.5,'EdgeColor','none');
