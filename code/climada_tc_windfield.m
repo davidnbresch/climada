@@ -58,6 +58,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % David N. Bresch, david.bresch@gmail.com, 20160529, only gust returned, even faster
 % David N. Bresch, david.bresch@gmail.com, 20161205, Rmax parameters moved to PARAMETERS section
 % David N. Bresch, david.bresch@gmail.com, 20161225, Celerity fixed (dipole)
+% David N. Bresch, david.bresch@gmail.com, 20161226, further speedup, all to arrays, no struct in main loop
 %-
 
 gust = []; % init output
@@ -126,25 +127,38 @@ if isfield(tc_track,'Celerity')
     tc_track.CelerityUnit = 'km/h'; % after conversion
 end
 
+cos_tc_track_lat  = cos(tc_track.lat/180*pi); % calculate once for speedup
+diff_tc_track_lon = diff(tc_track.lon);
+diff_tc_track_lat = diff(tc_track.lat);
 if ~isfield(tc_track,'Celerity') % forward speed (=celerity, km/h)
     % calculate degree distance between nodes
-    cos_tc_track_lat      = cos(tc_track.lat/180*pi); % calculate once for speedup
-    ddx                   = diff(tc_track.lon).*cos_tc_track_lat(2:end);
-    ddy                   = diff(tc_track.lat);
-    dd                    = sqrt(ddy.^2+ddx.^2 )*111.1; % approx. conversion into km
+    ddx                   = diff_tc_track_lon.*cos_tc_track_lat(2:end);
+    dd                    = sqrt(diff_tc_track_lat.^2+ddx.^2)*111.1; % approx. conversion into km
     tc_track.Celerity     = dd./tc_track.TimeStep(1:length(dd)); % avoid troubles with TimeStep sometimes being one longer
-    tc_track.Celerity     = [tc_track.Celerity(1) tc_track.Celerity];
+    %tc_track.Celerity     = [tc_track.Celerity(1) tc_track.Celerity]; % until 20161226
+    tc_track.Celerity     = [tc_track.Celerity tc_track.Celerity(end)];
     tc_track.CelerityUnit = 'km/h';
 end
 
+node_dx=[diff_tc_track_lon diff_tc_track_lon(end)];
+node_dy=[diff_tc_track_lat diff_tc_track_lat(end)];
+node_len=sqrt(node_dx.^2+node_dy.^2); % length of track forward vector
+% rotate track forward vector 90 degrees clockwise, i.e.
+% x2=x* cos(a)+y*sin(a), with a=pi/2,cos(a)=0,sin(a)=1
+% y2=x*-sin(a)+Y*cos(a), therefore
+node_tmp=node_dx;node_dx=node_dy;node_dy=-node_tmp;
+        
 % keep only windy nodes
 pos = find(tc_track.MaxSustainedWind > (wind_threshold*3.6)); % cut-off in km/h
-if ~isempty(pos)
-    tc_track.lon              = tc_track.lon(pos);
-    tc_track.lat              = tc_track.lat(pos);
-    tc_track.MaxSustainedWind = tc_track.MaxSustainedWind(pos);
-    tc_track.Celerity         = tc_track.Celerity(pos);
+if ~isempty(pos) % and no struct, as arrays are faster
+    tc_track_lon              = tc_track.lon(pos);
+    tc_track_lat              = tc_track.lat(pos);
+    tc_track_MaxSustainedWind = tc_track.MaxSustainedWind(pos);
+    tc_track_Celerity         = tc_track.Celerity(pos);
     cos_tc_track_lat          = cos_tc_track_lat(pos);
+    tc_track_node_dx          = node_dx(pos);
+    tc_track_node_dy          = node_dy(pos);
+    tc_track_node_len         = node_len(pos);
 else
     return % no wind
 end
@@ -172,22 +186,18 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
     %parfor centroid_i=1:n_valid_centroids % works with PARFOR, but not faster
     
     % find closest node (these two lines MOST TIME CONSUMING)
-    dd=((tc_track.lon-local_lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track.lat-local_lat(centroid_i)).^2; % in km^2
+    dd=((tc_track_lon-local_lon(centroid_i)).*cos_tc_track_lat).^2+(tc_track_lat-local_lat(centroid_i)).^2; % in km^2
     [~,pos] = min(dd);
     
     node_i  = pos(1); % take first if more than one
     D = sqrt(dd(node_i))*111.12; % now in km
     
-    node_lat = tc_track.lat(node_i);
-    node_lon = tc_track.lon(node_i);
-    
-    if node_i<n_nodes
-        node_dx=tc_track.lon(node_i+1)-node_lon; % track forward vector
-        node_dy=tc_track.lat(node_i+1)-node_lat;
-    else
-        node_dx=node_lon-tc_track.lon(node_i-1); % last one
-        node_dy=node_lat-tc_track.lat(node_i-1);
-    end
+    % avoid indexing, slight speedup
+    node_lat = tc_track_lat(node_i);
+    node_lon = tc_track_lon(node_i);
+    node_dx  = tc_track_node_dx(node_i);
+    node_dy  = tc_track_node_dy(node_i);
+    node_len = tc_track_node_len(node_i);
     
     % until 20161205, hard-wired
     %R = 30; % radius of max wind (in km)
@@ -212,7 +222,6 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
         % -------------------------------------------------
         
         % figure which side of track, hence add/subtract translational wind
-        node_len=sqrt(node_dx^2+node_dy^2); % length of track forward vector
         
         % we use the scalar product of the track forward vector and the vector
         % towards each centroid to figure the angle between and hence whether
@@ -220,18 +229,13 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
         % track for Northern hemisphere) and to which extent (100% exactly 90
         % to the right of the track, zero in front of the track)
         
-        % hence, rotate track forward vector 90 degrees clockwise, i.e.
-        % x2=x* cos(a)+y*sin(a), with a=pi/2,cos(a)=0,sin(a)=1
-        % y2=x*-sin(a)+Y*cos(a), therefore
-        node_tmp=node_dx;node_dx=node_dy;node_dy=-node_tmp;
-        
         % the vector towards each centroid
         centroids_dlon=local_lon(centroid_i)-node_lon; % vector from center
         centroids_dlat=local_lat(centroid_i)-node_lat;
         centroids_len=sqrt(centroids_dlon.^2+centroids_dlat.^2); % length
         
         % scalar product, a*b=|a|*|b|*cos(phi), phi angle between vectors
-        cos_phi=(centroids_dlon*node_dx+centroids_dlat*node_dy)./centroids_len/node_len;
+        cos_phi=(centroids_dlon*node_dx+centroids_dlat*node_dy)/centroids_len/node_len;
         if node_lat<0;cos_phi=-cos_phi;end % southern hemisphere
         
         % calculate vtrans wind field array assuming that
@@ -239,9 +243,9 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
         % - Celerity is added 100% to the right of the track, 0% in front etc. (cos_phi)
         r_normed=R/D;
         r_normed(r_normed>1)=1;
-        T = tc_track.Celerity(node_i)*r_normed.*cos_phi;
+        T = tc_track_Celerity(node_i)*r_normed*cos_phi;
         
-        M = tc_track.MaxSustainedWind(node_i);
+        M = tc_track_MaxSustainedWind(node_i);
         
         if treat_extratropical_transition
             % special to avoid unrealistic celerity after extratropical transition
