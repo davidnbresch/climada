@@ -1,30 +1,29 @@
-function res=climada_event_damage_animation(animation_data_file,parameters)
+function res=climada_event_damage_animation(animation_data_file,params)
 % climada event animation movie
 % MODULE:
-%   module name
+%   core
 % NAME:
 %   climada_event_damage_animation
 % PURPOSE:
 %   Animation of event damage - as an .mp4 movie
 %
 %   This code does the visualization (rendering), see e.g.
-%   climada_event_damage_data_tc to calculate all the data first.
-%   As one often needs to play with visualization parameters, the process is split.
+%   climada_event_damage_data_tc to calculate all the data first. You might
+%   also consider to write your own version of climada_event_damage_data_tc
+%   (e.g for another peril than TC).
 %
-%   The code determines the plot area based on entity (but since there can be
-%   more than one ocean basin's tracks hitting the centroids, the user has
-%   to select the track file).
+%   As one often needs to play with visualization parameters, the process is split.
 %
 %   Note that this code does not (yet) run in Octave, as video support is
 %   limited (see <http://octave.sf.net/video/>) and the present code uses
 %   latest MATLAB videowriter (better performance than avifile...).
 %
 %   prior calls: climada_event_damage_data_tc or similar to prepare the
-%   event damage information
+%       event damage information
 %
 %   NOTE: please consider to rename and edit/tune your local version
 % CALLING SEQUENCE:
-%   climada_event_damage_animation(animation_data_file,parameters)
+%   climada_event_damage_animation(animation_data_file,params)
 % EXAMPLE:
 %   climada_event_damage_animation; % prompt for
 % INPUTS:
@@ -32,10 +31,10 @@ function res=climada_event_damage_animation(animation_data_file,parameters)
 %       includes event damage information, see e.g. climada_event_damage_data_tc
 %       If specified without path, searched for in ../results and extension .mat
 %       > promted for if not given
-%       If ='parameters', return all default parameters
+%       If ='params', return all default parameters in res, abort
 %       If ='.', use the default file, i.e. ../results/animation_data.mat
 % OPTIONAL INPUT PARAMETERS:
-%   parameters: a structure with fields:
+%   params: a structure with fields:
 %    animation_mp4_file: the filename of the resulting .mp4 movie
 %       If specified without path, stored in ../results with extension .mp4
 %       > promted for if not given (if cancel pressed, the movie frames are
@@ -62,9 +61,9 @@ function res=climada_event_damage_animation(animation_data_file,parameters)
 %    jump_step: the steps to jump (in order to first check, e.g. only show
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
 % OUTPUTS:
-%   res: the parameter structure as used (helpful to obtain all default
-%       values)
-%   and the .mp4 animation file
+%   the .mp4 animation file in res.animation_mp4_file
+%   res: the parameter structure params as used (helpful to obtain all default
+%       values, see animation_data_file='params')
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150118, initial
 % David N. Bresch, david.bresch@gmail.com, 20150119, hazard translucent, entity blue, damage red
@@ -76,7 +75,8 @@ function res=climada_event_damage_animation(animation_data_file,parameters)
 % David N. Bresch, david.bresch@gmail.com, 20150915, schematic_tag=2 implemented, i.e. asset distribution shown as in climada_entity_plot
 % David N. Bresch, david.bresch@gmail.com, 20150916, speedup plotting map borders directly (avoid climada_plot_world_borders)
 % David N. Bresch, david.bresch@gmail.com, 20160516, filenames without path allowed
-% David N. Bresch, david.bresch@gmail.com, 20170103, parameters introduced, easier to introduce new features going forward, colorscale adjusted
+% David N. Bresch, david.bresch@gmail.com, 20170103, params introduced, easier to introduce new features going forward, colorscale adjusted
+% David N. Bresch, david.bresch@gmail.com, 20170104, clean up
 %-
 
 res=[];
@@ -87,41 +87,41 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 % and to set default value where  appropriate
 if ~exist('animation_data_file','var'),animation_data_file = '';end
-if ~exist('parameters','var'),         parameters=struct;end
+if ~exist('params','var'),             params=struct;end
 
 % check for some parameter fields we need
-if ~isfield(parameters,'animation_mp4_file'),parameters.animation_mp4_file='';end
-if ~isfield(parameters,'schematic_tag'),parameters.schematic_tag=[];end
-if ~isfield(parameters,'show_plots'),parameters.show_plots=[];end
-if ~isfield(parameters,'focus_region'),parameters.focus_region=[];end
-if ~isfield(parameters,'FontSize'),parameters.FontSize=[];end
-if ~isfield(parameters,'plotclr_markersize'),parameters.plotclr_markersize=[];end
-if ~isfield(parameters,'damage_scale'),parameters.damage_scale=[];end
-if ~isfield(parameters,'Position'),parameters.Position=[];end
-if ~isfield(parameters,'jump_step'),parameters.jump_step=[];end
+if ~isfield(params,'animation_mp4_file'),params.animation_mp4_file='';end
+if ~isfield(params,'schematic_tag'),params.schematic_tag=[];end
+if ~isfield(params,'show_plots'),params.show_plots=[];end
+if ~isfield(params,'focus_region'),params.focus_region=[];end
+if ~isfield(params,'FontSize'),params.FontSize=[];end
+if ~isfield(params,'plotclr_markersize'),params.plotclr_markersize=[];end
+if ~isfield(params,'damage_scale'),params.damage_scale=[];end
+if ~isfield(params,'Position'),params.Position=[];end
+if ~isfield(params,'jump_step'),params.jump_step=[];end
 
 % PARAMETERS
 %
 % set default values (see header for details)
-if isempty(parameters.schematic_tag),parameters.schematic_tag=2;end
-if isempty(parameters.show_plots),parameters.show_plots=0;end
-if isempty(parameters.FontSize),parameters.FontSize=18;end
-if isempty(parameters.plotclr_markersize),parameters.plotclr_markersize=5;end
+if isempty(params.schematic_tag),params.schematic_tag=2;end
+if isempty(params.show_plots),params.show_plots=0;end
+if isempty(params.FontSize),params.FontSize=18;end
+if isempty(params.plotclr_markersize),params.plotclr_markersize=5;end
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
-if isempty(parameters.damage_scale),parameters.damage_scale=1/3;end
-if isempty(parameters.Position),parameters.Position=[1 5 1310 1100];end
-%if isempty(parameters.Position),parameters.Position=[97 513 716 592];end
-%if isempty(parameters.Position),parameters.Position=[430 20 920 650];end
-if isempty(parameters.jump_step),parameters.jump_step=1;end
+if isempty(params.damage_scale),params.damage_scale=1/3;end
+if isempty(params.Position),params.Position=[1 5 1310 1100];end
+%if isempty(params.Position),params.Position=[97 513 716 592];end
+%if isempty(params.Position),params.Position=[430 20 920 650];end
+if isempty(params.jump_step),params.jump_step=1;end
 %
 windfieldFaceAlpha=0; % default
 assets_plot_solid=0; % default
-if abs(parameters.schematic_tag)>0 % just not equal zero
+if abs(params.schematic_tag)>0 % just not equal zero
     windfieldFaceAlpha=0.7; % transparent for schematic
-    if parameters.schematic_tag>1,assets_plot_solid=1;end % use entity_plot style for assets
-    if parameters.schematic_tag<0
+    if params.schematic_tag>1,assets_plot_solid=1;end % use entity_plot style for assets
+    if params.schematic_tag<0
         assets_plot_solid=1; % use entity_plot style for assets
-        parameters.plotclr_markersize=max(1,abs(parameters.schematic_tag));
+        params.plotclr_markersize=max(1,abs(params.schematic_tag));
     end
 end
 %
@@ -155,12 +155,12 @@ damage_cmap = makeColorMap([.7 .7 0], [1 0 0], 10); % [Red Green Blue] [1 1 1] w
 % to test color maps:
 %close all;figure,colormap(assets_cmap);colorbar;figure,colormap(damage_cmap);colorbar
 
-if strcmpi(animation_data_file,'parameters'),parameters.animation_mp4_file='.';end % to populate also animation_mp4_file
-if strcmpi(parameters.animation_mp4_file,'.'),parameters.animation_mp4_file=...
+if strcmpi(animation_data_file,'params'),params.animation_mp4_file='.';end % to populate also animation_mp4_file
+if strcmpi(params.animation_mp4_file,'.'),params.animation_mp4_file=...
         [climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];end
 
-res=parameters; % prepare return values
-if strcmpi(animation_data_file,'parameters'),return;end % special case, return the full parameters strcture
+res=params; % prepare return values
+if strcmpi(animation_data_file,'params'),return;end % special case, return the full params strcture
 
 if strcmpi(animation_data_file,'.'),animation_data_file=...
         [climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
@@ -183,23 +183,23 @@ if isempty(fP),fP=[climada_global.data_dir filesep 'results'];end
 if isempty(fE),fE='.mat';end
 animation_data_file=[fP filesep fN fE];
 
-% prompt for parameters.animation_mp4_file if not given
-if isempty(parameters.animation_mp4_file) % local GUI
-    parameters.animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
-    [filename, pathname] = uiputfile(parameters.animation_mp4_file, 'Save animation as (Cancel: show frames on screen only):');
+% prompt for params.animation_mp4_file if not given
+if isempty(params.animation_mp4_file) % local GUI
+    params.animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
+    [filename, pathname] = uiputfile(params.animation_mp4_file, 'Save animation as (Cancel: show frames on screen only):');
     if isequal(filename,0) || isequal(pathname,0)
         make_mp4=0;
-        parameters.animation_mp4_file='';
+        params.animation_mp4_file='';
     else
-        parameters.animation_mp4_file=fullfile(pathname,filename);
+        params.animation_mp4_file=fullfile(pathname,filename);
     end
 end
 
-% complete parameters.animation_mp4_file path, if missing
-[fP,fN,fE]=fileparts(parameters.animation_mp4_file);
+% complete params.animation_mp4_file path, if missing
+[fP,fN,fE]=fileparts(params.animation_mp4_file);
 if isempty(fP),fP=[climada_global.data_dir filesep 'results'];end
 if isempty(fE),fE='.mp4';end
-parameters.animation_mp4_file=[fP filesep fN fE];
+params.animation_mp4_file=[fP filesep fN fE];
 
 load(animation_data_file);
 
@@ -209,11 +209,11 @@ if exist('hazard_TS','var')
     end
 end
 
-if parameters.show_plots,fig_visible='on';else fig_visible='off';end
-fig_handle = figure('Name','animation','visible',fig_visible,'Color',[1 1 1],'Position',parameters.Position);
+if params.show_plots,fig_visible='on';else fig_visible='off';end
+fig_handle = figure('Name','animation','visible',fig_visible,'Color',[1 1 1],'Position',params.Position);
 
 c_ax = []; %init
-if parameters.schematic_tag
+if params.schematic_tag
     % create schematic colormap (gray red)
     [hazard_cmap,c_ax]= climada_colormap('schematic');
     %if exist([climada_global.system_dir filesep 'colormap_gray_red.mat'],'file')
@@ -233,25 +233,25 @@ end
 intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end
 
-if isempty(parameters.focus_region) % define the focus region based on entity
+if isempty(params.focus_region) % define the focus region based on entity
     if isfield(hazard,'focus_region')
-        parameters.focus_region=hazard.focus_region;
+        params.focus_region=hazard.focus_region;
     else
-        parameters.focus_region(1)=min(hazard.assets.lon)-dX;
-        parameters.focus_region(2)=max(hazard.assets.lon)+dX;
-        parameters.focus_region(3)=min(hazard.assets.lat)-dY;
-        parameters.focus_region(4)=max(hazard.assets.lat)+dY;
-        parameters.focus_region(4)=parameters.focus_region(4) + diff(parameters.focus_region(3:4))*0.2;
+        params.focus_region(1)=min(hazard.assets.lon)-dX;
+        params.focus_region(2)=max(hazard.assets.lon)+dX;
+        params.focus_region(3)=min(hazard.assets.lat)-dY;
+        params.focus_region(4)=max(hazard.assets.lat)+dY;
+        params.focus_region(4)=params.focus_region(4) + diff(params.focus_region(3:4))*0.2;
     end
 end
 
 n_steps=hazard.event_count;
 
 t0       = clock;
-if parameters.jump_step==1
+if params.jump_step==1
     msgstr   = sprintf('processing %i steps',n_steps);
 else
-    msgstr   = sprintf('processing approx. %i steps',ceil(n_steps/parameters.jump_step));
+    msgstr   = sprintf('processing approx. %i steps',ceil(n_steps/params.jump_step));
 end
 mod_step = 2; % first time estimate after 10 events, then every 100
 fprintf('%s\n',msgstr);
@@ -282,7 +282,7 @@ MarkerSizes(MarkerSizes<1)=0;
 max_damage_at_centroid=[]; % init
 max_damage_absolute=full(max(max(hazard.damage)));
 damage_min_value=full(min(min(hazard.damage(hazard.damage>0))));
-damage_max_value=full(max(max(hazard.damage)))*parameters.damage_scale;
+damage_max_value=full(max(max(hazard.damage)))*params.damage_scale;
 max_damage_str=sprintf('%g',damage_max_value);
 
 % prepare country border (for substantila speedup)
@@ -292,12 +292,12 @@ border.Y=[];for i=1:length(shapes),border.Y=[border.Y shapes(i).Y];end
 
 % Prepare the new file
 if make_mp4
-    vidObj = VideoWriter(parameters.animation_mp4_file,'MPEG-4');
+    vidObj = VideoWriter(params.animation_mp4_file,'MPEG-4');
     open(vidObj);
 end
 
 % start loop
-for step_i=1:parameters.jump_step:n_steps
+for step_i=1:params.jump_step:n_steps
     
     hold off;clf % start with blank plot each time
     
@@ -309,7 +309,7 @@ for step_i=1:parameters.jump_step:n_steps
         h(2) = plot(1,2,'o','MarkerSize',circle_diam-2,'LineWidth',2,...
             'markeredgecolor',asset_color,'markerfacecolor',asset_color2);
         legend_handle=legend(h,'Asset value (relative to circle size)','Damaged asset','location','northwest');
-        set(legend_handle,'FontSize',parameters.FontSize);
+        set(legend_handle,'FontSize',params.FontSize);
         legend('boxoff')
     end
     
@@ -318,7 +318,7 @@ for step_i=1:parameters.jump_step:n_steps
     
     if assets_plot_solid
         plotclr(hazard.assets.lon,hazard.assets.lat,values,...
-            's',parameters.plotclr_markersize,0,0,max(values)*1.05,assets_cmap,1,0);
+            's',params.plotclr_markersize,0,0,max(values)*1.05,assets_cmap,1,0);
         hold on
     else
         ok_points_pos = find(MarkerSizes>0);
@@ -350,8 +350,8 @@ for step_i=1:parameters.jump_step:n_steps
     caxis(c_ax);axis off
     plot(border.X,border.Y,'-k')
     %climada_plot_world_borders(1); % replaced by line above
-    axis(parameters.focus_region);
-    if ~parameters.schematic_tag
+    axis(params.focus_region);
+    if ~params.schematic_tag
         colorbar;
     end
     
@@ -392,7 +392,7 @@ for step_i=1:parameters.jump_step:n_steps
         if ~isempty(ok_points_pos)
             % show log of damage, since otherwise no spread...
             plotclr(hazard.assets.lon(ok_points_pos),hazard.assets.lat(ok_points_pos),log(damage_values(ok_points_pos)),...
-                's',parameters.plotclr_markersize,0,0,log(max_damage_absolute*1.05),damage_cmap,1,0);
+                's',params.plotclr_markersize,0,0,log(max_damage_absolute*1.05),damage_cmap,1,0);
         end
     else
         for ii=1:length(ok_points_pos)
@@ -402,11 +402,11 @@ for step_i=1:parameters.jump_step:n_steps
         end
     end % assets_plot_solid
     
-    title(title_str,'FontSize',parameters.FontSize);
+    title(title_str,'FontSize',params.FontSize);
     % bottom_label_str=['color:' intensity_units ', damage: red circles (max ' max_damage_str ')'];
     % xlabel(bottom_label_str,'FontSize',9);
     
-    if parameters.show_plots,drawnow;end
+    if params.show_plots,drawnow;end
     
     if make_mp4
         currFrame   = getframe(fig_handle);
@@ -430,9 +430,9 @@ fprintf('took %2.1f sec\n',etime(clock,t0));
 
 if make_mp4
     close(vidObj);
-    fprintf('movie saved in %s\n', parameters.animation_mp4_file)
+    fprintf('movie saved in %s\n', params.animation_mp4_file)
 end
 
-if ~parameters.show_plots,delete(fig_handle);end
+if ~params.show_plots,delete(fig_handle);end
 
 end % climada_event_damage_animation
