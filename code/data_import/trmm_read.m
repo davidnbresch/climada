@@ -1,23 +1,32 @@
-function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
-% read CHIRPS netCDF file
+function res=trmm_read(nc_files,lonlatrect,check_animation,verbose)
+% read TRMM netCDF file
 % MODULE:
 %   core
 % NAME:
-%   chirps_read
+%   trmm_read
 % PURPOSE:
-%   read CHIRPS netCDF file, see  http://chg.geog.ucsb.edu/data/chirps/#_Data
+%   read TRMM netCDF file, see  and 
+%   https://disc2.gesdisc.eosdis.nasa.gov/data/TRMM_RT/TRMM_3B42RT.7/doc/TRMM_Readme_v3.pdf
 %
-%   currently reading global daily data, i.e. from files obtained from 
-%   ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0//global_daily/netcdf/p05/by_month/
+%   for the hard-wired test filens below:
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010500.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010421.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010418.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010415.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010412.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010409.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010406.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/004/3B42RT.2015010403.7.nc4
+%   http://disc2.gesdisc.eosdis.nasa.gov/data//TRMM_RT/TRMM_3B42RT.7/2015/003/3B42RT.2015010400.7.nc4
 %
 %   currently VERY innefficient memory use, as we store all (70%) of ocean
 %   points as zeros
 %
 % CALLING SEQUENCE:
-%   res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
+%   res=trmm_read(nc_files,lonlatrect,check_animation,verbose)
 % EXAMPLE:
-%   res=chirps_read(nc_files)
-%   res=chirps_read('',[40 60 -20 0],3,1)
+%   res=trmm_read(nc_files)
+%   res=trmm_read('',[40 60 -20 0],3,1) % TEST, small area
 % INPUTS:
 %   nc_files: netCDF filename(s) with path. If more than one file, pass as
 %       struct, i.e. nc_files{i} a single filename with path
@@ -25,7 +34,7 @@ function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 %   lonlatrect: [minlon maxlon minlat maxlat] to read a rectangular region
 %       instead of the wholw world, default=[].
 %   check_animation: =0 (default): no animation, =1: animation to screen
-%       =2: to screen and saved as MP4 file (CHIRPS_animation.mp4 in pwd)
+%       =2: to screen and saved as MP4 file (TRMM_animation.mp4 in pwd)
 %       =3: only saved to mp4, figure not visible
 %   verbose: =1 print some info to stdout, =0 not (silent, default)
 % OUTPUTS:
@@ -40,9 +49,7 @@ function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 %   > check output e.g. with
 %       image(res.lon,res.lat,res.precip(:,end:-1:1,1)');axis equal
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20160103, initial
-% David N. Bresch, david.bresch@gmail.com, 20160603, pat of core climada
-% David N. Bresch, david.bresch@gmail.com, 20161228, pat of core climada
+% David N. Bresch, david.bresch@gmail.com, 20161228, initial, based on chirps_read
 %-
 
 res=[]; % init
@@ -65,25 +72,21 @@ if ~exist('verbose','var'),verbose=0;end
 %
 % define all parameters here - no parameters to be defined in code below
 %
-chirps_time0 = datenum('1-Jan-1980'); % start date of the CHIRPS time stamp
-chirps_misdat=-9999;
+trmm_misdat=-9999;
 %
-animation_mp4_file='CHIRPS_animation';
+animation_mp4_file='TRMM_animation';
 %
 % TEST filename(s)
-data_folder='/Users/bresch/Documents/software_data/CHIRPS';
-%
-nc_files{ 1}=[ data_folder filesep 'chirps-v2.0.2015.01.days_p05.nc']; % Jan 2015
-nc_files{ 2}=[ data_folder filesep 'chirps-v2.0.2015.02.days_p05.nc']; % Feb 2015
-nc_files{ 3}=[ data_folder filesep 'chirps-v2.0.2015.03.days_p05.nc']; % Mar 2015
-nc_files{ 4}=[ data_folder filesep 'chirps-v2.0.2015.04.days_p05.nc']; % Apr 2015
-nc_files{ 5}=[ data_folder filesep 'chirps-v2.0.2015.05.days_p05.nc']; % Mai 2015
-nc_files{ 6}=[ data_folder filesep 'chirps-v2.0.2015.06.days_p05.nc']; % Jun 2015
-nc_files{ 7}=[ data_folder filesep 'chirps-v2.0.2015.07.days_p05.nc']; % Jul 2015
-nc_files{ 8}=[ data_folder filesep 'chirps-v2.0.2015.08.days_p05.nc']; % Aug 2015
-nc_files{ 9}=[ data_folder filesep 'chirps-v2.0.2015.09.days_p05.nc']; % Sep 2015
-nc_files{10}=[ data_folder filesep 'chirps-v2.0.2015.10.days_p05.nc']; % Oct 2015
-nc_files{11}=[ data_folder filesep 'chirps-v2.0.2015.11.days_p05.nc']; % Nov 2015
+data_folder='/Users/bresch/Documents/software_data/TRMM';
+nc_files{ 1}=[ data_folder filesep '3B42RT.2015010400.7.nc4'];
+nc_files{ 2}=[ data_folder filesep '3B42RT.2015010403.7.nc4'];
+nc_files{ 3}=[ data_folder filesep '3B42RT.2015010406.7.nc4'];
+nc_files{ 4}=[ data_folder filesep '3B42RT.2015010409.7.nc4'];
+nc_files{ 5}=[ data_folder filesep '3B42RT.2015010412.7.nc4'];
+nc_files{ 6}=[ data_folder filesep '3B42RT.2015010415.7.nc4'];
+nc_files{ 7}=[ data_folder filesep '3B42RT.2015010418.7.nc4'];
+nc_files{ 8}=[ data_folder filesep '3B42RT.2015010421.7.nc4'];
+nc_files{ 9}=[ data_folder filesep '3B42RT.2015010500.7.nc4'];
 
 if ~iscell(nc_files)
     nc_file=nc_files;clear nc_files
@@ -99,12 +102,14 @@ if verbose,fprintf('preparation (dimensioning) loop (%i files) ...\n',n_files);e
 for file_i=1:n_files
     nc_file=nc_files{file_i};
     %FINFO = ncinfo(nc_files); % to inquire content
-    if ~isfield(res,'lon'),res.lon = ncread(nc_file,'longitude');end % degrees_east
-    if ~isfield(res,'lat'),res.lat = ncread(nc_file,'latitude');end % degrees_north
+    if ~isfield(res,'lon'),res.lon = ncread(nc_file,'lon');end % degrees_east
+    if ~isfield(res,'lat'),res.lat = ncread(nc_file,'lat');end % degrees_north
     if ~isfield(res,'precip_units'),res.precip_units='mm/day';end
-    time = ncread(nc_file,'time'); % days since 1980-1-1 0:0:0
-    time=double(time+chirps_time0);
-    res.time=[res.time time']; % concat
+    %time = ncread(nc_file,'time'); % days since 1980-1-1 0:0:0
+    % get time/date
+    [~,fN]=fileparts(nc_file);
+    [~,time_str]=strtok(fN,'.');time_str=strtok(time_str,'.');
+    res.time=[res.time datenum(time_str,'yyyymmddhh')]; % concat
     ntimes(file_i)=length(res.time);
 end % file_i (loop 1)
 
@@ -157,13 +162,13 @@ for file_i=1:n_files
     
     if isempty(startx)
         % read whole world (all times)
-        precip = ncread(nc_file,'precip'); % mm/day, (lon x lat x time)
+        precip = ncread(nc_file,'precipitation'); % mm/day, (lon x lat x time)
     else
         % read rectabgular region (all times)
-        precip = ncread(nc_file,'precip',[startx starty 1],[countx+1 county+1 (ntimes(file_i)-time1)+1]);
+        precip = ncread(nc_file,'precipitation',[startx starty],[countx+1 county+1]);
     end
     
-    precip(precip==chirps_misdat)=NaN;
+    precip(precip==trmm_misdat)=NaN;
     res.precip(:,:,time1:ntimes(file_i))=precip; % fill into large array
     time1=ntimes(file_i)+1;
 end % file_i (loop 2)
@@ -176,7 +181,7 @@ if check_animation
     if verbose,fprintf('animation (%i frames) ...\n',size(res.precip,3));end
 
     fig_visible='on';if check_animation==3,fig_visible='off';end
-    fig_handle = figure('Name','CHIRPS animation','visible',fig_visible,'Color',[1 1 1],'Position',[2 274 1365 399]);
+    fig_handle = figure('Name','TRMM animation','visible',fig_visible,'Color',[1 1 1],'Position',[2 274 1365 399]);
     
     if check_animation>1
         vidObj = VideoWriter(animation_mp4_file,'MPEG-4');
@@ -194,7 +199,7 @@ if check_animation
             set(gca,'XLim',lonlatrect(1:2));
             set(gca,'YLim',lonlatrect(3:4));
         end
-        title(['CHIRPS precip mm/day ' res.time_str(time_i,:)])
+        title(['TRMM precip mm/day ' res.time_str(time_i,:)])
         hold off
         
         if check_animation>1
@@ -211,4 +216,4 @@ if check_animation
     
 end % check_animation
 
-end % chirps_read
+end % trmm_read

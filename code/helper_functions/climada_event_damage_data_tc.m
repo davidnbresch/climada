@@ -1,4 +1,4 @@
-function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animation_data_file,add_surge,check_mode,focus_region)
+function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_mode,params)
 % climada tc ts animation
 % MODULE:
 %   core
@@ -12,17 +12,36 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %   generation.
 %
 %   Usual steps:
-%   0: load your tc_track and entity with 
-%   >> tc_track=climada_tc_track_load
-%   >> entity=climada_entity_load
+%   0: load your tc_track and entity with
+%     >> tc_track=climada_tc_track_load
+%     >> entity=climada_entity_load
 %   1. run once with default parameters to check, i.e. for track 777
-%   >> climada_event_damage_data_tc(tc_track(777),entity);
-%   1b. define a rectangular area (zoom in on the last plot and read off
-%   >> rect=[minlon maxlon minlat maxlat]
+%     >> climada_event_damage_data_tc(tc_track(777),entity);
 %   2. run again, now to silently generate data on higher resolution, e.g.
-%   >> climada_event_damage_data_tc(tc_track(777),entity,'',0,-0.5,rect); % omit rect, if no need to zoom in
-%   3. generate the maovi, use
-%   >> climada_event_damage_animation % select the animation_data.mat file
+%     >> climada_event_damage_data_tc(tc_track(777),entity,0); % omit rect, if no need to zoom in
+%   3. generate the movie, use
+%     >> climada_event_damage_animation % select the animation_data.mat file
+%
+%   Example for Sidr in Bangladesh:
+%   >> tc_track=climada_tc_read_unisys_database('nio');tc_track=tc_track(173);tc_track.name='Sidr';
+%   >> tc_track.MaxSustainedWind(end-1)=80;tc_track.MaxSustainedWind(end)=40; % 2nd and last timestep far over land, weakened
+%   >> entity=climada_entity_load('BGD_Bangladesh'); % -> see climada_nightlight_entity
+%   >> climada_event_damage_data_tc(tc_track,entity); % run with ...,0) for full resolution
+%   >> climada_event_damage_animation('.')
+%
+%   Example for Andrew in Florida:
+%   >> tc_track=climada_tc_read_unisys_database('atl');tc_track=tc_track(1170);tc_track.name='Andrew';
+%   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity');
+%   >> params.focus_region=[-84 -78 23 29];
+%   >> climada_event_damage_data_tc(tc_track,entity,params);
+%   >> climada_event_damage_animation('.')
+%   
+%   Example for all histric tracks in Florida:
+%   >> tc_track=climada_tc_read_unisys_database('atl');
+%   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity'); 
+%   >> params.focus_region=[-84 -78 23 29];
+%   >> climada_event_damage_data_tc(tc_track,entity,2,params);
+%   >> climada_event_damage_animation('.')
 %
 %   Instead of using a track from any of the ../data/tc_tracks databases,
 %   you might also just download a single track from
@@ -48,22 +67,20 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %   information about all tracks in an ocean basin
 %   next call: climada_event_damage_animation
 % CALLING SEQUENCE:
-%   [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animation_data_file,add_surge,check_mode)
+%   [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_mode,params)
 % EXAMPLE:
-%   % save a single track file from weather.unisys.com/hurricane as .dat
-%   tc_track=climada_tc_read_unisys_track % read the single track file
-%   hazard=climada_event_damage_data_tc(tc_track,[],'',0,1); % prompts for entity, check
-%   hazard=climada_event_damage_data_tc(tc_track,[],'',0,0); % prompts for entity, high-res
-%   climada_event_damage_data_tc([],[],'',1); % TC and TS, check mode
-%
-%   [hazard,hazard_TS]=climada_event_damage_data_tc([],[],'',1); % TC and TS, check mode
-%   [hazard,hazard_TS]=climada_event_damage_data_tc([],[],'',0,0); % no TS, no plots
+%   tc_track=climada_tc_read_unisys_database('atl');tc_track=tc_track(1170);
+%   entity=climada_entity_load('USA_UnitedStates_Florida');
+%   hazard=climada_event_damage_data_tc(tc_track,entity); % check
+%   hazard=climada_event_damage_data_tc(tc_track,entity,0); % high-res
+%   climada_event_damage_animation('.') % create the movie
 % INPUTS:
 %   tc_track: a tc_track structure, as returned by
 %       climada_tc_read_unisys_database or climada_tc_read_unisys_tc_track
-%       > promted for if not given
-%       Note: if a tc_track struct is passed, the user is prompted for the
-%       specific single track (a plot shows all tracks to select from)
+%       Note: if a tc_track struct with more than one track is passed, the
+%       code does render one after the other of the tracks within, keeping
+%       the damaged pixels colored.
+%       If ='params', just return the default parameters
 %   entity: a climada entity, see climada_entity_read (skip hazard set
 %       selection to encode to) or climada_entity_load
 %       > promted for if not given
@@ -71,22 +88,29 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 %       region you'd like to focus on, e.g. avoid full contiguous US if
 %       you'd like to animate a TC hitting Floriday, i.e consider
 %       entity=climada_nightlight_entity('USA','Florida')
-%   animation_data_file: the file where animation data is stored (not the
-%       animation itself). If not provided, set to ../results/animation_data.mat
 % OPTIONAL INPUT PARAMETERS:
-%   add_surge: whether we also treat surge (TS) =1) or not (=0, default)
-%   check_mode: =1: show plots, use 1h timestep
-%       =0: no plots, 6 min timestep (the best option to generate the data
-%       pretty fast)
-%       =2: (default) show plots, use 2h timestep (fast check)
-%       <0: set timestep=check_mode (in hours or fractions thereof, i.e. 
-%       0.5 for 30 min) and omit any plots (expert use)
-%   focus_region: the region we're going to show [minlon maxlon minlat maxlat]
+%    check_mode: =2: (default) show plots, use 2h timestep (fast check)
+%       =1: show plots, use 1h timestep (pretty detailed check)
+%       =0: no plots, 20 min timestep (the best option to generate the data
+%       pretty fast), see params.tc_track_timestep
+%   parameters: a structure with fields (see also tc_track='params' above):
+%    animation_data_file: the file where animation data is stored (not the
+%       animation itself). If not provided, set to ../results/animation_data.mat
+%    add_surge: whether we also treat surge (TS) =1) or not (=0, default)
+%    extend_tc_track: if =1 (default) extend/extrapolate TC track by one node
+%    focus_region: the region we're going to show [minlon maxlon minlat maxlat]
 %       default=[], automatically determined by area of entity lat/lon
 %       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
 %       E.g. for Salvador (Lea, 20150220) focus_region = [-91.5 -86 12 15.5];
+%    focus_track_region: if =1, focus on track region instead of focus_region
+%    show_footprint: whether we show single steps (=0, default) or the footprint (=1)
+%    tc_track_timestep: the timestep (in hours or fractions thereof)
+%       between nodes, 0.1 means 6 min, good movie resolution, used if check_mode=0
+%    damage_scale: the scale for plots, such that
+%       max_damage=max(entity.assets.Value)*damage_scale, default =1/100
+%    label_track_nodes: if =1 label track nodes along track, default=0
 % OUTPUTS:
-%   hazard_plus: a hazard structure (as usual) with additional fields:
+%   hazard: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
 %       fields (like hazard.intensity(i,:)..) are valid
 %       tc_track: the TC track (see climada_tc_read_unisys_database for
@@ -104,196 +128,96 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,animati
 % David N. Bresch, david.bresch@gmail.com, 20150128, climada_tc_track_nodes
 % David N. Bresch, david.bresch@gmail.com, 20150220, focus_region added
 % David N. Bresch, david.bresch@gmail.com, 20150318, low wind to NaN removed
+% David N. Bresch, david.bresch@gmail.com, 20170103, overhaul, params added etc.
 %-
 
-hazard=[]; % init output
-hazard_TS=[]; % init output
-close all % TEST
+hazard=[];hazard_TS=[]; % init output
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
-%%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
-
 % poor man's version to check arguments
-% and to set default value where  appropriate
-if ~exist('tc_track','var'),tc_track=[];end
-if ~exist('entity','var'),entity=[];end
-if ~exist('animation_data_file','var'),animation_data_file=[];end
-if ~exist('add_surge','var'),add_surge=0;end
-if ~exist('check_mode','var'),check_mode=2;end
-if ~exist('focus_region','var'),focus_region=[];end
-if ~exist('tc_track_mat','var'),tc_track_mat='';end
+if ~exist('tc_track','var'),   return;end
+if ~exist('entity','var'),     entity=[];end
+if ~exist('check_mode','var'), check_mode=[];end
+if ~exist('params','var'),     params=struct;end
+
+% check for some parameter fields we need
+if ~isfield(params,'animation_data_file'),params.animation_data_file='';end
+if ~isfield(params,'add_surge'),          params.add_surge=[];end
+if ~isfield(params,'focus_region'),       params.focus_region=[];end
+if ~isfield(params,'show_footprint'),     params.show_footprint=[];end
+if ~isfield(params,'tc_track_timestep'),  params.tc_track_timestep=[];end
+if ~isfield(params,'damage_scale'),       params.damage_scale=[];end
+if ~isfield(params,'label_track_nodes'),  params.label_track_nodes=[];end
+if ~isfield(params,'focus_track_region'), params.focus_track_region=[];end
+if ~isfield(params,'extend_tc_track'),    params.extend_tc_track=[];end
 
 % PARAMETERS
 %
-% whether we show single steps (=0, default) or the footprint (=1)
-show_footprint=0; % default=0
+% set default values (see header for details)
+if isempty(check_mode),                   check_mode=2;end
 %
-% the timestep (in hours or fractions thereof) between nodes
-tc_track_timestep=0.1; % 0.1 means 6 min, good movie resolution, used if check_mode=0;
-if check_mode==1,tc_track_timestep=1;end % 1h for checks
-if check_mode==2,tc_track_timestep=2;end % 2h for fast checks
-if check_mode<0,tc_track_timestep=abs(check_mode);check_mode=0;end % expert
+if isempty(params.animation_data_file),   params.animation_data_file=...
+        [climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
+if isempty(params.add_surge),             params.add_surge=0;end
+if isempty(params.show_footprint),        params.show_footprint=0;end
+if isempty(params.tc_track_timestep),     params.tc_track_timestep=1/3;end
+if isempty(params.damage_scale),          params.damage_scale=1/100;end
+if isempty(params.label_track_nodes),     params.label_track_nodes=0;end
+if isempty(params.focus_track_region),    params.focus_track_region=0;end
+if isempty(params.extend_tc_track),       params.extend_tc_track=1;end
 %
-% the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
-damage_scale=1/100;
+% some overriders for check mode
+if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
+if check_mode==2,params.tc_track_timestep=2;end % 2h for fast checks
 %
 % the range (in degree) around the tc_track (to show a bit a wider area in plots)
 dX=1;dY=1; % default=1
-%
-% label track nodes along track
-label_track_nodes=0; % default=0
 %
 % a grid to show windfield (as the entity might only contain points on land)
 grid_add=1; % default=1, =0 if centroids cover eg water points already
 grid_delta=0.2; % grid spacing in degree, default=1
 %
-% the nodes we're interested in
-min_node=[];max_node=[]; % by default empty, automatically determined
+climada_global_transition=climada_global.tc.extratropical_transition;
+climada_global.tc.extratropical_transition=1;
 %
-% % TEST for atl (Katrina)
-% tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'TEST_tracks.atl.txt'];
-% [tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
-% tc_track=tc_track(84); % Katrina
-% entity_file=[climada_global.data_dir filesep 'entities' filesep 'demo_today.mat'];
-% entity=climada_entity_load(entity_file);
-%
-%
-% % TEST for nio (Sidr)
-% tc_track_file=[climada_global.data_dir filesep 'tc_tracks' filesep 'tracks.nio.txt'];
-% [tc_track,tc_track_mat]=climada_tc_read_unisys_database(tc_track_file);
-% tc_track=tc_track(173); % Sidr
-% entity_file=[climada_global.data_dir filesep 'entities' filesep 'BGD_Bangladesh_entity.mat'];
-% entity=climada_entity_load(entity_file);
-% add_surge=0;
-%
-% the file to store all information for nicer animation plots
-% currently set to a default, but could also be prompted for (see below)
-if isempty(animation_data_file),animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
+hazard_arr_density=0.1; % very technical, set to rather too large a number
 
-% prompt for inputs, if not provided:
-if isempty(tc_track),[tc_track,tc_track_mat]=climada_tc_read_unisys_database;end % get tc_track
-if isempty(entity),entity=climada_entity_load;end                                % prompt for entity
-if ischar(entity),entity=climada_entity_load(entity);end                         % get entity from file
-if isempty(entity),return;end                                                    % Cancel pressed
-% if isempty(animation_data_file)                                                  % get output filename
-%     animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
-%     [filename, pathname] = uiputfile(animation_data_file, 'Save animation data as:');
-%     if isequal(filename,0) || isequal(pathname,0)
-%         return; % cancel
-%     else
-%         animation_data_file=fullfile(pathname,filename);
-%     end
-% end
+if strcmpi(tc_track,'params'),hazard=params;return;end % special case, return the full parameters strcture
 
-focus_track_region=0;
-if ~isempty(focus_region)
-    if focus_region(1)==1,focus_track_region=1;end
-end
-if isempty(focus_region) % define the focus region based on entity
-    focus_region(1)=min(entity.assets.lon)-dX;
-    focus_region(2)=max(entity.assets.lon)+dX;
-    focus_region(3)=min(entity.assets.lat)-dY;
-    focus_region(4)=max(entity.assets.lat)+dY;
-    focus_track_region=0;
+entity=climada_entity_load(entity); % prompt/check for entity
+if isempty(entity),return;end       % Cancel pressed
+
+if isempty(params.focus_region) % define the focus region based on entity
+    params.focus_region(1)=min(entity.assets.lon)-dX;
+    params.focus_region(2)=max(entity.assets.lon)+dX;
+    params.focus_region(3)=min(entity.assets.lat)-dY;
+    params.focus_region(4)=max(entity.assets.lat)+dY;
 end
 
-if length(tc_track)>1
-    
-    % obtain tc_track nodes
-    tc_track_nodes=climada_tc_track_nodes(tc_track_mat);
-    if isempty(tc_track_mat)
-        tc_track_mat = [climada_global.data_dir filesep 'tc_tracks' filesep 'unknown_tracks'];
-    end
-    % figure which tracks are in the focus region
-    [fP,fN]=fileparts(tc_track_mat);
-    fN=strrep(fN,'_proc','');
-    tc_track_nodes_file=[fP filesep fN '_nodes.mat'];
-    
-    if ~exist(tc_track_nodes_file,'file')
-        tc_track_nodes.lon=[];
-        tc_track_nodes.lat=[];
-        tc_track_nodes.track_no=[];
-        fprintf('collecting all nodes for %i TC tracks\n',length(tc_track));
-        for track_i=1:length(tc_track)
-            tc_track_nodes.lon=[tc_track_nodes.lon tc_track(track_i).lon];
-            tc_track_nodes.lat=[tc_track_nodes.lat tc_track(track_i).lat];
-            tc_track_nodes.track_no=[tc_track_nodes.track_no (tc_track(track_i).lat)*0+track_i];
-        end % track_i
-        fprintf('saving TC track nodes as %s\n',tc_track_nodes_file);
-        save(tc_track_nodes_file,'tc_track_nodes');
-    else
-        load(tc_track_nodes_file);
-    end
-    
-    % check for track nodes within focus_region
-    edges_x = [focus_region(1),focus_region(1),focus_region(2),focus_region(2),focus_region(1)];
-    edges_y = [focus_region(3),focus_region(4),focus_region(4),focus_region(3),focus_region(3)];
-    
-    in_track_poly = inpolygon(tc_track_nodes.lon,tc_track_nodes.lat,edges_x,edges_y);
-    focus_region_track_no=unique(tc_track_nodes.track_no(in_track_poly));
-    
-    tc_track=climada_tc_stormcategory(tc_track); % add storm category
-
-    fprintf('iiii: name          yyyymmdd  category (only tracks within the area)\n'); % header
-
-    for track_ii=1:length(focus_region_track_no)
-        track_i=focus_region_track_no(track_ii);
-        plot(tc_track(track_i).lon,tc_track(track_i).lat,'-r');hold on
-        for node_i=1:5:length(tc_track(track_i).lon) % lebel the track
-            text(tc_track(track_i).lon(node_i),tc_track(track_i).lat(node_i),sprintf('%i',track_i),'FontSize',9,'Color','r');
-        end
-
-        fprintf('%4.4i: %s (%4.4i%2.2i%2.2i) %i\n',track_i,...
-            char(tc_track(track_i).name),...
-            tc_track(track_i).yyyy(1),tc_track(track_i).mm(1),tc_track(track_i).dd(1),...
-            max(tc_track(track_i).category));
+if params.focus_track_region==1
+    params.focus_region(1)=9999;
+    params.focus_region(2)=-9999;
+    params.focus_region(3)=9999;
+    params.focus_region(4)=-9999;
+    for track_i=1:length(tc_track)
+        % we focus on the whole track rather than the entity region
+        params.focus_region(1)=min(params.focus_region(1),min(tc_track(track_i).lon)-dX);
+        params.focus_region(2)=max(params.focus_region(2),max(tc_track(track_i).lon)+dX);
+        params.focus_region(3)=min(params.focus_region(3),min(tc_track(track_i).lat)-dY);
+        params.focus_region(4)=max(params.focus_region(4),max(tc_track(track_i).lat)+dY);
     end % track_i
-    axis equal
-    axis(focus_region);
-    climada_plot_world_borders(1,'','',1);
-    drawnow
-    
-    % ask for selection
-    prompt={'Enter the tc track number to animate:'};
-    name='Input for tc track animation';
-    numlines=1;
-    defaultanswer={'1'};
-    answer=inputdlg(prompt,name,numlines,defaultanswer);
-    if ~isempty(answer)
-        track_i=answer{1};
-        track_i=str2double(track_i);
-        fprintf('tc_track(%i) selected\n',track_i);
-    else
-        return
-    end
-else
-    track_i=1;
-end
-
-tc_track=tc_track(track_i);
-
-if focus_track_region==1
-    % we focus on the whole track rather than the entity region
-    focus_region(1)=min(tc_track.lon)-dX;
-    focus_region(2)=max(tc_track.lon)+dX;
-    focus_region(3)=min(tc_track.lat)-dY;
-    focus_region(4)=max(tc_track.lat)+dY;
     fprintf('focus on TC tack region, not on whole entity\n');
 end
 
-tc_track=climada_tc_equal_timestep(tc_track,tc_track_timestep);
-
 centroids.lon=entity.assets.lon;
 centroids.lat=entity.assets.lat;
+entity.assets.centroid_index=1:length(entity.assets.lon);
+entity.assets.hazard.filename='NO_SAVE';
 
 if grid_add
-    if isempty(focus_region)
-        grid_region=[min(tc_track.lon) max(tc_track.lon) min(tc_track.lat) max(tc_track.lat)];
-    else
-        grid_region=focus_region;
-    end
+    grid_region=params.focus_region;
     for i=grid_region(1):grid_delta:grid_region(2)
         for j=grid_region(3):grid_delta:grid_region(4)
             centroids.lon(end+1)=i;
@@ -303,187 +227,258 @@ if grid_add
 end
 centroids.centroid_ID=1:length(centroids.lon);
 
-if check_mode
-    % plot overview and get decent plot region (o cover whole track)
-    plot(tc_track.lon,tc_track.lat,'-g');hold on
-    set(gcf,'Color',[1 1 1]) % white background
-    axis equal
-    axis(focus_region);
-    climada_plot_world_borders(1,'','',1);
-end
-
-d_nodes=ceil(10/tc_track_timestep); % 10 if track in hours, 100 if track in 6 min
-if isempty(max_node) || isempty(min_node)
-    % check for track nodes within focus_region
-    edges_x = [focus_region(1),focus_region(1),focus_region(2),focus_region(2),focus_region(1)];
-    edges_y = [focus_region(3),focus_region(4),focus_region(4),focus_region(3),focus_region(3)];
-    in_track_poly = inpolygon(tc_track.lon,tc_track.lat,edges_x,edges_y);
-    node_no=1:length(tc_track.lon);
-    node_no=node_no(in_track_poly);
-    if isempty(max_node),max_node=min(max(node_no)+d_nodes,length(tc_track.lon));end
-    if isempty(min_node),min_node=max(min(node_no)-d_nodes,2);end
-end
-min_node=max(min_node,2); % avoid 1 since windfield needs at least two nodes
-
-n_steps=max_node-min_node+1;
-
 % init hazard structure
 hazard.lon=centroids.lon;
 hazard.lat=centroids.lat;
 hazard.centroid_ID=centroids.centroid_ID;
 hazard.peril_ID='TC';
 hazard.orig_years=1;
-hazard.event_count=n_steps;
-hazard.event_ID=1:hazard.event_count;
 hazard.date=datestr(now);
-hazard.orig_event_count=hazard.event_count;
-hazard.orig_event_flag=hazard.event_ID*0+1;
-hazard.frequency=(hazard.event_ID*0+1); % all once
 hazard.filename=mfilename;
 hazard.reference_year=climada_global.present_reference_year;
 hazard.comment=sprintf('special hazard event set for animation plots, generated by %s',mfilename);
-% allocate the hazard array (sparse, to manage memory)
-hazard_arr_density=0.1;
-hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
-    ceil(hazard.event_count*length(hazard.lon)*hazard_arr_density));
-hazard.tc_track_node=zeros(1,hazard.event_count); % special, to store tc_track node
-hazard.damage=hazard.intensity;
-max_damage_at_centroid=[]; % init
 hazard.units='m/s';
+hazard.event_count=0; % init
 
-
-entity=climada_assets_encode(entity,hazard); % to be on the safe side, lea, 20150131
-% previous line needed, since we removed any duplicates in centroids
-% OLD: previous line not needed, since we create hazard.lat/lon from entity.lat/lon
-% OLD: entity.assets.centroid_index = 1:length(entity.assets.lon);
+% prep loop over all tracks to figure nodes within frame (focus_region) etc.
+n_tracks=length(tc_track);
 
 % for-loop progress to stdout
 t0       = clock;
-msgstr   = sprintf('processing %i steps (%i..%i)',n_steps,min_node,max_node);
+fprintf('pre-processing %i track(s)\n',n_tracks);
 mod_step = 2; % first time estimate after 2 steps, then every 10th
-fprintf('%s\n',msgstr);
 format_str='%s';
 
-%for step_i=2:length(tc_track.lon)
-for step_i=min_node:max_node
-    if show_footprint
-        step0=1;
-    else
-        step0=max(1,step_i-1);
-    end
-    tc_track_segment.MaxSustainedWindUnit=tc_track.MaxSustainedWindUnit;
-    tc_track_segment.CentralPressureUnit =tc_track.CentralPressureUnit;
-    tc_track_segment.TimeStep=tc_track.TimeStep(step0:step_i);
-    tc_track_segment.lon=tc_track.lon(step0:step_i);
-    tc_track_segment.lat=tc_track.lat(step0:step_i);
-    tc_track_segment.MaxSustainedWind=tc_track.MaxSustainedWind(step0:step_i);
-    tc_track_segment.CentralPressure=tc_track.CentralPressure(step0:step_i);
-    tc_track_segment.name=tc_track.name;
-    tc_track_segment.datenum=tc_track.datenum(step0:step_i);
-    if check_mode
-        plot(tc_track_segment.lon,tc_track_segment.lat,'xg');hold on
-        if label_track_nodes,text(tc_track_segment.lon(end),tc_track_segment.lat(end),sprintf('%i',step_i),'FontSize',9,'Color','g');end
-    end
+n_sel=0; % init
+N_i=1;
+for track_i=1:n_tracks
+    if params.extend_tc_track
+        tc_track(track_i).TimeStep(end+1)=tc_track(track_i).TimeStep(end);
+        tc_track(track_i).yyyy(end+1)=tc_track(track_i).yyyy(end);
+        tc_track(track_i).mm(end+1)=tc_track(track_i).mm(end);
+        tc_track(track_i).dd(end+1)=tc_track(track_i).dd(end);
+        tc_track(track_i).hh(end+1)=tc_track(track_i).hh(end)+tc_track(track_i).TimeStep(end);
+        tc_track(track_i).datenum(end+1)=tc_track(track_i).datenum(end)+(tc_track(track_i).datenum(end)-tc_track(track_i).datenum(end-1));
+        tc_track(track_i).lon(end+1)=tc_track(track_i).lon(end)+(tc_track(track_i).lon(end)-tc_track(track_i).lon(end-1));
+        tc_track(track_i).lat(end+1)=tc_track(track_i).lat(end)+(tc_track(track_i).lat(end)-tc_track(track_i).lat(end-1));
+        tc_track(track_i).MaxSustainedWind(end+1)=0;
+        tc_track(track_i).CentralPressure(end+1)=max(tc_track(track_i).CentralPressure);
+    end % params.extend_tc_track
     
-    if show_footprint
-        res=climada_tc_windfield(tc_track_segment,centroids,0,1,0);
-    else
-        res=climada_tc_windfield(tc_track_segment,centroids,0,-1,0);
-        %res=climada_tc_windfield_fast(tc_track_segment,centroids,0,-1,0);
-    end
+    tc_track_tmp=climada_tc_equal_timestep(tc_track(track_i),params.tc_track_timestep); % tc_track_tmp a bit ugly, but pragmatic
     
-    hazard.intensity(step_i-min_node+1,:)=res.gust;
-    hazard.tc_track_node(step_i-min_node+1)=step_i;
+    % check for track nodes within params.focus_region
+    d_nodes=ceil(10/params.tc_track_timestep); % 10 if track in hours, 100 if track in 6 min
+    edges_x = [params.focus_region(1),params.focus_region(1),params.focus_region(2),params.focus_region(2),params.focus_region(1)];
+    edges_y = [params.focus_region(3),params.focus_region(4),params.focus_region(4),params.focus_region(3),params.focus_region(3)];
+    in_track_poly = inpolygon(tc_track_tmp.lon,tc_track_tmp.lat,edges_x,edges_y);
+    node_no=1:length(tc_track_tmp.lon);
+    node_no=node_no(in_track_poly);
+    max_node=min(max(node_no)+d_nodes,length(tc_track_tmp.lon));
+    min_node=max(min(node_no)-d_nodes,2); % never first node
+    n_steps=max_node-min_node+1;
     
-    if check_mode
-        % plot intensity
-        LOCAL_circle_plot(hazard.lon,hazard.lat,...
-            hazard.intensity(step_i-min_node+1,:),100,20,'ob',1); % wind speed blue circles
-    end
+    tc_track_tmp.min_node=min_node;
+    tc_track_tmp.max_node=max_node;
+    tc_track_tmp.n_steps=n_steps;
+    tc_track_tmp.orig_track_i=track_i;
     
-    % calculate damage
-    temp_hazard=hazard;temp_hazard.intensity(1:step_i-min_node,:)=0; % we only need present step for damage
-    EDS=climada_EDS_calc(entity,temp_hazard,'',0,1); % last 1: silent mode
-    if isempty(max_damage_at_centroid)
-        max_damage_at_centroid=EDS.ED_at_centroid;
-    else
-        max_damage_at_centroid=max(max_damage_at_centroid,EDS.ED_at_centroid);
-    end
-
-    hazard.damage(step_i-min_node+1,1:length(EDS.ED_at_centroid))=EDS.ED_at_centroid'; % store damage
+    if n_steps>0
+        hazard.event_count=hazard.event_count+n_steps;
+        n_sel=n_sel+1;
+        tc_track_N(N_i)=tc_track_tmp; % as we added fields (min_node,max_node,n_steps)
+        N_i=N_i+1; % point to next
         
-    if check_mode
-        LOCAL_circle_plot(hazard.lon,hazard.lat,max_damage_at_centroid,...
-            max(entity.assets.Value)*damage_scale,20,'or',3); % damage red circles
-        title(sprintf('%s %s',strrep(char(tc_track_segment.name),'_',' '),datestr(tc_track_segment.datenum(end))));
-        drawnow
+        if check_mode
+            plot(tc_track(track_i).lon,tc_track(track_i).lat,'-g');hold on;axis equal
+        end
     end
     
     % the progress management
-    if mod(step_i,mod_step)==0
-        mod_step          = 10;
-        t_elapsed_event   = etime(clock,t0)/(step_i-min_node+1);
-        events_remaining  = n_steps-(step_i-min_node+1);
+    if mod(track_i,mod_step)==0
+        if n_tracks>1000,mod_step=100;else mod_step=10;end
+        t_elapsed_event   = etime(clock,t0)/track_i;
+        events_remaining  = n_tracks-track_i;
         t_projected_sec   = t_elapsed_event*events_remaining;
-        msgstr = sprintf('est. %3.0f sec left (%i/%i nodes)',t_projected_sec,   step_i-min_node+1,n_steps);
+        msgstr = sprintf('est. %3.0f sec left (%i/%i tracks, %i selected) ',t_projected_sec,track_i,n_tracks,n_sel);
         fprintf(format_str,msgstr); % write progress to stdout
         format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
     end
     
-end % step_i
+end % track_i (preprocessing)
 fprintf(format_str,''); % move carriage to begin of line
-if check_mode,xlabel('wind [m/s] blue, damage [USD] red');end
+
+tc_track=tc_track_N; tc_track_N=[];
+n_tracks=length(tc_track);
+
+if check_mode
+    axis(params.focus_region);
+    climada_plot_world_borders(1,'','',1)
+    set(gcf,'Color',[1 1 1]) % white background
+end
+
+% complete hazard
+hazard.event_ID=1:hazard.event_count;
+hazard.orig_event_count=hazard.event_count;
+hazard.orig_event_flag=hazard.event_ID*0+1;
+hazard.frequency=(hazard.event_ID*0+1); % all once
+
+% allocate the hazard array (sparse, to manage memory)
+hazard.intensity = spalloc(hazard.event_count,length(hazard.lon),...
+    ceil(hazard.event_count*length(hazard.lon)*hazard_arr_density));
+hazard.tc_track_number=zeros(1,hazard.event_count); % special, to store tc_track node
+hazard.tc_track_node=zeros(1,hazard.event_count); % special, to store tc_track node
+hazard.damage=hazard.intensity;
+max_damage_at_centroid=zeros(1,length(entity.assets.lon));
+
+% for-loop progress to stdout
+t0       = clock;
+fprintf('processing total %i nodes of %i track(s)\n',hazard.event_count,n_tracks);
+mod_step = 2; % first time estimate after 2 steps, then every 10th
+format_str='%s';
+
+hazard_i=1; % init
+for track_i=1:n_tracks
+    
+    min_node=tc_track(track_i).min_node;
+    max_node=tc_track(track_i).max_node;
+    
+    tc_track_segment.MaxSustainedWindUnit=tc_track(track_i).MaxSustainedWindUnit;
+    tc_track_segment.CentralPressureUnit =tc_track(track_i).CentralPressureUnit;
+    tc_track_segment.name=tc_track(track_i).name;
+    
+    for node_i=min_node:max_node
+        
+        hazard.tc_track_number(hazard_i)=track_i;
+        hazard.tc_track_node(hazard_i)=node_i;
+        hazard.tc_track_ID_no(hazard_i)=tc_track(track_i).ID_no;
+        
+        if params.show_footprint
+            node_0=1;
+        else
+            node_0=max(1,node_i-1);
+        end
+        
+        tc_track_segment.TimeStep=tc_track(track_i).TimeStep(node_0:node_i);
+        tc_track_segment.lon=tc_track(track_i).lon(node_0:node_i);
+        tc_track_segment.lat=tc_track(track_i).lat(node_0:node_i);
+        tc_track_segment.MaxSustainedWind=tc_track(track_i).MaxSustainedWind(node_0:node_i);
+        tc_track_segment.CentralPressure=tc_track(track_i).CentralPressure(node_0:node_i);
+        tc_track_segment.datenum=tc_track(track_i).datenum(node_0:node_i);
+        if check_mode
+            plot(tc_track_segment.lon,tc_track_segment.lat,'xg');hold on
+            if params.label_track_nodes,text(tc_track_segment.lon(end),tc_track_segment.lat(end),sprintf('%i',node_i),'FontSize',9,'Color','g');end
+        end
+        
+        hazard.event_name{hazard_i}=sprintf('%s %s',strrep(char(tc_track(track_i).name),'_',' '),...
+            datestr(tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
+        
+        %plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
+        
+        if params.show_footprint
+            gust=climada_tc_windfield(tc_track_segment,centroids,0,1,0);
+        else
+            gust=climada_tc_windfield(tc_track_segment,centroids,0,-1,0);
+        end
+        
+        hazard.intensity(hazard_i,:)=gust;
+        hazard.fraction=spones(hazard.intensity); % update fraction 100%
+        
+        if check_mode
+            % plot intensity
+            LOCAL_circle_plot(hazard.lon,hazard.lat,...
+                hazard.intensity(hazard_i,:),100,20,'ob',1); % wind speed blue circles
+        end
+        
+        % calculate damage
+        temp_hazard=hazard;temp_hazard.intensity(1:hazard_i-1,:)=0; % we only need present step for damage
+        
+        EDS=climada_EDS_calc(entity,temp_hazard,'',0,2); % last 2: silent mode
+        
+        max_damage_at_centroid=max(max_damage_at_centroid,EDS.ED_at_centroid');
+        hazard.damage(hazard_i,1:length(EDS.ED_at_centroid))=EDS.ED_at_centroid'; % store damage
+        
+        if check_mode
+            LOCAL_circle_plot(hazard.lon,hazard.lat,max_damage_at_centroid,...
+                max(entity.assets.Value)*params.damage_scale,20,'or',3); % damage red circles
+            title(sprintf('%s %s',strrep(char(tc_track_segment.name),'_',' '),datestr(tc_track_segment.datenum(end))));
+            drawnow
+        end
+        
+        % the progress management
+        if mod(hazard_i,mod_step)==0
+            if hazard.event_count>500,mod_step=100;else mod_step=50;end
+            if hazard_i<100,mod_step=20;end
+            if hazard_i<50,mod_step=10;end
+            t_elapsed_event   = etime(clock,t0)/hazard_i;
+            events_remaining  = hazard.event_count-hazard_i;
+            t_projected_sec   = t_elapsed_event*events_remaining;
+            msgstr = sprintf('est. %3.0f sec left (%i/%i total nodes) ',t_projected_sec,hazard_i,hazard.event_count);
+            fprintf(format_str,msgstr); % write progress to stdout
+            format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
+        end
+        
+        hazard_i=hazard_i+1; % point to next event
+        
+    end % node_i
+    
+end % track_i
+fprintf(format_str,''); % move carriage to begin of line
+
+fprintf('took %2.1f sec\n',etime(clock,t0));
+if check_mode,xlabel('assets [USD] green..blue, wind [m/s] grey..red, damage [USD] yellow..red');end
+
+% complete hazard
 hazard.max_damage=max_damage_at_centroid'; % store max damage
+fprintf('max TC damage %g\n',max(hazard.max_damage));
 hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
+hazard.annotation='assets [USD] green..blue, wind [m/s] grey..red, damage [USD] yellow..red';
 
-
-if add_surge
-    % add TS (tropical cyclone surge)
+if params.add_surge % add TS (tropical cyclone surge)
+    
+    % we can do this as fast here (no explicit loop), as we have all windfields
+    
     hazard_TS=climada_ts_hazard_set(hazard,'NO_SAVE');
     
     % calculate TS damage
     hazard_TS.damage=hazard_TS.intensity*0; % init
-    max_damage_at_centroid=[];
-    for step_i=1:length(hazard_TS.event_ID)
+    max_damage_at_centroid=hazard.max_damage*0; % init
+    for event_i=1:length(hazard_TS.event_ID)
         temp_hazard=hazard_TS;
-        temp_hazard.intensity(1:step_i-1,:)  =0; % we only need present step
-        temp_hazard.intensity(step_i+1:end,:)=0; % we only need present step
+        temp_hazard.intensity(1:event_i-1,:)  =0; % we only need present step
+        temp_hazard.intensity(event_i+1:end,:)=0; % we only need present step
         
         if check_mode
             hold on
             LOCAL_circle_plot(hazard_TS.lon,hazard_TS.lat,...
-                full(temp_hazard.intensity(step_i,:)),10,20,'oc',1); % surge height cyan circles
+                full(temp_hazard.intensity(event_i,:)),10,20,'oc',1); % surge height cyan circles
         end
         
-        EDS=climada_EDS_calc(entity,temp_hazard,'',0,1); % last 1: silent mode
-        if isempty(max_damage_at_centroid)
-            max_damage_at_centroid=EDS.ED_at_centroid;
-        else
-            max_damage_at_centroid=max(max_damage_at_centroid,EDS.ED_at_centroid);
-        end
-        hazard_TS.damage(step_i,1:length(EDS.ED_at_centroid))=EDS.ED_at_centroid; % store damage
+        EDS=climada_EDS_calc(entity,temp_hazard,'',0,2); % last 2: silent mode
+        max_damage_at_centroid=max(max_damage_at_centroid,EDS.ED_at_centroid);
+        hazard_TS.damage(event_i,1:length(EDS.ED_at_centroid))=EDS.ED_at_centroid; % store damage
         
         if check_mode
             LOCAL_circle_plot(hazard_TS.lon,hazard_TS.lat,...
-                max_damage_at_centroid,max(entity.assets.Value)*damage_scale,20,'om',3); % surge magenta circles
+                max_damage_at_centroid,max(entity.assets.Value)*params.damage_scale,20,'om',3); % surge magenta circles
             drawnow
         end
         
     end
     if check_mode,xlabel('wind [m/s] blue, surge [m] cyan, damage [USD]: wind red, surge magenta');end
+    hazard_TS.annotation='assets [USD] green..blue, surge [m/s] cyan, damage [USD] magenta';
     hazard_TS.max_damage=max_damage_at_centroid'; % store max damage
-    hazard_TS.tc_track=tc_track; % also store tc_track to hazard
-    hazard_TS.assets=entity.assets; % also store assets to hazard
-    hazard_TS.tc_track_node=hazard.tc_track_node;
-    hazard_TS.focus_region=focus_region;
+    fprintf('max TS damage %g\n',max(hazard_TS.max_damage));
 end
+
+climada_global.tc.extratropical_transition=climada_global_transition; % reset
 
 % save all the relevant information for nicer plot options
 hazard.tc_track=tc_track; % also store tc_track to hazard
 hazard.assets=entity.assets; % also store assets to hazard
-hazard.focus_region=focus_region; % also add focus region
-fprintf('saving animation data in %s\n',animation_data_file);
-save(animation_data_file,'hazard','hazard_TS');
+hazard.focus_region=params.focus_region; % also add focus region
+fprintf('saving animation data in %s\n',params.animation_data_file);
+save(params.animation_data_file,'hazard','hazard_TS');
 
 end % climada_event_damage_data_tc
 

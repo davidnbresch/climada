@@ -61,7 +61,7 @@ if isfield(assets,'assets') % an entity instead of assets passed
 end
 
 if ~isfield(entity.assets,'hazard')
-    fprintf('Note: entity not encoded yet, aborted. Consider climada_assets_encode\n');
+    fprintf('Note: entity might not be properly encoded yet. Consider climada_assets_encode\n');
 else
     if exist(entity.assets.hazard.filename,'file')
         fprintf('loading %s\n',entity.assets.hazard.filename);
@@ -71,7 +71,7 @@ else
             % try to find a matching hazard event set
             hazard_filename=entity.assets.hazard.filename;
             if  ~isempty(strfind(upper(computer),'MAC')) || ~isempty(strfind(upper(computer),'APPLE'))
-            % if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
+                % if strfind(upper(computer),'MAC') || strfind(upper(computer),'APPLE')
                 hazard_filename = strrep(hazard_filename,'\',filesep); % switch filesep
             elseif strfind(computer,'PCWIN')
                 hazard_filename = strrep(hazard_filename,'/',filesep); % switch filesep
@@ -113,7 +113,7 @@ entity.assets.centroid_index=entity.assets.centroid_index(encoded_pos);
 for asset_i=1:length(entity.assets.centroid_index)
     %text(entity.assets.lon(asset_i),entity.assets.lat(asset_i),num2str(entity.assets.centroid_index(asset_i)));
     plot([entity.assets.lon(asset_i) hazard.lon(entity.assets.centroid_index(asset_i))],...
-         [entity.assets.lat(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
+        [entity.assets.lat(asset_i) hazard.lat(entity.assets.centroid_index(asset_i))],'-g');
 end % asset_i
 
 climada_plot_world_borders(2,'','',1);

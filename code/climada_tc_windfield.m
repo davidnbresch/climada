@@ -46,6 +46,9 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %       i.e. reduce wind to zero at center of the eye (not recommended for
 %       probabilistic, since hit/miss issue with closest node, see variable
 %       max_wind_at_bullseye in code).
+%       Note: if length(tc_track.lon)=2 (i.e. two nodes) and
+%       silent_mode=-1, only use first node in order to return one single
+%       step windfield.  
 % OUTPUTS:
 %   gust: the windfield [m/s] at all centroids, NOT sparse for speedup
 %       i.e. convert like hazard.intensity()=sparse(res.gust)...
@@ -59,6 +62,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % David N. Bresch, david.bresch@gmail.com, 20161205, Rmax parameters moved to PARAMETERS section
 % David N. Bresch, david.bresch@gmail.com, 20161225, Celerity fixed (dipole)
 % David N. Bresch, david.bresch@gmail.com, 20161226, further speedup, all to arrays, no struct in main loop
+% David N. Bresch, david.bresch@gmail.com, 20170103, special case silent_mode=-1 for single node
 %-
 
 gust = []; % init output
@@ -131,7 +135,7 @@ cos_tc_track_lat  = cos(tc_track.lat/180*pi); % calculate once for speedup
 diff_tc_track_lon = diff(tc_track.lon);
 diff_tc_track_lat = diff(tc_track.lat);
 if ~isfield(tc_track,'Celerity') % forward speed (=celerity, km/h)
-    % calculate degree distance between nodes
+    % calculate degree distance between nodes  
     ddx                   = diff_tc_track_lon.*cos_tc_track_lat(2:end);
     dd                    = sqrt(diff_tc_track_lat.^2+ddx.^2)*111.1; % approx. conversion into km
     tc_track.Celerity     = dd./tc_track.TimeStep(1:length(dd)); % avoid troubles with TimeStep sometimes being one longer
@@ -150,6 +154,7 @@ node_tmp=node_dx;node_dx=node_dy;node_dy=-node_tmp;
         
 % keep only windy nodes
 pos = find(tc_track.MaxSustainedWind > (wind_threshold*3.6)); % cut-off in km/h
+if length(tc_track.lon)==2 && silent_mode==-1,pos=pos(1:end-1);end % ignore last node if single step
 if ~isempty(pos) % and no struct, as arrays are faster
     tc_track_lon              = tc_track.lon(pos);
     tc_track_lat              = tc_track.lat(pos);
@@ -164,7 +169,6 @@ else
 end
 
 n_centroids = length(centroids.lon);
-n_nodes     = length(tc_track.lon);
 
 if isfield(centroids,'distance2coast_km')
     % treat only centrois closer than coastal_range_km to coast for speedup

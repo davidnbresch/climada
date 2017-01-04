@@ -95,7 +95,7 @@ for track_i=1:length(tc_track)
     if isfield(tc_track,'RadiusMaxWind')
         tc_track(track_i).RadiusMaxWind=interp1(datenum_source,tc_track(track_i).RadiusMaxWind,datenum_target,'linear','extrap');
     end
-    
+        
     tc_track(track_i).datenum=datenum_target; 
     tc_track(track_i).TimeStep=tc_track(track_i).lon*0+default_min_TimeStep; % by definition
     
