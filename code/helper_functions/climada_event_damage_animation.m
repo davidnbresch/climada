@@ -55,7 +55,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       Default: use the region as stored in hazard.focus_region
 %    FontSize: the size for legend and title, default=18 (good readability
 %       on animation)
-%    plotclr_markersize: the size of the 'dots' to plot entity and damage,
+%    asset_markersize: the size of the 'dots' to plot entity and damage,
 %       default=5
 %    Position: the figure position, as in figure
 %    frame_start: frame to start with (default=1). Sometimes useful to
@@ -63,7 +63,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    frame_end: last frame to process (default=last frame on animation_data.mat)
 %    jump_step: the steps to jump (in order to first check, e.g. only show
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
-%    plot_tc_track: show tc track as a black dotted line.
+%    plot_tc_track: show tc track as a black dotted line (default=, no plot).
+%       the value of plot_tc_track is the MarkerSize of the dots, use e.g.=5
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -81,7 +82,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20160516, filenames without path allowed
 % David N. Bresch, david.bresch@gmail.com, 20170103, params introduced, easier to introduce new features going forward, colorscale adjusted
 % David N. Bresch, david.bresch@gmail.com, 20170104, clean up
-% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end
+% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track
 %-
 
 res=[];
@@ -100,7 +101,7 @@ if ~isfield(params,'schematic_tag'),params.schematic_tag=[];end
 if ~isfield(params,'show_plots'),params.show_plots=[];end
 if ~isfield(params,'focus_region'),params.focus_region=[];end
 if ~isfield(params,'FontSize'),params.FontSize=[];end
-if ~isfield(params,'plotclr_markersize'),params.plotclr_markersize=[];end
+if ~isfield(params,'asset_markersize'),params.asset_markersize=[];end
 if ~isfield(params,'damage_scale'),params.damage_scale=[];end
 if ~isfield(params,'Position'),params.Position=[];end
 if ~isfield(params,'jump_step'),params.jump_step=[];end
@@ -114,7 +115,7 @@ if ~isfield(params,'plot_tc_track'),params.plot_tc_track=[];end
 if isempty(params.schematic_tag),params.schematic_tag=2;end
 if isempty(params.show_plots),params.show_plots=0;end
 if isempty(params.FontSize),params.FontSize=18;end
-if isempty(params.plotclr_markersize),params.plotclr_markersize=5;end
+if isempty(params.asset_markersize),params.asset_markersize=5;end
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
 if isempty(params.damage_scale),params.damage_scale=1/3;end
 if isempty(params.Position),params.Position=[1 5 1310 1100];end
@@ -131,7 +132,7 @@ if abs(params.schematic_tag)>0 % just not equal zero
     if params.schematic_tag>1,assets_plot_solid=1;end % use entity_plot style for assets
     if params.schematic_tag<0
         assets_plot_solid=1; % use entity_plot style for assets
-        params.plotclr_markersize=max(1,abs(params.schematic_tag));
+        params.asset_markersize=max(1,abs(params.schematic_tag));
     end
 end
 %
@@ -331,7 +332,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     
     if assets_plot_solid
         plotclr(hazard.assets.lon,hazard.assets.lat,values,...
-            's',params.plotclr_markersize,0,0,max(values)*1.05,assets_cmap,1,0);
+            's',params.asset_markersize,0,0,max(values)*1.05,assets_cmap,1,0);
         hold on
     else
         ok_points_pos = find(MarkerSizes>0);
@@ -364,7 +365,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
         tc_track_lon=hazard.tc_track(hazard.tc_track_number(frame_i)).lon(1:hazard.tc_track_node(frame_i));
         tc_track_lat=hazard.tc_track(hazard.tc_track_number(frame_i)).lat(1:hazard.tc_track_node(frame_i));
         hold on;
-        plot(tc_track_lon,tc_track_lat,'.k','MarkerSize',3);
+        plot(tc_track_lon,tc_track_lat,'.k','MarkerSize',params.plot_tc_track);
     end % plot TC track
     
     % set figure properties
@@ -414,7 +415,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
         if ~isempty(ok_points_pos)
             % show log of damage, since otherwise no spread...
             plotclr(hazard.assets.lon(ok_points_pos),hazard.assets.lat(ok_points_pos),log(damage_values(ok_points_pos)),...
-                's',params.plotclr_markersize,0,0,log(max_damage_absolute*1.05),damage_cmap,1,0);
+                's',params.asset_markersize,0,0,log(max_damage_absolute*1.05),damage_cmap,1,0);
         end
     else
         for ii=1:length(ok_points_pos)
