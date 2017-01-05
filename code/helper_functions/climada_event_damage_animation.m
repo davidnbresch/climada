@@ -84,7 +84,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20160516, filenames without path allowed
 % David N. Bresch, david.bresch@gmail.com, 20170103, params introduced, easier to introduce new features going forward, colorscale adjusted
 % David N. Bresch, david.bresch@gmail.com, 20170104, clean up
-% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile
+% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile 
 %-
 
 res=[];
@@ -166,7 +166,6 @@ assets_cmap = makeColorMap([0 1 0], [0 0 1], 10);
 %
 % damage coloring (used for solid colored assets, ignored for circles)
 damage_cmap = makeColorMap([.7 .7 0], [1 0 0], 10); % [Red Green Blue] [1 1 1] white, [0 0 0] black
-
 % to test color maps:
 %close all;figure,colormap(assets_cmap);colorbar;figure,colormap(damage_cmap);colorbar
 
@@ -367,7 +366,11 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     % -------------
     if isfield(hazard,'tc_track') && params.plot_tc_track
         track_i=hazard.tc_track_number(frame_i);
+<<<<<<< HEAD
         for track_ii=hazard.tc_track_number(params.frame_start):track_i-1 % all previous tracks
+=======
+        for track_ii=hazard.tc_track_number(frame_start):track_i-1 % all previous tracks
+>>>>>>> origin/master
             plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'.k','MarkerSize',params.plot_tc_track);
             plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'-k','LineWidth',1)
         end % track_ii
