@@ -65,6 +65,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
 %    plot_tc_track: show tc track as a black dotted line (default=, no plot).
 %       the value of plot_tc_track is the MarkerSize of the dots, use e.g.=5
+%    video_profile: the video profile (see help VideoWriter), default is ='MPEG-4'
+%       if this fails, try ='Motion JPEG AVI'
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -82,7 +84,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20160516, filenames without path allowed
 % David N. Bresch, david.bresch@gmail.com, 20170103, params introduced, easier to introduce new features going forward, colorscale adjusted
 % David N. Bresch, david.bresch@gmail.com, 20170104, clean up
-% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track
+% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile
 %-
 
 res=[];
@@ -108,6 +110,7 @@ if ~isfield(params,'jump_step'),params.jump_step=[];end
 if ~isfield(params,'frame_start'),params.frame_start=[];end
 if ~isfield(params,'frame_end'),params.frame_end=[];end
 if ~isfield(params,'plot_tc_track'),params.plot_tc_track=[];end
+if ~isfield(params,'video_profile'),params.video_profile=[];end
 
 % PARAMETERS
 %
@@ -124,6 +127,7 @@ if isempty(params.Position),params.Position=[1 5 1310 1100];end
 if isempty(params.jump_step),params.jump_step=1;end
 if isempty(params.frame_start),params.frame_start=1;end
 if isempty(params.plot_tc_track),params.plot_tc_track=0;end
+if isempty(params.video_profile),params.video_profile='MPEG-4';end
 %
 windfieldFaceAlpha=0; % default
 assets_plot_solid=0; % default
@@ -306,7 +310,7 @@ border.Y=[];for i=1:length(shapes),border.Y=[border.Y shapes(i).Y];end
 
 % Prepare the new file
 if make_mp4
-    vidObj = VideoWriter(params.animation_mp4_file,'MPEG-4');
+    vidObj = VideoWriter(params.animation_mp4_file,params.video_profile);
     open(vidObj);
 end
 
@@ -362,10 +366,15 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     % plot TC track
     % -------------
     if isfield(hazard,'tc_track') && params.plot_tc_track
-        tc_track_lon=hazard.tc_track(hazard.tc_track_number(frame_i)).lon(1:hazard.tc_track_node(frame_i));
-        tc_track_lat=hazard.tc_track(hazard.tc_track_number(frame_i)).lat(1:hazard.tc_track_node(frame_i));
-        hold on;
+        track_i=hazard.tc_track_number(frame_i);
+        for track_ii=hazard.tc_track_number(params.frame_start):track_i-1 % all previous tracks
+            plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'.k','MarkerSize',params.plot_tc_track);
+            plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'-k','LineWidth',1)
+        end % track_ii
+        tc_track_lon=hazard.tc_track(track_i).lon(1:hazard.tc_track_node(frame_i));
+        tc_track_lat=hazard.tc_track(track_i).lat(1:hazard.tc_track_node(frame_i));
         plot(tc_track_lon,tc_track_lat,'.k','MarkerSize',params.plot_tc_track);
+        plot(tc_track_lon,tc_track_lat,'-k','LineWidth',1);
     end % plot TC track
     
     % set figure properties
