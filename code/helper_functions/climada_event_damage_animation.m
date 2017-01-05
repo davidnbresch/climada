@@ -247,15 +247,15 @@ end
 
 n_steps=hazard.event_count;
 
-t0       = clock;
+t0=clock;format_str='%s';mod_step=2; % first time estimate after 10 events, then every 100
 if params.jump_step==1
     msgstr   = sprintf('processing %i steps',n_steps);
 else
     msgstr   = sprintf('processing approx. %i steps',ceil(n_steps/params.jump_step));
+    mod_step=1;
 end
-mod_step = 2; % first time estimate after 10 events, then every 100
+
 fprintf('%s\n',msgstr);
-format_str='%s';
 
 % define grid
 npoints=abs(npoints); % force positive
@@ -281,9 +281,9 @@ MarkerSizes(MarkerSizes<1)=0;
 % prepare damage scales
 max_damage_at_centroid=[]; % init
 max_damage_absolute=full(max(max(hazard.damage)));
-damage_min_value=full(min(min(hazard.damage(hazard.damage>0))));
+%damage_min_value=full(min(min(hazard.damage(hazard.damage>0))));
 damage_max_value=full(max(max(hazard.damage)))*params.damage_scale;
-max_damage_str=sprintf('%g',damage_max_value);
+%max_damage_str=sprintf('%g',damage_max_value);
 
 % prepare country border (for substantila speedup)
 shapes=climada_shaperead(climada_global.map_border_file,1,1); % reads .mat
@@ -356,17 +356,17 @@ for step_i=1:params.jump_step:n_steps
     end
     
     title_str='';
-%     if isfield(hazard,'tc_track') % add some track information
-%         if isfield(hazard,'event_name')
-%             title_str=char(hazard.event_name{step_i});
-%         elseif isfield(hazard,'tc_track_node') % title
-%             track_i=hazard.tc_track_track(step_i);
-%             node_i=hazard.tc_track_node(step_i);
-%             title_str=sprintf('%s %s',strrep(char(hazard.tc_track(track_i).name),'_',' '),...
-%                 datestr(hazard.tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
-%             %plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
-%         end
-%     end
+    if isfield(hazard,'tc_track') % add some track information
+        if isfield(hazard,'event_name')
+            title_str=char(hazard.event_name{step_i});
+        elseif isfield(hazard,'tc_track_node') % title
+            track_i=hazard.tc_track_track(step_i);
+            node_i=hazard.tc_track_node(step_i);
+            title_str=sprintf('%s %s',strrep(char(hazard.tc_track(track_i).name),'_',' '),...
+                datestr(hazard.tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
+            %plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
+        end
+    end
     
     % plot damage
     % -----------
