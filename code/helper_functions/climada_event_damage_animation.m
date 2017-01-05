@@ -58,6 +58,9 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    plotclr_markersize: the size of the 'dots' to plot entity and damage,
 %       default=5
 %    Position: the figure position, as in figure
+%    frame_start: frame to start with (default=1). Sometimes useful to
+%       shorten animation without re-generating animation_data.mat
+%    frame_end: last frame to process (default=last frame on animation_data.mat)
 %    jump_step: the steps to jump (in order to first check, e.g. only show
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
 % OUTPUTS:
@@ -77,6 +80,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20160516, filenames without path allowed
 % David N. Bresch, david.bresch@gmail.com, 20170103, params introduced, easier to introduce new features going forward, colorscale adjusted
 % David N. Bresch, david.bresch@gmail.com, 20170104, clean up
+% David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end
 %-
 
 res=[];
@@ -99,6 +103,8 @@ if ~isfield(params,'plotclr_markersize'),params.plotclr_markersize=[];end
 if ~isfield(params,'damage_scale'),params.damage_scale=[];end
 if ~isfield(params,'Position'),params.Position=[];end
 if ~isfield(params,'jump_step'),params.jump_step=[];end
+if ~isfield(params,'frame_start'),params.frame_start=[];end
+if ~isfield(params,'frame_end'),params.frame_end=[];end
 
 % PARAMETERS
 %
@@ -113,6 +119,7 @@ if isempty(params.Position),params.Position=[1 5 1310 1100];end
 %if isempty(params.Position),params.Position=[97 513 716 592];end
 %if isempty(params.Position),params.Position=[430 20 920 650];end
 if isempty(params.jump_step),params.jump_step=1;end
+if isempty(params.frame_start),params.frame_start=1;end
 %
 windfieldFaceAlpha=0; % default
 assets_plot_solid=0; % default
@@ -245,13 +252,14 @@ if isempty(params.focus_region) % define the focus region based on entity
     end
 end
 
-n_steps=hazard.event_count;
+if isempty(params.frame_end),params.frame_end=hazard.event_count;end
+n_frames=params.frame_end-params.frame_start+1;
 
 t0=clock;format_str='%s';mod_step=2; % first time estimate after 10 events, then every 100
 if params.jump_step==1
-    msgstr   = sprintf('processing %i steps',n_steps);
+    msgstr   = sprintf('processing %i nodes (node %i .. %i)',n_frames,params.frame_start,params.frame_end);
 else
-    msgstr   = sprintf('processing approx. %i steps',ceil(n_steps/params.jump_step));
+    msgstr   = sprintf('processing approx. %i steps (node %i .. %i)',ceil(n_frames/params.jump_step),params.frame_start,params.frame_end);
     mod_step=1;
 end
 
@@ -297,7 +305,7 @@ if make_mp4
 end
 
 % start loop
-for step_i=1:params.jump_step:n_steps
+for frame_i=params.frame_start:params.jump_step:n_frames
     
     hold off;clf % start with blank plot each time
     
@@ -332,7 +340,7 @@ for step_i=1:params.jump_step:n_steps
     
     % plot hazard intensity
     % ---------------------
-    int_values = full(hazard.intensity(step_i,:));
+    int_values = full(hazard.intensity(frame_i,:));
     %int_values(int_values<10)=NaN; % mask low intensities
     gridded_VALUE = griddata(hazard.lon(unique_pos),hazard.lat(unique_pos),int_values(unique_pos),X,Y,interp_method);
     gridded_VALUE(gridded_VALUE==0)=NaN; % mask zeros
@@ -358,10 +366,10 @@ for step_i=1:params.jump_step:n_steps
     title_str='';
     if isfield(hazard,'tc_track') % add some track information
         if isfield(hazard,'event_name')
-            title_str=char(hazard.event_name{step_i});
+            title_str=char(hazard.event_name{frame_i});
         elseif isfield(hazard,'tc_track_node') % title
-            track_i=hazard.tc_track_track(step_i);
-            node_i=hazard.tc_track_node(step_i);
+            track_i=hazard.tc_track_track(frame_i);
+            node_i=hazard.tc_track_node(frame_i);
             title_str=sprintf('%s %s',strrep(char(hazard.tc_track(track_i).name),'_',' '),...
                 datestr(hazard.tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
             %plot(hazard.tc_track.lon(1:node_i),hazard.tc_track.lat(1:node_i),'-b','LineWidth',2);
@@ -371,9 +379,9 @@ for step_i=1:params.jump_step:n_steps
     % plot damage
     % -----------
     if isempty(max_damage_at_centroid)
-        max_damage_at_centroid=full(hazard.damage(step_i,:));
+        max_damage_at_centroid=full(hazard.damage(frame_i,:));
     else
-        max_damage_at_centroid=max(max_damage_at_centroid,full(hazard.damage(step_i,:)));
+        max_damage_at_centroid=max(max_damage_at_centroid,full(hazard.damage(frame_i,:)));
     end
     damage_values = max_damage_at_centroid;
     damage_values = damage_values(hazard.assets.centroid_index); % map them
@@ -414,17 +422,17 @@ for step_i=1:params.jump_step:n_steps
     end
     
     % the progress management
-    if mod(step_i,mod_step)==0
+    if mod(frame_i,mod_step)==0
         mod_step          = 10;
-        t_elapsed_event   = etime(clock,t0)/step_i;
-        steps_remaining  = n_steps-step_i;
+        t_elapsed_event   = etime(clock,t0)/frame_i;
+        steps_remaining  = n_frames-frame_i;
         t_projected_sec   = t_elapsed_event*steps_remaining;
-        msgstr = sprintf('est. %3.0f sec left (%i/%i events) ',t_projected_sec,step_i,n_steps);
+        msgstr = sprintf('est. %3.0f sec left (%i/%i events) ',t_projected_sec,frame_i,n_frames);
         fprintf(format_str,msgstr); % write progress to stdout
         format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
     end
     
-end % step_i
+end % frame_i
 fprintf(format_str,''); % move carriage to begin of line
 fprintf('took %2.1f sec\n',etime(clock,t0));
 
