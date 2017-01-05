@@ -254,12 +254,14 @@ end
 
 if isempty(params.frame_end),params.frame_end=hazard.event_count;end
 n_frames=params.frame_end-params.frame_start+1;
+eff_n_frames=max(ceil(n_frames/params.jump_step),1);
 
-t0=clock;format_str='%s';mod_step=2; % first time estimate after 10 events, then every 100
+t0=clock;format_str='%s';
 if params.jump_step==1
-    msgstr   = sprintf('processing %i nodes (node %i .. %i)',n_frames,params.frame_start,params.frame_end);
+    msgstr   = sprintf('processing %i frames (frame %i .. %i)',n_frames,params.frame_start,params.frame_end);
+    mod_step=2; % first time estimate after 2 events
 else
-    msgstr   = sprintf('processing approx. %i steps (node %i .. %i)',ceil(n_frames/params.jump_step),params.frame_start,params.frame_end);
+    msgstr   = sprintf('processing approx. %i frames (frame %i:%i:%i)',eff_n_frames,params.frame_start,params.jump_step,params.frame_end);
     mod_step=1;
 end
 
@@ -305,7 +307,7 @@ if make_mp4
 end
 
 % start loop
-for frame_i=params.frame_start:params.jump_step:n_frames
+for frame_i=params.frame_start:params.jump_step:params.frame_end
     
     hold off;clf % start with blank plot each time
     
@@ -423,11 +425,14 @@ for frame_i=params.frame_start:params.jump_step:n_frames
     
     % the progress management
     if mod(frame_i,mod_step)==0
-        mod_step          = 10;
-        t_elapsed_event   = etime(clock,t0)/frame_i;
-        steps_remaining  = n_frames-frame_i;
-        t_projected_sec   = t_elapsed_event*steps_remaining;
-        msgstr = sprintf('est. %3.0f sec left (%i/%i events) ',t_projected_sec,frame_i,n_frames);
+        if eff_n_frames>500,mod_step=100;else mod_step=50;end
+        if eff_n_frames<100,mod_step=20;end
+        if eff_n_frames<50,mod_step=10;end
+        eff_frame_i=max(ceil((frame_i-params.frame_start)/params.jump_step),1);
+        t_elapsed_event   = etime(clock,t0)/eff_frame_i;
+        frames_remaining  = eff_n_frames-eff_frame_i;
+        t_projected_sec   = t_elapsed_event*frames_remaining;
+        msgstr = sprintf('est. %3.0f sec left (%i/%i events) ',t_projected_sec,eff_frame_i,eff_n_frames);
         fprintf(format_str,msgstr); % write progress to stdout
         format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
     end
