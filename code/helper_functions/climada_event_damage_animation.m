@@ -362,10 +362,15 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     % plot TC track
     % -------------
     if isfield(hazard,'tc_track') && params.plot_tc_track
-        tc_track_lon=hazard.tc_track(hazard.tc_track_number(frame_i)).lon(1:hazard.tc_track_node(frame_i));
-        tc_track_lat=hazard.tc_track(hazard.tc_track_number(frame_i)).lat(1:hazard.tc_track_node(frame_i));
-        hold on;
+        track_i=hazard.tc_track_number(frame_i);
+        for track_ii=hazard.tc_track_number(frame_start):track_i-1 % all previous tracks
+            plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'.k','MarkerSize',params.plot_tc_track);
+            plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'-k','LineWidth',1)
+        end % track_ii
+        tc_track_lon=hazard.tc_track(track_i).lon(1:hazard.tc_track_node(frame_i));
+        tc_track_lat=hazard.tc_track(track_i).lat(1:hazard.tc_track_node(frame_i));
         plot(tc_track_lon,tc_track_lat,'.k','MarkerSize',params.plot_tc_track);
+        plot(tc_track_lon,tc_track_lat,'-k','LineWidth',1);
     end % plot TC track
     
     % set figure properties
