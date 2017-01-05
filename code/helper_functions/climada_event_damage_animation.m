@@ -63,6 +63,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    frame_end: last frame to process (default=last frame on animation_data.mat)
 %    jump_step: the steps to jump (in order to first check, e.g. only show
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
+%    plot_tc_track: show tc track as a black dotted line.
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -105,6 +106,7 @@ if ~isfield(params,'Position'),params.Position=[];end
 if ~isfield(params,'jump_step'),params.jump_step=[];end
 if ~isfield(params,'frame_start'),params.frame_start=[];end
 if ~isfield(params,'frame_end'),params.frame_end=[];end
+if ~isfield(params,'plot_tc_track'),params.plot_tc_track=[];end
 
 % PARAMETERS
 %
@@ -120,6 +122,7 @@ if isempty(params.Position),params.Position=[1 5 1310 1100];end
 %if isempty(params.Position),params.Position=[430 20 920 650];end
 if isempty(params.jump_step),params.jump_step=1;end
 if isempty(params.frame_start),params.frame_start=1;end
+if isempty(params.plot_tc_track),params.plot_tc_track=0;end
 %
 windfieldFaceAlpha=0; % default
 assets_plot_solid=0; % default
@@ -354,6 +357,15 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     if windfieldFaceAlpha>0 % such that assets remain visible underneath
         set(pcolor_handle,'FaceAlpha',windfieldFaceAlpha); % set transparency of windfield
     end
+    
+    % plot TC track
+    % -------------
+    if isfield(hazard,'tc_track') && params.plot_tc_track
+        tc_track_lon=hazard.tc_track(hazard.tc_track_number(frame_i)).lon(1:hazard.tc_track_node(frame_i));
+        tc_track_lat=hazard.tc_track(hazard.tc_track_number(frame_i)).lat(1:hazard.tc_track_node(frame_i));
+        hold on;
+        plot(tc_track_lon,tc_track_lat,'.k','MarkerSize',3);
+    end % plot TC track
     
     % set figure properties
     shading flat;axis equal
