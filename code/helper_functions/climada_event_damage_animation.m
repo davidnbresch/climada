@@ -366,11 +366,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     % -------------
     if isfield(hazard,'tc_track') && params.plot_tc_track
         track_i=hazard.tc_track_number(frame_i);
-<<<<<<< HEAD
         for track_ii=hazard.tc_track_number(params.frame_start):track_i-1 % all previous tracks
-=======
-        for track_ii=hazard.tc_track_number(frame_start):track_i-1 % all previous tracks
->>>>>>> origin/master
             plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'.k','MarkerSize',params.plot_tc_track);
             plot(hazard.tc_track(track_ii).lon,hazard.tc_track(track_ii).lat,'-k','LineWidth',1)
         end % track_ii
