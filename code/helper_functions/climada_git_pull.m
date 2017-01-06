@@ -94,13 +94,17 @@ end % while ~isempty(P)
 % restore path
 cd(current_path)
 
+if climada_data_check(0)
+    fprintf('It is strongly recommended to update listed files, consider running climada_data_check(-1)\n');
+end
+
 end % climada_git_pull
 
 
 function ok=climada_git_pull_local_git_pull
 % local simple system command to execute git pull, return status=0 if OK
 ok=0; % init output
-[status,result]=system('git pull');
+[status,result]=system('git config --global http.proxy http://proxy.ethz.ch:3128;git config --global https.proxy http://proxy.ethz.ch:312;git pull');
 ok=~status;
 if status>0 % =0 mean success
     fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n

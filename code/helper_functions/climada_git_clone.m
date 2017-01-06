@@ -142,8 +142,9 @@ if ~isdir(local_data_dir)
         end
     end
 else
-    fprintf('note: %s already exists (occasionally check for updated content in climada/data)\n',local_data_dir);
-    climada_data_check(TEST_mode)
+    if climada_data_check(0)
+        fprintf('It is strongly recommended to update listed files, but run climada_git_pull first\n');
+    end
 end % ~isdir(local_data_dir)
 
 end % climada_git_clone

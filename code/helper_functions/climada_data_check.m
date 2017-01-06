@@ -1,5 +1,5 @@
-function climada_data_check(TEST_mode)
-% climada git clone
+function update_flag=climada_data_check(TEST_mode)
+% climada git data check
 % MODULE:
 %   core
 % NAME:
@@ -8,22 +8,36 @@ function climada_data_check(TEST_mode)
 %   check content of climada_data folder for consistency with core
 %   climada's climada/data folder content.
 %
-%   previous call: climada_git_clone and/or climada_git_pull
+%   Files which are older in the local data folder should be replaced by the
+%   newer ones from the core data folder. Currently, the code ONLY takes
+%   action if TEST_mode=-1 (to avoid automatic overwrite).
+%
+%   previous call: climada_git_clone and/or climada_git_pull (both invoke
+%       climada_data_check)
 %   next call: e.g. climada_demo_step_by_step
 % CALLING SEQUENCE:
-%   climada_git_clone
+%   climada_data_check
 % EXAMPLE:
-%   climada_git_clone(1)
+%   climada_data_check(1)
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
-%   TEST_mode: =1 only show which modules will be processed, do not create
-%       default=0, i.e. run as stated above
+%   TEST_mode: =1 show also files that are newer on local (user to decide what to do)
+%       =2 show also files that are identical (no action, just to
+%       show complete information)
+%       =0 (default), run as stated above, list only files that need
+%       attention
+%       =-1: do replace files which are older on local with newer ones from
+%       core data folder. BE CAREFUL, this options overwrites files in your
+%       local data folder
 % OUTPUTS:
+%   update_flag: =0 if no need to update
+%       =1 if at least one file on local is older than in core
 %   all messaging to stdout
 % MODIFICATION HISTORY:
-% david.bresch@gmail.com, 20161013, initial
-% david.bresch@gmail.com, 20161109, most modules switched on
+% david.bresch@gmail.com, 20170106, initial
 %-
+
+update_flag=0;
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -33,122 +47,78 @@ if ~exist('TEST_mode','var'),TEST_mode=[];end
 % PARAMETERS
 %
 if isempty(TEST_mode),TEST_mode=0;end % default=0
-%
-module_list={
-    'https://github.com/davidnbresch/climada_advanced.git'
-    'https://github.com/davidnbresch/climada_module_isimip.git'
-    'https://github.com/davidnbresch/climada_module_tropical_cyclone.git'
-    'https://github.com/davidnbresch/climada_module_country_risk.git'
-    'https://github.com/davidnbresch/climada_module_elevation_models.git'
-    'https://github.com/davidnbresch/climada_module_storm_europe.git'
-    'https://github.com/davidnbresch/climada_module_meteorite.git'
-    'https://github.com/davidnbresch/climada_module_flood.git'
-    'https://github.com/davidnbresch/climada_module_earthquake_volcano.git'
-    'https://github.com/davidnbresch/climada_module_drought_fire.git'
-    'https://github.com/davidnbresch/climada_module_kml_toolbox.git'
-    %'https://github.com/davidnbresch/climada_module_salvador_demo.git'
-    %'%https://github.com/davidnbresch/climada_module_barisal_demo.git'
-    };
-
-current_path=pwd; % get active path (to restore later)
-
-% check for climada_modules folder
-% --------------------------------
-if isempty(climada_global.modules_dir)
-    fP=fileparts(climada_global.root_dir);
-    climada_global.modules_dir=[fP filesep 'climada_modules'];
-end
-if ~isdir(climada_global.modules_dir)
-    [fP,fN]=fileparts(climada_global.modules_dir);
-    fprintf('creating folder %s ...',climada_global.modules_dir);
-    mkdir(fP,fN); % create it
-    fprintf(' done\n');
-end
-
-% clone all modules not yet present
-% ---------------------------------
-cd(climada_global.modules_dir)
-for module_i=1:length(module_list)
-    module_name=module_list{module_i};
-    % figure the folder name git clones to
-    orig_module_dir=strrep(module_name,'https://github.com/davidnbresch/','');
-    orig_module_dir=strrep(orig_module_dir,'.git','');
-    % define the shorter folder name we want
-    module_dir=strrep(orig_module_dir,'climada_','');
-    module_dir=strrep(module_dir,'module_','');
-    if exist(module_dir,'file')
-        fprintf('%s already cloned, skipped\n',module_dir);
-    else
-        fprintf('cloning %s to >> %s\n',module_name,module_dir);
-        system_cmd=['git clone ' module_list{module_i}];
-        if TEST_mode
-            fprintf('TEST: %s\n',system_cmd);
-        else
-            % clone the repository
-            [status,result] = system(system_cmd);
-            if status>0 % =0 mean success
-                fprintf('ERROR: %s\n',result)
-                fprintf('aborted\n')
-                return
-            end
-            % move to the shorted folder name
-            [SUCCESS,MESSAGE] = movefile(orig_module_dir,module_dir);
-            if ~SUCCESS
-                fprintf('ERROR: %s\n',MESSAGE)
-                fprintf('aborted\n')
-                return
-            end
-        end % TEST_mode
-    end % exist(module_dir,'file')
-end % module_i
-
-% restore path
-cd(current_path)
 
 % check for climada_data folder
 % -----------------------------
 
-fP=fileparts(climada_global.root_dir);
-local_data_dir=[fP filesep 'climada_data'];
-if ~isdir(local_data_dir)
-    [fP,fN]=fileparts(local_data_dir);
-    fprintf('creating folder %s ...',local_data_dir);
-    mkdir(fP,fN); % create it
-    fprintf(' done\n');
-    
-    % copy data folder to local data folder
-    % -------------------------------------
-    % move to the shorted folder name
-    fprintf('copying %s to %s',climada_global.data_dir,local_data_dir);
-    if TEST_mode
-        fprintf('\nTEST: copyfile(%s,%s)\n',climada_global.data_dir,local_data_dir);
-    else
-        [SUCCESS,MESSAGE] = copyfile(climada_global.data_dir,local_data_dir);
-        if ~SUCCESS
-            fprintf('\nERROR: %s\n',MESSAGE)
-            fprintf('aborted\n')
-            return
-        else
-            climada_global.data_dir=local_data_dir; % switch
-            fprintf(' done\n');
-        end
-    end
-else
-    fprintf('note: %s already exists (occasionally check for updated content in climada/data)\n',local_data_dir);
-    core_data_content=dir([climada_global.root_dir filesep 'data']);
-    climada_data_content=dir(climada_global.data_dir);
-    for file_i=1:length(core_data_content)
-        name=core_data_content(file_i).name;
-        if core_data_content(file_i).isdir && length(name)>2 % we have a data folder, check content
-            core_data_subcontent=dir([climada_global.root_dir filesep 'data' filesep name]);
-            for file_ii=1:length(core_data_subcontent)
-                name=core_data_content(file_i).name;
-            end % file_ii
-            if ~core_data_content(file_i).isdir && ~strcmp(name(1),'.')
-                fprintf('%s\n',name)
-            end
-        end % isdir
-    end % file_i
-end % ~isdir(local_data_dir)
+core_data_dir=[climada_global.root_dir filesep 'data'];
 
-end % climada_git_clone
+if ~strcmpi(deblank(climada_global.data_dir),deblank(core_data_dir))
+  
+    fprintf('\nsource:      %s \n',core_data_dir);
+    fprintf('destination: %s \n\n',climada_global.data_dir);
+    
+    core_data_content=dir(core_data_dir);
+    
+    for folder_i=1:length(core_data_content)
+        folder_name=core_data_content(folder_i).name;
+        if core_data_content(folder_i).isdir && length(folder_name)>2 % we have a data folder, check content
+            core_data_subcontent=dir([core_data_dir filesep folder_name]);
+            for file_i=1:length(core_data_subcontent)
+                file_name=core_data_subcontent(file_i).name;
+                if ~core_data_subcontent(file_i).isdir && length(file_name)>2 % we have a data file
+                    
+                    % be sure we compare the correct file
+                    file_src=[core_data_dir           filesep folder_name filesep file_name];
+                    file_dst=[climada_global.data_dir filesep folder_name filesep file_name];
+                    
+                    % locate same file in user's data
+                    if exist(file_dst,'file') % destination exists, compare date
+                        
+                        src_dir=dir(file_src);
+                        dst_dir=dir(file_dst);
+                        src_datenum=src_dir(1).datenum;
+                        dst_datenum=dst_dir(1).datenum;
+                        d_datenum=dst_datenum-src_datenum;
+                        
+                        if d_datenum > eps
+                            if TEST_mode==1,fprintf('    %s%s%s - destination file newer\n',folder_name,filesep,file_name);end
+                        elseif d_datenum < -eps
+                            fprintf('--> %s%s%s --> destination file older, consider to replace\n',folder_name,filesep,file_name);
+                            update_flag=1;
+                            if TEST_mode==-1 % TAKE ACTION
+                                fprintf('COPY %s -> %s (NOT ACTIVE YET)\n',file_src,file_dst);
+                                [SUCCESS,MESSAGE] = copyfile(file_src,file_dst);
+                                if ~SUCCESS
+                                    fprintf('\nERROR: %s\n',MESSAGE)
+                                    fprintf('aborted\n')
+                                    return
+                                end
+                            end % TAKE ACTION
+                        else
+                            if TEST_mode==2,fprintf('    (%s%s%s - destination file identical)\n',folder_name,filesep,file_name);end
+                        end
+                        
+                    else % destination does not exist
+                        fprintf('--> %s%s%s --> not in destination, consider to copy\n',folder_name,filesep,file_name);
+                        update_flag=1;
+                        if TEST_mode==-1 % TAKE ACTION
+                            fprintf('COPY %s -> %s (NOT ACTIVE YET)\n',file_src,file_dst);
+                            [SUCCESS,MESSAGE] = copyfile(file_src,file_dst);
+                            if ~SUCCESS
+                                fprintf('\nERROR: %s\n',MESSAGE)
+                                fprintf('aborted\n')
+                                return
+                            end
+                        end % TAKE ACTION
+                    end
+                    
+                end % data file
+            end % file_i
+        end % isdir
+    end % folder_i
+else
+    fprintf('using default data folder (%s), no check required, all fine\n',climada_global.data_dir);
+end
+
+end % climada_data_check
