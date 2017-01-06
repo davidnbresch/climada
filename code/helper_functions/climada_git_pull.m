@@ -30,7 +30,7 @@ function climada_git_pull(TEST_mode)
 %     fatal: HTTP request failed
 %
 %   previous call: startup (usually already executed)
-%   next call: See Note above
+%   next call: climada_data_check, see also Note above
 % CALLING SEQUENCE:
 %   climada_git_pull
 % EXAMPLE:
@@ -46,7 +46,7 @@ function climada_git_pull(TEST_mode)
 % david.bresch@gmail.com, 20160609, added remark about old climada_git_pull_repositories
 % david.bresch@gmail.com, 20160616, pathsep
 % david.bresch@gmail.com, 20161013, note about error on cluster added
-% david.bresch@gmail.com, 20161013, using simple system command, not git.m (had some troubles e.g. on cluster)
+% david.bresch@gmail.com, 20170106, using simple system command, not git.m (had some troubles e.g. on cluster)
 %-
 
 global climada_global
@@ -104,7 +104,8 @@ end % climada_git_pull
 function ok=climada_git_pull_local_git_pull
 % local simple system command to execute git pull, return status=0 if OK
 ok=0; % init output
-[status,result]=system('git config --global http.proxy http://proxy.ethz.ch:3128;git config --global https.proxy http://proxy.ethz.ch:312;git pull');
+%[status,result]=system('git config --global http.proxy http://proxy.ethz.ch:3128;git config --global https.proxy http://proxy.ethz.ch:312;git pull');
+[status,result]=system('git pull');
 ok=~status;
 if status>0 % =0 mean success
     fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n
