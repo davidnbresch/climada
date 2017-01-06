@@ -13,6 +13,7 @@ function climada_git_clone(TEST_mode)
 %   content of core climada's data into it.
 %
 %   DOES NOT YET WORK ON cluster, see same issue with climada_git_pull
+%   See also git command in MATLAB and http://git-scm.com/documentation
 %
 %   previous call: startup (usually already executed)
 %   next call: climada_demo_step_by_step
@@ -29,6 +30,7 @@ function climada_git_clone(TEST_mode)
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20161013, initial
 % david.bresch@gmail.com, 20161109, most modules switched on
+% david.bresch@gmail.com, 20170106, climada_data_check
 %-
 
 global climada_global
@@ -140,7 +142,8 @@ if ~isdir(local_data_dir)
         end
     end
 else
-    fprintf('note: %s already exists\n',local_data_dir);
+    fprintf('note: %s already exists (occasionally check for updated content in climada/data)\n',local_data_dir);
+    climada_data_check(TEST_mode)
 end % ~isdir(local_data_dir)
 
-end % climada_git_pull
+end % climada_git_clone
