@@ -87,7 +87,7 @@ if ~strcmpi(deblank(climada_global.data_dir),deblank(core_data_dir))
                             fprintf('--> %s%s%s --> destination file older, consider to replace\n',folder_name,filesep,file_name);
                             update_flag=1;
                             if TEST_mode==-1 % TAKE ACTION
-                                fprintf('COPY %s -> %s\n',file_src,file_dst);
+                                fprintf('COPY %s\n     -> %s\n',file_src,file_dst);
                                 [SUCCESS,MESSAGE] = copyfile(file_src,file_dst);
                                 if ~SUCCESS
                                     fprintf('\nERROR: %s\n',MESSAGE)
@@ -103,7 +103,7 @@ if ~strcmpi(deblank(climada_global.data_dir),deblank(core_data_dir))
                         fprintf('--> %s%s%s --> not in destination, consider to copy\n',folder_name,filesep,file_name);
                         update_flag=1;
                         if TEST_mode==-1 % TAKE ACTION
-                            fprintf('COPY %s -> %s\n',file_src,file_dst);
+                            fprintf('COPY %s\n     -> %s\n',file_src,file_dst);
                             [SUCCESS,MESSAGE] = copyfile(file_src,file_dst);
                             if ~SUCCESS
                                 fprintf('\nERROR: %s\n',MESSAGE)
