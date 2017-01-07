@@ -12,11 +12,11 @@ function climada_git_clone(TEST_mode)
 %   This code then creates the folder climada_data and copies
 %   content of core climada's data into it.
 %
-%   DOES NOT YET WORK ON cluster, see same issue with climada_git_pull
+%   Hint: If you encounter troubles on cluster, start matlab with matlab -nojvm
 %   See also git command in MATLAB and http://git-scm.com/documentation
 %
 %   previous call: startup (usually already executed)
-%   next call: climada_demo_step_by_step
+%   next call: climada_git_pull 
 % CALLING SEQUENCE:
 %   climada_git_clone
 % EXAMPLE:
@@ -144,7 +144,7 @@ if ~isdir(local_data_dir)
     end
 else
     if climada_data_check(0)
-        fprintf('It is strongly recommended to update listed files, but run climada_git_pull first\n');
+        fprintf('It is strongly recommended to update listed files (climada_data_check), but run climada_git_pull first\n');
     end
 end % ~isdir(local_data_dir)
 

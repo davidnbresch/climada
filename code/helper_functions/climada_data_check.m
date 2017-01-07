@@ -12,8 +12,8 @@ function update_flag=climada_data_check(TEST_mode)
 %   newer ones from the core data folder. Currently, the code ONLY takes
 %   action if TEST_mode=-1 (to avoid automatic overwrite).
 %
-%   previous call: climada_git_clone and/or climada_git_pull (both invoke
-%       climada_data_check)
+%   previous call: climada_git_clone and/or climada_git_pull 
+%   (both invoke climada_data_check)
 %   next call: e.g. climada_demo_step_by_step
 % CALLING SEQUENCE:
 %   climada_data_check
@@ -54,7 +54,7 @@ if isempty(TEST_mode),TEST_mode=0;end % default=0
 core_data_dir=[climada_global.root_dir filesep 'data'];
 
 if ~strcmpi(deblank(climada_global.data_dir),deblank(core_data_dir))
-  
+    
     fprintf('\nsource:      %s \n',core_data_dir);
     fprintf('destination: %s \n\n',climada_global.data_dir);
     
@@ -87,7 +87,7 @@ if ~strcmpi(deblank(climada_global.data_dir),deblank(core_data_dir))
                             fprintf('--> %s%s%s --> destination file older, consider to replace\n',folder_name,filesep,file_name);
                             update_flag=1;
                             if TEST_mode==-1 % TAKE ACTION
-                                fprintf('COPY %s -> %s (NOT ACTIVE YET)\n',file_src,file_dst);
+                                fprintf('COPY %s -> %s\n',file_src,file_dst);
                                 [SUCCESS,MESSAGE] = copyfile(file_src,file_dst);
                                 if ~SUCCESS
                                     fprintf('\nERROR: %s\n',MESSAGE)
@@ -103,7 +103,7 @@ if ~strcmpi(deblank(climada_global.data_dir),deblank(core_data_dir))
                         fprintf('--> %s%s%s --> not in destination, consider to copy\n',folder_name,filesep,file_name);
                         update_flag=1;
                         if TEST_mode==-1 % TAKE ACTION
-                            fprintf('COPY %s -> %s (NOT ACTIVE YET)\n',file_src,file_dst);
+                            fprintf('COPY %s -> %s\n',file_src,file_dst);
                             [SUCCESS,MESSAGE] = copyfile(file_src,file_dst);
                             if ~SUCCESS
                                 fprintf('\nERROR: %s\n',MESSAGE)

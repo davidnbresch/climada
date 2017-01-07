@@ -12,17 +12,16 @@ function climada_git_pull(TEST_mode)
 %
 %   Note: climada_git_push is not implemented, as this might cause
 %   trouble, i.e. as it might automatically check in (large) .mat files or
-%   other stuff one did nort check. For the time, use a git tool or operate
+%   other stuff one did not check. For the time, use a git tool or operate
 %   git add, git commit and gut push on the command line yourself.
 %
+%   Hint: If you encounter troubles on cluster, start matlab with matlab -nojvm
 %   See also git command in MATLAB and http://git-scm.com/documentation
 %
 %   OLD VERSION: there is still climada_git_pull_repositories, which used a
 %   c-shell (csh) to issue the git commands (hence needed a local git
 %   installation). Please do NOT use climada_git_pull_repositories any
 %   more.
-%
-%   Hint: If you encounter trubles on cluster, start matlab with matlab -nojvm
 %
 %   previous call: startup (usually already executed)
 %   next call: climada_data_check, see also Note above
