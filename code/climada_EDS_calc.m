@@ -6,7 +6,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   given an encoded entity (assets and damage functions) and a hazard
 %   event set, calculate the event damage set (EDS). The event damage set
 %   contains the event damage for each hazard event. In case you set
-%   climada_global.EDS_at_centroid=1, the damage is also stored for each
+%   climada_global.damage_at_centroid=1, the damage is also stored for each
 %   event at each centroids (be aware of memory implications). The exepcted
 %   damage is always stored at each centroid, see EDS.ED_at_centroid.
 %
@@ -104,7 +104,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % Lea Mueller, muellele@gmail.com, 20151127, invoke climada_assets_category_ID, add EDS.assets.Category_name and EDS.assets.Category_ID
 % David N. Bresch, david.bresch@gmail.com, 20160202, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20160210, is_unit removed and substantial speedup (damagefunctions made unique before calc)
-% Lea Mueller, muellele@gmail.com, 20160303, bugfix if EDS_at_centroid and state ED in fprintf command line output
+% Lea Mueller, muellele@gmail.com, 20160303, bugfix if damage_at_centroid and state ED in fprintf command line output
 % David N. Bresch, david.bresch@gmail.com, 20160306, EDS.ED=EDS.damage*EDS.frequency'
 % David N. Bresch, david.bresch@gmail.com, 20160308, no printing of ED to stdout, some silent_mode checks slow down too much, removed
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
@@ -198,7 +198,7 @@ EDS.peril_ID          = hazard_peril_ID;
 EDS.hazard.peril_ID   = EDS.peril_ID; % backward compatibility
 EDS.Value_unit        = climada_global.Value_unit;
 
-if climada_global.EDS_at_centroid
+if climada_global.damage_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
     damage_at_centroid_density = 0.03; % 3% sparse damage per centroid array density (estimated)
     EDS.damage_at_centroid     = spalloc(n_assets, hazard.event_count,...
@@ -330,7 +330,7 @@ for asset_ii=1:nn_assets
                 end
                 EDS.damage = EDS.damage+temp_damage'; % add to the EDS
                 
-                if climada_global.EDS_at_centroid % CLIMADA_OPT
+                if climada_global.damage_at_centroid % CLIMADA_OPT
                     %EDS.damage_at_centroid(:,asset_i) = temp_damage'; % add to EDS damage at centroids % CLIMADA_OPT
                     index_ = j_index == asset_i; %index_ = i == asset_i; % CLIMADA_OPT
                     i_index(index_) = []; % CLIMADA_OPT
@@ -421,7 +421,7 @@ end
 EDS.annotation_name = annotation_name;
 EDS.ED              = EDS.damage*EDS.frequency';
 %EDS.ED              = full(sum(EDS.damage.*EDS.frequency)); % calculate annual expected damage
-if climada_global.EDS_at_centroid
+if climada_global.damage_at_centroid
     EDS.damage_at_centroid = sparse(i_index,j_index,x_index,hazard.event_count,n_assets);
     EDS.damage_at_centroid = EDS.damage_at_centroid';
     EDS.ED_at_centroid = full(sum(bsxfun(@times, EDS.damage_at_centroid, EDS.frequency),2));

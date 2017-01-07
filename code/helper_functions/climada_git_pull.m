@@ -104,8 +104,8 @@ end % climada_git_pull
 function ok=climada_git_pull_local_git_pull
 % local simple system command to execute git pull, return status=0 if OK
 ok=0; % init output
-%[status,result]=system('git config --global http.proxy http://proxy.ethz.ch:3128;git config --global https.proxy http://proxy.ethz.ch:312;git pull');
-[status,result]=system('git pull');
+%[status,result]=system('git pull'); % works on MAC, but not on cluster
+[status,result]=system('LD_LIBRARY_PATH="" git pull'); % fix to avoid using Matlab-Libs for git command
 ok=~status;
 if status>0 % =0 mean success
     fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n

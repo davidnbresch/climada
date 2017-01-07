@@ -50,6 +50,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160819, hazards_dir added
 % David N. Bresch, david.bresch@gmail.com, 20160908, results_dir added and reset_flag=3
 % David N. Bresch, david.bresch@gmail.com, 20160921, default spreadsheet_ext='.xlsx' (best for MATLAB 9.x)
+% David N. Bresch, david.bresch@gmail.com, 20170107, EDS_at_centroid renamed to damage_at_centroid
 %-
 
 global climada_global
@@ -192,11 +193,11 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % whether we show waitbars for progress (eg in climada_EDS_calc), =1:yes, =0: no
     climada_global.waitbar = 0;
     
-    % whether we store the damage (=1) at each centroid for each event (an EDS
+    % whether we store the damage (=1) at each centroid for each event (i.e. an EDS
     % for each centroid). Heavy memory, see climada_EDS_calc; therefore: default=0
-    % please note that ED_at_centroid is always calculated (only a vector
-    % length number of centroids)
-    climada_global.EDS_at_centroid = 0; % default=0
+    % please note that ED_at_centroid (expected damage) is always calculated 
+    % (only a vector length number of centroids)
+    climada_global.damage_at_centroid = 0; % default=0
     
     % whether the code checks for (possible) asset encoding issues and
     % re-encodes in case of doubt (might take time...)

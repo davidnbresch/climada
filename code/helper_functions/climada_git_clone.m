@@ -88,7 +88,8 @@ for module_i=1:length(module_list)
         fprintf('%s already cloned, skipped\n',module_dir);
     else
         fprintf('cloning %s to >> %s\n',module_name,module_dir);
-        system_cmd=['git clone ' module_list{module_i}];
+        %system_cmd=['git clone ' module_list{module_i}];
+        system_cmd=['LD_LIBRARY_PATH="" git clone ' module_list{module_i}];  % fix to avoid using Matlab-Libs for git command
         if TEST_mode
             fprintf('TEST: %s\n',system_cmd);
         else
