@@ -22,12 +22,7 @@ function climada_git_pull(TEST_mode)
 %   installation). Please do NOT use climada_git_pull_repositories any
 %   more.
 %
-%   DOES NOT YET WORK ON CLUSTER, we obtain on stdout:
-%     * updating /cluster/home/dbresch/climada
-%     error: error setting certificate verify locations:
-%       CAfile: /etc/ssl/certs/ca-certificates.crt
-%       CApath: none while accessing https://github.com/davidnbresch/climada.git/info/refs
-%     fatal: HTTP request failed
+%   Hint: If you encounter trubles on cluster, start matlab with matlab -nojvm
 %
 %   previous call: startup (usually already executed)
 %   next call: climada_data_check, see also Note above
