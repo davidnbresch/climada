@@ -70,7 +70,7 @@ verbose=0; % default=0
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 if ~isfield(hazard,'units'),hazard.units='';end
-    
+
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);
 
@@ -89,6 +89,7 @@ switch hazard.peril_ID
         LevelList=[];
 end % switch
 
+event_ii=0;
 if event_i<0
     % search for i-thlargest event
     event_sum=sum(hazard.intensity,2);
@@ -179,6 +180,12 @@ end
 res.X=X;
 res.Y=Y;
 res.VALUE=gridded_VALUE;
+res.title_str=title_str;
+res.event_i=event_ii;
+try
+    res.name=hazard.name(event_i);
+catch % empty catch
+end % try
 
 set(gcf,'Color',[1 1 1])
 

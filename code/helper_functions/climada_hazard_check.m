@@ -56,7 +56,7 @@ legend_str{1}=strrep(fN,'_',' ');
 switch hazard.peril_ID
     case 'TC'
         intensity_threshold=20;
-        intensity_bins=intensity_threshold:5:100;
+        intensity_bins=intensity_threshold:10:120;
     otherwise
         intensity_threshold=0;
         intensity_bins=[0:ceil(max(max(hazard.intensity)))];
@@ -107,11 +107,11 @@ climada_hazard_plot(hazard,0,'',[min(intensity_bins) max(intensity_bins)]);
 title('maxmium intensity');
 
 subplot(2,2,3)
-climada_hazard_plot(hazard,-1,'',[min(intensity_bins) max(intensity_bins)]);
-title('biggest event');
+plot_res=climada_hazard_plot(hazard,-1,'',[min(intensity_bins) max(intensity_bins)]);
+title(sprintf('biggest event (%i)',plot_res.event_i));
 
 subplot(2,2,4)
-climada_hazard_plot(hazard,-2,'',[min(intensity_bins) max(intensity_bins)]);
-title('2^{nd} biggest event');
+plot_res=climada_hazard_plot(hazard,-2,'',[min(intensity_bins) max(intensity_bins)]);
+title(sprintf('2^{nd} biggest event (%i)',plot_res.event_i));
 
 end % climada_hazard_check
