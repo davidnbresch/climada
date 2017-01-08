@@ -310,7 +310,7 @@ MarkerSizes(MarkerSizes<1)=0;
 max_damage_at_centroid=[]; % init
 max_damage_absolute=full(max(max(hazard.damage)));
 %damage_min_value=full(min(min(hazard.damage(hazard.damage>0))));
-damage_max_value=full(max(max(hazard.damage)))*params.damage_scale;
+%damage_max_value=full(max(max(hazard.damage)))*params.damage_scale;
 %max_damage_str=sprintf('%g',damage_max_value);
 
 % prepare country border (for substantila speedup)

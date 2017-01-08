@@ -81,6 +81,14 @@ ax_lim = [min(hazard.lon)-ax_lim_buffer           max(hazard.lon)+ax_lim_buffer 
 
 title_str=''; % init
 
+switch hazard.peril_ID
+    case 'TC'
+        LevelList=0:10:120;
+        caxis_range=[min(LevelList) max(LevelList)];
+    otherwise
+        LevelList=[];
+end % switch
+
 if event_i<0
     % search for i-thlargest event
     event_sum=sum(hazard.intensity,2);
@@ -135,6 +143,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     gridded_VALUE = griddata(hazard.lon,hazard.lat,values,X,Y);
     if verbose,fprintf(' done\n');end
     contourf(X, Y, gridded_VALUE,'linecolor','none')
+    %contourf(X, Y, gridded_VALUE,'linecolor','none','LevelList',LevelList)
     hold on
     box on
     if plot_centroids
