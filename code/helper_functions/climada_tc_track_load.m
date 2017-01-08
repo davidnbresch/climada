@@ -18,8 +18,9 @@ function tc_track=climada_tc_track_load(tc_track_filename,check_plot)
 %       structure, as returned by climada_tc_read_unisys_database or
 %       climada_tc_read_unisys_tc_track
 %       If only a filename is given, the default path (../tc_tracks) is
-%       presumed, and if only a basin is given (e.g. atl_hist), the
-%       filename is completed (to tracks.atl_hist.mat)
+%       presumed, and if only a basin is given (e.g. atl_hist or atl_prob),
+%       the filename is completed (to tracks.atl_hist.mat). But 'atl' is
+%       not sufficient, since it could mean atl_hist or atl_prob.
 %       > promted for (.mat) if not given
 % OPTIONAL INPUT PARAMETERS:
 %   check_plot: if =1, show checkplot, =0 not (default)
@@ -33,6 +34,7 @@ function tc_track=climada_tc_track_load(tc_track_filename,check_plot)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160516, initial
 % David N. Bresch, david.bresch@gmail.com, 20160528, more filename completion options
+% David N. Bresch, david.bresch@gmail.com, 20170108, filename completion options clarified
 %-
 
 tc_track=[]; % init output
@@ -57,19 +59,20 @@ if isempty(tc_track_filename) % local GUI
         tc_track_filename=fullfile(pathname,filename);
     end
 elseif ~exist(tc_track_filename,'file')
-    % complete path, if missing
+    % complete path, if missing, add extension, if missing
     [fP,fN,fE]=fileparts(tc_track_filename);
-    if isempty(fP),fP=[climada_global.data_dir filesep 'tc_tracks'];end
     if isempty(fE)
-        fE='.mat';
+        fE='.mat'; % complete extension, if missing
     elseif ~strcmp(fE,'.mat') % to allow for e.g. tracks.atl_hist
-        fE=[fE '.mat'];
+        fE=[fE '.mat']; % complete extension, if missing
     end
+    if isempty(fP),fP=[climada_global.data_dir filesep 'tc_tracks'];end % complete path, if missing
+    tc_track_filename=[fP filesep fN fE];
+    if ~exist(tc_track_filename,'file'),fN=['tracks.' fN];end % prepend tracks. to the name
     tc_track_filename=[fP filesep fN fE];
     if ~exist(tc_track_filename,'file')
-        [fP,fN,fE]=fileparts(tc_track_filename);
-        fN=['tracks.' fN]; % prepend tracks.
-        tc_track_filename=[fP filesep fN fE];
+        fprintf('Error: %s not found\n',tc_track_filename)
+        return
     end
 end
 
