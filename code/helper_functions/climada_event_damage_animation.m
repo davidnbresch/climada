@@ -30,7 +30,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %   climada_event_damage_animation
 %   climada_event_damage_animation('ask'); % prompt for both input data and output animation filename
 %
-%   params=climada_event_damage_animation % return default parameters
+%   params=climada_event_damage_animation('params') % return default parameters
 % INPUTS:
 %   animation_data_file: the data file (.mat) with hazard set which
 %       includes event damage information, see e.g. climada_event_damage_data_tc
@@ -100,7 +100,7 @@ res=[]; % init output (mainly used to return (default) parameters
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
-if nargin==0,animation_data_file='params';end % to return params
+%if nargin==0,animation_data_file='params';end % to return params
 
 % poor man's version to check arguments
 % and to set default value where  appropriate
@@ -237,7 +237,7 @@ end
 if params.show_plots,fig_visible='on';else fig_visible='off';end
 fig_handle = figure('Name','animation','visible',fig_visible,'Color',[1 1 1],'Position',params.Position);
 
-% c_ax = []; %init
+c_ax = []; %init
 if params.schematic_tag
     % create schematic colormap (gray red)
     [hazard_cmap,c_ax]= climada_colormap('schematic');
@@ -251,9 +251,9 @@ else
     [hazard_cmap,c_ax]= climada_colormap(hazard.peril_ID);
     hazard_cmap = brighten(hazard_cmap,0.2);
 end
-% if isempty(c_ax)
-%     c_ax = [0 full(max(max(hazard.intensity)))];
-% end
+if isempty(c_ax)
+    c_ax = [0 full(max(max(hazard.intensity)))];
+end
 
 intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end
