@@ -13,6 +13,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %   (e.g for another peril than TC).
 %
 %   As one often needs to play with visualization parameters, the process is split.
+%   Threrefor call climada_event_damage_animation without any argument to return the
+%   default parameters (same as calling climada_event_damage_animation('params')
 %
 %   Note that this code does not (yet) run in Octave, as video support is
 %   limited (see <http://octave.sf.net/video/>) and the present code uses
@@ -25,21 +27,25 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % CALLING SEQUENCE:
 %   climada_event_damage_animation(animation_data_file,params)
 % EXAMPLE:
-%   climada_event_damage_animation; % prompt for
+%   climada_event_damage_animation
+%   climada_event_damage_animation('ask'); % prompt for both input data and output animation filename
+%
+%   params=climada_event_damage_animation % return default parameters
 % INPUTS:
 %   animation_data_file: the data file (.mat) with hazard set which
 %       includes event damage information, see e.g. climada_event_damage_data_tc
 %       If specified without path, searched for in ../results and extension .mat
-%       > promted for if not given
+%       If empty, use the default file, i.e. ../results/animation_data.mat
+%       If ='ask', prompt for
 %       If ='params', return all default parameters in res, abort
-%       If ='.', use the default file, i.e. ../results/animation_data.mat
 % OPTIONAL INPUT PARAMETERS:
 %   params: a structure with fields:
 %    animation_mp4_file: the filename of the resulting .mp4 movie
-%       If specified without path, stored in ../results with extension .mp4
-%       > promted for if not given (if cancel pressed, the movie frames are
+%       If specified without path, stored in ../results with extension
+%       according to VideoWriter (see params.video_profile)
+%       If empty, use default ../results/animation_movie.mp4 (or other ext)
+%       If ='ask', prompt for (if cancel pressed, the movie frames are
 %       not written to file - useful for test)
-%       If ='.', use the default file, i.e. ../results/animation_movie.mp4
 %    schematic_tag: whether we plot schematic or with colorbar)
 %       =0: show colorbar and values, e.g. tc wind color scale is yellow
 %       (20-30 m/s), orange (30-40 m/s), dark orange (40-50 m/s), etc...
@@ -67,6 +73,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       the value of plot_tc_track is the MarkerSize of the dots, use e.g.=5
 %    video_profile: the video profile (see help VideoWriter), default is ='MPEG-4'
 %       if this fails, try ='Motion JPEG AVI'
+%       If strcmpi(computer,'GLNXA64') the code uses 'Motion JPEG AVI' as
+%       default already
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -87,10 +95,12 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile 
 %-
 
-res=[];
+res=[]; % init output (mainly used to return (default) parameters
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
+
+if nargin==0,animation_data_file='params';end % to return params
 
 % poor man's version to check arguments
 % and to set default value where  appropriate
@@ -114,7 +124,12 @@ if ~isfield(params,'video_profile'),params.video_profile=[];end
 
 % PARAMETERS
 %
+if isempty(animation_data_file),animation_data_file=...
+        [climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
+%
 % set default values (see header for details)
+if isempty(params.animation_mp4_file),params.animation_mp4_file=...
+        [climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];end
 if isempty(params.schematic_tag),params.schematic_tag=2;end
 if isempty(params.show_plots),params.show_plots=0;end
 if isempty(params.FontSize),params.FontSize=18;end
@@ -127,7 +142,13 @@ if isempty(params.Position),params.Position=[1 5 1310 1100];end
 if isempty(params.jump_step),params.jump_step=1;end
 if isempty(params.frame_start),params.frame_start=1;end
 if isempty(params.plot_tc_track),params.plot_tc_track=0;end
-if isempty(params.video_profile),params.video_profile='MPEG-4';end
+if isempty(params.video_profile)
+    if strcmpi(computer,'GLNXA64') % does not support mp4
+        params.video_profile='Motion JPEG AVI'; % larger output
+    else
+        params.video_profile='MPEG-4'; % default, best compression
+    end
+end
 %
 windfieldFaceAlpha=0; % default
 assets_plot_solid=0; % default
@@ -149,17 +170,15 @@ dX=0;dY=0; % default=1
 %
 % TEST
 make_mp4=1; % default=1, set =0 for debugging (no movie file created, each frame shown on screen)
-%animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
-%animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
 %
 % damage plot parameters (for circle style)
 circle_diam=16; %5; % default=20
 circle_format='or';
 circle_linewidth=3;
-asset_color  = [199 21 133 ]/255; %mediumvioletred
-%asset_color = [255 97 3 ]/255; %cadmiumorange
-%asset_color = [250 128 114 ]/255; %salmon
-asset_color2 = [255 130 171]/255; %palevioletred 1
+asset_color  = [199 21 133 ]/255; %m ediumvioletred
+%asset_color = [255 97 3 ]/255; % cadmiumorange
+%asset_color = [250 128 114 ]/255; % salmon
+asset_color2 = [255 130 171]/255; % palevioletred 1
 %
 % assets coloring (used for solid colored assets, ignored for circles)
 assets_cmap = makeColorMap([0 1 0], [0 0 1], 10);
@@ -169,18 +188,10 @@ damage_cmap = makeColorMap([.7 .7 0], [1 0 0], 10); % [Red Green Blue] [1 1 1] w
 % to test color maps:
 %close all;figure,colormap(assets_cmap);colorbar;figure,colormap(damage_cmap);colorbar
 
-if strcmpi(animation_data_file,'params'),params.animation_mp4_file='.';end % to populate also animation_mp4_file
-if strcmpi(params.animation_mp4_file,'.'),params.animation_mp4_file=...
-        [climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];end
-
-res=params; % prepare return values
-if strcmpi(animation_data_file,'params'),return;end % special case, return the full params strcture
-
-if strcmpi(animation_data_file,'.'),animation_data_file=...
-        [climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
+if strcmpi(animation_data_file,'params'),res=params;return;end % special case, return the full params strcture
 
 % prompt for animation_data_file if not given
-if isempty(animation_data_file) % local GUI
+if strcmpi(animation_data_file,'ask') % local GUI
     animation_data_file=[climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];
     [filename, pathname] = uigetfile(animation_data_file, 'Select animation data file:');
     if isequal(filename,0) || isequal(pathname,0)
@@ -198,7 +209,7 @@ if isempty(fE),fE='.mat';end
 animation_data_file=[fP filesep fN fE];
 
 % prompt for params.animation_mp4_file if not given
-if isempty(params.animation_mp4_file) % local GUI
+if strcmpi(params.animation_mp4_file,'ask') % local GUI
     params.animation_mp4_file =[climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];
     [filename, pathname] = uiputfile(params.animation_mp4_file, 'Save animation as (Cancel: show frames on screen only):');
     if isequal(filename,0) || isequal(pathname,0)
@@ -226,7 +237,7 @@ end
 if params.show_plots,fig_visible='on';else fig_visible='off';end
 fig_handle = figure('Name','animation','visible',fig_visible,'Color',[1 1 1],'Position',params.Position);
 
-c_ax = []; %init
+% c_ax = []; %init
 if params.schematic_tag
     % create schematic colormap (gray red)
     [hazard_cmap,c_ax]= climada_colormap('schematic');
@@ -240,9 +251,9 @@ else
     [hazard_cmap,c_ax]= climada_colormap(hazard.peril_ID);
     hazard_cmap = brighten(hazard_cmap,0.2);
 end
-if isempty(c_ax)
-    c_ax = [0 full(max(max(hazard.intensity)))];
-end
+% if isempty(c_ax)
+%     c_ax = [0 full(max(max(hazard.intensity)))];
+% end
 
 intensity_units=[char(hazard.peril_ID) ' intensity'];
 if isfield(hazard,'units'),intensity_units=[intensity_units ' [' hazard.units ']'];end

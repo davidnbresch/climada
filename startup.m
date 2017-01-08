@@ -1,9 +1,10 @@
 % startup file to set environment for climada
-% (c) David N. Bresch, 2008, 2014, 2016, david.bresch@gmail.com
+% (c) David N. Bresch, 2008, 2014, 2016, 2017, david.bresch@gmail.com
 % 20160122: 2nd level of sub-folders for code added
 % 20160323: omit clc
 % 20160609: do not add climada core's code/old any more
 % 20161010: empty modules dir added
+% 20170108: hint to climada_git_pull added
 %
 % define the climada root directory
 % --------------------------------
@@ -77,4 +78,4 @@ climada_init_vars;
 
 if strcmp(computer,'GLNXA64'),climada_global.waitbar=0;end % NCAR
 
-fprintf('done\n');
+fprintf('done (consider running climada_git_pull every now and then, at least weekly)\n');

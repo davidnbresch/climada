@@ -23,6 +23,10 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   3. generate the movie, use
 %     >> climada_event_damage_animation % select the animation_data.mat file
 %
+%   Note: as one often needs to set some of the paramers, call
+%   climada_event_damage_data_tc without any argument to return the
+%   default parameters (same as calling climada_event_damage_data_tc('params')
+%
 %   Example for Sidr in Bangladesh:
 %   >> tc_track=climada_tc_read_unisys_database('nio');tc_track=tc_track(173);tc_track.name='Sidr';
 %   >> tc_track.MaxSustainedWind(end-1)=80;tc_track.MaxSustainedWind(end)=40; % 2nd and last timestep far over land, weakened
@@ -30,14 +34,14 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   %  previous line the entity for Bangladesh if it does not yet exist:
 %   %  entity=climada_nightlight_entity('Bangladesh');
 %   >> climada_event_damage_data_tc(tc_track,entity,2); % run with ...,0) for full resolution
-%   >> climada_event_damage_animation('.')
+%   >> climada_event_damage_animation
 %
 %   Example for Andrew in Florida:
 %   >> tc_track=climada_tc_read_unisys_database('atl');tc_track=tc_track(1170);tc_track.name='Andrew';
 %   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity');
 %   >> params.focus_region=[-84 -78 23 29];
 %   >> climada_event_damage_data_tc(tc_track,entity,0,params);
-%   >> climada_event_damage_animation('.')
+%   >> climada_event_damage_animation
 %
 %   Example for all historic tracks in Florida which generate damage:
 %   >> tc_track=climada_tc_track_load('tracks.atl_hist'); % all historic
@@ -49,7 +53,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   >> tc_track=tc_track(pos); % restrict to damageing tracks
 %   >> params.focus_region=[-84 -78 23 29];
 %   >> climada_event_damage_data_tc(tc_track,entity,2,params);
-%   >> climada_event_damage_animation('.')
+%   >> climada_event_damage_animation
 %
 %   Instead of using a track from any of the ../data/tc_tracks databases,
 %   you might also just download a single track from
@@ -78,7 +82,9 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   entity=climada_entity_load('USA_UnitedStates_Florida');
 %   hazard=climada_event_damage_data_tc(tc_track,entity); % check
 %   hazard=climada_event_damage_data_tc(tc_track,entity,0); % high-res
-%   climada_event_damage_animation('.') % create the movie
+%   climada_event_damage_animation % create the movie
+%
+%   params=climada_event_damage_data_tc % return default parameters
 % INPUTS:
 %   tc_track: a tc_track structure, as returned by
 %       climada_tc_read_unisys_database or climada_tc_read_unisys_tc_track
@@ -144,8 +150,10 @@ hazard=[];hazard_TS=[]; % init output
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
+if nargin==0,tc_track='params';end % to return params
+
 % poor man's version to check arguments
-if ~exist('tc_track','var'),   return;end
+if ~exist('tc_track','var'),   tc_track='params';end
 if ~exist('entity','var'),     entity=[];end
 if ~exist('check_mode','var'), check_mode=[];end
 if ~exist('params','var'),     params=struct;end
