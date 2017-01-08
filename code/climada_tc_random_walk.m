@@ -14,7 +14,7 @@ function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,
 % CALLING SEQUENCE:
 %   tc_track=climada_tc_random_walk(tc_track,ens_size);
 % EXAMPLE:
-%   tc_track=climada_tc_read_unisys_database;
+%   tc_track=climada_tc_read_unisys_database('atl');
 %   tc_track=climada_tc_random_walk(tc_track);
 % INPUTS:
 %   tc_track: a structure with the track information for each cyclone i at
@@ -43,6 +43,7 @@ function tc_track_out=climada_tc_random_walk(tc_track,ens_size,ens_amp,Maxangle,
 % David N. Bresch, david.bresch@gmail.com, 20160809, rand('seed',0) for Octave
 % David N. Bresch, david.bresch@gmail.com, 20160809, ens_amp (was 0.35) and Maxangle (was pi/7) reduced
 % David N. Bresch, david.bresch@gmail.com, 20160821, rand('seed',0) from Ocatve editor was rand("seed",0) - grrr
+% David N. Bresch, david.bresch@gmail.com, 20170108, abort if tc_track empty
 %-
 
 % init global variables
@@ -56,12 +57,7 @@ if ~exist('ens_amp'   , 'var'), ens_amp    = []; end
 if ~exist('Maxangle'  , 'var'), Maxangle   = []; end
 if ~exist('check_plot', 'var'), check_plot = []; end
 
-% if isempty(tc_track),return;end
-if isempty(tc_track)
-    load ([climada_global.data_dir '\tc_tracks\tc_tracks_mozambique_1978_2011_southwestindian_cleaned_6h'])
-end
-
-
+if isempty(tc_track),return;end
 
 % PARAMETERS
 %
