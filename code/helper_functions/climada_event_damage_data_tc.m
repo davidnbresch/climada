@@ -262,7 +262,7 @@ n_tracks=length(tc_track);
 % for-loop progress to stdout
 t0       = clock;
 fprintf('pre-processing %i track(s)\n',n_tracks);
-mod_step = 2; % first time estimate after 2 steps, then every 10th
+mod_step = 1; % first time estimate after 2 steps, then every 10th
 format_str='%s';
 
 n_sel=0; % init
@@ -422,6 +422,7 @@ for track_i=1:n_tracks
             if hazard.event_count>500,mod_step=100;else mod_step=50;end
             if hazard_i<100,mod_step=20;end
             if hazard_i<50,mod_step=10;end
+            if hazard_i<10,mod_step=2;end
             t_elapsed_event   = etime(clock,t0)/hazard_i;
             events_remaining  = hazard.event_count-hazard_i;
             t_projected_sec   = t_elapsed_event*events_remaining;

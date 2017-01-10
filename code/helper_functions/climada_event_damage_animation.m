@@ -274,17 +274,6 @@ if isempty(params.frame_end),params.frame_end=hazard.event_count;end
 n_frames=params.frame_end-params.frame_start+1;
 eff_n_frames=max(ceil(n_frames/params.jump_step),1);
 
-t0=clock;format_str='%s';
-if params.jump_step==1
-    msgstr   = sprintf('processing %i frames (frame %i .. %i)',n_frames,params.frame_start,params.frame_end);
-    mod_step=2; % first time estimate after 2 events
-else
-    msgstr   = sprintf('processing approx. %i frames (frame %i:%i:%i)',eff_n_frames,params.frame_start,params.jump_step,params.frame_end);
-    mod_step=1;
-end
-
-fprintf('%s\n',msgstr);
-
 % define grid
 npoints=abs(npoints); % force positive
 xx=linspace(min(hazard.lon)-dX, max(hazard.lon)+dX, npoints);
@@ -323,6 +312,14 @@ if make_mp4
     vidObj = VideoWriter(params.animation_mp4_file,params.video_profile);
     open(vidObj);
 end
+
+t0=clock;format_str='%s';mod_step=1; % first time estimate after 1 event
+if params.jump_step==1
+    msgstr   = sprintf('processing %i frames (frame %i .. %i)',n_frames,params.frame_start,params.frame_end);
+else
+    msgstr   = sprintf('processing approx. %i frames (frame %i:%i:%i)',eff_n_frames,params.frame_start,params.jump_step,params.frame_end);
+end
+fprintf('%s\n',msgstr);
 
 % start loop
 for frame_i=params.frame_start:params.jump_step:params.frame_end
@@ -461,6 +458,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
         if eff_n_frames<100,mod_step=20;end
         if eff_n_frames<50,mod_step=10;end
         eff_frame_i=max(ceil((frame_i-params.frame_start)/params.jump_step),1);
+        if eff_frame_i<10,mod_step=2;end
         t_elapsed_event   = etime(clock,t0)/eff_frame_i;
         frames_remaining  = eff_n_frames-eff_frame_i;
         t_projected_sec   = t_elapsed_event*frames_remaining;

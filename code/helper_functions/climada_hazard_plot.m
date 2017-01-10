@@ -1,4 +1,4 @@
-function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids)
+function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids,entity)
 % climada plot single hazard event footprint
 % NAME:
 %   climada_hazard_plot
@@ -8,7 +8,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 %   see also climada_plot_tc_footprint (works for TC only)
 %   and the high-resolution version climada_hazard_plot_hr
 % CALLING SEQUENCE:
-%   climada_hazard_plot(hazard,event_i,label)
+%   res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids,entity)
 % EXAMPLE:
 %   climada_hazard_plot(climada_hazard_load,1); % plot first event
 %   climada_hazard_plot; % prompt for hazard event set, plot largest event
@@ -20,6 +20,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 %       if event_i=-i, the i-th 'largest' event (sum of intensities) is shown
 %           e.g. for event_i=-2, the second largest event is shown
 %       default=-1 (just to get something on the screen ;-)
+%       Different meaning in case you pass entity (see optional parameters)
 % OPTIONAL INPUT PARAMETERS:
 %   label: a struct with a label to add on the plot (i.e. a place)
 %       longitude: the longitude (decimal)
@@ -28,6 +29,9 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 %   caxis_range: [minval maxval], the range of the color axis, e.g. [20 40]
 %       to show colors for values brtween 20 and 40
 %   plot_centroids: =1, plot centroids, =0 no (default)
+%   entity: if provided, do not show 'biggest' hazard in terms of itensity,
+%       but regarding resulting damage based on entity
+%       Only makes sense for event_i<0, as it shows the i-th largest damage
 % OUTPUTS:
 %   creates a figure
 %   res, a structure with the core data, i.e. X,Y and VALUE as shown
@@ -40,6 +44,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % Lea Mueller, muellele@gmail.com, 20150512, switched to griddata instead of climada_gridded_Value
 % David N. Bresch, david.bresch@gmail.com, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20160930, legend added, if centroids are plotted
+% David N. Bresch, david.bresch@gmail.com, 20170110, entity added
 %-
 
 res=[]; % init
@@ -53,6 +58,7 @@ if ~exist('event_i','var'),event_i=-1;end
 if ~exist('label','var'),label=[];end
 if ~exist('caxis_range','var'),caxis_range=[];end
 if ~exist('plot_centroids','var'),plot_centroids=0;end
+if ~exist('entity','var'),plot_centroids=0;end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
 if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
@@ -70,6 +76,11 @@ verbose=0; % default=0
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 if ~isfield(hazard,'units'),hazard.units='';end
+
+if ~isempty(entity)
+    EDS=climada_EDS_calc(entity,hazard);
+    event_sum=EDS.damage; % pass damage instead of intensity
+end
 
 % calculate figure scaling parameters
 scale  = max(hazard.lon) - min(hazard.lon);
@@ -92,7 +103,7 @@ end % switch
 event_ii=0;
 if event_i<0
     % search for i-thlargest event
-    event_sum=sum(hazard.intensity,2);
+    if isempty(event_sum),event_sum=sum(hazard.intensity,2);end
     [~,sorted_i]=sort(event_sum);
     event_ii=sorted_i(length(sorted_i)+event_i+1);
     values=full(hazard.intensity(event_ii,:)); % extract one event
