@@ -58,7 +58,7 @@ if ~exist('event_i','var'),event_i=-1;end
 if ~exist('label','var'),label=[];end
 if ~exist('caxis_range','var'),caxis_range=[];end
 if ~exist('plot_centroids','var'),plot_centroids=0;end
-if ~exist('entity','var'),plot_centroids=0;end
+if ~exist('entity','var'),entity=[];end
 
 if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
 if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
@@ -80,6 +80,8 @@ if ~isfield(hazard,'units'),hazard.units='';end
 if ~isempty(entity)
     EDS=climada_EDS_calc(entity,hazard);
     event_sum=EDS.damage; % pass damage instead of intensity
+else
+    event_sum=[];
 end
 
 % calculate figure scaling parameters
