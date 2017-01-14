@@ -197,7 +197,7 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
             line=fgetl(fid);
             
             line_count=line_count+1;
-            if length(line)>0
+            if ~isempty(line)
                 
                 % line
                 if track_record_count>0,record_type=2;end; % track record

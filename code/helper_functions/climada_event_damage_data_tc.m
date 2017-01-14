@@ -11,6 +11,8 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   split. See climada_event_damage_animation for nice plots and movie
 %   generation.
 %
+%   See HINT below in description of OUTPUTS for use by other visualization projects
+%
 %   Usual steps:
 %
 %   0: load your tc_track and entity with
@@ -44,13 +46,14 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   >> climada_event_damage_animation
 %
 %   Example for all historic tracks in Florida which generate damage:
-%   >> tc_track=climada_tc_track_load('tracks.atl_hist'); % all historic
+%   >> tc_track=climada_tc_read_unisys_database('atl'); % all historic
 %   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity');
-%   >> hazard_hist=climada_hazard_load('USA_UnitedStates_atl_TC_hist'); 
-%   %  previous line the historic hazard set, if it does not yet exist:
-%   %  hazard_hist=climada_tc_hazard_set(tc_track,'NO_SAVE',entity);
-%   >> EDS=climada_EDS_calc(entity,hazard_hist);pos=find(EDS.damage>0);
-%   >> tc_track=tc_track(pos); % restrict to damageing tracks
+%   >> hazard_prob=climada_hazard_load('USA_UnitedStates_atl_TC');
+%   >> entity=climada_assets_encode(entity,hazard_prob); % encode
+%   >> EDS=climada_EDS_calc(entity,hazard_prob); % calculate damage for all events
+%   >> % find non-zero damage of historic events:
+%   >> pos=find(EDS.damage(logical(hazard_prob.orig_event_flag))>0);
+%   >> tc_track=tc_track(pos); % restrict to historic damageing tracks
 %   >> params.focus_region=[-84 -78 23 29];
 %   >> climada_event_damage_data_tc(tc_track,entity,2,params);
 %   >> climada_event_damage_animation
@@ -66,11 +69,14 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   The code produces all the step-by-step data to produce a damage
 %   animation. Instead of single events, the resulting hazard event set
 %   contains single time steps of the one event and the corresponding
-%   damage is also stored as a field into hazard (hazard.damage). For ease
-%   of use, the tc_track and the assets are also stored to hazard.    
+%   damage is also stored as a field into hazard (hazard.damage). If the
+%   flag params.show_footprint=0 (default), the intensity shows the
+%   instanteneous hazard intensity, while hazard.damage is the cumulated
+%   damage. For ease of use, the tc_track and the assets are also stored to
+%   hazard, see HINT in description of OUTPUTS below.
 %
-%   The code determines the plot area based on entity. See variable
-%   focus_region in case you'd like to hard-wire the region. 
+%   The code determines the plot area based on entity. See
+%   params.focus_region in case you'd like to hard-wire the region.
 %
 %   prior calls: none necessarily, consider climada_tc_track_info to obtain
 %       information about all tracks in an ocean basin
@@ -92,6 +98,9 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %       code does render one after the other of the tracks within, keeping
 %       the damaged pixels colored.
 %       If ='params', just return the default parameters params in hazard
+%       SPECIAL: if a previosuly generated hazard is passed, the 
+%           non-mandatory fields for animation purposes are cleared and the
+%           'clean up' hazard is retuned. 
 %   entity: a climada entity, see climada_entity_read (skip hazard set
 %       selection to encode to) or climada_entity_load
 %       > promted for if not given
@@ -120,6 +129,10 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %    damage_scale: the scale for plots, such that
 %       max_damage=max(entity.assets.Value)*damage_scale, default =1/100
 %    label_track_nodes: if =1 label track nodes along track, default=0
+%    grid_add: add regular (coarse) grid to better show hazard intensity
+%       offshore. Default=1, set=0 if centroids cover eg water points already
+%    grid_delta: the regular encompassing grid spacing in degrees,
+%       default=0.2, see grid_add.
 % OUTPUTS:
 %   hazard: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -132,6 +145,34 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %           normalize, can also be calculated as =full(max(hazard.damage,[],1));
 %       in case of hazard=climada_event_damage_data_tc('params'), hazard
 %       contains the default parameters
+%
+% 	HINT: for data to be directly used by other visualization projects, you
+% 	need to consider the following fields:
+%   hazard.intensity(time_i,centroid_i): the hazard intensity (here m/s
+%       wind speed) for timestep_i at centroid i
+%   hazard.damage(time_i,centroid_i): the cumulative damage (here in USD)
+%       for timestep_i at centroid i
+%   hazard.lon(centroid_i): the longitude of centroid i
+%   hazard.lat(centroid_i): the latitude of centroid i
+%   hazard.event_name{time_i}: then name (with time stamp) of time step i
+%   hazard.focus_region(4): the region for whch the data is valid
+%       [minlon maxlon minlat maxlat]
+%   hazard.assets.Value(year_i,centroid_j): the asset Value (USD) for year i
+%       at centroid j, if first dimension=1, constant/static assets values
+%   hazard.assets.lon(centroid_j): the longitude of centroid j
+%   hazard.assets.lat(centroid_j): the latitude of centroid j
+%   hazard.assets.Values_yyyy(year_i): the actual year for year i (=1 if
+%       constant/static assets value
+%   hazard.assets.Value(year_i,centroid_j): the asset Value (USD) for year i
+%       at centroid j, if first dimension=1, constant/static assets values
+%   hazard.tc_track(track_i): the tropical cyclone track data, with:
+%   hazard.tc_track_number(time_i): the track_i of time step i, i.e.
+%       hazard.tc_track(hazard.tc_track_number(time_i)) is the track
+%   hazard.tc_track_node(time_i): the track node of time step i, i.e.
+%       hazard.tc_track(hazard.tc_track_number(time_i)).lon(hazard.tc_track_node(time_i))
+%       hazard.tc_track(hazard.tc_track_number(time_i)).lat(hazard.tc_track_node(time_i))
+%       is the longitude and latitude of the track node at time step i
+%
 %   hazard_TS: in case add_surge=1, otherwise empty. Does contain the same
 %       additional fields tc_track, tc_track_node, damage and max_damage.
 % MODIFICATION HISTORY:
@@ -143,6 +184,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 % David N. Bresch, david.bresch@gmail.com, 20150318, low wind to NaN removed
 % David N. Bresch, david.bresch@gmail.com, 20170103, overhaul, params added etc.
 % David N. Bresch, david.bresch@gmail.com, 20170104, clean up
+% David N. Bresch, david.bresch@gmail.com, 20170112, interface to other viz projects improved, see HINT in description of OUTPUTS
 %-
 
 hazard=[];hazard_TS=[]; % init output
@@ -168,6 +210,8 @@ if ~isfield(params,'damage_scale'),       params.damage_scale=[];end
 if ~isfield(params,'label_track_nodes'),  params.label_track_nodes=[];end
 if ~isfield(params,'focus_track_region'), params.focus_track_region=[];end
 if ~isfield(params,'extend_tc_track'),    params.extend_tc_track=[];end
+if ~isfield(params,'grid_add'),           params.grid_add=[];end
+if ~isfield(params,'grid_delta'),         params.grid_delta=[];end
 
 % PARAMETERS
 %
@@ -183,6 +227,8 @@ if isempty(params.damage_scale),          params.damage_scale=1/100;end
 if isempty(params.label_track_nodes),     params.label_track_nodes=0;end
 if isempty(params.focus_track_region),    params.focus_track_region=0;end
 if isempty(params.extend_tc_track),       params.extend_tc_track=1;end
+if isempty(params.grid_add),              params.grid_add=1;end
+if isempty(params.grid_delta),            params.grid_delta=0.2;end
 %
 % some overriders for check mode
 if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
@@ -191,16 +237,35 @@ if check_mode==2,params.tc_track_timestep=2;end % 2h for fast checks
 % the range (in degree) around the tc_track (to show a bit a wider area in plots)
 dX=1;dY=1; % default=1
 %
-% a grid to show windfield (as the entity might only contain points on land)
-grid_add=1; % default=1, =0 if centroids cover eg water points already
-grid_delta=0.2; % grid spacing in degree, default=1
-%
 climada_global_transition=climada_global.tc.extratropical_transition;
 climada_global.tc.extratropical_transition=1;
 %
 hazard_arr_density=0.1; % very technical, set to rather too large a number
 
 if strcmpi(tc_track,'params'),hazard=params;return;end % special case, return the full parameters strcture
+
+if isfield(tc_track,'damage')
+    fprintf('NOTE: hazard reduced to key fields:\n');
+    tc_track=rmfield(tc_track,'centroid_ID');
+    tc_track=rmfield(tc_track,'peril_ID');
+    tc_track=rmfield(tc_track,'orig_years');
+    tc_track=rmfield(tc_track,'date');
+    tc_track=rmfield(tc_track,'filename');
+    tc_track=rmfield(tc_track,'reference_year');
+    tc_track=rmfield(tc_track,'comment');
+    tc_track=rmfield(tc_track,'units');
+    tc_track=rmfield(tc_track,'event_count');
+    tc_track=rmfield(tc_track,'event_ID');
+    tc_track=rmfield(tc_track,'orig_event_count');
+    tc_track=rmfield(tc_track,'orig_event_flag');
+    tc_track=rmfield(tc_track,'frequency');
+    tc_track=rmfield(tc_track,'tc_track_ID_no');
+    tc_track=rmfield(tc_track,'fraction');
+    tc_track=rmfield(tc_track,'max_damage');
+    tc_track=rmfield(tc_track,'matrix_density');
+    hazard=rmfield(tc_track,'annotation') % last without ; to stdout
+    return
+end
 
 entity=climada_entity_load(entity); % prompt/check for entity
 if isempty(entity),return;end       % Cancel pressed
@@ -232,10 +297,10 @@ centroids.lat=entity.assets.lat;
 entity.assets.centroid_index=1:length(entity.assets.lon);
 entity.assets.hazard.filename='NO_SAVE';
 
-if grid_add
+if params.grid_add
     grid_region=params.focus_region;
-    for i=grid_region(1):grid_delta:grid_region(2)
-        for j=grid_region(3):grid_delta:grid_region(4)
+    for i=grid_region(1):params.grid_delta:grid_region(2)
+        for j=grid_region(3):params.grid_delta:grid_region(4)
             centroids.lon(end+1)=i;
             centroids.lat(end+1)=j;
         end
@@ -446,6 +511,19 @@ hazard.max_damage=max_damage_at_centroid'; % store max damage
 fprintf('max TC damage %g\n',max(hazard.max_damage));
 hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 hazard.annotation='assets [USD] green..blue, wind [m/s] grey..red, damage [USD] yellow..red';
+
+% reform hazard to be directly used by other visualization projects
+
+% hazard.intensity(time_i,centroid_i): the hazard intensity (here m/s wind speed) for timestep_i at centroid i
+% hazard.damage(time_i,centroid_i): the cumulative damage (here in USD) for timestep_i at centroid i
+% hazard.lon(centroid_i): the longitude of centroid i
+% hazard.lat(centroid_i): the latitude of centroid i
+% hazard.assets.Value(year_i,centroid_j): the asset Value (USD) for year i at centroid j, if first dimension=1, constant/static assets values
+% hazard.assets.lon(centroid_j): the longitude of centroid j
+% hazard.assets.lat(centroid_j): the latitude of centroid j
+% hazard.assets.Values_yyyy(year_i): the actual year for year i (=1 if constant/static assets value
+% hazard.assets.Value(year_i,centroid_j): the asset Value (USD) for year i at centroid j, if first dimension=1, constant/static assets values
+hazard.assets.Values_yyyy=1; % dummy for the time being
 
 if params.add_surge % add TS (tropical cyclone surge)
     
