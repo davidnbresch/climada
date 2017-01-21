@@ -39,6 +39,7 @@ function res=climada_csvread(csv_filename,delimiter,noheader)
 %       (or named var{i} if noheader=1)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20161203, initial
+% David N. Bresch, david.bresch@gmail.com, 20170121, CollapseDelimiters
 %-
 
 res=[]; % init output
@@ -85,7 +86,7 @@ if exist(csv_filename,'file')
         else
             % read data
             
-            raw_line_data=strsplit(str,',');
+            raw_line_data=strsplit(str,',','CollapseDelimiters', false); % treat multiple delimiters separately
             
             if isempty(csv_fieldnames) % if no header
                 for var_i=1:length(raw_line_data);csv_fieldnames{var_i}=['var' num2str(var_i)];end
