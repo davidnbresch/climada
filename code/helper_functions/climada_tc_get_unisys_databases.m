@@ -28,12 +28,12 @@ if ~climada_init_vars,return;end % init/import global variables
 
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
-if ~exist('tc_tracks_folder','var')
-    tc_tracks_folder = [climada_global.data_dir filesep 'tc_tracks'];
-end
+if ~exist('tc_tracks_folder','var'),tc_tracks_folder='';end
 if ~exist('read_it','var'),read_it=0;end
 
 % PARAMETERS
+%
+if isempty(tc_tracks_folder),tc_tracks_folder = [climada_global.data_dir filesep 'tc_tracks'];end
 %
 % hard-wired www-locations of the latest best track datasets:
 unisys_files={...
