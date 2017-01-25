@@ -35,11 +35,12 @@ function res=climada_csvread(csv_filename,delimiter,noheader)
 %       otherwise (default, =0), use header row to define variable names
 % OUTPUTS:
 %   res: the output, empty if not successful
-%       a structure with variable names as in first row of csv file 
+%       a structure with variable names as in first row of csv file
 %       (or named var{i} if noheader=1)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20161203, initial
 % David N. Bresch, david.bresch@gmail.com, 20170121, CollapseDelimiters
+% David N. Bresch, david.bresch@gmail.com, 20170125, empty lines skipped
 %-
 
 res=[]; % init output
@@ -80,29 +81,32 @@ if exist(csv_filename,'file')
         
         str=fscanf(fid,'%s',1);
         
-        if ~noheader % first line, we infer field names from
-            csv_fieldnames=strsplit(str,delimiter);
-            noheader=1; % now we have a header
-        else
-            % read data
+        if ~isempty(str)
             
-            raw_line_data=strsplit(str,',','CollapseDelimiters', false); % treat multiple delimiters separately
-            
-            if isempty(csv_fieldnames) % if no header
-                for var_i=1:length(raw_line_data);csv_fieldnames{var_i}=['var' num2str(var_i)];end
-            end
-            
-            for var_i=1:1:length(raw_line_data)
-                num_val=str2double(raw_line_data{var_i});
-                if isnan(num_val)
-                    res.(csv_fieldnames{var_i}){line_i}=raw_line_data{var_i};
-                else
-                    res.(csv_fieldnames{var_i})(line_i)=num_val;
+            if ~noheader % first line, we infer field names from
+                csv_fieldnames=strsplit(str,delimiter);
+                noheader=1; % now we have a header
+            else
+                % read data
+                raw_line_data=strsplit(str,',','CollapseDelimiters', false); % treat multiple delimiters separately
+                
+                if isempty(csv_fieldnames) % if no header
+                    for var_i=1:length(raw_line_data);csv_fieldnames{var_i}=['var' num2str(var_i)];end
                 end
-            end
-            line_i=line_i+1;
+                
+                for var_i=1:1:length(csv_fieldnames)
+                    num_val=str2double(raw_line_data{var_i});
+                    if isnan(num_val)
+                        res.(csv_fieldnames{var_i}){line_i}=raw_line_data{var_i};
+                    else
+                        res.(csv_fieldnames{var_i})(line_i)=num_val;
+                    end
+                end
+                line_i=line_i+1;
+                
+            end % ~noheader
             
-        end % ~noheader
+        end % ~isempty(str)
         
     end % while
     fclose(fid);

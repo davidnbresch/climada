@@ -1,4 +1,4 @@
-function info=climada_tc_track_info(tc_track,check_plot,boundary_rect,centroids,manual_select)
+function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect,centroids,manual_select)
 % climada tc track info
 % MODULE:
 %   core
@@ -8,13 +8,14 @@ function info=climada_tc_track_info(tc_track,check_plot,boundary_rect,centroids,
 %   Prints information of tracks to stdout (name, date....) and shows
 %   (nice) plots of historic (and probabilistic) tracks
 %
-%   Prior call: climada_tc_read_unisys_tc_track
+%   Prior call: climada_tc_read_unisys_tc_track, climada_tc_track_quality_check
 %   Possible subsequent call: hold on;climada_entity_plot
 % CALLING SEQUENCE:
-%   info=climada_tc_track_info(tc_track)
-% EXAMPLE:
-%   info=climada_tc_track_info('tracks.she_hist.mat',-2,[140 180 -40 -10]); % historic
-%   info=climada_tc_track_info('tracks.she_prob.mat',-1,[140 180 -40 -10]); % also probabilistic
+%   [tc_track,info]=climada_tc_track_info(tc_track)
+% EXAMPLE:~
+%   [~,info]=climada_tc_track_info('tracks.she_hist.mat',-2,[140 180 -40 -10]); % historic
+%   [~,info]=climada_tc_track_info('tracks.she_prob.mat',-1,[140 180 -40 -10]); % also probabilistic
+%   [tc_track,info]=climada_tc_track_info(tc_track,1,[],[],99); % clean up
 % INPUTS:
 %   tc_track: a tc_track structure, as returned by
 %       climada_tc_read_unisys_database or climada_tc_read_unisys_tc_track
@@ -33,13 +34,18 @@ function info=climada_tc_track_info(tc_track,check_plot,boundary_rect,centroids,
 %       select tracks in vicinity (press enter after clicking on the map)
 %       Best use is to define a 'gate', i.e. two points on the left and
 %       right of the track to select.
+%       if =99, run several sanity checks, remove bad tracks (list them)
+%       (this just calls climada_tc_track_quality_check)
 % OUTPUTS:
+%   tc_track: the tc_track structure, restricted to centroids, if passed
+%       and cleaned up, if check_plot=-99. Otherwise same as input tc_track
 %   info contains some information, but to stdout is main purpose of this
 %       routine
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150118, initial
 % David N. Bresch, david.bresch@gmail.com, 20160515, check_plot and boundary_rect added
 % David N. Bresch, david.bresch@gmail.com, 20160528, centroids and manual_select added
+% David N. Bresch, david.bresch@gmail.com, 20170125, climada_tc_track_quality_check
 %-
 
 info=[]; % init output
@@ -50,18 +56,21 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 % and to set default value where  appropriate
 if ~exist('tc_track','var'),tc_track=[];end
-if ~exist('check_plot','var'),check_plot=0;end
+if ~exist('check_plot','var'),check_plot=[];end
 if ~exist('boundary_rect','var'),boundary_rect=[];end
 if ~exist('centroids','var'),centroids=[];end
-if ~exist('manual_select','var'),manual_select=0;end
+if ~exist('manual_select','var'),manual_select=[];end
 
 % PARAMETERS
-% 
+%
 % color of land
 country_color=[.7 .7 .7]; % light gray
 %
 % border around the area shown if based on centroids
 dlim=1; % in degrees
+%
+if isempty(check_plot),check_plot=0;end
+if isempty(manual_select),manual_select=0;end
 
 % prompt for tc_track
 tc_track_filename='';
@@ -163,7 +172,7 @@ if abs(check_plot)
     xlabel('blue: probabilistic, red: historic');
     title(sprintf('%4.4i .. %4.4i',min_yyyy,max_yyyy));
     
-    if manual_select
+    if manual_select==1
         fprintf('select point(s) on the map using the mouse, then press enter/return\n')
         [x,y] = ginput;
         % restrict to tracks close the selected point(s)
@@ -179,7 +188,7 @@ if abs(check_plot)
         end % track_i
         tc_track=tc_track(tracks_selected>0);
         tc_track_number=tc_track_number(tracks_selected>0);
-
+        
         for track_i=1:length(tc_track)
             plot(tc_track(track_i).lon,tc_track(track_i).lat,'Color','g');
             track_info=sprintf('%4.4i: %s (%4.4i%2.2i%2.2i) %i',tc_track_number(track_i),...
@@ -193,5 +202,9 @@ if abs(check_plot)
     end % manual_select
     
 end % check_plot
+
+if manual_select==99 % quality check
+    tc_track=climada_tc_track_quality_check(tc_track);
+end
 
 end % climada_tc_track_info
