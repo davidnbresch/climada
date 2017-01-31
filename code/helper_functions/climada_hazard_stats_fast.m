@@ -1,4 +1,4 @@
-function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
+function hazard = climada_hazard_stats_fast(hazard,return_periods,check_plot,fontsize)
 % NAME:
 %   climada_hazard_stats
 % PURPOSE:
@@ -25,6 +25,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot)
 %   check_plot: default=1, draw the intensity maps for various return
 %       periods for the full hazard set. Set=0 to omit plot
 %       =-1: calculate and plot the return period maps based on historic events only
+%   fontsize: default =12
 % OUTPUTS:
 %   the field hazard.map is added to the hazard structure, with
 %   map.return_period(rp_i): return period rp_i
@@ -53,6 +54,7 @@ if ~climada_init_vars, return; end
 if ~exist('hazard'        , 'var'), hazard         = []; end
 if ~exist('return_periods', 'var'), return_periods = []; end
 if ~exist('check_plot'    , 'var'), check_plot     = 1 ; end
+if ~exist('fontsize'    , 'var'),   fontsize       = 12 ; end
 
 % Parameters
 %
@@ -66,10 +68,10 @@ if isempty(return_periods'),return_periods = [10 25 50 100 500 1000];end
 hazard=climada_hazard_load(hazard);
 
 % check if based on probabilistic tc track set
-if isfield(hazard,'orig_event_flag')
-    orig_event_pos=find(hazard.orig_event_flag);
+if isfield(hazard,'orig_event_flag') && check_plot<0
+    sel_event_pos=find(hazard.orig_event_flag);
 else
-    orig_event_pos=[]; % no original events
+    sel_event_pos=1:length(hazard.frequency);
 end
 
 switch hazard.peril_ID
@@ -95,10 +97,7 @@ if ~isfield(hazard,'map')
     
     hazard.map.return_period = return_periods;
     
-    hazard.map.intensity     = spalloc(n_return_periods,n_centroids,ceil(n_return_periods*n_centroids*mat_dens));
-    if ~isempty(orig_event_pos)
-        hazard.map.intensity_orig= spalloc(n_return_periods,n_centroids,ceil(n_return_periods*n_centroids*mat_dens));
-    end
+    map_intensity     = spalloc(n_return_periods,n_centroids,ceil(n_return_periods*n_centroids*mat_dens));
     
     t0       = clock;
     mod_step = 10; % first time estimate after 10 tracks, then every 100
@@ -106,80 +105,67 @@ if ~isfield(hazard,'map')
     fprintf('calculate hazard statistics: %s\n',msgstr);
     format_str='%s';
     
-    % % special case for LS
-    % if strcmp(hazard.peril_ID,'LS') && isfield(hazard,'cutoff_m')
-    %     hazard.intensity = (1-hazard.intensity)*hazard.cutoff_m;
-    %     hazard.units = 'm';
-    %     fprintf('Hazard for LS transformed to intensity as distance (m) from lanslide.\n')
-    % end
+    n_events=length(hazard.frequency);
+    n_sel_event=length(sel_event_pos);
     
-    inner_loop=1;if ~isempty(orig_event_pos),inner_loop=2;end
+    intensity=hazard.intensity(sel_event_pos,:);
+    frequency=hazard.frequency(sel_event_pos)*n_events/n_sel_event;
     
-    if check_plot<0,inner_loop=2;end
+    % LATER: cleanup hazard
     
     % for centroid_i = 1:n_centroids
-    for centroid_i = 1:n_centroids
+    parfor centroid_i = 1:n_centroids
         
-        for inner_loop=1:inner_loop
-            
-            if inner_loop==2 % 2nd time for historic events only
-                [intensity_pos,ind_int]  = sort(hazard.intensity(orig_event_pos,centroid_i),'descend');
-                frequency2 = hazard.frequency(orig_event_pos)*...
-                    length(hazard.orig_event_flag)/length(orig_event_pos); % to convert to full view
-            else
-                [intensity_pos, ind_int] = sort(hazard.intensity(:,centroid_i),'descend');
-                frequency2 = hazard.frequency;
-            end
-            intensity_pos              = full(intensity_pos);
-            below_thresh_pos           = intensity_pos<intensity_threshold;
-            intensity_pos(intensity_pos<intensity_threshold) = [];
-            frequency2 = frequency2(ind_int); % sort frequency accordingly
-            frequency2(below_thresh_pos) = [];
-            
-            if sum(intensity_pos)>0 % otherwise no intensity above threshold
-                freq            = cumsum(frequency2(1:length(intensity_pos)))'; % exceedence frequency
-                if length(freq)>1
-                    p           = polyfit(log(freq), intensity_pos, 1);
-                else
-                    p = zeros(2,1);
-                end
-                exc_freq      = 1./return_periods;
-                intensity_fit = polyval(p, log(exc_freq));
-                intensity_fit(intensity_fit<=0)    = 0; %nan;
-                R                                  = 1./freq;
-                neg                                = return_periods >max(R);
-                intensity_fit(neg)                 = 0; %nan;
-                
-                if inner_loop==2 % 2nd time for historic events only
-                    hazard.map.intensity_orig(:,centroid_i) = intensity_fit;
-                else
-                    hazard.map.intensity(:,centroid_i)      = intensity_fit;
-                end
-            end % sum(intensity_pos)
-            
-        end % inner_loop
+        [intensity_pos,ind_int] = sort(intensity(:,centroid_i),'descend');
+        frequency2 = frequency;
         
-        if mod(centroid_i,mod_step)==0 % progress report
-            mod_step = 100;
-            if n_centroids>10000,mod_step=1000;end
-            if n_centroids>100000,mod_step=10000;end
-            t_elapsed = etime(clock,t0)/centroid_i;
-            n_remaining = n_centroids-centroid_i;
-            t_projected_sec = t_elapsed*n_remaining;
-            if t_projected_sec<60
-                msgstr = sprintf('est. %3.0f sec left (%i/%i centroids)',t_projected_sec, centroid_i, n_centroids);
+        intensity_pos              = full(intensity_pos);
+        below_thresh_pos           = intensity_pos<intensity_threshold;
+        intensity_pos(intensity_pos<intensity_threshold) = [];
+        frequency2 = frequency2(ind_int); % sort frequency accordingly
+        frequency2(below_thresh_pos) = [];
+        
+        if sum(intensity_pos)>0 % otherwise no intensity above threshold
+            freq            = cumsum(frequency2(1:length(intensity_pos)))'; % exceedence frequency
+            if length(freq)>1
+                p           = polyfit(log(freq), intensity_pos, 1);
             else
-                msgstr = sprintf('est. %3.1f min left (%i/%i centroids)',t_projected_sec/60, centroid_i, n_centroids);
+                p = zeros(2,1);
             end
-            fprintf(format_str,msgstr); % write progress to stdout
-            format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
-        end
+            exc_freq      = 1./return_periods;
+            intensity_fit = polyval(p, log(exc_freq));
+            intensity_fit(intensity_fit<=0)    = 0; %nan;
+            R                                  = 1./freq;
+            neg                                = return_periods >max(R);
+            intensity_fit(neg)                 = 0; %nan;
+            
+            map_intensity(:,centroid_i) = intensity_fit;
+           
+        end % sum(intensity_pos)
+        
+%         if mod(centroid_i,mod_step)==0 % progress report
+%             mod_step = 100;
+%             if n_centroids>10000,mod_step=1000;end
+%             if n_centroids>100000,mod_step=10000;end
+%             t_elapsed = etime(clock,t0)/centroid_i;
+%             n_remaining = n_centroids-centroid_i;
+%             t_projected_sec = t_elapsed*n_remaining;
+%             if t_projected_sec<60
+%                 msgstr = sprintf('est. %3.0f sec left (%i/%i centroids)',t_projected_sec, centroid_i, n_centroids);
+%             else
+%                 msgstr = sprintf('est. %3.1f min left (%i/%i centroids)',t_projected_sec/60, centroid_i, n_centroids);
+%             end
+%             fprintf(format_str,msgstr); % write progress to stdout
+%             format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
+%         end
         
     end % centroid_i
     
     fprintf(format_str,''); % move carriage to begin of line
     
 end % calculation
+
+hazard.map.intensity = map_intensity;
 
 % FIGURE
 % ------
@@ -192,26 +178,26 @@ if abs(check_plot)>0
     end
     fprintf('plotting %sintensity vs return periods maps (be patient) ',hist_str)
     
-    fontsize = 12;
     % some color settings
     cmap = climada_colormap(hazard.peril_ID);
     caxis_min=0;caxis_max=max(max(max(hazard.map.intensity)));
     switch hazard.peril_ID
+        case 'WS'
+            caxis_max = 60;
+            xtick_    = caxis_max/5:caxis_max/5:caxis_max;
+            cbar_str  = [hist_str 'wind speed (m/s)'];
         case 'TC'
             caxis_max = 100;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
             cbar_str  = [hist_str 'wind speed (m/s)'];
-            
         case 'TR'
             caxis_max = 300; %caxis_max = 500;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
             cbar_str  = [hist_str 'rain sum (mm)'];
-            
         case 'TS'
             caxis_max = 10;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
             cbar_str  = [hist_str 'surge height (m)'];
-            
         case 'MS'
             caxis_max = 3;
             xtick_    = caxis_max/5:caxis_max/5:caxis_max;
@@ -259,11 +245,7 @@ if abs(check_plot)>0
         fprintf('.') % simplest progress indicator
         subaxis(rp_i)
         
-        if check_plot>0
-            values    = full(hazard.map.intensity(rp_i,:));
-        else
-            values    = full(hazard.map.intensity_orig(rp_i,:)); % historic
-        end
+        values = full(map_intensity(rp_i,:));
         
         if sum(values(not(isnan(values))))>0 % nansum(values)>0
             [X, Y, gridded_VALUE] = climada_gridded_VALUE(values, centroids);
@@ -276,8 +258,7 @@ if abs(check_plot)>0
                 'HorizontalAlignment','center')
         end
         hold on
-        climada_plot_world_borders(0.7)
-        %title([int2str(hazard.map.return_period(rp_i)) ' yr intensity'],'fontsize',fontsize);
+        climada_plot_world_borders(2,'','',0,[],[0 0 0])
         title([int2str(hazard.map.return_period(rp_i)) ' yr'],'fontsize',fontsize);
         axis([min(hazard.lon)-scale/30  max(hazard.lon)+scale/30 ...
             min(hazard.lat )-scale/30  max(hazard.lat )+scale/30])

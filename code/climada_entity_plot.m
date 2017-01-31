@@ -123,6 +123,7 @@ if ~isempty(cbar_ylabel)
         end
     end
     set(get(cbar,'ylabel'),'string',[cbar_ylabel ' (' Value_unit ')'],'fontsize',12);
+    %set(get(cbar,'ylabel'),'string',['log(damage) [' Value_unit ']'],'fontsize',12);
 end
 climada_plot_world_borders(0.7*sign(markersize),'','',0,[],country_color);
 

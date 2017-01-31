@@ -12,7 +12,7 @@ function hazard=climada_hazard_load(hazard)
 %    if loading a hazard, the code checks whether a field hazard.fraction
 %    exists. If not, it is added to the hazard and the .mat file is updated
 %    (speeds up EDS calc)
-%   
+%
 %   next call: climada_EDS_calc, climada_hazard_plot
 % CALLING SEQUENCE:
 %   hazard=climada_hazard_load(hazard)
@@ -84,14 +84,18 @@ if ishazard(hazard)
     % check for valid/correct hazard.filename
     if ~strcmp(hazard_file,hazard.filename)
         hazard.filename=hazard_file;
-        save(hazard_file,'hazard')
+        if ~climada_global.octave_mode % do not save in Octave (file unreadable for MATLAB afterwards)
+            save(hazard_file,'hazard')
+        end
     end
     
     % add hazard.fraction (for FL, other perils no slowdown)
     if ~isfield(hazard,'fraction')
         fprintf('adding hazard.fraction ...');
         hazard.fraction=spones(hazard.intensity); % fraction 100%
-        save(hazard_file,'hazard')
+        if ~climada_global.octave_mode % do not save in Octave (file unreadable for MATLAB afterwards)
+            save(hazard_file,'hazard')
+        end
         fprintf(' done\n');
     end
     
