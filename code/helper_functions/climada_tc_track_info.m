@@ -45,6 +45,7 @@ function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect
 % David N. Bresch, david.bresch@gmail.com, 20160515, check_plot and boundary_rect added
 % David N. Bresch, david.bresch@gmail.com, 20160528, centroids and manual_select added
 % David N. Bresch, david.bresch@gmail.com, 20170125, climada_tc_track_quality_check
+% David N. Bresch, david.bresch@gmail.com, 20170201, check_plot simplified, climada_tc_track_quality_check removed
 %-
 
 info=[]; % init output
