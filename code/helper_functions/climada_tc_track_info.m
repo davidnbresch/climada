@@ -13,18 +13,19 @@ function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect
 % CALLING SEQUENCE:
 %   [tc_track,info]=climada_tc_track_info(tc_track)
 % EXAMPLE:~
-%   [~,info]=climada_tc_track_info('tracks.she_hist.mat',-2,[140 180 -40 -10]); % historic
-%   [~,info]=climada_tc_track_info('tracks.she_prob.mat',-1,[140 180 -40 -10]); % also probabilistic
-%   [tc_track,info]=climada_tc_track_info(tc_track,1,[],[],99); % clean up
+%   [~,info]=climada_tc_track_info('tracks.she_hist.mat',2,[140 180 -40 -10]); % historic
+%   [~,info]=climada_tc_track_info('tracks.she_prob.mat',1,[140 180 -40 -10]); % also probabilistic
 % INPUTS:
 %   tc_track: a tc_track structure, as returned by
 %       climada_tc_read_unisys_database or climada_tc_read_unisys_tc_track
 %       > promted for (.mat) if not given
 %       If a .mat filename is passed, the content is loaded
 % OPTIONAL INPUT PARAMETERS:
-%   check_plot: if =1, show checkplot, =0 not (default)
-%       =-1; ONLY check plot, do not print info to stdout
-%       =-2; only check plot and only historic events (to create the e.g.
+%   check_plot: if =1, show checkplot (default),
+%       =0 no plot, no print to stdout
+%       =-1: check plot and print info to stdout (can be long)
+%       =-99: only print info to stdout (can be long)
+%       =2: only check plot and only historic events (to create the e.g.
 %       the slide to show hist/prob, see boundary_rect also)
 %   boundary_rect: the boundary to plot [minlon maxlon minlat maxlat]
 %       default is whole globe
@@ -34,8 +35,6 @@ function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect
 %       select tracks in vicinity (press enter after clicking on the map)
 %       Best use is to define a 'gate', i.e. two points on the left and
 %       right of the track to select.
-%       if =99, run several sanity checks, remove bad tracks (list them)
-%       (this just calls climada_tc_track_quality_check)
 % OUTPUTS:
 %   tc_track: the tc_track structure, restricted to centroids, if passed
 %       and cleaned up, if check_plot=-99. Otherwise same as input tc_track
@@ -69,7 +68,7 @@ country_color=[.7 .7 .7]; % light gray
 % border around the area shown if based on centroids
 dlim=1; % in degrees
 %
-if isempty(check_plot),check_plot=0;end
+if isempty(check_plot),check_plot=1;end
 if isempty(manual_select),manual_select=0;end
 
 % prompt for tc_track
@@ -118,7 +117,7 @@ if ~isempty(centroids)
     tc_track_number=tc_track_number(tracks_selected>0);
 end % ~isempty(centroids)
 
-if check_plot>=0
+if check_plot<0
     
     fprintf('iiii: name          yyyymmdd  category\n'); % header
     
@@ -132,7 +131,9 @@ if check_plot>=0
         fprintf('%s\n',char(info{track_i}));
     end % track_i
     
-end % check_plot>=0
+    if check_plot==-99,check_plot=0;end
+    
+end % check_plot<0
 
 min_yyyy=1e6;max_yyyy=-1e6;
 
@@ -144,7 +145,7 @@ if abs(check_plot)
     
     % fastest two loops, first ploting probabilsitic tracks, then historic
     fprintf('plotting %i tracks,',length(tc_track))
-    if check_plot>-2
+    if check_plot==1
         fprintf(' probabilistic ...')
         for track_i=1:length(tc_track)
             if tc_track(track_i).orig_event_flag==0
@@ -202,9 +203,5 @@ if abs(check_plot)
     end % manual_select
     
 end % check_plot
-
-if manual_select==99 % quality check
-    tc_track=climada_tc_track_quality_check(tc_track);
-end
 
 end % climada_tc_track_info
