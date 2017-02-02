@@ -51,6 +51,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160908, results_dir added and reset_flag=3
 % David N. Bresch, david.bresch@gmail.com, 20160921, default spreadsheet_ext='.xlsx' (best for MATLAB 9.x)
 % David N. Bresch, david.bresch@gmail.com, 20170107, EDS_at_centroid renamed to damage_at_centroid
+% David N. Bresch, david.bresch@gmail.com, 20170202, parfor
 %-
 
 global climada_global
@@ -226,6 +227,10 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.markersize=5; % integer only, please, default=4, used in climada_color_plot and plotclr
     climada_global.marker = 's'; % marker, i.e. 's','.','o', used in climada_color_plot and plotclr
     climada_global.admin1_plot = 0; % set to 1 if you want to plot all admin1 shapes on a map
+    
+    % whether we run parfor instead of for where possible (e.g. in
+    % climada_hazard_stats or climada_tc_hazard_set)
+    climada_global.parfor=0; % default=0
     
     climada_vars_initialised=1; % indicate we have initialized all vars
     

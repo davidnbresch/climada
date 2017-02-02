@@ -1,4 +1,4 @@
-function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,noparfor,verbose_mode)
+function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,verbose_mode)
 % climada TC hazard event set generate
 % NAME:
 %   climada_tr_hazard_set
@@ -23,19 +23,19 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,nopar
 %   (i.e. different centroids). Just delete the hazard set .mat file and run
 %   climada_tr_hazard_set again.
 %
-%   NOTE: this code uses parfor for substantial speedup, set noparfor=1 to
-%   run standard for (no parallel pool started etc.)
+%   NOTE: this code listens to climada_global.parfor for substantial speedup
 %
 %   previous: likely climada_random_walk
 %   next: diverse
 % CALLING SEQUENCE:
-%   res=climada_tr_hazard_set(tc_track,hazard_set_file,centroids,noparfor,verbose_mode)
+%   res=climada_tr_hazard_set(tc_track,hazard_set_file,centroids,verbose_mode)
 % EXAMPLE:
 %   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
 %   centroids=climada_centroids_load('USFL_MiamiDadeBrowardPalmBeach');
 %   %centroids=climada_entity_load('USA_UnitedStatesFlorida'); % works, too
+%   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST',centroids);
+%   climada_global.parfor=1; % switch to parallel mode
 %   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST_PARFOR',centroids);
-%   hazard=climada_tc_hazard_set(tc_track,'_TC_TEST_NOPARFOR',centroids,1);
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   tc_track: a TC track structure, or a filename of a saved one
@@ -59,9 +59,6 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,nopar
 %       entity.assets.lon are used as centroids.
 %       > promted for .mat or .xls filename if not given
 %       NOTE: if you then select Cancel, a regular default grid is used, see hard-wired definition in code
-%   noparfor: if =1, do NOT use parfor, default=0, use parfor
-%       If less than 100 tracks are handed over, noparfor=1, since parfor
-%       does npt speed up if less than say 100 tracks to be processed
 %   verbose_mode: default=1, =0: do not print anything to stdout
 % OUTPUTS:
 %   hazard: a struct, the hazard event set, more for tests, since the
@@ -106,6 +103,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,nopar
 % david.bresch@gmail.com, 20160603, header: comment added
 % david.bresch@gmail.com, 20161008, hazard.fraction added
 % david.bresch@gmail.com, 20161023, noparfor and verbose_mode added
+% david.bresch@gmail.com, 20170202, noparfor -> climada_global.parfor
 %-
 
 hazard=[]; % init
@@ -118,7 +116,6 @@ if ~climada_init_vars,return;end
 if ~exist('tc_track','var'),tc_track=[];end
 if ~exist('hazard_set_file','var'),hazard_set_file=[];end
 if ~exist('centroids','var'),centroids=[];end
-if ~exist('noparfor','var'),noparfor=0;end
 if ~exist('verbose_mode','var'),verbose_mode=1;end
 
 % PARAMETERS
@@ -270,10 +267,10 @@ intensity = spalloc(n_tracks,n_centroids,...
 %intensity = zeros(n_tracks,n_centroids); % FASTER
 
 if verbose_mode
-    if noparfor
-        fprintf('processing %i tracks @ %i centroids (no parfor)\n',n_tracks,n_centroids);
-    else
+    if climada_global.parfor
         fprintf('processing %i tracks @ %i centroids (parfor)\n',n_tracks,n_centroids);
+    else
+        fprintf('processing %i tracks @ %i centroids (no parfor)\n',n_tracks,n_centroids);
     end
 end
 
@@ -284,15 +281,18 @@ else
 end
 tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep); % make equal timesteps
 
-if n_tracks<100,noparfor=1;end
 t0=clock;
 
-if noparfor
+if climada_global.parfor
+    parfor track_i=1:n_tracks
+        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+    end %track_i
+else
     mod_step=10;format_str='%s'; % init progress update
     for track_i=1:n_tracks
         intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
         
-         % following block only for progress measurement (waitbar or stdout)
+        % following block only for progress measurement (waitbar or stdout)
         if mod(track_i,mod_step)==0
             mod_step          = 100;
             t_elapsed_track   = etime(clock,t0)/track_i;
@@ -309,11 +309,7 @@ if noparfor
         
     end %track_i
     if verbose_mode,fprintf(format_str,'');end % move carriage to begin of line
-else
-    parfor track_i=1:n_tracks
-        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
-    end %track_i
-end % noparfor
+end % climada_global.parfor
 
 hazard.intensity=sparse(intensity); % store into struct, sparse() to be safe
 clear intensity % free up memory
