@@ -1,4 +1,4 @@
-function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_ylabel)
+function params=climada_entity_plot(entity,markersize,params)
 % plot an entity, no detailed documentation
 % NAME:
 %   climada_entity_plot
@@ -9,28 +9,44 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 %   climada_entity_plot, i.e. to plot assets on top of tracks (see
 %   climada_tc_track_info)
 %
-%   See also climada_entity_read
-%   Possible prior call: climada_tc_track_info;hold on
+%   Possible prior call: climada_entity_load;climada_entity_read
 % CALLING SEQUENCE:
-%   climada_entity_plot(entity)
+%   climada_entity_plot(entity,markersize,params)
 % EXAMPLE:
-%   climada_entity_plot(climada_entity_read)
+%   entity=climada_entity_load
+%   climada_entity_plot(entity); % standard use
+%   climada_entity_plot; % interactively select
+%   params=climada_entity_plot('params') % return parameters
+%   params.year_i=1;params.max_value=-1;params.plot_log_value=1;
+%   climada_entity_plot(entity,2,params) % today, if entity contains Values
+%   params.year_i=-2100;climada_entity_plot(entity,2,params) % 2100
 % INPUTS:
 %   entity: an entity (see climada_entity_read)
 %       > promted for if not given
+%       if ='params', just return default parameters
 % OPTIONAL INPUT PARAMETERS:
 %   markersize: the size of the 'tiles', one might need to experiment a
-%       bit, as the code tries (hard) to set a reasonabls default (based on
-%       resolution)
-%       If <0, plot ocean blue and land grey (takes a bit longer)
-%   plot_centroids: =1: plot centroids as small red dots
+%       bit (that's why markersize is not part of params.), as the code
+%       tries (hard) to set a reasonabls default (based on resolution).
+%       If <0, plot ocean blue and land grey (looks nicer, but takes a bit longer)
+%   params: a structure with fields (see also entity='params' above):
+%    plot_centroids: =1: plot centroids as small red dots
 %       =0: do not plot centroids (default)
-%   max_value: the maximum value to color
-%       default is max(entity.assets.Value)
-%   cbar_ylabel: label for the color bar, default 'Value'
+%    max_value: the maximum value to color, default is max(entity.assets.Value)
+%       if =-1, use largest Value in entity.assets.Values, instead of .Value
+%    cbar_ylabel: label for the color bar, default 'Value'
 %       if empty, indicate entity value locations by black circles, e.g. for
 %       climada_hazard_plot(hazard);hold on;climada_entity_plot(entity,1,0,[],'')
+%    year_i: the year index, if entity.assets.Values and .Values_yyyy
+%       exist, to plot year_i instead of the first (or only) data in
+%       entity.assets.Value. If negative, search for abs(year_i) in
+%       Values_yyyy to plot the corresponding year (on output, params.year_i
+%       contains the index, not the year any more)
+%    title_str: the title of the plot, if empty, use contents of
+%       entity.assets to define it
+%    plot_log_value: if =1, plot log(entity.assets.Value), default=0
 % OUTPUTS:
+%   params: the params structure, filled wit defaults, see
 %   a figure
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, ICE initial
@@ -41,6 +57,7 @@ function climada_entity_plot(entity,markersize,plot_centroids,max_value,cbar_yla
 % David N. Bresch, david.bresch@gmail.com, 20161022, markersize<0 allowed
 % David N. Bresch, david.bresch@gmail.com, 20161023, land color defined in PARAMETERS
 % David N. Bresch, david.bresch@gmail.com, 20161121, check for sum(Values)=0
+% David N. Bresch, david.bresch@gmail.com, 20170204, params introduced, and year_i
 %-
 
 global climada_global
@@ -49,11 +66,17 @@ if ~climada_init_vars,return;end % init/import global variables
 %%if climada_global.verbose_mode,fprintf('*** %s ***\n',mfilename);end % show routine name on stdout
 
 % poor man's version to check arguments
-if ~exist('entity','var'),entity=[];end
-if ~exist('markersize','var'),markersize=[];end
-if ~exist('plot_centroids','var'),plot_centroids=0;end
-if ~exist('max_value','var'),max_value=[];end
-if ~exist('cbar_ylabel','var'),cbar_ylabel='Value';end
+if ~exist('entity','var'),     entity=[];end
+if ~exist('markersize','var'), markersize=[];end
+if ~exist('params','var'),     params=struct;end
+
+% check for some parameter fields we need
+if ~isfield(params,'plot_centroids'),params.plot_centroids=[];end
+if ~isfield(params,'max_value'),     params.max_value=[];end
+if ~isfield(params,'cbar_ylabel'),   params.cbar_ylabel='';end
+if ~isfield(params,'year_i'),        params.year_i=[];end
+if ~isfield(params,'title_str'),     params.title_str='';end
+if ~isfield(params,'plot_log_value'),params.plot_log_value=[];end
 
 % PARAMETERS
 %
@@ -62,6 +85,14 @@ d = 1; % degree
 %
 % color of land, only used, if markersize<0
 country_color=[.6 .6 .6]; % light gray
+%
+% populate default parameters in params
+if isempty(params.plot_centroids),  params.plot_centroids=0;end
+if isempty(params.cbar_ylabel),     params.cbar_ylabel='Value';end
+if isempty(params.year_i),          params.year_i=1;end
+if isempty(params.plot_log_value),  params.plot_log_value=0;end
+
+if strcmpi(entity,'params'),return;end % special case, return the full params structure
 
 % prompt for entity if not given
 if isempty(entity),entity=climada_entity_load;end
@@ -92,28 +123,62 @@ if isempty(markersize)
     fprintf('markersize = %i\n',markersize);
 end
 
-if isempty(max_value)
-    mav=max(entity.assets.Value)*1.1; % to be on the safe side for all values to be plotted
-else
-    mav=max_value*1.1;
+if isempty(params.title_str) % construct a title
+    %if isfield(entity.assets,'admin0_ISO3'),params.title_str=admin0_ISO3;end
+    [~,fN]=fileparts(entity.assets.filename);
+    params.title_str=strrep(fN,'_entity','');
 end
-if sum(entity.assets.Value)==0
-    fprintf('Note: all Values sum up to zero, nothing to plot\n');
+    
+plot_Value=entity.assets.Value; % make a copy, in case we take log10
+
+if isfield(entity.assets,'Values') && isfield(entity.assets,'Values_yyyy')
+    if params.year_i<0
+        pos=find(entity.assets.Values_yyyy==abs(params.year_i));
+        if length(pos)==1
+            fprintf('Note: year %i index %i in entity.assets.Values_yyyy (%i..%i)\n',abs(params.year_i),pos,min(entity.assets.Values_yyyy),max(entity.assets.Values_yyyy));
+            params.year_i=pos;
+        else
+            fprintf('Error: year %i not found in entity.assets.Values_yyyy (%i..%i)\n',abs(params.year_i),min(entity.assets.Values_yyyy),max(entity.assets.Values_yyyy));
+            return
+        end
+    end
+    fprintf('Note: Values(%i,:) for year %i used\n',params.year_i,entity.assets.Values_yyyy(params.year_i));
+    plot_Value=entity.assets.Values(params.year_i,:);
+    params.title_str=[params.title_str sprintf(' year %i',entity.assets.Values_yyyy(params.year_i))]; % append year
+    if params.max_value<0,params.max_value=max(max(entity.assets.Values));end
+end
+
+if sum(plot_Value)==0
+    fprintf('Warning: all Values sum up to zero, nothing to plot, aborted\n');
     return
 end
-if ~isempty(cbar_ylabel)
-    [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, entity.assets.Value, 's',abs(markersize), 1,0,mav,cmap,1,0);
+
+if params.plot_log_value
+    gtz_pos=(plot_Value>0);
+    plot_Value(gtz_pos)=log10(plot_Value(gtz_pos));
+    if params.max_value>0,params.max_value=log10(params.max_value);end
+    plot_log_value_str='log10 ';
 else
-    pos=find(entity.assets.Value>0);
+    plot_log_value_str='';
+end
+
+if isempty(params.max_value),params.max_value=max(plot_Value);end
+mav=params.max_value*1.1; % to be on the safe side for all values to be plotted
+
+if ~isempty(params.cbar_ylabel)
+    [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, plot_Value, 's',abs(markersize), 1,0,mav,cmap,1,0);
+else
+    pos=find(plot_Value>0);
     if ~isempty(pos),plot(entity.assets.lon(pos),entity.assets.lat(pos),'ok');end
 end
 hold on
+if ~isempty(params.title_str),title(params.title_str);end
 axis equal
 xlabel('Longitude')
 ylabel('Latitude')
 box % box axes
 
-if ~isempty(cbar_ylabel)
+if ~isempty(params.cbar_ylabel)
     Value_unit=climada_global.Value_unit;
     if isfield(entity.assets,'Value_unit')
         try
@@ -122,13 +187,13 @@ if ~isempty(cbar_ylabel)
             Value_unit=entity.assets.Value_unit(1);
         end
     end
-    set(get(cbar,'ylabel'),'string',[cbar_ylabel ' (' Value_unit ')'],'fontsize',12);
+    set(get(cbar,'ylabel'),'string',[plot_log_value_str params.cbar_ylabel ' (' Value_unit ')'],'fontsize',12);
     %set(get(cbar,'ylabel'),'string',['log(damage) [' Value_unit ']'],'fontsize',12);
 end
 climada_plot_world_borders(0.7*sign(markersize),'','',0,[],country_color);
 
 set(gca,'xlim',x_range,'ylim',y_range)
-if plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
+if params.plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
 
 hold on
 climada_figure_scale_add

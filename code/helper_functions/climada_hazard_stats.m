@@ -28,7 +28,8 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,fontsize
 %       (default=[1 5 10 25 50 100 500 1000])
 %   check_plot: default=1, draw the intensity maps for various return
 %       periods for the full hazard set. Set=0 to omit plot
-%       =-1: calculate and plot the return period maps based on historic events only
+%       =-1: calculate and plot the return period maps based on historic
+%       events only (needs hazard.orig_event_flag to exist)
 %   fontsize: default =12
 % OUTPUTS:
 %   the field hazard.map is added to the hazard structure, with
@@ -65,7 +66,6 @@ if ~exist('fontsize'     , 'var'),  fontsize       = 12 ; end
 % set default return periods
 if isempty(return_periods'),return_periods = [10 25 50 100 500 1000];end
 
-
 hazard=climada_hazard_load(hazard);
 
 % check if based on probabilistic tc track set
@@ -77,8 +77,8 @@ end
 
 hist_str='';if check_plot<0,hist_str='historic ';end
 intensity_threshold = 0; % default
-cmap = climada_colormap(hazard.peril_ID);
-caxis_min=0;caxis_max=max(max(hazard.intensity));
+cmap = climada_colormap(hazard.peril_ID); % default
+caxis_min=0;caxis_max=full(max(max(hazard.intensity))); % default
 switch hazard.peril_ID
     case 'TC'
         intensity_threshold = 5;
@@ -118,7 +118,6 @@ switch hazard.peril_ID
         intensity_threshold = 1;
     otherwise
         % use default colormap, hence no cmap defined
-        caxis_max = full(max(max(hazard.intensity)));
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
 end
@@ -132,10 +131,7 @@ n_centroids              = size(hazard.intensity,2);
 % -----------
 
 if ~isfield(hazard,'map')
-    
-    msgstr   = sprintf('processing %i centroids',n_centroids);
-    fprintf('calculate hazard statistics: %s\n',msgstr);
-    
+        
     n_events=length(hazard.frequency);
     n_sel_event=length(sel_event_pos);
         
@@ -147,6 +143,8 @@ if ~isfield(hazard,'map')
     intensity=hazard.intensity(sel_event_pos,nonzero_centroid_pos);
     frequency=hazard.frequency(sel_event_pos)*n_events/n_sel_event;
     
+    fprintf('calculate hazard statistics: processing %i %sevents at %i (non-zero) centroids\n',n_sel_event,hist_str,n_nonzero_centroids);
+
     t0       = clock;
     if climada_global.parfor
         parfor centroid_i = 1:n_nonzero_centroids
