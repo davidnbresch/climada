@@ -21,9 +21,9 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   1. run once with default parameters to check, i.e. for track 777
 %     >> climada_event_damage_data_tc(tc_track(777),entity);
 %   2. run again, now to silently generate data on higher resolution, e.g.
-%     >> climada_event_damage_data_tc(tc_track(777),entity,0); % omit rect, if no need to zoom in
+%     >> climada_event_damage_data_tc(tc_track(777),entity,0); % no plot
 %   3. generate the movie, use
-%     >> climada_event_damage_animation % select the animation_data.mat file
+%     >> climada_event_damage_animation % generate the .mp4 movie
 %
 %   Note: as one often needs to set some of the paramers, call
 %   climada_event_damage_data_tc without any argument to return the
@@ -43,6 +43,28 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity');
 %   >> params.focus_region=[-84 -78 23 29];
 %   >> climada_event_damage_data_tc(tc_track,entity,0,params);
+%   >> climada_event_damage_animation
+%
+%   Example for all historic tracks in Bangladesh which generate damage:
+%   >> tc_track=climada_tc_track_load('nio_hist'); % all historic tracks
+%   >> hazard=climada_hazard_load('BGD_Bangladesh_nio_TC_hist'); % historic hazard
+%   >> entity=climada_entity_load('BGD_Bangladesh_HR_entity'); % high-res
+%   >> entity=climada_assets_encode(entity,hazard);
+%   >> EDS=climada_EDS_calc(entity,hazard);
+%   >> pos=find(EDS.damage>0);tc_track=tc_track(pos); % only damageing tracks
+%   >> climada_event_damage_data_tc(tc_track,entity,0);
+%   >> params.plot_tc_track=1;climada_event_damage_animation('',params);
+
+%   >> tc_track=climada_tc_read_unisys_database('atl'); % all historic
+%   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity');
+%   >> hazard_prob=climada_hazard_load('USA_UnitedStates_atl_TC');
+%   >> entity=climada_assets_encode(entity,hazard_prob); % encode
+%   >> EDS=climada_EDS_calc(entity,hazard_prob); % calculate damage for all events
+%   >> % find non-zero damage of historic events:
+%   >> pos=find(EDS.damage(logical(hazard_prob.orig_event_flag))>0);
+%   >> tc_track=tc_track(pos); % restrict to historic damageing tracks
+%   >> params.focus_region=[-84 -78 23 29];
+%   >> climada_event_damage_data_tc(tc_track,entity,2,params);
 %   >> climada_event_damage_animation
 %
 %   Example for all historic tracks in Florida which generate damage:
@@ -117,7 +139,7 @@ function [hazard,hazard_TS]=climada_event_damage_data_tc(tc_track,entity,check_m
 %    animation_data_file: the file where animation data is stored (not the
 %       animation itself). If not provided, set to ../results/animation_data.mat
 %    add_surge: whether we also treat surge (TS) =1) or not (=0, default)
-%    extend_tc_track: if =1 (default) extend/extrapolate TC track by one node
+%    extend_tc_track: if =1 (default=0) extend/extrapolate TC track by one node
 %    focus_region: the region we're going to show [minlon maxlon minlat maxlat]
 %       default=[], automatically determined by area of entity lat/lon
 %       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
@@ -348,6 +370,10 @@ for track_i=1:n_tracks
         tc_track(track_i).lat(end+1)=tc_track(track_i).lat(end)+(tc_track(track_i).lat(end)-tc_track(track_i).lat(end-1));
         tc_track(track_i).MaxSustainedWind(end+1)=0;
         tc_track(track_i).CentralPressure(end+1)=max(tc_track(track_i).CentralPressure);
+        if isfield(tc_track,'EnvironmentalPressure'),...
+                tc_track(track_i).EnvironmentalPressure(end+1)=max(tc_track(track_i).EnvironmentalPressure);end
+         if isfield(tc_track,'RadiusMaxWind'),...
+                tc_track(track_i).RadiusMaxWind(end+1)=max(tc_track(track_i).RadiusMaxWind);end
     end % params.extend_tc_track
     
     tc_track_tmp=climada_tc_equal_timestep(tc_track(track_i),params.tc_track_timestep); % tc_track_tmp a bit ugly, but pragmatic

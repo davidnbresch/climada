@@ -20,6 +20,11 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %   limited (see <http://octave.sf.net/video/>) and the present code uses
 %   latest MATLAB videowriter (better performance than avifile...).
 %
+%   Soemtimes, it is faster to edit fields in hazard instead of re-running
+%   climada_event_damage_data_tc, like: for i=1:length(hazard.event_name),...
+%   hazard.event_name{i}=strrep(hazard.event_name{i},'NNN 1200706','Sidr');end
+%   (obviously, you first load and then save animation_data.mat)
+%
 %   prior calls: climada_event_damage_data_tc or similar to prepare the
 %       event damage information
 %

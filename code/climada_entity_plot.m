@@ -37,11 +37,15 @@ function params=climada_entity_plot(entity,markersize,params)
 %    cbar_ylabel: label for the color bar, default 'Value'
 %       if empty, indicate entity value locations by black circles, e.g. for
 %       climada_hazard_plot(hazard);hold on;climada_entity_plot(entity,1,0,[],'')
+%    year: the year we'd like to plot, if entity.assets.Values and .Values_yyyy
+%       exist, to plot year instead of the first year (just passes on to
+%       year_i=-year, i.e. year overrides year_i). Default=[];
 %    year_i: the year index, if entity.assets.Values and .Values_yyyy
 %       exist, to plot year_i instead of the first (or only) data in
 %       entity.assets.Value. If negative, search for abs(year_i) in
 %       Values_yyyy to plot the corresponding year (on output, params.year_i
-%       contains the index, not the year any more)
+%       contains the index, not the year any more. See also params.year,
+%       which overrides year_i).
 %    title_str: the title of the plot, if empty, use contents of
 %       entity.assets to define it
 %    plot_log_value: if =1, plot log(entity.assets.Value), default=0
@@ -58,6 +62,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20161023, land color defined in PARAMETERS
 % David N. Bresch, david.bresch@gmail.com, 20161121, check for sum(Values)=0
 % David N. Bresch, david.bresch@gmail.com, 20170204, params introduced, and year_i
+% David N. Bresch, david.bresch@gmail.com, 20170208, year introduced
 %-
 
 global climada_global
@@ -74,6 +79,7 @@ if ~exist('params','var'),     params=struct;end
 if ~isfield(params,'plot_centroids'),params.plot_centroids=[];end
 if ~isfield(params,'max_value'),     params.max_value=[];end
 if ~isfield(params,'cbar_ylabel'),   params.cbar_ylabel='';end
+if ~isfield(params,'year'),          params.year=[];end
 if ~isfield(params,'year_i'),        params.year_i=[];end
 if ~isfield(params,'title_str'),     params.title_str='';end
 if ~isfield(params,'plot_log_value'),params.plot_log_value=[];end
@@ -90,6 +96,7 @@ country_color=[.6 .6 .6]; % light gray
 if isempty(params.plot_centroids),  params.plot_centroids=0;end
 if isempty(params.cbar_ylabel),     params.cbar_ylabel='Value';end
 if isempty(params.year_i),          params.year_i=1;end
+if ~isempty(params.year),params.year_i=-params.year;end % year does override year_i
 if isempty(params.plot_log_value),  params.plot_log_value=0;end
 
 if strcmpi(entity,'params'),return;end % special case, return the full params structure
