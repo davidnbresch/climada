@@ -46,6 +46,7 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 % david.bresch@gmail.com, 20150906, EDS.Value_unit used
 % muellele@gmail.com, 20160308, add output DFC structure
 % david.bresch@gmail.com, 20160429, calling EDS2DFC, DFC.Value instead of DFC.value
+% david.bresch@gmail.com, 20170211, plotting symbols avoided if more than 20 curves shown
 %-
 
 DFC = []; DFC_comparison = []; fig = []; legend_str = []; %init
@@ -58,6 +59,8 @@ if ~exist('EDS','var'),EDS=[];end
 if ~exist('EDS_comparison','var'),EDS_comparison='';end
 if ~exist('Percentage_Of_Value_Flag','var'),Percentage_Of_Value_Flag=0;end
 if ~exist('plot_loglog','var'),plot_loglog=0;end
+
+LineWidth=1; % was 1.5
 
 % prompt for EDS if not given
 EDS = climada_EDS_load(EDS);
@@ -103,6 +106,8 @@ end
 marker_ = ['*- ';'o- ';'p- ';'s- ';'.- ';'v: ';'d: ';'^: ';'*: ';'o: ';'p--';'s--';'.--';'v--';'d--'];
 ii      = 1;
 
+if length(EDS)>20,marker_ = repmat('-',length(color_),1);end % just lines
+
 DFC = climada_EDS2DFC(EDS,-1); % convert EDS to DFC
 
 legend_str={};
@@ -114,12 +119,12 @@ for DFC_i=1:length(DFC)
         damage=DFC(DFC_i).damage*climada_global.Value_display_unit_fact;
     end
     if plot_loglog
-        loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+        loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
     else
-        plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+        plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
     end
     hold on
-    ii = ii+1; if ii>length(marker_), ii=1; end
+    ii = ii+1; if ii>length(color_), ii=1; end
     if isfield(DFC(DFC_i),'annotation_name'),legend_str{end+1}=strrep(DFC(DFC_i).annotation_name,'_',' '); end
 end % DFC_i
 
@@ -140,6 +145,14 @@ title_str        = strrep(title_str,'|','\otimes'); % LaTEX format
 title_strs{1}    = title_str;
 
 if ~isempty(EDS_comparison)
+    
+    if length(EDS)>20
+        color_='k';marker_='-d';ii=1;
+        LineWidth=2*LineWidth;
+    else
+        ii = ii+1; %go to next color
+    end
+    
     % load the entity, if a filename has been passed
     if ~isstruct(EDS_comparison)
         EDS_comparison_file = EDS_comparison;
@@ -163,13 +176,12 @@ if ~isempty(EDS_comparison)
     end
     
     hold on;
-    ii = 2; %go to next color
-    if length(EDS)>  size(color_,1)-1
+    if length(EDS)>  size(color_,1) % was size(color_,1)-1
         color_ = jet(length(EDS)+1);
     end
     
     DFC_comparison=climada_EDS2DFC(EDS,-1); % convert EDS to DFC
-    
+        
     for DFC_i=1:length(DFC_comparison)
         if Percentage_Of_Value_Flag
             damage=DFC_comparison(DFC_i).damage_of_value;
@@ -177,9 +189,9 @@ if ~isempty(EDS_comparison)
             damage=DFC_comparison(DFC_i).damage*climada_global.Value_display_unit_fact;
         end
         if plot_loglog
-            loglog(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+            loglog(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
         else
-            plot(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',1.5,'markersize',msize);
+            plot(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
         end
         hold on
         ii = ii+1; if ii>length(marker_), ii=1; end

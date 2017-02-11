@@ -41,6 +41,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % David N. Bresch, david.bresch@gmail.com, 20150225, datenum added
 % David N. Bresch, david.bresch@gmail.com, 20160920, damagefunctions.name added
 % David N. Bresch, david.bresch@gmail.com, 20160929, damagefunctions.Intensity_unit added
+% David N. Bresch, david.bresch@gmail.com, 20170211, using the exact same data to plot as returned in res
 %-
 
 res=[]; % init
@@ -116,10 +117,7 @@ for ID_i=1:length(unique_IDs)
     dmf_pos=strmatch(unique_IDs{ID_i},unique_ID);
     if ~isempty(dmf_pos)
         fprintf('plot %i: %s %s\n',ID_i,char(unique_IDs(ID_i)),damagefunctions.name{dmf_pos(1)}); % this way, it's easy to use them (see unique_ID_sel)
-        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDR(dmf_pos),'-r','LineWidth',2);hold on
-        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.MDD(dmf_pos),'-b','LineWidth',2);
-        plot(damagefunctions.Intensity(dmf_pos),damagefunctions.PAA(dmf_pos),':g','LineWidth',2);
-        % store latest plot
+        % prep data block and store (last one will be returned)
         res.Intensity=damagefunctions.Intensity(dmf_pos);
         res.MDD=damagefunctions.MDD(dmf_pos);
         res.PAA=damagefunctions.PAA(dmf_pos);
@@ -127,6 +125,10 @@ for ID_i=1:length(unique_IDs)
         res.DamageFunID=damagefunctions.DamageFunID(dmf_pos);
         res.peril_ID=damagefunctions.peril_ID(dmf_pos);
         res.datenum=damagefunctions.datenum(dmf_pos);
+        %
+        plot(res.Intensity,res.MDR,'-r','LineWidth',2);hold on
+        plot(res.Intensity,res.MDD,'-b','LineWidth',2);
+        plot(res.Intensity,res.PAA,':g','LineWidth',2);
         axis tight
         set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
         legend('MDR','MDD','PAA','Location','NorthWest');
@@ -134,7 +136,7 @@ for ID_i=1:length(unique_IDs)
         if isfield(entity.damagefunctions,'Intensity_unit')
             xlabel(['Intensity [' entity.damagefunctions.Intensity_unit{dmf_pos(1)} ']'],'FontSize',9);
         else
-            xlabel(['Intensity'],'FontSize',9);
+            xlabel('Intensity','FontSize',9);
         end
         ylabel('MDR')
         title([unique_IDs{ID_i} ' ' damagefunctions.name{dmf_pos(1)}]);
