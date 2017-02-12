@@ -1,4 +1,4 @@
-function S=climada_subarray(S,pos)
+function [S,untreated_fields]=climada_subarray(S,pos)
 % climada template
 % MODULE:
 %   core
@@ -20,9 +20,14 @@ function S=climada_subarray(S,pos)
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
 %   S: S restricted to pos
+%   untreated_fields: a structre, the list with the fieldnames without
+%       application of pos 
 % MODIFICATION HISTORY
 % David N. Bresch, david.bresch@gmail.com, 20161023, initial
+% David N. Bresch, david.bresch@gmail.com, 20170212, untreated_fields
 %-
+
+untreated_fields={}; % init
 
 % poor man's version to check arguments
 if ~exist('S','var'),S=[];end
@@ -39,7 +44,14 @@ for field_i=1:length(field_names)
     if ischar(S.(field_names{field_i})),treat_field=0;end
     if treat_field
         %fprintf('-> shortening\n')
-        S.(field_names{field_i})=S.(field_names{field_i})(pos);
+        try
+            S.(field_names{field_i})=S.(field_names{field_i})(pos);
+        catch
+            fprintf('Warning: field %s not treated\n',char(field_names{field_i}));
+            untreated_fields{end+1}=field_names{field_i};
+        end
+    else
+        untreated_fields{end+1}=field_names{field_i};
     end
 end % field_i
 
