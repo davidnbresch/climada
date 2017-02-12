@@ -24,6 +24,7 @@ function res=climada_template(param1,param2)
 %   res: the output, empty if not successful
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160603
+% David N. Bresch, david.bresch@gmail.com, 20170212, climada_progress2stdout
 %-
 
 res=[]; % init output
@@ -72,52 +73,17 @@ param1
 param2
 module_data_dir
 
-% template for-loop with waitbar or progress to stdout
-t0       = clock;
+% template for-loop with progress to stdout
 n_events = 10000;
-msgstr   = sprintf('processing %i events',n_events);
-mod_step = 10; % first time estimate after 10 events, then every 100
-
-% if climada_global.waitbar % commented, as we do not recommend to use a pop-up waitbar (often a nuisance)
-%     fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr);
-%     h        = waitbar(0,msgstr);
-%     set(h,'Name','Event loop');
-% else
-%fprintf('%s (waitbar suppressed)\n',msgstr);
-fprintf('%s\n',msgstr);
-format_str='%s';
-% end
-
+fprintf('processing %i events\n',n_events);
+climada_progress2stdout    % init, see terminate below
 for event_i=1:n_events
     
     % your calculations here
     for i=1:5000,sqrt(i)*exp(event_i);end % DUMMY
     
-    % the progress management
-    if mod(event_i,mod_step)==0
-        mod_step          = 100;
-        t_elapsed_event   = etime(clock,t0)/event_i;
-        events_remaining  = n_events-event_i;
-        t_projected_sec   = t_elapsed_event*events_remaining;
-        if t_projected_sec<60
-            msgstr = sprintf('est. %3.0f sec left (%i/%i events)',t_projected_sec,   event_i,n_events);
-        else
-            msgstr = sprintf('est. %3.1f min left (%i/%i events)',t_projected_sec/60,event_i,n_events);
-        end
-        % if climada_global.waitbar
-        %    waitbar(event_i/n_events,h,msgstr); % update waitbar
-        % else
-        fprintf(format_str,msgstr); % write progress to stdout
-        format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
-        % end
-    end
-    
+    climada_progress2stdout(event_i,n_events,100,'events'); % update
 end % event_i
-% if climada_global.waitbar
-%     close(h) % dispose waitbar
-% else
-fprintf(format_str,''); % move carriage to begin of line
-% end
-fprintf('after the loop\n')
+climada_progress2stdout(0) % terminate
 
 end % climada_template

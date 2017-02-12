@@ -9,7 +9,7 @@ function [S,untreated_fields]=climada_subarray(S,pos)
 %   dimensions 1xn
 %
 % CALLING SEQUENCE:
-%   S=climada_subarray(S,pos)
+%   [S,untreated_fields]=climada_subarray(S,pos)
 % EXAMPLE:
 %   S.a=1:10;S.b=1:10;S.c='gaga';S.d=7;S.e=repmat({'abc'},1,10);
 %   S=climada_subarray(S,3:6)
