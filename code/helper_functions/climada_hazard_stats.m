@@ -49,6 +49,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,fontsize
 % David N. Bresch, david.bresch@gmail.com, 20160529, new default return periods (6)
 % David N. Bresch, david.bresch@gmail.com, 20161006, minimum thresholds set for some perils
 % David N. Bresch, david.bresch@gmail.com, 20170202, parallelized
+% David N. Bresch, david.bresch@gmail.com, 20170216, small issue in line 274 (not fixed yet)
 %-
 
 % init global variables
@@ -270,7 +271,12 @@ if sum(intensity_pos)>0 % otherwise no intensity above threshold
     intensity_fit = polyval(p, log(exc_freq));
     intensity_fit(intensity_fit<=0)    = 0; %nan;
     R                                  = 1./freq;
-    neg                                = return_periods >max(R);
+    try
+        neg                                = return_periods >max(R);
+    catch
+        map_intensity=zeros(length(return_periods),1);
+        return
+    end
     intensity_fit(neg)                 = 0; %nan;
     map_intensity = intensity_fit;
 else

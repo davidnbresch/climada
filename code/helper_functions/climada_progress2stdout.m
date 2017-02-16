@@ -28,6 +28,7 @@ function climada_progress2stdout(event_i,n_events,mod_step,msg_str)
 %   res: the output, empty if not successful
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20170212
+% David N. Bresch, david.bresch@gmail.com, 20170216 all fine
 %-
 
 persistent progress2stdout_data
@@ -39,7 +40,7 @@ if ~exist('n_events','var'),n_events =  0;end
 if ~exist('mod_step','var'),mod_step = 10;end
 if ~exist('msg_str','var'), msg_str  = '';end
 
-if event_i==0,fprintf(progress2stdout_data.format_str,'');end % terminate, move carriage to begin of line
+if event_i==0,fprintf(progress2stdout_data.format_str,'');return,end % terminate, move carriage to begin of line
 
 if event_i==-1 % init
     progress2stdout_data.t0         = clock;

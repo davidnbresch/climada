@@ -23,8 +23,11 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %   (https://github.com/davidnbresch/climada_module_tropical_cyclone)
 %   for the old slow version (for backward compatibility).
 %
+%   Technical note: the ~ in the function defintion line are for backward
+%   compatibility
+%
 % CALLING SEQUENCE:
-%   [gust,res]=climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
+%   gust=climada_tc_windfield(tc_track,centroids,'',silent_mode)
 % EXAMPLE:
 %   tc_track=climada_tc_track_load('TEST_tracks.atl_hist');
 %   tc_track=climada_tc_equal_timestep(tc_track);
@@ -63,6 +66,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % David N. Bresch, david.bresch@gmail.com, 20161225, Celerity fixed (dipole)
 % David N. Bresch, david.bresch@gmail.com, 20161226, further speedup, all to arrays, no struct in main loop
 % David N. Bresch, david.bresch@gmail.com, 20170103, special case silent_mode=-1 for single node
+% David N. Bresch, david.bresch@gmail.com, 20170216, CALLING SEQUENCE correct 
 %-
 
 gust = []; % init output

@@ -69,12 +69,12 @@ if isempty(param1) % local GUI
 end
 
 % just to show what's in (should one call climada_template ;-)
-param1
-param2
-module_data_dir
+% param1
+% param2
+% module_data_dir
 
 % template for-loop with progress to stdout
-n_events = 10000;
+n_events = 1000;
 fprintf('processing %i events\n',n_events);
 climada_progress2stdout    % init, see terminate below
 for event_i=1:n_events

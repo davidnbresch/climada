@@ -63,6 +63,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20161121, check for sum(Values)=0
 % David N. Bresch, david.bresch@gmail.com, 20170204, params introduced, and year_i
 % David N. Bresch, david.bresch@gmail.com, 20170208, year introduced
+% David N. Bresch, david.bresch@gmail.com, 20170213, title correct if _
 %-
 
 global climada_global
@@ -133,7 +134,7 @@ end
 if isempty(params.title_str) % construct a title
     %if isfield(entity.assets,'admin0_ISO3'),params.title_str=admin0_ISO3;end
     [~,fN]=fileparts(entity.assets.filename);
-    params.title_str=strrep(fN,'_entity','');
+    params.title_str=strrep(strrep(fN,'_entity',''),'_','');
 end
     
 plot_Value=entity.assets.Value; % make a copy, in case we take log10

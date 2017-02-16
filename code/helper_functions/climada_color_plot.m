@@ -24,8 +24,7 @@ function fig = climada_color_plot(values,lon,lat,figure_name,title_str,plot_meth
 %   plot_method: 'pcolor', 'contour', 'plotclr', default is matrix
 %   interp_method: method in griddata, like 'linear', 'cubic',...
 %   npoints: the number of points used
-%   plot_centroids: if set to 0, do not plot dentroids as red dots
-%       (default=1)
+%   plot_centroids: =1 plor centroids, =0 not (default)
 %   caxis_range: [min max] data values for constant color bars
 %   stencil_ext: to extend the stencil range (in units of the target grid,
 %       default=0
@@ -68,7 +67,7 @@ if isempty(title_str),title_str='color plot';end
 if isempty(plot_method),plot_method='pcolor';end
 if isempty(interp_method),interp_method='linear';end
 if isempty(npoints),npoints=199;end
-if isempty(plot_centroids),plot_centroids=1;end
+if isempty(plot_centroids),plot_centroids=0;end
 if isempty(cmap),cmap=jet;end
 if isempty(stencil_ext),stencil_ext=0;end
 %
