@@ -1,12 +1,20 @@
 function res=climada_csvread(csv_filename,delimiter,noheader)
 % climada read csv
 % MODULE:
-%   module name
+%   core
 % NAME:
 %   climada_template
 % PURPOSE:
 %   climada read comma (or other) separated file, use first row to define
 %   variable names (see noheader)
+%
+%   ERROR caption does indicate whether it is a numerical (num) or string
+%   (str) variable that lesds to an issue, it displays just the number of
+%   and full line content causing the error and (if possible) the single
+%   element to convert in (..) at the end. Usual suspects are delimiters
+%   within fields (eg if delimiter is comma (,) one cannot use commas in
+%   fields; Pure number entries in fields which are alphanumerical in the
+%   first data line (which defines the receiving field as cellstr).
 %
 %   a csv test file (test.csv) might contain
 %    name,val1,val2,val_descr
@@ -37,10 +45,12 @@ function res=climada_csvread(csv_filename,delimiter,noheader)
 %   res: the output, empty if not successful
 %       a structure with variable names as in first row of csv file
 %       (or named var{i} if noheader=1)
+%       Be very careful to use the output if ERRORs occurred
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20161203, initial
 % David N. Bresch, david.bresch@gmail.com, 20170121, CollapseDelimiters
 % David N. Bresch, david.bresch@gmail.com, 20170125, empty lines skipped
+% David N. Bresch, david.bresch@gmail.com, 20170217, ERROR catch
 %-
 
 res=[]; % init output
@@ -79,27 +89,57 @@ if exist(csv_filename,'file')
     % read raw data
     while not(feof(fid))
         
-        str=fscanf(fid,'%s',1);
+        %str=fscanf(fid,'%s',1);
+        str=fgetl(fid);
         
         if ~isempty(str)
             
             if ~noheader % first line, we infer field names from
                 csv_fieldnames=strsplit(str,delimiter);
+                for field_i=1:length(csv_fieldnames)
+                    csv_fieldnames{field_i}=strrep(csv_fieldnames{field_i},'#','');
+                    csv_fieldnames{field_i}=strrep(csv_fieldnames{field_i},'.','');
+                    csv_fieldnames{field_i}=strrep(csv_fieldnames{field_i},' ','');
+                end
                 noheader=1; % now we have a header
             else
                 % read data
-                raw_line_data=strsplit(str,',','CollapseDelimiters', false); % treat multiple delimiters separately
+                raw_line_data=strsplit(str,',','CollapseDelimiters',false); % treat multiple delimiters separately
                 
                 if isempty(csv_fieldnames) % if no header
                     for var_i=1:length(raw_line_data);csv_fieldnames{var_i}=['var' num2str(var_i)];end
                 end
                 
                 for var_i=1:1:length(csv_fieldnames)
-                    num_val=str2double(raw_line_data{var_i});
+                    try
+                        num_val=str2double(raw_line_data{var_i});
+                    catch ME
+                        try
+                            fprintf('ERROR %s line %i: %s (%s)\n',ME.message,line_i,str,raw_line_data{var_i});
+                        catch
+                            fprintf('ERROR %s line %i: %s\n',     ME.message,line_i,str);
+                        end
+                    end
                     if isnan(num_val)
-                        res.(csv_fieldnames{var_i}){line_i}=raw_line_data{var_i};
+                        try
+                            res.(csv_fieldnames{var_i}){line_i}=raw_line_data{var_i};
+                        catch
+                            try
+                                fprintf('ERROR (num), line %i: %s (%s)\n',line_i,str,raw_line_data{var_i});
+                            catch
+                                fprintf('ERROR (num), line %i: %s\n',line_i,str);
+                            end
+                        end
                     else
-                        res.(csv_fieldnames{var_i})(line_i)=num_val;
+                        try
+                            res.(csv_fieldnames{var_i})(line_i)=num_val;
+                        catch
+                            try
+                                fprintf('ERROR (str), line %i: %s (%s)\n',line_i,str,raw_line_data{var_i});
+                            catch
+                                fprintf('ERROR (str), line %i: %s\n',line_i,str);
+                            end
+                        end
                     end
                 end
                 line_i=line_i+1;

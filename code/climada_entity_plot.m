@@ -19,7 +19,7 @@ function params=climada_entity_plot(entity,markersize,params)
 %   params=climada_entity_plot('params') % return parameters
 %   params.year_i=1;params.max_value=-1;params.plot_log_value=1;
 %   climada_entity_plot(entity,2,params) % today, if entity contains Values
-%   params.year_i=-2100;climada_entity_plot(entity,2,params) % 2100
+%   params.plot_population=1;params.year=2030;climada_entity_plot(entity,2,params) % population for year 2030
 % INPUTS:
 %   entity: an entity (see climada_entity_read)
 %       > promted for if not given
@@ -49,6 +49,8 @@ function params=climada_entity_plot(entity,markersize,params)
 %    title_str: the title of the plot, if empty, use contents of
 %       entity.assets to define it
 %    plot_log_value: if =1, plot log(entity.assets.Value), default=0
+%    plot_population: if =1, plot Population instead of Values, otherwise
+%       same as for Values (default=0, plot Value(s))
 % OUTPUTS:
 %   params: the params structure, filled wit defaults, see
 %   a figure
@@ -64,6 +66,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170204, params introduced, and year_i
 % David N. Bresch, david.bresch@gmail.com, 20170208, year introduced
 % David N. Bresch, david.bresch@gmail.com, 20170213, title correct if _
+% David N. Bresch, david.bresch@gmail.com, 20170217, plot_population
 %-
 
 global climada_global
@@ -77,13 +80,14 @@ if ~exist('markersize','var'), markersize=[];end
 if ~exist('params','var'),     params=struct;end
 
 % check for some parameter fields we need
-if ~isfield(params,'plot_centroids'),params.plot_centroids=[];end
-if ~isfield(params,'max_value'),     params.max_value=[];end
-if ~isfield(params,'cbar_ylabel'),   params.cbar_ylabel='';end
-if ~isfield(params,'year'),          params.year=[];end
-if ~isfield(params,'year_i'),        params.year_i=[];end
-if ~isfield(params,'title_str'),     params.title_str='';end
-if ~isfield(params,'plot_log_value'),params.plot_log_value=[];end
+if ~isfield(params,'plot_centroids'), params.plot_centroids=[];end
+if ~isfield(params,'max_value'),      params.max_value=[];end
+if ~isfield(params,'cbar_ylabel'),    params.cbar_ylabel='';end
+if ~isfield(params,'year'),           params.year=[];end
+if ~isfield(params,'year_i'),         params.year_i=[];end
+if ~isfield(params,'title_str'),      params.title_str='';end
+if ~isfield(params,'plot_log_value'), params.plot_log_value=[];end
+if ~isfield(params,'plot_population'),params.plot_population=[];end
 
 % PARAMETERS
 %
@@ -99,6 +103,7 @@ if isempty(params.cbar_ylabel),     params.cbar_ylabel='Value';end
 if isempty(params.year_i),          params.year_i=1;end
 if ~isempty(params.year),params.year_i=-params.year;end % year does override year_i
 if isempty(params.plot_log_value),  params.plot_log_value=0;end
+if isempty(params.plot_population), params.plot_population=0;end
 
 if strcmpi(entity,'params'),return;end % special case, return the full params structure
 
@@ -137,7 +142,12 @@ if isempty(params.title_str) % construct a title
     params.title_str=strrep(strrep(fN,'_entity',''),'_','');
 end
     
-plot_Value=entity.assets.Value; % make a copy, in case we take log10
+if params.plot_population % just switch
+    entity.assets.Values=entity.assets.Population;
+    entity.assets.Value=entity.assets.Values(1,:);
+    if strcmpi(params.cbar_ylabel,'Value'),params.cbar_ylabel='Population';end   
+    entity.assets.Value_unit{1}='#';
+end
 
 if isfield(entity.assets,'Values') && isfield(entity.assets,'Values_yyyy')
     if params.year_i<0
@@ -154,6 +164,8 @@ if isfield(entity.assets,'Values') && isfield(entity.assets,'Values_yyyy')
     plot_Value=entity.assets.Values(params.year_i,:);
     params.title_str=[params.title_str sprintf(' year %i',entity.assets.Values_yyyy(params.year_i))]; % append year
     if params.max_value<0,params.max_value=max(max(entity.assets.Values));end
+else
+    plot_Value=entity.assets.Value; % make a copy, in case we take log10
 end
 
 if sum(plot_Value)==0
