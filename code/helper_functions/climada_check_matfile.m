@@ -1,4 +1,4 @@
-function ok=climada_check_matfile(source_filename,mat_filename)
+function [ok,mat_filename]=climada_check_matfile(source_filename,mat_filename)
 % climada
 % NAME:
 %   climada_check_matfile
@@ -25,11 +25,13 @@ function ok=climada_check_matfile(source_filename,mat_filename)
 % OUTPUTS:
 %   ok: =1 if .mat file exists and is more recent than source file
 %       =0 if .mat file does not exist or if source file is more recent
+%   mat_filename: the .mat filename
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141104
 % David N. Bresch, david.bresch@gmail.com, 20141208, datenum_mat-datenum_source>=0
 % Lea Mueller, muellele@gmail.com, 20150305, datenum taken automatically
 % from file (for source and mat_file), due to problems with German version
+% David N. Bresch, david.bresch@gmail.com, 20170224, mat_filename output
 %-
 
 ok=0; % init output
