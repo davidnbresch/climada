@@ -5,8 +5,8 @@ function [S,untreated_fields]=climada_subarray(S,pos,silent_mode)
 % NAME:
 %   climada_subarray
 % PURPOSE:
-%   given a typical climada structure S, perform S.a=S.a(pos) for all a of
-%   dimensions 1xn
+%   given a typical climada structure S, perform S.a=S.a(1,pos) 
+%   for all a of dimensions 1xn
 %
 % CALLING SEQUENCE:
 %   [S,untreated_fields]=climada_subarray(S,pos,silent_mode)
@@ -27,6 +27,7 @@ function [S,untreated_fields]=climada_subarray(S,pos,silent_mode)
 % David N. Bresch, david.bresch@gmail.com, 20161023, initial
 % David N. Bresch, david.bresch@gmail.com, 20170212, untreated_fields
 % David N. Bresch, david.bresch@gmail.com, 20170221, silent_mode
+% David N. Bresch, david.bresch@gmail.com, 20170224, a must be 1xn
 %-
 
 untreated_fields={}; % init
@@ -43,7 +44,7 @@ field_names=fieldnames(S);
 for field_i=1:length(field_names)
     %fprintf('checking %s\n',field_names{field_i})
     treat_field=0; % now check:
-    if length(S.(field_names{field_i}))>length(pos),treat_field=1;end
+    if size(S.(field_names{field_i}),2)>=length(pos),treat_field=1;end
     if ischar(S.(field_names{field_i})),treat_field=0;end
     if treat_field
         %fprintf('-> shortening\n')
