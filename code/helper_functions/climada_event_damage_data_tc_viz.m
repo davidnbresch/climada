@@ -150,7 +150,7 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %    animation_data_file: the file where animation data is stored (not the
 %       animation itself). If not provided, set to ../results/animation_data.mat
 %    add_surge: whether we also treat surge (TS) =1) or not (=0, default)
-%    extend_tc_track: if =1 (default=0) extend/extrapolate TC track by one node
+%    extend_tc_track: if =1 (default) extend/extrapolate TC track by one node
 %    focus_region: the region we're going to show [minlon maxlon minlat maxlat]
 %       default=[], automatically determined by area of entity lat/lon
 %       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
@@ -273,7 +273,7 @@ if isempty(params.tc_track_timestep),     params.tc_track_timestep=1/3;end
 if isempty(params.damage_scale),          params.damage_scale=1/100;end
 if isempty(params.label_track_nodes),     params.label_track_nodes=0;end
 if isempty(params.focus_track_region),    params.focus_track_region=0;end
-if isempty(params.extend_tc_track),       params.extend_tc_track=0;end % was 1 until 20170225
+if isempty(params.extend_tc_track),       params.extend_tc_track=1;end % nicer decay
 if isempty(params.grid_add),              params.grid_add=1;end
 if isempty(params.grid_delta),            params.grid_delta=0.2;end
 if isempty(params.hazard_arr_density),    params.hazard_arr_density=0.01;end
