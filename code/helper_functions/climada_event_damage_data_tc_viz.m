@@ -45,7 +45,7 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %   >> entity=climada_entity_load('BGD_Bangladesh');
 %   %  previous line the entity for Bangladesh if it does not yet exist:
 %   %  entity=climada_nightlight_entity('Bangladesh');
-%   >> climada_event_damage_data_tc(tc_track,entity,2); % run with ...,0) for full resolution
+%   >> climada_event_damage_data_tc_viz(tc_track,entity,2); % run with ...,0) for full resolution
 %   >> climada_event_damage_animation
 %
 %   Example for Andrew in Florida:
@@ -179,6 +179,12 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %   trim_assets: if =1, reduce assets to centroids with Value>0 (default)
 %       This is usually ok, since grid_add=1 by default.
 %       set =0 to keep all centroids from the entity (also eg water points)
+%   DamageFun_exponent: use a simple exponent to convert intensity (I) and
+%       asset value (V) to damage (D), i.e. D=V*I^DamageFun_exponent, scaled
+%       such that max intensity (about 120 m/s) leads to 100% damage. 
+%       Default=0 (use proper EDS calculation). >1 convex, <1 concave, Good start=7
+%   DamageFun_threshold: the intensity threshould, below whicjh no damage
+%       occurrs. Default=15 [m/s]. Only active if abs(DamageFun_exponent)>0
 % OUTPUTS:
 %   hazard: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -251,6 +257,8 @@ if ~isfield(params,'show_all_tracks'),    params.show_all_tracks=[];end
 if ~isfield(params,'damage_cumsum'),      params.damage_cumsum=[];end
 if ~isfield(params,'check_memory'),       params.check_memory=[];end
 if ~isfield(params,'trim_assets'),        params.trim_assets=[];end
+if ~isfield(params,'DamageFun_exponent'), params.DamageFun_exponent=[];end
+if ~isfield(params,'DamageFun_threshold'),params.DamageFun_threshold=[];end
 
 % PARAMETERS
 %
@@ -273,6 +281,8 @@ if isempty(params.show_all_tracks),       params.show_all_tracks=0;end
 if isempty(params.damage_cumsum),         params.damage_cumsum=0;end
 if isempty(params.check_memory),          params.check_memory=0;end
 if isempty(params.trim_assets),           params.trim_assets=1;end
+if isempty(params.DamageFun_exponent),    params.DamageFun_exponent=0;end
+if isempty(params.DamageFun_threshold),   params.DamageFun_threshold=15;end
 %
 % some overriders for check mode
 if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
@@ -605,52 +615,71 @@ local_hazard.peril_ID    = hazard.peril_ID;
 local_hazard.centroid_ID = hazard.centroid_ID;
 entity.centroid_index    = 1:n_assets;
 
-% if climada_global.parfor
-%     fprintf('processing total %i EDSs (%i timesteps each) - parfor\n',n_junks,damage_junk_size);
-%     parfor junk_i=1:n_junks
-%         e1=damage_junk_start(junk_i);
-%         e2=damage_junk_end(junk_i);
-%
-%         % junk of hazard structure
-%
-%         local_hazard.frequency   = hazard.frequency(e1:e2);
-%         local_hazard.intensity   = intensity(e1:e2,:);
-%         local_hazard.event_ID    = hazard.event_ID(e1:e2);
-%         local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
-%         local_hazard.event_count = e2-e1+1;
-%
-%         EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
-%
-%         damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
-%     end % junk_i
-% else
-
 if ~params.check_memory
-    fprintf('processing total %i EDSs (%i timesteps each)\n',n_junks,damage_junk_size);
-    climada_progress2stdout(-1,[],1)
-    for junk_i=1:n_junks
-        e1=damage_junk_start(junk_i);
-        e2=damage_junk_end(junk_i);
+    
+    if abs(params.DamageFun_exponent)>0
         
-        % junk of hazard structure
+        max_intens=full(max(ceil(max(max(intensity))*1.1),110)); % to be on the safe side
+        DamageFun_scale=1/(max_intens.^params.DamageFun_exponent);
+        fprintf('Simple damage approximation as %2.2g*(I-%i)^%i\n',...
+            DamageFun_scale,params.DamageFun_threshold,params.DamageFun_exponent);
+        % apply threshold
+        damage=intensity(:,entity.assets.centroid_index);
+        damage=max(damage-params.DamageFun_threshold,0);
+        damage=damage.^params.DamageFun_exponent*DamageFun_scale;
         
-        local_hazard.frequency   = hazard.frequency(e1:e2);
-        local_hazard.intensity   = intensity(e1:e2,:);
-        local_hazard.event_ID    = hazard.event_ID(e1:e2);
-        local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
-        local_hazard.event_count = e2-e1+1;
+        for asset_i=1:n_assets
+            damage(:,asset_i)=entity.assets.Value(asset_i)*damage(:,asset_i);
+        end % asset_i
         
-        EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
+    else
         
-        damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
-        climada_progress2stdout(junk_i,n_junks,1,'EDSs'); % update
-    end % junk_i
-    climada_progress2stdout(0) % terminate
-    %end % parfor
+        % if climada_global.parfor
+        %     fprintf('processing total %i EDSs (%i timesteps each) - parfor\n',n_junks,damage_junk_size);
+        %     parfor junk_i=1:n_junks
+        %         e1=damage_junk_start(junk_i);
+        %         e2=damage_junk_end(junk_i);
+        %
+        %         % junk of hazard structure
+        %
+        %         local_hazard.frequency   = hazard.frequency(e1:e2);
+        %         local_hazard.intensity   = intensity(e1:e2,:);
+        %         local_hazard.event_ID    = hazard.event_ID(e1:e2);
+        %         local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
+        %         local_hazard.event_count = e2-e1+1;
+        %
+        %         EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
+        %
+        %         damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
+        %     end % junk_i
+        % else
+        
+        fprintf('processing total %i EDSs (%i timesteps each)\n',n_junks,damage_junk_size);
+        climada_progress2stdout(-1,[],1)
+        for junk_i=1:n_junks
+            e1=damage_junk_start(junk_i);
+            e2=damage_junk_end(junk_i);
+            
+            % junk of hazard structure
+            
+            local_hazard.frequency   = hazard.frequency(e1:e2);
+            local_hazard.intensity   = intensity(e1:e2,:);
+            local_hazard.event_ID    = hazard.event_ID(e1:e2);
+            local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
+            local_hazard.event_count = e2-e1+1;
+            
+            EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
+            
+            damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
+            climada_progress2stdout(junk_i,n_junks,1,'EDSs'); % update
+        end % junk_i
+        climada_progress2stdout(0) % terminate
+        %end % parfor
+    end % params.DamageFun_exponent
     
 else
     fprintf('MEMORY CHECK: after damage\n');
-end
+end % params.check_memory
 
 climada_global.damage_at_centroid=climada_global_damage; % reset
 

@@ -100,7 +100,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile 
 %-
 
-res=[]; % init output (mainly used to return (default) parameters
+res=[]; % init output, mainly used to return (default) parameters
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
