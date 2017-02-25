@@ -548,9 +548,9 @@ if ~params.check_memory
                 cos_lat(ni),node_wind(ni),node_cel(ni),node_dx(ni),node_dy(ni),node_len(ni),centroids);
         end %track_i
         
-        % save intensity, in case memory troubles arise later
-        [fP,fN,fE]=fileparts(params.animation_data_file);
-        save([fP filesep fN '_intens' fE],'intensity','-v7.3');
+%         % save intensity, in case memory troubles arise later
+%         [fP,fN,fE]=fileparts(params.animation_data_file);
+%         save([fP filesep fN '_intens' fE],'intensity','-v7.3');
         
     else
         fprintf('processing total %i nodes of %i track(s) @ %i centroids\n',n_events,n_tracks,n_centroids);
@@ -755,8 +755,7 @@ R_min=30;R_max=75; % km
 R_lat_min=24;R_lat_max=42;
 %
 % threshold above which we calculate the windfield
-%wind_threshold=15; % in m/s, default=0 until 20150124
-wind_threshold=5; % in m/s, default=0 until 20150124
+wind_threshold=15; % in m/s
 
 n_centroids = length(centroids.lon);
 
@@ -844,6 +843,8 @@ if node_wind > (wind_threshold*3.6); % cut-off in km/h
     %S(icp) = min(M(icp), M(icp)+2.*T(icp).*D(icp)./R);
     
     S = max((S/3.6)*1.27,0); % local_gust now in m/s, peak gust
+    
+    S(S<wind_threshold)=0; % saves lots of memory
     
     gust(valid_centroid_pos)=S; % store into all valid centroids
 end % windy_node(node_i)
