@@ -146,7 +146,7 @@ if isempty(params.Position),params.Position=[1 5 1310 1100];end
 %if isempty(params.Position),params.Position=[430 20 920 650];end
 if isempty(params.jump_step),params.jump_step=1;end
 if isempty(params.frame_start),params.frame_start=1;end
-if isempty(params.plot_tc_track),params.plot_tc_track=0;end
+if isempty(params.plot_tc_track),params.plot_tc_track=1;end
 if isempty(params.video_profile)
     if strcmpi(computer,'GLNXA64') % does not support mp4
         params.video_profile='Motion JPEG AVI'; % larger output
@@ -420,7 +420,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
         max_damage_at_centroid=max(max_damage_at_centroid,full(hazard.damage(frame_i,:)));
     end
     damage_values = max_damage_at_centroid;
-    damage_values = damage_values(hazard.assets.centroid_index); % map them
+    %damage_values = damage_values(hazard.assets.centroid_index); % map them
     %damage_values = damage_values/100; % for Salvador, lea, 20150220
     
     %MarkerSizes=sqrt(abs(values-damage_min_value))/sqrt(damage_max_value-damage_min_value)*circle_diam;
