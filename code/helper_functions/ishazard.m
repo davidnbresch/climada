@@ -21,6 +21,7 @@ function ok = ishazard(hazard)
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150826 init
 % David N. Bresch, david.bresch@gmail.com, 20161008, units, orig_event_flag, yyyy, mm, dd, datenum and reference_year are optional
+% David N. Bresch, david.bresch@gmail.com, 20170225, even lon and lat are optional
 %-
 
 ok = 0; % init
@@ -38,14 +39,14 @@ end
 
 % required fields which define a hazard struct
 flds =  {
-    'lon'
-    'lat'
-    'intensity'
-    'centroid_ID'
     'peril_ID'
-    %'units'
-    'frequency'
     'event_ID'
+    'centroid_ID'
+    'intensity'
+    'frequency'
+    %'lon' % not really needed (can be in centroids)
+    %'lat' % not really needed (can be in centroids)
+    %'units'
     %'orig_event_flag'
     %'yyyy'
     %'mm'

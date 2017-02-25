@@ -278,6 +278,7 @@ for centroid_i=1:n_valid_centroids % now loop over all valid centroids
         % centroids, instead of a low value.
         % max_wind_at_bullseye=0 is used for single time-step windfields,
         % e.g. for animations.
+        
         if D<=R && max_wind_at_bullseye
             S = min(M, M+2*T*D/R); % in the inner core
         elseif D<10*R % in the outer core

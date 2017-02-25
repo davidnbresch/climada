@@ -35,6 +35,8 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       If a file and no path provided, default path ../data/hazards is
 %       used (and name can be without extension .mat)
 %       > promted for if not given
+%       Minimum fileds of hazard struct are: 
+%       peril_ID, event_ID, centroid_ID, intensity and frequency 
 % OPTIONAL INPUT PARAMETERS:
 %   annotation_name: a free text that will appear e.g. on plots for
 %       annotation, default is the name of the hazard set
@@ -109,6 +111,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20160308, no printing of ED to stdout, some silent_mode checks slow down too much, removed
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
 % David N. Bresch, david.bresch@gmail.com, 20161023, silent_mode=2
+% David N. Bresch, david.bresch@gmail.com, 20170225, allow for minimal fields in hazard
 %-
 
 global climada_global
@@ -192,7 +195,7 @@ n_assets              = length(entity.assets.centroid_index);
 EDS.ED_at_centroid    = zeros(n_assets,1); % expected damage per centroid
 EDS.Value             = 0;
 EDS.frequency         = hazard.frequency;
-EDS.orig_event_flag   = hazard.orig_event_flag;
+if isfield(hazard,'orig_event_flag'),EDS.orig_event_flag=hazard.orig_event_flag;end
 hazard_peril_ID       = char(hazard.peril_ID); % used below
 EDS.peril_ID          = hazard_peril_ID;
 EDS.hazard.peril_ID   = EDS.peril_ID; % backward compatibility
@@ -383,19 +386,15 @@ msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_e
 EDS.comment         = msgstr;
 % since a hazard event set might have been created on another Machine, make
 % sure it can later be referenced (with filesep and hence fileparts):
+if ~isfield(hazard,'filename'),hazard.filename='';end
 EDS.hazard.filename = strrep(char(hazard.filename),'\',filesep); % from PC
 EDS.hazard.filename = strrep(EDS.hazard.filename,'/',filesep); % from MAC
-if isfield(hazard,'refence_year')
-    EDS.hazard.refence_year = hazard.refence_year;
-else
-    EDS.hazard.refence_year = climada_global.present_reference_year;
-end
-if isfield(hazard,'scenario')
-    EDS.hazard.scenario = hazard.scenario;
-else
-    EDS.hazard.scenario = 'no climate change';
-end
-EDS.hazard.comment='';if isfield(hazard,'comment'),EDS.hazard.comment=char(hazard.comment);end
+if ~isfield(hazard,'refence_year'),hazard.refence_year=climada_global.present_reference_year;end
+EDS.hazard.refence_year = hazard.refence_year;
+if ~isfield(hazard,'scenario'),hazard.scenario='no climate change';end
+EDS.hazard.scenario = hazard.scenario;
+if ~isfield(hazard,'comment'),hazard.comment='';end
+EDS.hazard.comment=hazard.comment;
 EDS.assets.filename = entity.assets.filename;
 EDS.assets.lat = entity.assets.lat;
 EDS.assets.lon = entity.assets.lon;

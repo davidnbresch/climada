@@ -254,7 +254,7 @@ if isempty(params.focus_track_region),    params.focus_track_region=0;end
 if isempty(params.extend_tc_track),       params.extend_tc_track=1;end
 if isempty(params.grid_add),              params.grid_add=1;end
 if isempty(params.grid_delta),            params.grid_delta=0.2;end
-if isempty(params.hazard_arr_density),    params.hazard_arr_density=0.1;end
+if isempty(params.hazard_arr_density),    params.hazard_arr_density=0.01;end
 %
 % some overriders for check mode
 if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
@@ -325,8 +325,8 @@ if params.grid_add
     grid_region=params.focus_region;
     for i=grid_region(1):params.grid_delta:grid_region(2)
         for j=grid_region(3):params.grid_delta:grid_region(4)
-            centroids.lon(end+1)=i;
-            centroids.lat(end+1)=j;
+            centroids.lon(end+1)=i+params.grid_delta/10;
+            centroids.lat(end+1)=j+params.grid_delta/10;
         end
     end
 end
@@ -464,7 +464,7 @@ for track_i=1:n_tracks
         else
             node_0=max(1,node_i-1);
         end
-        
+       
         tc_track_segment.TimeStep=tc_track(track_i).TimeStep(node_0:node_i);
         tc_track_segment.lon=tc_track(track_i).lon(node_0:node_i);
         tc_track_segment.lat=tc_track(track_i).lat(node_0:node_i);

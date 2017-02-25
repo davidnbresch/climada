@@ -10,7 +10,8 @@ function climada_progress2stdout(event_i,n_events,mod_step,msg_str)
 % CALLING SEQUENCE:
 %   climada_progress2stdout(event_i,n_events,mod_step,msg_str)
 % EXAMPLE:
-%   climada_progress2stdout     % init
+%   climada_progress2stdout          % init
+%   climada_progress2stdout(-1,[],1) % init with mod_step 1 insted of 10 (default)
 %   n_events=10000;
 %   for i=1:n_events
 %       a=cos(pi*i)

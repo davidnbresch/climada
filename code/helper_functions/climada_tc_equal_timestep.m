@@ -34,6 +34,7 @@ function tc_track=climada_tc_equal_timestep(tc_track,default_min_TimeStep)
 % David N. Bresch, david_bresch@gmail.com, 20150103, simplified (a lot) and about five times faster
 % David N. Bresch, david_bresch@gmail.com, 20150119, lat/lon interpolation switched to spline
 % David N. Bresch, david_bresch@gmail.com, 20161204, RadiusMaxWind and EnvironmentalPressure added
+% David N. Bresch, david_bresch@gmail.com, 20170225, Celerity,cos_lat, node_dx, node_dy and node_len added
 %-
 
 % init global variables
@@ -94,8 +95,23 @@ for track_i=1:length(tc_track)
     end
     if isfield(tc_track,'RadiusMaxWind')
         tc_track(track_i).RadiusMaxWind=interp1(datenum_source,tc_track(track_i).RadiusMaxWind,datenum_target,'linear','extrap');
+    end    
+    if isfield(tc_track,'Celerity')
+        tc_track(track_i).Celerity=interp1(datenum_source,tc_track(track_i).Celerity,datenum_target,'linear','extrap');
     end
-        
+     if isfield(tc_track,'cos_lat')
+        tc_track(track_i).cos_lat=interp1(datenum_source,tc_track(track_i).cos_lat,datenum_target,'linear','extrap');
+     end
+     if isfield(tc_track,'node_dx')
+         tc_track(track_i).node_dx=interp1(datenum_source,tc_track(track_i).node_dx,datenum_target,'linear','extrap');
+     end
+     if isfield(tc_track,'node_dy')
+         tc_track(track_i).node_dy=interp1(datenum_source,tc_track(track_i).node_dy,datenum_target,'linear','extrap');
+     end
+     if isfield(tc_track,'node_len')
+         tc_track(track_i).node_len=interp1(datenum_source,tc_track(track_i).node_len,datenum_target,'linear','extrap');
+     end
+   
     tc_track(track_i).datenum=datenum_target; 
     tc_track(track_i).TimeStep=tc_track(track_i).lon*0+default_min_TimeStep; % by definition
     
