@@ -1,4 +1,4 @@
-function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,params)
+function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,params)
 % climada tc animation
 % MODULE:
 %   core
@@ -122,7 +122,7 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 %   hazard=climada_event_damage_data_tc_viz(tc_track,entity,0); % high-res
 %   climada_event_damage_animation % create the movie
 %
-%   params=climada_event_damage_data_tc_viz % return default parameters
+%   params=climada_event_damage_data_tc_viz2 % return default parameters
 %
 % INPUTS:
 %   tc_track: a tc_track structure, as returned by
@@ -174,6 +174,11 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 %       momentaneous damage (for each step/node) - which case the
 %       visiulaization needs to sum up (advantage if due to huge size,
 %       chunks of data need to be processed).
+%   check_memory: if =1, only check for memory, do not run calculations,
+%       but run all through saving the result
+%   trim_assets: if =1, reduce assets to centroids with Value>0 (default)
+%       This is usually ok, since grid_add=1 by default.
+%       set =0 to keep all centroids from the entity (also eg water points)
 % OUTPUTS:
 %   hazard: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -244,6 +249,8 @@ if ~isfield(params,'grid_delta'),         params.grid_delta=[];end
 if ~isfield(params,'hazard_arr_density'), params.hazard_arr_density=[];end
 if ~isfield(params,'show_all_tracks'),    params.show_all_tracks=[];end
 if ~isfield(params,'damage_cumsum'),      params.damage_cumsum=[];end
+if ~isfield(params,'check_memory'),       params.check_memory=[];end
+if ~isfield(params,'trim_assets'),        params.trim_assets=[];end
 
 % PARAMETERS
 %
@@ -258,12 +265,14 @@ if isempty(params.tc_track_timestep),     params.tc_track_timestep=1/3;end
 if isempty(params.damage_scale),          params.damage_scale=1/100;end
 if isempty(params.label_track_nodes),     params.label_track_nodes=0;end
 if isempty(params.focus_track_region),    params.focus_track_region=0;end
-if isempty(params.extend_tc_track),       params.extend_tc_track=1;end
+if isempty(params.extend_tc_track),       params.extend_tc_track=0;end % was 1 until 20170225
 if isempty(params.grid_add),              params.grid_add=1;end
 if isempty(params.grid_delta),            params.grid_delta=0.2;end
 if isempty(params.hazard_arr_density),    params.hazard_arr_density=0.01;end
 if isempty(params.show_all_tracks),       params.show_all_tracks=0;end
 if isempty(params.damage_cumsum),         params.damage_cumsum=0;end
+if isempty(params.check_memory),          params.check_memory=0;end
+if isempty(params.trim_assets),           params.trim_assets=1;end
 %
 % some overriders for check mode
 if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
@@ -273,8 +282,6 @@ if check_mode==2,params.tc_track_timestep=2;end % 2h for fast checks
 dX=1;dY=1; % default=1
 %
 % set global parameters (they are reset at the end)
-climada_global_transition=climada_global.tc.extratropical_transition;
-climada_global.tc.extratropical_transition=1;
 climada_global_damage=climada_global.damage_at_centroid;
 climada_global.damage_at_centroid=1;
 
@@ -333,21 +340,28 @@ if isfield(entity.assets,'centroids_file')
         load(entity.assets.centroids_file)
     end
 end
+if params.trim_assets
+    pos=find(entity.assets.Value>0); % get rid of empty centroids (as we add the grid later)
+    entity.assets=climada_subarray(entity.assets,pos);
+end
 centroids.lon=entity.assets.lon; % redefine
 centroids.lat=entity.assets.lat;
-if isfield(centroids,'distance2coast_km')
-    pos=find(centroids.distance2coast_km(1:length(centroids.lon))<500);
-    %entity.assets=climada_subarray(entity.assets,pos);
-    
-    entity.assets.Value=entity.assets.Value(pos);
-    entity.assets.Deductible=entity.assets.Deductible(pos);
-    entity.assets.Cover=entity.assets.Cover(pos);
-    entity.assets.DamageFunID=entity.assets.DamageFunID(pos);
-    entity.assets.lon=entity.assets.lon(pos);
-    entity.assets.lat=entity.assets.lat(pos);
-end
-entity.assets.centroid_index=1:length(entity.assets.lon);
+n_assets=length(entity.assets.lon);
+entity.assets.centroid_index=1:n_assets;
 entity.assets.hazard.filename='NO_SAVE';
+
+% if isfield(centroids,'distance2coast_km')
+%     pos=find(centroids.distance2coast_km(1:length(centroids.lon))<500);
+%     %entity.assets=climada_subarray(entity.assets,pos);
+%
+%     entity.assets.Value=entity.assets.Value(pos);
+%     entity.assets.Deductible=entity.assets.Deductible(pos);
+%     entity.assets.Cover=entity.assets.Cover(pos);
+%     entity.assets.DamageFunID=entity.assets.DamageFunID(pos);
+%     entity.assets.lon=entity.assets.lon(pos);
+%     entity.assets.lat=entity.assets.lat(pos);
+% end
+
 
 if params.grid_add
     fprintf('adding regular grid ...');
@@ -362,20 +376,7 @@ if params.grid_add
 end
 centroids.centroid_ID=1:length(centroids.lon);
 
-% init hazard structure
-hazard.lon=centroids.lon;
-hazard.lat=centroids.lat;
-hazard.centroid_ID=centroids.centroid_ID;
-hazard.peril_ID='TC';
-hazard.orig_years=1;
-hazard.date=datestr(now);
-hazard.filename=mfilename;
-hazard.reference_year=climada_global.present_reference_year;
-hazard.comment=sprintf('special hazard event set for animation plots, generated by %s',mfilename);
-hazard.units='m/s';
-n_events=0; % init
-
-% prep loop over all tracks to figure nodes within frame (focus_region) etc.
+% prep loop over all tracks to figure nodes within frame (focus_region) and how many nodes per track etc.
 n_tracks=length(tc_track);
 
 n_sel=0; % init
@@ -387,6 +388,7 @@ edges_y = [params.focus_region(3),params.focus_region(4),params.focus_region(4),
 d_nodes=ceil(10/params.tc_track_timestep); % 10 if track in hours, 100 if track in 6 min
 fprintf('checking %i tracks\n',n_tracks);
 climada_progress2stdout    % init, see terminate below
+n_events=0; % init
 for track_i=1:n_tracks
     if params.extend_tc_track
         tc_track(track_i).TimeStep(end+1)=tc_track(track_i).TimeStep(end);
@@ -424,8 +426,7 @@ for track_i=1:n_tracks
     % y2=x*-sin(a)+Y*cos(a), therefore
     tc_track(track_i).node_dx=node_dy;tc_track(track_i).node_dy=-node_dx;
     
-    % to convert to km/h
-    switch tc_track(track_i).MaxSustainedWindUnit
+    switch tc_track(track_i).MaxSustainedWindUnit % convert to km/h
         case 'kn'
             tc_track(track_i).MaxSustainedWind = tc_track(track_i).MaxSustainedWind*1.8515; % =1.15*1.61
         case 'kt' % just old naming
@@ -464,7 +465,6 @@ for track_i=1:n_tracks
         tc_track_N(N_i)=tc_track_tmp; % as we added fields (min_node,max_node,n_steps)
         track_node_count_start(N_i+1)=track_node_count_start(N_i)+n_steps;
         N_i=N_i+1; % point to next
-        if check_mode,plot(tc_track(track_i).lon,tc_track(track_i).lat,'-g');hold on;axis equal;end
     end
     
     climada_progress2stdout(track_i,n_tracks,20,'tracks'); % update
@@ -475,79 +475,105 @@ climada_progress2stdout(0) % terminate
 tc_track=tc_track_N; clear tc_track_N; % re-assign, clear
 n_tracks=length(tc_track);
 n_centroids=length(centroids.lon);
-n_assets=length(entity.assets.lon);
 
-fprintf('preprocessing %i tracks\n',n_tracks);
+fprintf('preprocessing %i tracks (%i centroids, %i assets)\n',n_tracks,n_centroids,n_assets);
 hazard.tc_track_number=zeros(1,n_events);
 hazard.tc_track_node=zeros(1,n_events);
 hazard.tc_track_ID_no=zeros(1,n_events);
 hazard.event_name=cell(1,n_events);
+% avoid indexing, for parfor
+node_lon=zeros(1,n_events);
+node_lat=zeros(1,n_events);
+cos_lat=zeros(1,n_events);
+node_wind=zeros(1,n_events);
+node_cel=zeros(1,n_events);
+node_dx=zeros(1,n_events);
+node_dy=zeros(1,n_events);
+node_len=zeros(1,n_events);
 climada_progress2stdout    % init, see terminate below
+i1=1; % init
 for track_i=1:n_tracks
     min_node=tc_track(track_i).min_node;
     max_node=tc_track(track_i).max_node;
-    for node_i=min_node:max_node
-        
-        hazard_i=track_node_count_start(track_i)+(node_i-min_node);
-        
-        hazard.tc_track_number(hazard_i)=track_i;
-        hazard.tc_track_node(hazard_i)=node_i;
-        hazard.tc_track_ID_no(hazard_i)=tc_track(track_i).ID_no;
-        hazard.event_name{hazard_i}=sprintf('%s %s',strrep(char(tc_track(track_i).name),'_',' '),...
-            datestr(tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
-    end % node_i
+    i2=i1+max_node-min_node;
+    
+    % store into (long) simple vectors for speedup in sparse
+    node_lon(i1:i2)  = tc_track(track_i).lon(min_node:max_node);
+    node_lat(i1:i2)  = tc_track(track_i).lat(min_node:max_node);
+    cos_lat(i1:i2)   = tc_track(track_i).cos_lat(min_node:max_node);
+    node_wind(i1:i2) = tc_track(track_i).MaxSustainedWind(min_node:max_node);
+    node_cel(i1:i2)  = tc_track(track_i).Celerity(min_node:max_node);
+    node_dx(i1:i2)   = tc_track(track_i).node_dx(min_node:max_node);
+    node_dy(i1:i2)   = tc_track(track_i).node_dy(min_node:max_node);
+    node_len(i1:i2)  = tc_track(track_i).node_len(min_node:max_node);
+    
+    hazard.tc_track_number(i1:i2) = track_i;
+    hazard.tc_track_ID_no(i1:i2)  = tc_track(track_i).ID_no;
+    hazard.tc_track_node(i1:i2)   = min_node:max_node;
+    hazard.datenum(i1:i2)         = tc_track(track_i).datenum(min_node:max_node);
+    
+    i1=i2+1; % point to next free
+    
+    % for node_i=min_node:max_node
+    %     hazard.event_name{hazard_i}     =sprintf('%s %s',strrep(char(tc_track(track_i).name),'_',' '),...
+    %         datestr(tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
+    % end % node_i
+    
     climada_progress2stdout(track_i,n_tracks,20,'tracks'); % update
 end % track_i (preprocessing 2)
 climada_progress2stdout(0) % terminate
-
-if check_mode
-    axis(params.focus_region);
-    climada_plot_world_borders(1,'','',1)
-    set(gcf,'Color',[1 1 1]) % white background
-end
 
 % allocate the hazard array (sparse, to manage memory)
 intensity = spalloc(n_events,n_centroids,...
     ceil(n_events*n_centroids*params.hazard_arr_density));
 
-t0=clock;
-if climada_global.parfor
-    fprintf('processing total %i nodes of %i track(s) - parfor\n',n_events,n_tracks);
-    parfor track_i=1:n_tracks
-        e1=track_node_count_start(track_i);
-        e2=track_node_count_start(track_i+1)-1;
-        intensity(e1:e2,:) = sparse(climada_tc_windfield_viz(tc_track(track_i),centroids));
-    end %track_i
+if ~params.check_memory
+    
+    t0=clock;
+    if climada_global.parfor
+        fprintf('processing total %i nodes of %i track(s) @ %i centroids - parfor\n',n_events,n_tracks,n_centroids);
+        parfor ni=1:n_events
+            intensity(ni,:)=climada_tc_windfield_viz2(node_lon(ni),node_lat(ni),...
+                cos_lat(ni),node_wind(ni),node_cel(ni),node_dx(ni),node_dy(ni),node_len(ni),centroids);
+        end %track_i
+        
+        % save intensity, in case memory troubles arise later
+        [fP,fN,fE]=fileparts(params.animation_data_file);
+        save([fP filesep fN '_intens' fE],'intensity','-v7.3');
+        
+    else
+        fprintf('processing total %i nodes of %i track(s) @ %i centroids\n',n_events,n_tracks,n_centroids);
+        climada_progress2stdout(-1,[],1)
+        for track_i=1:n_tracks
+            e1=track_node_count_start(track_i);
+            e2=track_node_count_start(track_i+1)-1;
+            intensity(e1:e2,:) = climada_tc_windfield_viz(tc_track(track_i),centroids);
+            climada_progress2stdout(track_i,n_tracks,2,'tracks'); % update
+        end %track_i
+        climada_progress2stdout(0) % terminate
+    end % climada_global.parfor
+    t_elapsed = etime(clock,t0);
+    hazard.comment = sprintf('processing %i tracks @ %i centroids took %3.2f sec (%3.4f sec/event, %s)',...
+        n_tracks,n_centroids,t_elapsed,t_elapsed/n_tracks,mfilename);
+    fprintf('%s\n',hazard.comment);
+    
 else
-    fprintf('processing total %i nodes of %i track(s)\n',n_events,n_tracks);
-    climada_progress2stdout(-1,[],1)
-    for track_i=1:n_tracks
-        e1=track_node_count_start(track_i);
-        e2=track_node_count_start(track_i+1)-1;
-        intensity(e1:e2,:) = sparse(climada_tc_windfield_viz(tc_track(track_i),centroids));
-        climada_progress2stdout(track_i,n_tracks,2,'tracks'); % update
-    end %track_i
-    climada_progress2stdout(0) % terminate
-end % climada_global.parfor
-
-t_elapsed = etime(clock,t0);
-hazard.comment = sprintf('%s: processing %i tracks took %3.2f min (%3.4f sec/event)',mfilename,n_tracks,t_elapsed/60,t_elapsed/n_tracks);
-fprintf('%s\n',hazard.comment);
-
-%hazard.intensity=sparse(intensity); % store into struct, sparse() to be safe
-%clear intensity % free up memory
+    fprintf('processing total %i nodes of %i track(s) @ %i centroids\n',n_events,n_tracks,n_centroids);
+    fprintf('MEMORY CHECK: after intensity\n');
+end
 
 % init hazard structure
 hazard.lon=centroids.lon;
 hazard.lat=centroids.lat;
 hazard.centroid_ID=centroids.centroid_ID;
 hazard.peril_ID='TC';
+hazard.units='m/s';
 hazard.date=datestr(now);
 hazard.filename=mfilename;
 if isfield(entity.assets,'reference_year')
     hazard.reference_year=entity.assets.reference_year;
 else
-    hazard.reference_year=9999;
+    hazard.reference_year=climada_global.present_reference_year;
 end
 hazard.event_ID        = 1:n_events;
 hazard.event_count     = n_events;
@@ -556,6 +582,7 @@ hazard.orig_event_count=n_events;
 hazard.orig_years = tc_track(end).yyyy(end)-tc_track(1).yyyy(1)+1;
 %hazard.frequency  = 1/hazard.orig_years;
 hazard.frequency  = hazard.event_ID*0+1; % all one
+%hazard.comment=sprintf('special hazard event set for animation plots, generated by %s',mfilename);
 
 % damage calculation
 % ------------------
@@ -571,31 +598,34 @@ if damage_junk_end(end)<damage_junk_start(end)
 end
 n_junks=length(damage_junk_start);
 
-damage    = spalloc(n_steps,n_assets,...
-    ceil(n_steps*n_assets*params.hazard_arr_density));
+damage    = spalloc(n_events,n_assets,...
+    ceil(n_events*n_assets*params.hazard_arr_density));
 
 local_hazard.peril_ID    = hazard.peril_ID;
-local_hazard.event_ID    = hazard.event_ID(e1:e2);
 local_hazard.centroid_ID = hazard.centroid_ID;
+entity.centroid_index    = 1:n_assets;
 
-if climada_global.parfor
-    fprintf('processing total %i EDSs (%i timesteps each) - parfor\n',n_junks,damage_junk_size);
-    parfor junk_i=1:n_junks
-        e1=damage_junk_start(junk_i);
-        e2=damage_junk_end(junk_i);
-        
-        % junk of hazard structure
-        
-        local_hazard.frequency   = hazard.frequency(e1:e2);
-        local_hazard.intensity   = intensity(e1:e2,:);
-        local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
-        local_hazard.event_count = e2-e1+1;
-        
-        EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
-        
-        damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
-    end % junk_i
-else
+% if climada_global.parfor
+%     fprintf('processing total %i EDSs (%i timesteps each) - parfor\n',n_junks,damage_junk_size);
+%     parfor junk_i=1:n_junks
+%         e1=damage_junk_start(junk_i);
+%         e2=damage_junk_end(junk_i);
+%
+%         % junk of hazard structure
+%
+%         local_hazard.frequency   = hazard.frequency(e1:e2);
+%         local_hazard.intensity   = intensity(e1:e2,:);
+%         local_hazard.event_ID    = hazard.event_ID(e1:e2);
+%         local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
+%         local_hazard.event_count = e2-e1+1;
+%
+%         EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
+%
+%         damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
+%     end % junk_i
+% else
+
+if ~params.check_memory
     fprintf('processing total %i EDSs (%i timesteps each)\n',n_junks,damage_junk_size);
     climada_progress2stdout(-1,[],1)
     for junk_i=1:n_junks
@@ -606,6 +636,7 @@ else
         
         local_hazard.frequency   = hazard.frequency(e1:e2);
         local_hazard.intensity   = intensity(e1:e2,:);
+        local_hazard.event_ID    = hazard.event_ID(e1:e2);
         local_hazard.fraction    = spones(local_hazard.intensity); % fraction 100%
         local_hazard.event_count = e2-e1+1;
         
@@ -615,9 +646,12 @@ else
         climada_progress2stdout(junk_i,n_junks,1,'EDSs'); % update
     end % junk_i
     climada_progress2stdout(0) % terminate
-end % parfor
+    %end % parfor
+    
+else
+    fprintf('MEMORY CHECK: after damage\n');
+end
 
-climada_global.tc.extratropical_transition=climada_global_transition; % reset
 climada_global.damage_at_centroid=climada_global_damage; % reset
 
 % complete hazard
@@ -659,7 +693,126 @@ fprintf('max cumulated TC damage %g\n',full(max(hazard.max_damage)));
 
 hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 
-fprintf('saving animation data in %s\n',params.animation_data_file);
-save(params.animation_data_file,'hazard','-v7.3');
+if ~params.check_memory
+    fprintf('saving animation data in %s\n',params.animation_data_file);
+    save(params.animation_data_file,'hazard','-v7.3');
+end % ~params.check_memory
 
 end % climada_event_damage_data_tc_viz
+
+
+function gust=climada_tc_windfield_viz2(node_lon,node_lat,cos_lat,node_wind,node_cel,node_dx,node_dy,node_len,centroids)
+% stripped-down version of climada_tc_windfield_viz, see there
+%
+%   Key difference: this code does return the single-step windfields for
+%   one single node of a track, i.e. gust is of dimension 1 x n_centroids
+%
+% OUTPUTS:
+%   gust(1,centroid_i): the windfield [m/s] at all centroids i for one node
+%       NOT sparse for speedup i.e. convert lusing sparse(gust)
+% RESTRICTIONS:
+% MODIFICATION HISTORY:
+% David N. Bresch, david.bresch@gmail.com, 20170225, copy from climada_tc_windfield_viz
+%-
+
+% PARAMETERS
+%
+% Radius of max wind (in km), latitudes at which range applies
+R_min=30;R_max=75; % km
+R_lat_min=24;R_lat_max=42;
+%
+% threshold above which we calculate the windfield
+%wind_threshold=15; % in m/s, default=0 until 20150124
+wind_threshold=5; % in m/s, default=0 until 20150124
+
+n_centroids = length(centroids.lon);
+
+%gust=zeros(tc_track.n_steps,n_centroids); % init
+gust=zeros(1,n_centroids); % init
+
+% restricxt to a region around the track, since windfield does anyway not
+% extend further
+tmalo=max(node_lon)+5;
+tmala=max(node_lat)+5;
+tmilo=min(node_lon)-5;
+tmila=min(node_lat)-5;
+valid_centroid_pos=find((centroids.lon>tmilo & centroids.lon<tmalo) & (centroids.lat>tmila & centroids.lat<tmala));
+local_lon=centroids.lon(valid_centroid_pos); % for parfor
+local_lat=centroids.lat(valid_centroid_pos); % for parfor
+
+n_valid_centroids=length(valid_centroid_pos);
+
+zero_vect=zeros(1,n_valid_centroids);
+ones_vect=ones(1,n_valid_centroids);
+
+R = R_min; % radius of max wind (in km)
+if abs(node_lat) > R_lat_max
+    R = R_max;
+elseif abs(node_lat) > R_lat_min
+    R = R_min+(R_max-R_min)/(R_lat_max-R_lat_min)*(abs(node_lat)-R_lat_min);
+end
+
+if node_wind > (wind_threshold*3.6); % cut-off in km/h
+    
+    % distance to node
+    D = sqrt( ((node_lon-local_lon)*cos_lat).^2+(node_lat-local_lat).^2 )*111.12; % now in km
+    
+    % calculate angular field to add translational wind
+    % -------------------------------------------------
+    
+    % figure which side of track, hence add/subtract translational wind
+    
+    % we use the scalar product of the track forward vector and the vector
+    % towards each centroid to figure the angle between and hence whether
+    % the translational wind needs to be added (on the right side of the
+    % track for Northern hemisphere) and to which extent (100% exactly 90
+    % to the right of the track, zero in front of the track)
+    
+    % the vector towards each centroid
+    %centroids_dlon=local_lon(centroid_i)-node_lon; % vector from center
+    centroids_dlon=local_lon-node_lon; % vector from center
+    %centroids_dlat=local_lat(centroid_i)-node_lat;
+    centroids_dlat=local_lat-node_lat;
+    %centroids_len=sqrt(centroids_dlon^2+centroids_dlat^2); % length
+    centroids_len=sqrt(centroids_dlon.^2+centroids_dlat.^2); % length
+    
+    % scalar product, a*b=|a|*|b|*cos(phi), phi angle between vectors
+    %cos_phi=(centroids_dlon*node_dx+centroids_dlat*node_dy)/centroids_len/node_len;
+    cos_phi=(centroids_dlon.*node_dx+centroids_dlat.*node_dy)./centroids_len/node_len;
+    if node_lat<0;cos_phi=-cos_phi;end % southern hemisphere
+    
+    % calculate vtrans wind field array assuming that
+    % - effect of Celerity decreases with distance from eye (r_normed)
+    % - Celerity is added 100% to the right of the track, 0% in front etc. (cos_phi)
+    r_normed=R./D;
+    r_normed(r_normed>1)=1;
+    T = node_cel.*r_normed.*cos_phi;
+    
+    M = node_wind*ones_vect;
+    
+    % special to avoid unrealistic celerity after extratropical transition
+    max_T_fact=0.0;
+    if abs(node_lat) > 42
+        T_fact=max_T_fact;
+    elseif abs(node_lat) > 35
+        T_fact=1.0+(max_T_fact-1.0)*(abs(node_lat)-35)/(42-35);
+    else
+        T_fact=1.0;
+    end
+    T=sign(T).*min(abs(T),abs(M)).*T_fact; % T never exceeds M
+    
+    S=zero_vect; % init
+    
+    ocp=find(D<10*R); % in the outer core
+    S(ocp) = max( (M(ocp)-abs(T(ocp))).*( R^1.5 * exp(1-R^1.5./D(ocp).^1.5 )./D(ocp).^1.5) + T(ocp), 0);
+    % if one would like, for speedup, to omit the inner core
+    % (see max_wind_at_bullseye in climada_tc_windfield)
+    %icp=find(D<=R);    % in the inner core
+    %S(icp) = min(M(icp), M(icp)+2.*T(icp).*D(icp)./R);
+    
+    S = max((S/3.6)*1.27,0); % local_gust now in m/s, peak gust
+    
+    gust(valid_centroid_pos)=S; % store into all valid centroids
+end % windy_node(node_i)
+
+end % climada_tc_windfield_viz2
