@@ -482,6 +482,7 @@ for track_i=1:n_tracks
 end % track_i (preprocessing)
 climada_progress2stdout(0) % terminate
 
+if n_sel==0,fprintf('track not hitting or even close to assets, aborted\n');return,end
 tc_track=tc_track_N; clear tc_track_N; % re-assign, clear
 n_tracks=length(tc_track);
 n_centroids=length(centroids.lon);
@@ -619,16 +620,19 @@ if ~params.check_memory
     
     if abs(params.DamageFun_exponent)>0
         
-        max_intens=full(max(ceil(max(max(intensity))*1.1),110)); % to be on the safe side
-        DamageFun_scale=1/(max_intens.^params.DamageFun_exponent);
-        fprintf('Simple damage approximation as %2.2g*(I-%i)^%i\n',...
-            DamageFun_scale,params.DamageFun_threshold,params.DamageFun_exponent);
+        max_intens=full(max(ceil(max(max(intensity))*1.1),100)); % to be on the safe side
+        DamageFun_scale=1/(max(max_intens-params.DamageFun_threshold,0).^params.DamageFun_exponent);
+       
         % apply threshold
         damage=intensity(:,entity.assets.centroid_index);
+        max_intens=full(max(max(damage)));
         damage=max(damage-params.DamageFun_threshold,0);
-        damage=damage.^params.DamageFun_exponent*DamageFun_scale;
+        damage=DamageFun_scale*(damage.^params.DamageFun_exponent);
         
-        for asset_i=1:n_assets
+         fprintf('Simple damage approximation as %2.2g*(I-%i)^%i (max I %2.2f, max MDD %2.2f)\n',...
+            DamageFun_scale,params.DamageFun_threshold,params.DamageFun_exponent,max_intens,full(max(max(damage))) );
+        
+        for asset_i=1:n_assets % apply Value
             damage(:,asset_i)=entity.assets.Value(asset_i)*damage(:,asset_i);
         end % asset_i
         
