@@ -10,7 +10,9 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 %   version of the code runs parallel of climada_global.parfor=1, best
 %   speedup is achieved by running segemnts of tc_track parallel, i.e. to
 %   call climada_event_damage_data_tc_viz(tc_track(i1:i2),entity,0,params,i1)
-%   and to run these calls in an (outer) parfor.
+%   and to run these calls in an (outer) parfor. Print to stdout does
+%   include the segment number, hence one can even keep track of parallel
+%   processing.
 %
 %   Animation of climada cyclone impact for illustration - this code
 %   calculates all the data. See climada_event_damage_animation for nice
@@ -276,8 +278,11 @@ if isempty(check_mode),                   check_mode=2;end
 if isempty(params.animation_data_file),   params.animation_data_file=...
         [climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
 if ~isempty(segment_i)
+    segment_str=sprintf('%4.4i',segment_i);
     [fP,fN,fE]=fileparts(params.animation_data_file);
-    params.animation_data_file=[fP filesep fN '_' sprintf('%4.4i',segment_i) fE];
+    params.animation_data_file=[fP filesep fN '_' segment_str fE];
+else
+    segment_str='';
 end
 if isempty(params.add_surge),             params.add_surge=0;end
 if isempty(params.show_footprint),        params.show_footprint=0;end
@@ -354,7 +359,7 @@ if params.focus_track_region==1
         params.focus_region(3)=min(params.focus_region(3),min(tc_track(track_i).lat)-dY);
         params.focus_region(4)=max(params.focus_region(4),max(tc_track(track_i).lat)+dY);
     end % track_i
-    fprintf('focus on TC tack region, not on whole entity\n');
+    %fprintf('focus on TC tack region, not on whole entity\n');
 end
 
 if isfield(entity.assets,'centroids_file')
@@ -386,7 +391,7 @@ entity.assets.hazard.filename='NO_SAVE';
 
 
 if params.grid_add
-    fprintf('adding regular grid ...');
+    %fprintf('%s: adding regular grid ...',segment_str);
     grid_region=params.focus_region;
     for i=grid_region(1):params.grid_delta:grid_region(2)
         for j=grid_region(3):params.grid_delta:grid_region(4)
@@ -394,7 +399,7 @@ if params.grid_add
             centroids.lat(end+1)=j+params.grid_delta/10;
         end
     end
-    fprintf(' done\n');
+    %fprintf(' done\n');
 end
 centroids.centroid_ID=1:length(centroids.lon);
 
@@ -408,7 +413,7 @@ track_node_count_start=zeros(1,n_tracks+1);track_node_count_start(1)=1; % init
 edges_x = [params.focus_region(1),params.focus_region(1),params.focus_region(2),params.focus_region(2),params.focus_region(1)];
 edges_y = [params.focus_region(3),params.focus_region(4),params.focus_region(4),params.focus_region(3),params.focus_region(3)];
 d_nodes=ceil(10/params.tc_track_timestep); % 10 if track in hours, 100 if track in 6 min
-fprintf('checking %i tracks\n',n_tracks);
+fprintf('%s: checking %i tracks\n',segment_str,n_tracks);
 climada_progress2stdout    % init, see terminate below
 n_events=0; % init
 for track_i=1:n_tracks
@@ -494,12 +499,12 @@ for track_i=1:n_tracks
 end % track_i (preprocessing)
 climada_progress2stdout(0) % terminate
 
-if n_sel==0,fprintf('track not hitting or even close to assets, aborted\n');return,end
+if n_sel==0,fprintf('%s: track not hitting or even close to assets, aborted\n',segment_str);return,end
 tc_track=tc_track_N; clear tc_track_N; % re-assign, clear
 n_tracks=length(tc_track);
 n_centroids=length(centroids.lon);
 
-fprintf('preprocessing %i tracks (%i centroids, %i assets)\n',n_tracks,n_centroids,n_assets);
+fprintf('%s: preprocessing %i tracks (%i centroids, %i assets)\n',segment_str,n_tracks,n_centroids,n_assets);
 hazard.tc_track_number=zeros(1,n_events);
 hazard.tc_track_node=zeros(1,n_events);
 hazard.tc_track_ID_no=zeros(1,n_events);
@@ -554,7 +559,7 @@ if ~params.check_memory
     
     t0=clock;
     if climada_global.parfor
-        fprintf('processing total %i nodes of %i track(s) @ %i centroids - parfor\n',n_events,n_tracks,n_centroids);
+        fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids - parfor\n',segment_str,n_events,n_tracks,n_centroids);
         parfor ni=1:n_events
             intensity(ni,:)=climada_tc_windfield_viz2(node_lon(ni),node_lat(ni),...
                 cos_lat(ni),node_wind(ni),node_cel(ni),node_dx(ni),node_dy(ni),node_len(ni),centroids);
@@ -565,7 +570,7 @@ if ~params.check_memory
 %         save([fP filesep fN '_intens' fE],'intensity','-v7.3');
         
     else
-        fprintf('processing total %i nodes of %i track(s) @ %i centroids\n',n_events,n_tracks,n_centroids);
+        fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids\n',segment_str,n_events,n_tracks,n_centroids);
         climada_progress2stdout(-1,[],1)
         for track_i=1:n_tracks
             e1=track_node_count_start(track_i);
@@ -578,11 +583,11 @@ if ~params.check_memory
     t_elapsed = etime(clock,t0);
     hazard.comment = sprintf('processing %i tracks @ %i centroids took %3.2f sec (%3.4f sec/event, %s)',...
         n_tracks,n_centroids,t_elapsed,t_elapsed/n_tracks,mfilename);
-    fprintf('%s\n',hazard.comment);
+    fprintf('%s: %s\n',segment_str,hazard.comment);
     
 else
-    fprintf('processing total %i nodes of %i track(s) @ %i centroids\n',n_events,n_tracks,n_centroids);
-    fprintf('MEMORY CHECK: after intensity\n');
+    fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids\n',segment_str,n_events,n_tracks,n_centroids);
+    fprintf('%s: MEMORY CHECK: after intensity\n',segment_str);
 end
 
 % init hazard structure
@@ -641,7 +646,7 @@ if ~params.check_memory
         damage=max(damage-params.DamageFun_threshold,0);
         damage=DamageFun_scale*(damage.^params.DamageFun_exponent);
         
-         fprintf('Simple damage approximation as %2.2g*(I-%i)^%i (max I %2.2f, max MDD %2.2f)\n',...
+         fprintf('%s: simple damage approximation as %2.2g*(I-%i)^%i (max I %2.2f, max MDD %2.2f)\n',segment_str,...
             DamageFun_scale,params.DamageFun_threshold,params.DamageFun_exponent,max_intens,full(max(max(damage))) );
         
         for asset_i=1:n_assets % apply Value
@@ -670,7 +675,7 @@ if ~params.check_memory
         %     end % segment_i
         % else
         
-        fprintf('processing total %i EDSs (%i timesteps each)\n',n_junks,damage_junk_size);
+        fprintf('%s: processing total %i EDSs (%i timesteps each)\n',segment_str,n_junks,damage_junk_size);
         climada_progress2stdout(-1,[],1)
         for segment_i=1:n_junks
             e1=damage_junk_start(segment_i);
@@ -694,7 +699,7 @@ if ~params.check_memory
     end % params.DamageFun_exponent
     
 else
-    fprintf('MEMORY CHECK: after damage\n');
+    fprintf('%s: MEMORY CHECK: after damage\n',segment_str);
 end % params.check_memory
 
 climada_global.damage_at_centroid=climada_global_damage; % reset
@@ -734,12 +739,12 @@ clear damage
 hazard.fraction   = spones(hazard.intensity); % fraction 100%
 
 hazard.max_damage = max(hazard.damage,[],1); % store max damage
-fprintf('max cumulated TC damage %g\n',full(max(hazard.max_damage)));
+fprintf('%s: max cumulated TC damage %g\n',segment_str,full(max(hazard.max_damage)));
 
 hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 
 if ~params.check_memory
-    fprintf('saving animation data in %s\n',params.animation_data_file);
+    fprintf('%s: saving animation data in %s\n',segment_str,params.animation_data_file);
     save(params.animation_data_file,'hazard','-v7.3');
 end % ~params.check_memory
 
