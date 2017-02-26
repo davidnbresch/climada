@@ -1,4 +1,4 @@
-function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,params)
+function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,params,segment_i)
 % climada tc animation
 % MODULE:
 %   core
@@ -6,9 +6,11 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %   climada_event_damage_data_tc_viz
 % PURPOSE:
 %   The FAST version of climada_event_damage_data_tc. See also
-%   climada_event_damage_data_tc for some special cases. The present
-%   version of the code runs parallel of climada_global.parfor=1 for
-%   (massive) speedup.
+%   climada_event_damage_data_tc for some special cases. While the present
+%   version of the code runs parallel of climada_global.parfor=1, best
+%   speedup is achieved by running segemnts of tc_track parallel, i.e. to
+%   call climada_event_damage_data_tc_viz(tc_track(i1:i2),entity,0,params,i1)
+%   and to run these calls in an (outer) parfor.
 %
 %   Animation of climada cyclone impact for illustration - this code
 %   calculates all the data. See climada_event_damage_animation for nice
@@ -122,7 +124,7 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %   hazard=climada_event_damage_data_tc_viz(tc_track,entity,0); % high-res
 %   climada_event_damage_animation % create the movie
 %
-%   params=climada_event_damage_data_tc_viz2 % return default parameters
+%   params=climada_event_damage_data_tc_viz % return default parameters
 %
 % INPUTS:
 %   tc_track: a tc_track structure, as returned by
@@ -142,7 +144,7 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %       you'd like to animate a TC hitting Floriday, i.e consider
 %       entity=climada_nightlight_entity('USA','Florida')
 % OPTIONAL INPUT PARAMETERS:
-%    check_mode: =2: (default) show plots, use 2h timestep (fast check)
+%   check_mode: =2: (default) show plots, use 2h timestep (fast check)
 %       =1: show plots, use 1h timestep (pretty detailed check)
 %       =0: no plots, 20 min timestep (params.tc_track_timestep=1/3) (the
 %       best option to generate the data pretty fast).
@@ -168,23 +170,27 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 %       default=0.2, see grid_add.
 %    hazard_arr_density: very technical, set to rather too large a
 %       number, default=0.1.
-%   show_all_tracks: show all tracks (default =1), or only the ones
+%    show_all_tracks: show all tracks (default =1), or only the ones
 %       affecting the focus region (=0)
-%   damage_cumsum: if =1, store the cumulative damage, If=0, store the
+%    damage_cumsum: if =1, store the cumulative damage, If=0, store the
 %       momentaneous damage (for each step/node) - which case the
 %       visiulaization needs to sum up (advantage if due to huge size,
 %       chunks of data need to be processed).
-%   check_memory: if =1, only check for memory, do not run calculations,
+%    check_memory: if =1, only check for memory, do not run calculations,
 %       but run all through saving the result
-%   trim_assets: if =1, reduce assets to centroids with Value>0 (default)
+%    trim_assets: if =1, reduce assets to centroids with Value>0 (default)
 %       This is usually ok, since grid_add=1 by default.
 %       set =0 to keep all centroids from the entity (also eg water points)
-%   DamageFun_exponent: use a simple exponent to convert intensity (I) and
+%    DamageFun_exponent: use a simple exponent to convert intensity (I) and
 %       asset value (V) to damage (D), i.e. D=V*I^DamageFun_exponent, scaled
 %       such that max intensity (about 120 m/s) leads to 100% damage. 
 %       Default=0 (use proper EDS calculation). >1 convex, <1 concave, Good start=7
-%   DamageFun_threshold: the intensity threshould, below whicjh no damage
+%    DamageFun_threshold: the intensity threshould, below whicjh no damage
 %       occurrs. Default=15 [m/s]. Only active if abs(DamageFun_exponent)>0
+%   segment_i: to allow for storage of (large) animation data in segments
+%       rather than one file. segment_i starts with the track(segment_i).
+%       Default=[]. This option apends _%4.4i to the filename passed in
+%       animation_data_file, e.g. animation_data.mat becomes animation_data_0001.mat
 % OUTPUTS:
 %   hazard: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -225,6 +231,7 @@ function hazard=climada_event_damage_data_tc_viz2(tc_track,entity,check_mode,par
 % David N. Bresch, david.bresch@gmail.com, 20170222, intial, started from climada_event_damage_data_tc_viz
 % David N. Bresch, david.bresch@gmail.com, 20170224, massive speedup
 % David N. Bresch, david.bresch@gmail.com, 20170225, clean up
+% David N. Bresch, david.bresch@gmail.com, 20170225, segment_i added
 %-
 
 hazard=[]; % init output
@@ -239,6 +246,7 @@ if ~exist('tc_track','var'),   tc_track='params';end
 if ~exist('entity','var'),     entity=[];end
 if ~exist('check_mode','var'), check_mode=[];end
 if ~exist('params','var'),     params=struct;end
+if ~exist('segment_i','var'),     segment_i=[];end
 
 % check for some parameter fields we need
 if ~isfield(params,'animation_data_file'),params.animation_data_file='';end
@@ -267,6 +275,10 @@ if isempty(check_mode),                   check_mode=2;end
 %
 if isempty(params.animation_data_file),   params.animation_data_file=...
         [climada_global.data_dir filesep 'results' filesep 'animation_data.mat'];end
+if ~isempty(segment_i)
+    [fP,fN,fE]=fileparts(params.animation_data_file);
+    params.animation_data_file=[fP filesep fN '_' sprintf('%4.4i',segment_i) fE];
+end
 if isempty(params.add_surge),             params.add_surge=0;end
 if isempty(params.show_footprint),        params.show_footprint=0;end
 if isempty(params.tc_track_timestep),     params.tc_track_timestep=1/3;end
@@ -640,9 +652,9 @@ if ~params.check_memory
         
         % if climada_global.parfor
         %     fprintf('processing total %i EDSs (%i timesteps each) - parfor\n',n_junks,damage_junk_size);
-        %     parfor junk_i=1:n_junks
-        %         e1=damage_junk_start(junk_i);
-        %         e2=damage_junk_end(junk_i);
+        %     parfor segment_i=1:n_junks
+        %         e1=damage_junk_start(segment_i);
+        %         e2=damage_junk_end(segment_i);
         %
         %         % junk of hazard structure
         %
@@ -655,14 +667,14 @@ if ~params.check_memory
         %         EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
         %
         %         damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
-        %     end % junk_i
+        %     end % segment_i
         % else
         
         fprintf('processing total %i EDSs (%i timesteps each)\n',n_junks,damage_junk_size);
         climada_progress2stdout(-1,[],1)
-        for junk_i=1:n_junks
-            e1=damage_junk_start(junk_i);
-            e2=damage_junk_end(junk_i);
+        for segment_i=1:n_junks
+            e1=damage_junk_start(segment_i);
+            e2=damage_junk_end(segment_i);
             
             % junk of hazard structure
             
@@ -675,8 +687,8 @@ if ~params.check_memory
             EDS=climada_EDS_calc(entity,local_hazard,'',0,2); % last=2 silent
             
             damage(e1:e2,:)=sparse(EDS.damage_at_centroid)';
-            climada_progress2stdout(junk_i,n_junks,1,'EDSs'); % update
-        end % junk_i
+            climada_progress2stdout(segment_i,n_junks,1,'EDSs'); % update
+        end % segment_i
         climada_progress2stdout(0) % terminate
         %end % parfor
     end % params.DamageFun_exponent
@@ -735,9 +747,9 @@ end % climada_event_damage_data_tc_viz
 
 
 function gust=climada_tc_windfield_viz2(node_lon,node_lat,cos_lat,node_wind,node_cel,node_dx,node_dy,node_len,centroids)
-% stripped-down version of climada_tc_windfield_viz, see there
+%   stripped-down version of climada_tc_windfield_viz, see there
 %
-%   Key difference: this code does return the single-step windfields for
+%   Key difference: this code does return the single-step windfield for
 %   one single node of a track, i.e. gust is of dimension 1 x n_centroids
 %
 % OUTPUTS:
@@ -745,7 +757,7 @@ function gust=climada_tc_windfield_viz2(node_lon,node_lat,cos_lat,node_wind,node
 %       NOT sparse for speedup i.e. convert lusing sparse(gust)
 % RESTRICTIONS:
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20170225, copy from climada_tc_windfield_viz
+% David N. Bresch, david.bresch@gmail.com, 20170225, based on climada_tc_windfield_viz
 %-
 
 % PARAMETERS
@@ -757,25 +769,21 @@ R_lat_min=24;R_lat_max=42;
 % threshold above which we calculate the windfield
 wind_threshold=15; % in m/s
 
+
 n_centroids = length(centroids.lon);
 
-%gust=zeros(tc_track.n_steps,n_centroids); % init
 gust=zeros(1,n_centroids); % init
 
-% restricxt to a region around the track, since windfield does anyway not
-% extend further
+% restrict to a box around the track, since windfield does not extend further
 tmalo=max(node_lon)+5;
 tmala=max(node_lat)+5;
 tmilo=min(node_lon)-5;
 tmila=min(node_lat)-5;
 valid_centroid_pos=find((centroids.lon>tmilo & centroids.lon<tmalo) & (centroids.lat>tmila & centroids.lat<tmala));
-local_lon=centroids.lon(valid_centroid_pos); % for parfor
-local_lat=centroids.lat(valid_centroid_pos); % for parfor
+local_lon=centroids.lon(valid_centroid_pos);
+local_lat=centroids.lat(valid_centroid_pos);
 
 n_valid_centroids=length(valid_centroid_pos);
-
-zero_vect=zeros(1,n_valid_centroids);
-ones_vect=ones(1,n_valid_centroids);
 
 R = R_min; % radius of max wind (in km)
 if abs(node_lat) > R_lat_max
@@ -820,7 +828,7 @@ if node_wind > (wind_threshold*3.6); % cut-off in km/h
     r_normed(r_normed>1)=1;
     T = node_cel.*r_normed.*cos_phi;
     
-    M = node_wind*ones_vect;
+    M = node_wind*ones(1,n_valid_centroids);
     
     % special to avoid unrealistic celerity after extratropical transition
     max_T_fact=0.0;
@@ -833,7 +841,7 @@ if node_wind > (wind_threshold*3.6); % cut-off in km/h
     end
     T=sign(T).*min(abs(T),abs(M)).*T_fact; % T never exceeds M
     
-    S=zero_vect; % init
+    S=zeros(1,n_valid_centroids); % init
     
     ocp=find(D<10*R); % in the outer core
     S(ocp) = max( (M(ocp)-abs(T(ocp))).*( R^1.5 * exp(1-R^1.5./D(ocp).^1.5 )./D(ocp).^1.5) + T(ocp), 0);
