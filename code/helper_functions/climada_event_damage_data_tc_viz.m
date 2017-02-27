@@ -135,6 +135,7 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 %       code does render one after the other of the tracks within, keeping
 %       the damaged pixels colored.
 %       If ='params', just return the default parameters params in hazard
+%       If ='TEST', run test case (TC Sidr in Bangladesh)
 %       SPECIAL: if a previosuly generated hazard is passed, the
 %           non-mandatory fields for animation purposes are cleared and the
 %           'clean up' hazard is retuned.
@@ -153,8 +154,11 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 %   parameters: a structure with fields (see also tc_track='params' above):
 %    animation_data_file: the file where animation data is stored (not the
 %       animation itself). If not provided, set to ../results/animation_data.mat
-%    add_surge: whether we also treat surge (TS) =1) or not (=0, default)
 %    extend_tc_track: if =1 (default) extend/extrapolate TC track by one node
+%    wind_threshold: threshold above which we calculate the windfield,
+%       Default =15 [m/s]. See also DamageFun_threshold.
+%       If you set wind_threshold to too high a number, not much of the windfield
+%       will be shown any more...
 %    focus_region: the region we're going to show [minlon maxlon minlat maxlat]
 %       default=[], automatically determined by area of entity lat/lon
 %       SPECIAL: if =1, use the region around the tc_track, NOT around the entity
@@ -187,8 +191,10 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 %       asset value (V) to damage (D), i.e. D=V*I^DamageFun_exponent, scaled
 %       such that max intensity (about 120 m/s) leads to 100% damage. 
 %       Default=0 (use proper EDS calculation). >1 convex, <1 concave, Good start=7
-%    DamageFun_threshold: the intensity threshould, below whicjh no damage
+%    DamageFun_threshold: the intensity threshould, below which no damage
 %       occurrs. Default=15 [m/s]. Only active if abs(DamageFun_exponent)>0
+%       Please check wind_threshold, too, easiest to set
+%       DamageFun_threshold=wind_threshold (as done per default).
 %   segment_i: to allow for storage of (large) animation data in segments
 %       rather than one file. segment_i starts with the track(segment_i).
 %       Default=[]. This option apends _%4.4i to the filename passed in
@@ -234,6 +240,7 @@ function hazard=climada_event_damage_data_tc_viz(tc_track,entity,check_mode,para
 % David N. Bresch, david.bresch@gmail.com, 20170224, massive speedup
 % David N. Bresch, david.bresch@gmail.com, 20170225, clean up
 % David N. Bresch, david.bresch@gmail.com, 20170225, segment_i added
+% David N. Bresch, david.bresch@gmail.com, 20170227, simple damage approximation added
 %-
 
 hazard=[]; % init output
@@ -269,6 +276,7 @@ if ~isfield(params,'check_memory'),       params.check_memory=[];end
 if ~isfield(params,'trim_assets'),        params.trim_assets=[];end
 if ~isfield(params,'DamageFun_exponent'), params.DamageFun_exponent=[];end
 if ~isfield(params,'DamageFun_threshold'),params.DamageFun_threshold=[];end
+if ~isfield(params,'wind_threshold'),     params.wind_threshold=[];end
 
 % PARAMETERS
 %
@@ -300,6 +308,7 @@ if isempty(params.check_memory),          params.check_memory=0;end
 if isempty(params.trim_assets),           params.trim_assets=1;end
 if isempty(params.DamageFun_exponent),    params.DamageFun_exponent=0;end
 if isempty(params.DamageFun_threshold),   params.DamageFun_threshold=15;end
+if isempty(params.wind_threshold),        params.wind_threshold=15;end
 %
 % some overriders for check mode
 if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
@@ -313,6 +322,12 @@ climada_global_damage=climada_global.damage_at_centroid;
 climada_global.damage_at_centroid=1;
 
 if strcmpi(tc_track,'params'),hazard=params;return;end % special case, return the full parameters strcture
+if strcmpi(tc_track,'TEST') % set TEST data
+    tc_track=climada_tc_read_unisys_database('nio');tc_track=tc_track(173);tc_track.name='Sidr';
+    tc_track.MaxSustainedWind(end-1)=80;tc_track.MaxSustainedWind(end)=40; % 2nd and last timestep far over land, weakened
+    entity=climada_entity_load('BGD_Bangladesh');
+    if isempty(entity),entity=climada_nightlight_entity('Bangladesh');end
+end
 
 if isfield(tc_track,'damage')
     fprintf('NOTE: hazard reduced to key fields:\n');
@@ -509,15 +524,16 @@ hazard.tc_track_number=zeros(1,n_events);
 hazard.tc_track_node=zeros(1,n_events);
 hazard.tc_track_ID_no=zeros(1,n_events);
 hazard.event_name=cell(1,n_events);
-% avoid indexing, for parfor
-node_lon=zeros(1,n_events);
-node_lat=zeros(1,n_events);
-cos_lat=zeros(1,n_events);
-node_wind=zeros(1,n_events);
-node_cel=zeros(1,n_events);
-node_dx=zeros(1,n_events);
-node_dy=zeros(1,n_events);
-node_len=zeros(1,n_events);
+if climada_global.parfor % avoid indexing, for parfor
+    node_lon=zeros(1,n_events);
+    node_lat=zeros(1,n_events);
+    cos_lat=zeros(1,n_events);
+    node_wind=zeros(1,n_events);
+    node_cel=zeros(1,n_events);
+    node_dx=zeros(1,n_events);
+    node_dy=zeros(1,n_events);
+    node_len=zeros(1,n_events);
+end % climada_global.parfor
 climada_progress2stdout    % init, see terminate below
 i1=1; % init
 for track_i=1:n_tracks
@@ -525,15 +541,17 @@ for track_i=1:n_tracks
     max_node=tc_track(track_i).max_node;
     i2=i1+max_node-min_node;
     
-    % store into (long) simple vectors for speedup in sparse
-    node_lon(i1:i2)  = tc_track(track_i).lon(min_node:max_node);
-    node_lat(i1:i2)  = tc_track(track_i).lat(min_node:max_node);
-    cos_lat(i1:i2)   = tc_track(track_i).cos_lat(min_node:max_node);
-    node_wind(i1:i2) = tc_track(track_i).MaxSustainedWind(min_node:max_node);
-    node_cel(i1:i2)  = tc_track(track_i).Celerity(min_node:max_node);
-    node_dx(i1:i2)   = tc_track(track_i).node_dx(min_node:max_node);
-    node_dy(i1:i2)   = tc_track(track_i).node_dy(min_node:max_node);
-    node_len(i1:i2)  = tc_track(track_i).node_len(min_node:max_node);
+    if climada_global.parfor
+        % store into (long) simple vectors for speedup in sparse
+        node_lon(i1:i2)  = tc_track(track_i).lon(min_node:max_node);
+        node_lat(i1:i2)  = tc_track(track_i).lat(min_node:max_node);
+        cos_lat(i1:i2)   = tc_track(track_i).cos_lat(min_node:max_node);
+        node_wind(i1:i2) = tc_track(track_i).MaxSustainedWind(min_node:max_node);
+        node_cel(i1:i2)  = tc_track(track_i).Celerity(min_node:max_node);
+        node_dx(i1:i2)   = tc_track(track_i).node_dx(min_node:max_node);
+        node_dy(i1:i2)   = tc_track(track_i).node_dy(min_node:max_node);
+        node_len(i1:i2)  = tc_track(track_i).node_len(min_node:max_node);
+    end % climada_global.parfor
     
     hazard.tc_track_number(i1:i2) = track_i;
     hazard.tc_track_ID_no(i1:i2)  = tc_track(track_i).ID_no;
@@ -558,28 +576,31 @@ intensity = spalloc(n_events,n_centroids,...
 if ~params.check_memory
     
     t0=clock;
-    if climada_global.parfor
-        fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids - parfor\n',segment_str,n_events,n_tracks,n_centroids);
-        parfor ni=1:n_events
-            intensity(ni,:)=climada_tc_windfield_viz2(node_lon(ni),node_lat(ni),...
-                cos_lat(ni),node_wind(ni),node_cel(ni),node_dx(ni),node_dy(ni),node_len(ni),centroids);
-        end %track_i
-        
-%         % save intensity, in case memory troubles arise later
-%         [fP,fN,fE]=fileparts(params.animation_data_file);
-%         save([fP filesep fN '_intens' fE],'intensity','-v7.3');
-        
-    else
+%     if climada_global.parfor
+%         fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids - parfor\n',segment_str,n_events,n_tracks,n_centroids);
+%         wind_threshold=params.wind_threshold;
+%         parfor ni=1:n_events
+%             intensity(ni,:)=climada_tc_windfield_viz2(node_lon(ni),node_lat(ni),...
+%                 cos_lat(ni),node_wind(ni),node_cel(ni),node_dx(ni),node_dy(ni),node_len(ni),centroids,wind_threshold);
+%         end %track_i
+%         
+% %         % save intensity, in case memory troubles arise later
+% %         [fP,fN,fE]=fileparts(params.animation_data_file);
+% %         save([fP filesep fN '_intens' fE],'intensity','-v7.3');
+%         
+%     else
         fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids\n',segment_str,n_events,n_tracks,n_centroids);
+        wind_threshold=params.wind_threshold;
         climada_progress2stdout(-1,[],1)
         for track_i=1:n_tracks
             e1=track_node_count_start(track_i);
             e2=track_node_count_start(track_i+1)-1;
-            intensity(e1:e2,:) = climada_tc_windfield_viz(tc_track(track_i),centroids);
+            gust=climada_tc_windfield_viz(tc_track(track_i),centroids,wind_threshold);
+            if ~isempty(gust),intensity(e1:e2,:)=gust;end
             climada_progress2stdout(track_i,n_tracks,2,'tracks'); % update
         end %track_i
         climada_progress2stdout(0) % terminate
-    end % climada_global.parfor
+%    end % climada_global.parfor
     t_elapsed = etime(clock,t0);
     hazard.comment = sprintf('processing %i tracks @ %i centroids took %3.2f sec (%3.4f sec/event, %s)',...
         n_tracks,n_centroids,t_elapsed,t_elapsed/n_tracks,mfilename);
@@ -639,21 +660,21 @@ if ~params.check_memory
         
         max_intens=full(max(ceil(max(max(intensity))*1.1),100)); % to be on the safe side
         DamageFun_scale=1/(max(max_intens-params.DamageFun_threshold,0).^params.DamageFun_exponent);
-       
+        
         % apply threshold
         damage=intensity(:,entity.assets.centroid_index);
         max_intens=full(max(max(damage)));
-        damage=max(damage-params.DamageFun_threshold,0);
-        %nnz(damage)/numel(damage)*100
-        nz_pos=damage>0;
+        nz_pos=damage>0; %deal only with non-zeros
+        damage(nz_pos)=damage(nz_pos)-params.DamageFun_threshold;
+        neg_pos=damage<0;damage(neg_pos)=0; % faster than max function
+        nz_pos=damage>0; % now less elements >0, hence redone (since next line only multiplication, would also work on all elements
         damage(nz_pos)=DamageFun_scale*(damage(nz_pos).^params.DamageFun_exponent);
-        %damage=DamageFun_scale*(damage.^params.DamageFun_exponent);
         
         fprintf('%s: simple damage approximation as %2.2g*(I-%i)^%i (max I %2.2f, max MDD %2.2f)\n',segment_str,...
             DamageFun_scale,params.DamageFun_threshold,params.DamageFun_exponent,max_intens,full(max(max(damage))) );
         
         for asset_i=1:n_assets % apply Value
-            damage(:,asset_i)=entity.assets.Value(asset_i)*damage(:,asset_i);
+            damage(:,asset_i)=entity.assets.Value(asset_i)*damage(:,asset_i); % the code changes only array elements that are already nonzero, overhead is reasonable.
         end % asset_i
         
     else
@@ -754,12 +775,16 @@ end % ~params.check_memory
 end % climada_event_damage_data_tc_viz
 
 
-function gust=climada_tc_windfield_viz2(node_lon,node_lat,cos_lat,node_wind,node_cel,node_dx,node_dy,node_len,centroids)
+function gust=climada_tc_windfield_viz2(node_lon,node_lat,cos_lat,node_wind,node_cel,node_dx,node_dy,node_len,centroids,wind_threshold)
 %   stripped-down version of climada_tc_windfield_viz, see there
 %
 %   Key difference: this code does return the single-step windfield for
 %   one single node of a track, i.e. gust is of dimension 1 x n_centroids
 %
+% INPUTS:
+%   wind_threshold: threshold above which we calculate the windfield,
+%       usually, set to 15 [m/s]. For speedup, we do no default setting or
+%       the like here.
 % OUTPUTS:
 %   gust(1,centroid_i): the windfield [m/s] at all centroids i for one node
 %       NOT sparse for speedup i.e. convert lusing sparse(gust)
@@ -773,9 +798,6 @@ function gust=climada_tc_windfield_viz2(node_lon,node_lat,cos_lat,node_wind,node
 % Radius of max wind (in km), latitudes at which range applies
 R_min=30;R_max=75; % km
 R_lat_min=24;R_lat_max=42;
-%
-% threshold above which we calculate the windfield
-wind_threshold=15; % in m/s
 
 
 n_centroids = length(centroids.lon);
