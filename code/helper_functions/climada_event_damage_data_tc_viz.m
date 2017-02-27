@@ -644,9 +644,12 @@ if ~params.check_memory
         damage=intensity(:,entity.assets.centroid_index);
         max_intens=full(max(max(damage)));
         damage=max(damage-params.DamageFun_threshold,0);
-        damage=DamageFun_scale*(damage.^params.DamageFun_exponent);
+        %nnz(damage)/numel(damage)*100
+        nz_pos=damage>0;
+        damage(nz_pos)=DamageFun_scale*(damage(nz_pos).^params.DamageFun_exponent);
+        %damage=DamageFun_scale*(damage.^params.DamageFun_exponent);
         
-         fprintf('%s: simple damage approximation as %2.2g*(I-%i)^%i (max I %2.2f, max MDD %2.2f)\n',segment_str,...
+        fprintf('%s: simple damage approximation as %2.2g*(I-%i)^%i (max I %2.2f, max MDD %2.2f)\n',segment_str,...
             DamageFun_scale,params.DamageFun_threshold,params.DamageFun_exponent,max_intens,full(max(max(damage))) );
         
         for asset_i=1:n_assets % apply Value
