@@ -63,6 +63,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 % Lea Mueller, muellele@gmail.com, 20150916, add max_distance in waitbar text
 % David N. Bresch, david.bresch@gmail.com, 20160606, max_distance_to_hazard renamed to max_encoding_distance_m and speedup
 % David N. Bresch, david.bresch@gmail.com, 20161120, (waitbar) comments removed
+% David N. Bresch, david.bresch@gmail.com, 20170228, progress to stdout fewer times
 %-
 
 global climada_global
@@ -158,22 +159,12 @@ end
 n_assets              = length(indx);
 assets.centroid_index = assets.Value*0; % init
 
-t0       = clock;
-msgstr   = sprintf('Encoding %i assets (max distance %d m) ... ',n_assets,max_encoding_distance_m);
-mod_step = 10; % first time estimate after 10 assets, then every 100
-if climada_global.waitbar
-    fprintf('%s\n',msgstr);
-    h        = waitbar(0,msgstr);
-    set(h,'Name','Encoding assets');
-else
-    fprintf('%s\n',msgstr);
-    format_str='%s';
-end
+fprintf('encoding %i assets (max distance %d m) ...\n',n_assets,max_encoding_distance_m);
 
 cos_centroids_lat = cos(centroids.lat/180*pi); % calculate once for speedup
 
+climada_progress2stdout    % init, see terminate below
 for asset_i=1:n_assets
-    if climada_global.waitbar,waitbar(asset_i/n_assets,h);end
     
     % we used climada_geo_distance before (slower, since cos(lat) calculated each time)
     dd=((centroids.lon-assets.lon(indx(asset_i))).*cos_centroids_lat).^2+(centroids.lat-assets.lat(indx(asset_i))).^2; % in km^2
@@ -187,31 +178,13 @@ for asset_i=1:n_assets
     indx3                        = indx2 == asset_i;
     assets.centroid_index(indx3) = min_dist_index;
         
-    % the progress management
-    if mod(asset_i,mod_step)==0
-        mod_step          = 100;
-        t_elapsed_event   = etime(clock,t0)/asset_i;
-        events_remaining  = n_assets-asset_i;
-        t_projected_sec   = t_elapsed_event*events_remaining;
-        if t_projected_sec<60
-            msgstr = sprintf('est. %3.0f sec left (%i/%i assets)',t_projected_sec,asset_i,n_assets);
-        else
-            msgstr = sprintf('est. %3.1f min left (%i/%i assets)',t_projected_sec/60,asset_i,n_assets);
-        end
-        if climada_global.waitbar
-            waitbar(asset_i/n_assets,h,msgstr); % update waitbar
-        else
-            fprintf(format_str,msgstr); % write progress to stdout
-            format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
-        end
-    end
+    mod_step=10000;
+    if asset_i<10000,mod_step=1000;end
+    if asset_i<1000,mod_step=100;end
+    climada_progress2stdout(asset_i,n_assets,mod_step,'assets'); % update
     
 end % asset_i
-if climada_global.waitbar
-    close(h) % dispose waitbar
-else
-    fprintf(format_str,''); % move carriage to begin of line
-end
+climada_progress2stdout(0) % terminate
 
 assets.hazard.filename = 'assets encode'; % default
 assets.hazard.comment  = 'assets encode'; % default
@@ -227,4 +200,4 @@ else
     entityORassets = assets; % return assets as output
 end
 
-return
+end % climada_assets_encode

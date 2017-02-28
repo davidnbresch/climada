@@ -40,7 +40,7 @@ function hazard=climada_event_damage_data_tc(tc_track,entity,check_mode,params,s
 %   entity=climada_entity_load('GLB_isimip_entity'); % full globe
 %   load([climada_global.data_dir filesep 'tc_tracks' filesep 'ibtracs' filesep 'ibtracs.mat']); % all track 1950..2016
 %   params.show_all_tracks=1;params.focus_region=[-180 180 -60 60];
-%   params.hazard_arr_density=0.001;
+%   params.hazard_density=0.001;
 %   climada_event_damage_data_tc(tc_track,entity,0,params);
 %
 %   Example for Sidr in Bangladesh:
@@ -174,7 +174,7 @@ function hazard=climada_event_damage_data_tc(tc_track,entity,check_mode,params,s
 %       offshore. Default=1, set=0 if centroids cover eg water points already
 %    grid_delta: the regular encompassing grid spacing in degrees,
 %       default=0.2, see grid_add.
-%    hazard_arr_density: very technical, set to rather too large a
+%    hazard_density: very technical, set to rather too large a
 %       number, default=0.1.
 %    show_all_tracks: show all tracks (default =1), or only the ones
 %       affecting the focus region (=0)
@@ -268,7 +268,7 @@ if ~isfield(params,'focus_track_region'), params.focus_track_region=[];end
 if ~isfield(params,'extend_tc_track'),    params.extend_tc_track=[];end
 if ~isfield(params,'grid_add'),           params.grid_add=[];end
 if ~isfield(params,'grid_delta'),         params.grid_delta=[];end
-if ~isfield(params,'hazard_arr_density'), params.hazard_arr_density=[];end
+if ~isfield(params,'hazard_density'),     params.hazard_density=[];end
 if ~isfield(params,'show_all_tracks'),    params.show_all_tracks=[];end
 if ~isfield(params,'damage_cumsum'),      params.damage_cumsum=[];end
 if ~isfield(params,'trim_assets'),        params.trim_assets=[];end
@@ -299,7 +299,7 @@ if isempty(params.focus_track_region),    params.focus_track_region=0;end
 if isempty(params.extend_tc_track),       params.extend_tc_track=1;end % nicer decay
 if isempty(params.grid_add),              params.grid_add=1;end
 if isempty(params.grid_delta),            params.grid_delta=0.2;end
-if isempty(params.hazard_arr_density),    params.hazard_arr_density=0.01;end
+if isempty(params.hazard_density),        params.hazard_density=0.01;end
 if isempty(params.show_all_tracks),       params.show_all_tracks=0;end
 if isempty(params.damage_cumsum),         params.damage_cumsum=0;end
 if isempty(params.trim_assets),           params.trim_assets=1;end
@@ -544,13 +544,13 @@ end % track_i (preprocessing 2)
 climada_progress2stdout(0) % terminate
 
 
-guess_nnz=ceil(n_events*n_centroids*params.hazard_arr_density);
+guess_nnz=ceil(n_events*n_centroids*params.hazard_density);
 intensity_i=zeros(1,guess_nnz);intensity_j=zeros(1,guess_nnz);intensity_v=zeros(1,guess_nnz);iii=1;intensity_n=0; % init
 
 t0=clock;
 fprintf('%s: processing total %i nodes of %i track(s) @ %i centroids\n',segment_str,n_events,n_tracks,n_centroids);
 wind_threshold=params.wind_threshold;
-gust_arr_density=min(params.hazard_arr_density*10,.9);
+gust_arr_density=min(params.hazard_density*10,.9);
 climada_progress2stdout(-1,[],1)
 for track_i=1:n_tracks
     e1=track_node_count_start(track_i);
@@ -611,7 +611,7 @@ end
 n_junks=length(damage_junk_start);
 
 damage    = spalloc(n_events,n_assets,...
-    ceil(n_events*n_assets*params.hazard_arr_density));
+    ceil(n_events*n_assets*params.hazard_density));
 
 local_hazard.peril_ID    = hazard.peril_ID;
 local_hazard.centroid_ID = hazard.centroid_ID;
