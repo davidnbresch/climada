@@ -45,6 +45,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       If ='ask', prompt for
 %       If ='params', return all default parameters in res, abort
 %       If ='colors', check color maps, abort
+%       If ='check', run three frames about 70% into the animation to
+%       briefly check
 % OPTIONAL INPUT PARAMETERS:
 %   params: a structure with fields:
 %    animation_mp4_file: the filename of the resulting .mp4 movie
@@ -65,6 +67,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       re-gridded), default =599 points (the higher the more time consuming)
 %    schematic_tag: if =1, use (old) schematic intensity colortable, default=0
 %    Position: the figure position, as in figure
+%       =[1 5 1310 1100] screen at home
+%       =[1 5 2560 1340] screen in the office
 %    frame_start: frame to start with (default=1). Sometimes useful to
 %       shorten animation without re-generating animation_data.mat
 %    frame_end: last frame to process (default=last frame on animation_data.mat)
@@ -96,6 +100,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170104, clean up
 % David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile
 % David N. Bresch, david.bresch@gmail.com, 20170228, npoints in params, schematic_tag removed, lots of old stuff removed
+% David N. Bresch, david.bresch@gmail.com, 20170301, 'check' option added
 %-
 
 res=[]; % init output, mainly used to return (default) parameters
@@ -142,7 +147,8 @@ if isempty(params.asset_markersize),params.asset_markersize=1;end % was 5
 if isempty(params.schematic_tag),params.schematic_tag=0;end
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
 if isempty(params.damage_scale),params.damage_scale=1/3;end
-if isempty(params.Position),params.Position=[1 5 1310 1100];end
+if isempty(params.Position),params.Position=[1 5 1310 1100];end % screen at home
+%if isempty(params.Position),params.Position=[1 5 2560 1340];end % screen in the office
 if isempty(params.jump_step),params.jump_step=1;end
 if isempty(params.frame_start),params.frame_start=1;end
 if isempty(params.plot_tc_track),params.plot_tc_track=1;end
@@ -179,6 +185,12 @@ if strcmpi(animation_data_file,'params'),res=params;return;end % special case, r
 if strcmpi(animation_data_file,'colors'),
     params.check_colors=1; % special case, return the full params strcture
     animation_data_file=animation_data_file_DEF;
+end 
+if strcmpi(animation_data_file,'check')
+    check_mode=1;
+    animation_data_file=animation_data_file_DEF;
+else
+    check_mode=0;
 end 
 
 % prompt for animation_data_file if not given
@@ -218,6 +230,16 @@ if isempty(fE),fE='.mp4';end
 params.animation_mp4_file=[fP filesep fN fE];
 
 load(animation_data_file);
+
+if check_mode
+    fprintf('SPECIAL check mode\n');
+    n_frames=size(hazard.intensity,1);
+    params.frame_start=ceil(0.75*n_frames);
+    params.frame_end=params.frame_start+2;
+    % sum up all damages up to this frame, in order to show a reasonable
+    % image
+    % hazard.damage(params.frame_start,:)=sum(hazard.damage(1:params.frame_start,:));
+end
 
 c_ax = []; %init
 if params.schematic_tag
@@ -347,10 +369,10 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     end % plot TC track
     
     % set figure properties
-    shading flat;axis equal
+    shading flat;
     caxis(c_ax);axis off
     plot(border.X,border.Y,'-k')
-    axis(params.focus_region);
+    axis equal;axis(params.focus_region);
     if ~params.schematic_tag,colorbar;end
     
     title_str='';
@@ -368,7 +390,8 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     % plot damage
     % -----------
     if isempty(max_damage_at_centroid)
-        max_damage_at_centroid=full(hazard.damage(frame_i,:));
+        %max_damage_at_centroid=full(hazard.damage(frame_i,:));
+        max_damage_at_centroid=full(sum(hazard.damage(1:frame_i,:)));
     else
         max_damage_at_centroid=max(max_damage_at_centroid,full(hazard.damage(frame_i,:)));
     end
