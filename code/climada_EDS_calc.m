@@ -33,7 +33,8 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       > promted for if not given
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
 %       If a file and no path provided, default path ../data/hazards is
-%       used (and name can be without extension .mat)
+%       used (and name can be without extension .mat). If hazard is empty
+%       and entity contains hazard in entity.hazard, this hazard is used.
 %       > promted for if not given
 %       Minimum fileds of hazard struct are: 
 %       peril_ID, event_ID, centroid_ID, intensity and frequency 
@@ -112,6 +113,8 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
 % David N. Bresch, david.bresch@gmail.com, 20161023, silent_mode=2
 % David N. Bresch, david.bresch@gmail.com, 20170225, allow for minimal fields in hazard
+% David N. Bresch, david.bresch@gmail.com, 20170305, allow for entity.hazard
+% David N. Bresch, david.bresch@gmail.com, 20170313, any(abs(full(temp_damage))) allow for negative damage (i.e. profit)
 %-
 
 global climada_global
@@ -132,8 +135,12 @@ if ~exist('sanity_check','var'),sanity_check=0;end
 
 % check/process input
 entity = climada_entity_load(entity); % prompt for entity if not given
+if isempty(entity),return;end
+if isempty(hazard) && isfield(entity,'hazard') % try hazard within entity
+    hazard=entity.hazard;
+end
 hazard = climada_hazard_load(hazard); % prompt for hazard_set if not given
-if isempty(hazard) || isempty(entity),return;end
+if isempty(hazard),return;end
 hazard = climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % check for consistency of entity and the hazard set it has been encoded to
@@ -326,7 +333,7 @@ for asset_ii=1:nn_assets
             % calculate the from ground up (fgu) damage
             temp_damage      = entity.assets.Value(asset_i)*MDD.*PAA; % damage=value*MDD*PAA
             
-            if any(full(temp_damage)) % if at least one damage>0
+            if any(abs(full(temp_damage))) % if at least one damage>0, 20170313 abs(.)
                 if entity.assets.Deductible(asset_i)>0 || entity.assets.Cover(asset_i) < entity.assets.Value(asset_i)
                     % apply Deductible and Cover
                     temp_damage = min(max(temp_damage-entity.assets.Deductible(asset_i)*PAA,0),entity.assets.Cover(asset_i));

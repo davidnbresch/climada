@@ -1,4 +1,4 @@
-function [damagefunctions,dmf_info_str]=climada_damagefunctions_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
+function [damagefunctions,dmf_info_str]=climada_damagefunctions_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot,dmf_max_intens)
 % climada_damagefunctions_generate
 % MODULE:
 %   core
@@ -9,7 +9,7 @@ function [damagefunctions,dmf_info_str]=climada_damagefunctions_generate(intensi
 %
 %   See also: climada_damagefunctions_map and _plot ...
 % CALLING SEQUENCE:
-%   damagefunction=climada_damagefunctions_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot)
+%   damagefunction=climada_damagefunctions_generate(intensity,dmf_min_intens,dmf_exp,dmf_max,dmf_shape,peril_ID,check_plot,dmf_max_intens)
 % EXAMPLE:
 %   damagefunction=climada_damagefunctions_generate(0:10:120,20,3,1,'exp','TC')
 %   damagefunction=climada_damagefunctions_generate([],20,1,0.5,'s-shape','TC',1)
@@ -45,6 +45,7 @@ function [damagefunctions,dmf_info_str]=climada_damagefunctions_generate(intensi
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150211, initial
 % Lea Mueller, muellele@gmail.com, 20160212, rename to climada_damagefunctionS_generate instead of without s
+% David N. Bresch, david.bresch@gmail.com, 20170305, dmf_max_intens
 %-
 
 damagefunctions=[]; % init output
@@ -62,6 +63,7 @@ if ~exist('dmf_max','var'),dmf_max=[];end
 if ~exist('dmf_shape','var'),dmf_shape='';end
 if ~exist('peril_ID','var'),peril_ID='';end
 if ~exist('check_plot','var'),check_plot=[];end
+if ~exist('dmf_max_intens','var'),dmf_max_intens=[];end
 
 % PARAMETERS
 %
@@ -73,7 +75,7 @@ if isempty(dmf_max),dmf_max=1;end
 if isempty(dmf_shape),dmf_shape='exp';end
 if isempty(peril_ID),peril_ID='TC';end
 if isempty(check_plot),check_plot=1;end
-
+if isempty(dmf_max_intens),dmf_max_intens=max(intensity);end
 
 dmf_info_str=sprintf('%s %s %3.3f*(i-%i)**%2.2f',peril_ID,dmf_shape,dmf_max,dmf_min_intens,dmf_exp);
 
@@ -84,18 +86,21 @@ damagefunctions.Intensity=intensity;
 damagefunctions.DamageFunID=damagefunctions.Intensity*0+1;
 damagefunctions.peril_ID=cellstr(repmat(peril_ID,length(damagefunctions.Intensity),1));
 
+intensity_tmp=damagefunctions.Intensity(damagefunctions.Intensity<=dmf_max_intens);
+
 switch dmf_shape
     case 'exp'
         % polynomial damage function
-        damagefunctions.MDD=max(damagefunctions.Intensity-dmf_min_intens,0).^dmf_exp;
+        %damagefunctions.MDD=max(damagefunctions.Intensity-dmf_min_intens,0).^dmf_exp;
+        damagefunctions.MDD=max(intensity_tmp-dmf_min_intens,0).^dmf_exp;
         damagefunctions.MDD=dmf_max*damagefunctions.MDD/damagefunctions.MDD(end);
-        damagefunctions.PAA=max(damagefunctions.Intensity-dmf_min_intens,0).^dmf_exp;
+        damagefunctions.PAA=max(intensity_tmp-dmf_min_intens,0).^dmf_exp;
         damagefunctions.PAA=damagefunctions.PAA/damagefunctions.PAA(end);
     case 's-shape'
         % S-shaped damage function
-        damagefunctions.MDD=damagefunctions.Intensity*0; % init
-        damagefunctions.PAA=damagefunctions.Intensity*0; % init
-        Intensity_pos=damagefunctions.Intensity>dmf_min_intens;
+        damagefunctions.MDD=intensity_tmp*0; % init
+        damagefunctions.PAA=intensity_tmp*0; % init
+        Intensity_pos=intensity_tmp>dmf_min_intens;
         n_x=sum(Intensity_pos);
         x = -2:4/n_x:2;y = erf(x);y=y-y(1);y=y/max(y); % erf to get S-shape
         damagefunctions.MDD(Intensity_pos)=y(1:end-1);
@@ -106,6 +111,10 @@ switch dmf_shape
         fprintf('Error: %s not implemented yet\n',dmf_shape)
         return
 end % switch dmf_shape
+
+% fill upper part
+damagefunctions.MDD(damagefunctions.Intensity>dmf_max_intens)=max(damagefunctions.MDD);
+damagefunctions.PAA(damagefunctions.Intensity>dmf_max_intens)=max(damagefunctions.PAA);
 
 if check_plot,climada_damagefunctions_plot(damagefunctions);end
 
