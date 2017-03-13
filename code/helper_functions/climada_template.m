@@ -7,6 +7,8 @@ function res=climada_template(param1,param2)
 % PURPOSE:
 %   <describe purpose and use here>
 %
+%   NOTE: this template also contains the use of climada_progress2stdout
+%
 %   previous call: <note the most usual previous call here>
 %   next call: <note the most usual next function call here>
 % CALLING SEQUENCE:
@@ -25,6 +27,7 @@ function res=climada_template(param1,param2)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160603
 % David N. Bresch, david.bresch@gmail.com, 20170212, climada_progress2stdout
+% David N. Bresch, david.bresch@gmail.com, 20170313, reverted from erroneous save under another name
 %-
 
 res=[]; % init output
