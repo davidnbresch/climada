@@ -74,7 +74,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    frame_end: last frame to process (default=last frame on animation_data.mat)
 %    jump_step: the steps to jump (in order to first check, e.g. only show
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
-%    plot_tc_track: show tc track as a black dotted line (default=, no plot).
+%    plot_tc_track: show tc track as a black dotted line (default=1, plot it).
 %       the value of plot_tc_track is the MarkerSize of the dots, use e.g.=5
 %    video_profile: the video profile (see help VideoWriter), default is ='MPEG-4'
 %       if this fails, try ='Motion JPEG AVI'

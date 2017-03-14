@@ -69,17 +69,16 @@ function hazard=climada_event_damage_data_tc(tc_track,entity,check_mode,params,s
 %   >> climada_event_damage_data_tc(tc_track,entity,0);
 %   >> params.plot_tc_track=1;climada_event_damage_animation('',params);
 %
-%   >> tc_track=climada_tc_read_unisys_database('atl'); % all historic
-%   >> entity=climada_entity_load('USA_UnitedStates_Florida_entity');
-%   >> hazard_prob=climada_hazard_load('USA_UnitedStates_atl_TC');
-%   >> entity=climada_assets_encode(entity,hazard_prob); % encode
-%   >> EDS=climada_EDS_calc(entity,hazard_prob); % calculate damage for all events
-%   >> % find non-zero damage of historic events:
-%   >> pos=find(EDS.damage(logical(hazard_prob.orig_event_flag))>0);
-%   >> tc_track=tc_track(pos); % restrict to historic damageing tracks
-%   >> params.focus_region=[-84 -78 23 29];
-%   >> climada_event_damage_data_tc(tc_track,entity,2,params);
-%   >> climada_event_damage_animation
+%   Example for all historic tracks in Florida which generate damage:  
+%   entity=climada_entity_load('USA_UnitedStates_Florida_01x01');
+%   entity.assets=climada_subarray(entity.assets,find(entity.assets.Value>0));
+%   tc_track=climada_tc_read_unisys_database('atl'); % all historic
+%   hazard=climada_hazard_load('USA_UnitedStates_atl_TC_hist');
+%   entity=climada_assets_encode(entity,hazard);EDS=climada_EDS_calc(entity,hazard);
+%   tc_track=tc_track(find(EDS.damage(logical(hazard.orig_event_flag))>0));
+%   p.focus_region=[-88 -79 23 32];p.tc_track_timestep=1;p.DamageFun_exponent=7;
+%   climada_event_damage_data_tc(tc_track,entity,0,p);
+%   climada_event_damage_animation
 %
 %   Example for all historic tracks in Florida which generate damage:
 %   >> tc_track=climada_tc_read_unisys_database('atl'); % all historic
@@ -566,13 +565,14 @@ for track_i=1:n_tracks
 end %track_i
 climada_progress2stdout(0) % terminate
 
-intensity=sparse(intensity_i(1:intensity_n),intensity_j(1:intensity_n),intensity_v(1:intensity_n),n_events,n_centroids);
-
 t_elapsed = etime(clock,t0);
 hazard.comment = sprintf('processing %i tracks @ %i centroids took %3.2f sec (%3.4f sec/event, %s)',...
     n_tracks,n_centroids,t_elapsed,t_elapsed/n_tracks,mfilename);
 fprintf('%s: %s\n',segment_str,hazard.comment);
 
+fprintf('storing into sparse array ...');
+intensity=sparse(intensity_i(1:intensity_n),intensity_j(1:intensity_n),intensity_v(1:intensity_n),n_events,n_centroids);
+fprintf('done\n');
 
 % init hazard structure
 hazard.lon=centroids.lon;
