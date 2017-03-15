@@ -65,7 +65,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       default=5
 %    npoints: the resolution of the hazard intensity plot (since
 %       re-gridded), default =599 points (the higher the more time consuming)
-%    schematic_tag: if =1, use (old) schematic intensity colortable, default=0
+%    schematic_tag: if =1 (default), use (old) schematic intensity colortable
 %    Position: the figure position, as in figure
 %       =[1 5 1310 1100] screen at home
 %       =[1 5 2560 1340] screen in the office
@@ -144,7 +144,7 @@ if isempty(params.animation_mp4_file),params.animation_mp4_file=...
 if isempty(params.show_plots),params.show_plots=0;end
 if isempty(params.FontSize),params.FontSize=18;end
 if isempty(params.asset_markersize),params.asset_markersize=1;end % was 5
-if isempty(params.schematic_tag),params.schematic_tag=0;end
+if isempty(params.schematic_tag),params.schematic_tag=1;end
 % the scale for plots, such that max_damage=max(entity.assets.Value)*damage_scale
 if isempty(params.damage_scale),params.damage_scale=1/3;end
 if isempty(params.Position),params.Position=[1 5 1310 1100];end % screen at home
