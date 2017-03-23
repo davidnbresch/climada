@@ -140,7 +140,7 @@ if isempty(animation_data_file),animation_data_file=animation_data_file_DEF;end
 %
 % set default values (see header for details)
 if isempty(params.animation_mp4_file),params.animation_mp4_file=...
-        [climada_global.data_dir filesep 'results' filesep 'animation_movie.mp4'];end
+        [climada_global.data_dir filesep 'results' filesep 'animation_movie'];end
 if isempty(params.show_plots),params.show_plots=0;end
 if isempty(params.FontSize),params.FontSize=18;end
 if isempty(params.asset_markersize),params.asset_markersize=1;end % was 5
