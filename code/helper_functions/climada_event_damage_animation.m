@@ -340,7 +340,10 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     plotclr(hazard.assets.lon,hazard.assets.lat,asset_values,...
         's',params.asset_markersize,0,0,max(asset_values)*1.05,assets_cmap,1,0);
     hold on
-    
+    axis(params.focus_region);
+    %axis equal
+    x_lim=xlim;y_lim=ylim;
+
     % plot hazard intensity
     % ---------------------
     int_values = full(hazard.intensity(frame_i,:));
@@ -372,7 +375,8 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     shading flat;
     caxis(c_ax);axis off
     plot(border.X,border.Y,'-k')
-    axis equal;axis(params.focus_region);
+    xlim(x_lim);ylim(y_lim);
+    %axis equal;axis(params.focus_region);
     if ~params.schematic_tag,colorbar;end
     
     title_str='';
