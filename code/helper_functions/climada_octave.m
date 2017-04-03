@@ -18,6 +18,9 @@ function ok=climada_octave
 %     coastline.mat. WARNING: it could be somebody uses map_border_file in
 %     a specific sense, in which case this shortcut might trigger problems.
 %
+%   Octave might need to be started from a shell, e.g. 
+%   /Applications/Octave.app/Contents/Resources/usr/bin/octave &
+%
 % CALLING SEQUENCE:
 %   ok=climada_octave
 % EXAMPLE:
@@ -29,6 +32,7 @@ function ok=climada_octave
 %       =0, if MATLAB (the default)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141231, initial
+% David N. Bresch, david.bresch@gmail.com, 20170403, shell hint added
 %-
 
 ok=0; % init output

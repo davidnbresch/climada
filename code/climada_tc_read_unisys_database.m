@@ -354,16 +354,17 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
         ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off','Visible','off','Units','normalized', 'clipping' , 'off');
         hold on;
         % show some properties
-        subaxis(2,2,1,'SpacingVertical',0.1,'SpacingHorizontal',0.07);
+        %subaxis(2,2,1,'SpacingVertical',0.1,'SpacingHorizontal',0.07);
+        subplot(2,2,1);
         hold on;
         pos=find(raw_data.pmin>0);
         plot(raw_data.vmax(pos),raw_data.pmin(pos),'.r');xlabel('v_{max}');ylabel('p_{min}');title('v_{max} - p_{min} relation');
-        subaxis(2);
+        subplot(2,2,2);
         plot(raw_data.lon,raw_data.lat,'.','color',[216 191 216]/255,'markersize',6);xlabel('lon');ylabel('lat');title('all nodes');hold on;
         pos=find(raw_data.pmin>0 & raw_data.vmax>0);
         plot(raw_data.lon(pos),raw_data.lat(pos),'.g','markersize',5);xlabel('lon');ylabel('lat');title('all nodes');hold on;
-        legend('all nodes','with valid wind/pressure','location','sw');
-        if exist('climada_plot_world_borders'),climada_plot_world_borders;end % plot coastline
+        legend('all nodes','with valid wind/pressure','location','SouthWest');
+        if exist('climada_plot_world_borders','file'),climada_plot_world_borders;end % plot coastline
         %set(gcf,'Color',[1 1 1]); % background to white
         xlim([-180 180]);
     end
@@ -458,13 +459,13 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
     end
     
     if check_plot
-        subaxis(2)
+        subplot(2,2,2)
         for i=1:length(tc_track);plot(tc_track(i).lon,tc_track(i).lat,'-b');hold on;end; % all tracks
         hold on
-        if exist('climada_plot_world_borders'),climada_plot_world_borders;end % plot coastline
-        subaxis(3)
+        if exist('climada_plot_world_borders','file'),climada_plot_world_borders;end % plot coastline
+        subplot(2,2,3)
         for i=1:length(tc_track);plot(tc_track(i).CentralPressure);hold on;end;xlabel('# of nodes per track');ylabel('(mb)');title('CentralPressure')
-        subaxis(4)
+        subplot(2,2,4)
         for i=1:length(tc_track);plot(tc_track(i).MaxSustainedWind);hold on;end;xlabel('# of nodes per track');ylabel('(kn)');title('MaxSustainedWind')
         
         ha = axes('Position',[0 0.93 1 1],'Xlim',[0 1],'Ylim',[0  1],'Box','off', 'Visible','off', 'Units','normalized', 'clipping','off');

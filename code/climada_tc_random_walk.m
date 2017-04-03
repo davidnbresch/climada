@@ -131,6 +131,7 @@ for track_i=1:n_storms % loop over all original tracks
             end
         end 
 
+        % note: one could also set angle_=rand(ens_size*N,1) and use in both lines 
         x = cumsum( ens_amp *sin( cumsum( 2*Maxangle*rand(ens_size*N,1) -Maxangle)));
         y = cumsum( ens_amp *cos( cumsum( 2*Maxangle*rand(ens_size*N,1) -Maxangle)));
         
