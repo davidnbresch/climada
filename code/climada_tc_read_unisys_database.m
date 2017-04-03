@@ -1,4 +1,4 @@
-function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_file,check_plot)
+function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_file,check_plot,no_save)
 % TC event set track database UNISYS
 % NAME:
 %   climada_tc_read_unisys_database
@@ -38,7 +38,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 %
 %   See also: climada_tc_hurdat_read and climada_tc_jtwc_fetch
 % CALLING SEQUENCE:
-%   tc_track=climada_tc_read_unisys_database(unisys_file,check_plot);
+%   tc_track=climada_tc_read_unisys_database(unisys_file,check_plot,no_save);
 % EXAMPLE:
 %   tc_track=climada_tc_read_unisys_database('tracks.atl.txt');
 % INPUTS:
@@ -52,6 +52,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 %   check_plot: if =1, show plots, =0 not (default)
 %       if=2, start from initial raw *.txt database file, re-generate the
 %       (intermediate) .mat files
+%   no_save: if =1, do not save as .mat file (default=0)
 % OUTPUTS:
 %   tc_track: a structure with the track information for each cyclone i and
 %           data for each node j (times are at 00Z, 06Z, 12Z, 18Z):
@@ -93,6 +94,7 @@ function [tc_track,tc_track_hist_file]=climada_tc_read_unisys_database(unisys_fi
 % David N. Bresch, david.bresch@gmail.com, 20150805, allow for unisys_file without path on input
 % David N. Bresch, david.bresch@gmail.com, 20150824, made fully consistent with jtwc and hurdat
 % David N. Bresch, david.bresch@gmail.com, 20161017, check_plot=2 and filename completion
+% David N. Bresch, david.bresch@gmail.com, 20170403, no_save
 %-
 
 % init output
@@ -106,6 +108,7 @@ if ~climada_init_vars,return;end
 % check inputs
 if ~exist('unisys_file','var'),unisys_file=[];end
 if ~exist('check_plot','var'),check_plot=0;end
+if ~exist('no_save','var'),no_save=0;end
 
 % PARAMETERS
 %
@@ -274,9 +277,11 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
         fclose(fid);
         if exist('h','var'), close(h), end % close waitbar
         
-        % store raw data (so following filtering setps can be repeated faster)
-        fprintf('writing binary file %s\n',tc_track_raw_file);
-        save(tc_track_raw_file,'raw_data');
+        if ~no_save % added 20170403
+            % store raw data (so following filtering setps can be repeated faster)
+            fprintf('writing binary file %s\n',tc_track_raw_file);
+            save(tc_track_raw_file,'raw_data');
+        end
     else
         fprintf('reading binary file %s\n',tc_track_raw_file);
         %fprintf('> please delete this file to read data from raw file again\n');
@@ -446,10 +451,11 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
     
     clear raw_data % to save space
     
-    % store raw data (so following filtering setps can be repeated faster)
-    fprintf('writing processed file %s\n',tc_track_hist_file);
-    save(tc_track_hist_file,'tc_track');
-    
+    if ~no_save % 20170403
+        % store raw data (so following filtering setps can be repeated faster)
+        fprintf('writing processed file %s\n',tc_track_hist_file);
+        save(tc_track_hist_file,'tc_track');
+    end
     
     if check_plot
         subaxis(2)
