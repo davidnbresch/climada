@@ -24,6 +24,7 @@ function  tc_track = climada_tc_stormcategory(tc_track)
 % OUTPUTS:
 %   tc_track:    tc_track with tc_track.category (array)
 % Lea Mueller, 20110614
+% Martin Stolpe, 20170408, if wind speed not in knots then convert to knots
 %-
 
 global climada_global
@@ -55,13 +56,22 @@ if ~isstruct(tc_track)
     end
 end
 
-
-
-
 %% check wind speed record in knots
+% if not in knots, then convert to knots 
+% Conversions taken from: https://en.wikipedia.org/wiki/Knot_(unit)#Definitions
 for track_i = 1:length(tc_track)
-    if strcmp(tc_track(track_i).MaxSustainedWindUnit,'kn') ~= 1
-        fprintf('Wind not recorded in kn, conversion to kn needed')
+    if strcmpi(tc_track(track_i).MaxSustainedWindUnit,'kn') == 1
+        track_info(track_i).MaxSustainedWind = tc_track(track_i).MaxSustainedWind; %already in knots
+    elseif strcmpi(tc_track(track_i).MaxSustainedWindUnit,'kt') == 1
+        track_info(track_i).MaxSustainedWind = tc_track(track_i).MaxSustainedWind; %old name of knots, do nothing
+    elseif strcmpi(tc_track(track_i).MaxSustainedWindUnit,'mph') == 1
+        track_info(track_i).MaxSustainedWind = tc_track(track_i).MaxSustainedWind/1.150779; 
+    elseif strcmpi(tc_track(track_i).MaxSustainedWindUnit,'m/s') == 1
+        track_info(track_i).MaxSustainedWind = tc_track(track_i).MaxSustainedWind*1.943844;
+    elseif strcmpi(tc_track(track_i).MaxSustainedWindUnit,'km/h') == 1
+        track_info(track_i).MaxSustainedWind = tc_track(track_i).MaxSustainedWind/1.852; 	
+	else	
+        fprintf('Wind not recorded in kn, conversion to kn needed')		
         return
     end
 end
@@ -72,7 +82,7 @@ end
 v_categories = [34 64 83 96 113 135 1000];
 track_count  = length(tc_track);
 for track_i = 1:track_count %every track
-    max_wind = max(tc_track(track_i).MaxSustainedWind);
+    max_wind = max(track_info(track_i).MaxSustainedWind);
     v_cat    = find (max_wind < v_categories)-2;
     tc_track(track_i).category = v_cat(1);
 end

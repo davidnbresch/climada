@@ -1,4 +1,4 @@
-function hazard = climada_tc_hazard_clim_scen(hazard,hazard_clim_file,frequency_screw,intensity_screw)
+function hazard = climada_tc_hazard_clim_scen(hazard,hazard_clim_file,frequency_screw,intensity_screw,tc_track,category_thres)
 % climada
 % NAME:
 %   climada_template
@@ -21,6 +21,16 @@ function hazard = climada_tc_hazard_clim_scen(hazard,hazard_clim_file,frequency_
 %   hazard_clim_file: the filename of the new climate scenario hazard event set
 %       if set to 'no', the modified hazard event set is not saved
 %       > promted for if not given
+%	tc_track: The storm track information.
+%	category_thres: Only adjust frequency and intensity of storms equal and above certain Saffir-Simpson Scale.
+%	Speficy a number, if no input, then alter storms of all categories.
+%   -1 tropical depression
+%    0 tropical storm
+%    1 Hurrican category 1
+%    2 Hurrican category 2
+%    3 Hurrican category 3
+%    4 Hurrican category 4
+%    5 Hurrican category 5
 % OUTPUTS:
 %   hazard: the hazard event set for the climate scenario, also stored to hazard_clim_file
 % MODIFICATION HISTORY:
@@ -28,6 +38,7 @@ function hazard = climada_tc_hazard_clim_scen(hazard,hazard_clim_file,frequency_
 % Lea Mueller, 20110720
 % Reto Stockmann 20120719
 % David N. Bresch, david.bresch@gmail.com, 20160829, option hazard_clim_file='no'
+% Martin Stolpe, 20170409, include tc_track and category_thres. Only influence storms above a category threshold.
 %-
 
 % SAFETY message prior to first call - user is asked to comment the return statement
@@ -44,9 +55,30 @@ if ~exist('hazard','var'),hazard=[];end
 if ~exist('hazard_clim_file','var'),hazard_clim_file=[];end
 if ~exist('frequency_screw','var'),frequency_screw=[];end
 if ~exist('intensity_screw','var'),intensity_screw=[];end
+if ~exist('category_thres','var'),category_thres=[];end
 
 % PARAMETERS
-%
+
+if isempty(tc_track)
+	tc_track = [];
+	fprintf('No tc_track defined. Change intensity/frequency of all storms.')		
+end %if no input, apply intensity_screw/frequency_screw to all storms 
+
+% If category of storms not determined yet, do it now
+if ~isempty(tc_track)
+	if ~isfield(tc_track,'category') 
+		tc_track = climada_tc_stormcategory(tc_track); %calculate TC categories
+	end;  	
+end;
+
+% Check if reasonable value for category_thres
+if ~isempty(category_thres)
+	if category_thres < -1 | category_thres > 5
+		fprintf('Saffir-Simpson Scale only from -1 to 5. Choose another threshold.')		
+		return 
+	end
+end
+
 % the key parameters to change the hazard event set:
 % new hazard frequency=orig hazard frequency * frequency_screw
 % =1.0 for identity
@@ -100,12 +132,32 @@ hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
 % modify the hazard event set
 % ---------------------------
+if ~isempty(category_thres) && ~isempty(tc_track); 
 
-% assumption 1) frequency increase
-hazard.frequency = hazard.frequency*frequency_screw;
+	%Make sure tc_track and hazard have same dimensions. 
+	if length(tc_track) ~= length(hazard.frequency);
+        fprintf('tc_track and hazard dimensions do not match. Check number of TC.')		
+        return
 
-% assumption 2) intensity increase
-hazard.intensity = hazard.intensity*intensity_screw;
+    end; 
+	
+	for track_i = 1:length(tc_track);
+		tc_cat(track_i) = tc_track(track_i).category;
+	end 
+	
+		posi = find(tc_cat >= category_thres); %select storms equal/greater threshold
+
+		hazard.frequency(posi)   = hazard.frequency(posi)*frequency_screw;
+		hazard.intensity(posi,:) = hazard.intensity(posi,:)*intensity_screw;
+		
+else %adjust all storms 
+
+	% assumption 1) frequency increase
+	hazard.frequency = hazard.frequency*frequency_screw;
+
+	% assumption 2) intensity increase
+	hazard.intensity = hazard.intensity*intensity_screw;
+end; 
 
 % store as additional fields in hazard:
 hazard.frequency_screw_applied = frequency_screw;
