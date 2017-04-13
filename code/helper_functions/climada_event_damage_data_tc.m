@@ -698,6 +698,6 @@ fprintf('%s: max cumulated TC damage %g\n',segment_str,full(max(hazard.max_damag
 hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 
 fprintf('%s: saving animation data in %s\n',segment_str,params.animation_data_file);
-save(params.animation_data_file,'hazard','-v7.3');
+save(params.animation_data_file,'hazard',climada_global.save_file_version); % use '-v7.3' for HDF5 format (portability)
 
 end % climada_event_damage_data_tc

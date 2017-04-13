@@ -71,6 +71,8 @@ if ~isempty(which('OCTAVE_VERSION'))
     page_screen_output(0)
     page_output_immediately(1)
     
+    climada_global.save_file_version='-hdf5'; % the closest to -v7.3
+    
     ok=1; % yes, we're running on Octave
     
 end

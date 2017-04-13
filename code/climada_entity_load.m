@@ -91,11 +91,7 @@ if isentity(entity)
             entity.damagefunctions.filename=entity_file;
             entity.measures.filename=entity_file;
             entity.discount.filename=entity_file;
-            try
-                save(entity_file,'entity')
-            catch
-                save(entity_file,'entity','-v7.3')
-            end
+            save(entity_file,'entity',climada_global.save_file_version); % HDF5 format (portability)
         end
     end
 else

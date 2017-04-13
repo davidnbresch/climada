@@ -85,7 +85,7 @@ if ishazard(hazard)
     if ~strcmp(hazard_file,hazard.filename)
         hazard.filename=hazard_file;
         if ~climada_global.octave_mode % do not save in Octave (file unreadable for MATLAB afterwards)
-            save(hazard_file,'hazard')
+            save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
         end
     end
     
@@ -94,7 +94,7 @@ if ishazard(hazard)
         fprintf('adding hazard.fraction ...');
         hazard.fraction=spones(hazard.intensity); % fraction 100%
         if ~climada_global.octave_mode % do not save in Octave (file unreadable for MATLAB afterwards)
-            save(hazard_file,'hazard')
+            save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
         end
         fprintf(' done\n');
     end

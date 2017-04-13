@@ -444,7 +444,7 @@ if verbose_mode,fprintf(' done\n');end
 
 if isempty(strfind(hazard_set_file,'NOSAVE'))
     if verbose_mode,fprintf('saving TC wind hazard set as %s\n',hazard_set_file);end
-    save(hazard_set_file,'hazard')
+    save(hazard_set_file,'hazard','-v7.3') % use '-v7.3' for HDF5 format (portability)
 end
 
 return

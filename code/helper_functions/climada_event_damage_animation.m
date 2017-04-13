@@ -69,6 +69,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    Position: the figure position, as in figure
 %       =[1 5 1310 1100] screen at home
 %       =[1 5 2560 1340] screen in the office
+%       =[1 1 3840 2160] 4K
 %    frame_start: frame to start with (default=1). Sometimes useful to
 %       shorten animation without re-generating animation_data.mat
 %    frame_end: last frame to process (default=last frame on animation_data.mat)

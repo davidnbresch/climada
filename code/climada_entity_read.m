@@ -239,7 +239,7 @@ else
     
     % save entity as .mat file for fast access
     fprintf('saving entity as %s\n',entity_save_file);
-    save(entity_save_file,'entity');
+    save(entity_save_file,'entity',climada_global.save_file_version);
     
 end % climada_check_matfile
 

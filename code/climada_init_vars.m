@@ -232,6 +232,8 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % climada_hazard_stats or climada_tc_hazard_set)
     climada_global.parfor=0; % default=0
     
+    climada_global.save_file_version='-v7.3';
+
     climada_vars_initialised=1; % indicate we have initialized all vars
     
     % whether we run on Octave
