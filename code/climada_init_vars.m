@@ -52,6 +52,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20160921, default spreadsheet_ext='.xlsx' (best for MATLAB 9.x)
 % David N. Bresch, david.bresch@gmail.com, 20170107, EDS_at_centroid renamed to damage_at_centroid
 % David N. Bresch, david.bresch@gmail.com, 20170202, parfor
+% David N. Bresch, david.bresch@gmail.com, 20170413, save_file_version
 %-
 
 global climada_global

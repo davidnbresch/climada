@@ -94,6 +94,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20160429, automatic determination of display units
 % David N. Bresch, david.bresch@gmail.com, 20160429, title_str without measures name
 % David N. Bresch, david.bresch@gmail.com, 20160606, display units synchronized if same unit_name
+% David N. Bresch, david.bresch@gmail.com, 20170416, comprehensive chech for encoded entity
 %-
 
 global climada_global
@@ -188,6 +189,8 @@ end
 
 % check for correct encoding to the hazard
 if ~isfield(entity.assets,'hazard')
+    force_re_encode=1; % entity not encoded yet
+elseif ~isfield(entity.assets.hazard,'filename')
     force_re_encode=1; % entity not encoded yet
 else
     % assets have been encoded, check whether for same hazard

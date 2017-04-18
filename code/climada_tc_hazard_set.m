@@ -104,6 +104,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,verbo
 % david.bresch@gmail.com, 20161008, hazard.fraction added
 % david.bresch@gmail.com, 20161023, noparfor and verbose_mode added
 % david.bresch@gmail.com, 20170202, noparfor -> climada_global.parfor
+% david.bresch@gmail.com, 20170418, climada_global.save_file_version
 %-
 
 hazard=[]; % init
@@ -444,7 +445,7 @@ if verbose_mode,fprintf(' done\n');end
 
 if isempty(strfind(hazard_set_file,'NOSAVE'))
     if verbose_mode,fprintf('saving TC wind hazard set as %s\n',hazard_set_file);end
-    save(hazard_set_file,'hazard','-v7.3') % use '-v7.3' for HDF5 format (portability)
+    save(hazard_set_file,'hazard',climada_global.save_file_version) % for HDF5 format (portability)
 end
 
 return
