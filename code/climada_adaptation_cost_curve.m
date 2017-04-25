@@ -1,4 +1,4 @@
-function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measures_impact,measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows)
+function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measures_impact,measures_impact_comparison,x_text_control,y_text_control,scaled_AED,nice_numbers,reverse_cb,plot_arrows,annotate_measures)
 % climada measures impact climate adaptation cost curve
 % NAME:
 %   climada_adaptation_cost_curve
@@ -50,6 +50,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %   plot_arrows: whether we do (=1) or don't (=0, default) plot arrows
 %       underneath the x-axis to show cost-effective measures and
 %       non-cost-effective measures extent.
+%   annotate_measures: whether we label the measures (=1, default) or not
 % OUTPUTS:
 %   insurance_benefit and insurance_cost: only used when called from
 %       climada_play_adapt_cost_curve, see there (in essence to write
@@ -75,6 +76,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 % David N. Bresch, david.bresch@gmail.com, 20160429, stdout cleaned up
 % Lea Mueller, muellele@gmail.com, 20160531, show x- and y-ticks
 % David N. Bresch, david.bresch@gmail.com, 20160606, display units synchronized if same unit_name
+% David N. Bresch, david.bresch@gmail.com, 20170423, annotate_measures
 %-
 
 global climada_global
@@ -90,6 +92,7 @@ if ~exist('x_text_control'            , 'var'), x_text_control             = [];
 if ~exist('y_text_control'            , 'var'), y_text_control             = []; end
 if ~exist('reverse_cb'                , 'var'), reverse_cb                 = 1; end
 if ~exist('plot_arrows'               , 'var'), plot_arrows                = 0; end
+if ~exist('annotate_measures'         , 'var'), annotate_measures          = 1; end
 
 % PARAMETERS
 %
@@ -244,13 +247,15 @@ for measure_i = 1:n_measures+add_insurance_measure
     end
 end
 
-% annotate names of measures
-for measure_i = 2:n_measures+1 %first entry = 0
-    if ~isnan(sorted_cb_ratio(measure_i-1))
-        text(cumulated_benefit(measure_i)-(cumulated_benefit(measure_i)-cumulated_benefit(measure_i-1))/2,...
-            max(sorted_cb_ratio)/y_text_control,...
-            [measures_impact.measures.name{sort_index(measure_i-1)},...
-            '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.1f'),')'], 'Rotation',90,'FontSize',fontsize_);
+if annotate_measures
+    % annotate names of measures
+    for measure_i = 2:n_measures+1 %first entry = 0
+        if ~isnan(sorted_cb_ratio(measure_i-1))
+            text(cumulated_benefit(measure_i)-(cumulated_benefit(measure_i)-cumulated_benefit(measure_i-1))/2,...
+                max(sorted_cb_ratio)/y_text_control,...
+                [measures_impact.measures.name{sort_index(measure_i-1)},...
+                '  (', num2str(sorted_cb_ratio(measure_i-1),'%2.1f'),')'], 'Rotation',90,'FontSize',fontsize_);
+        end
     end
 end
 

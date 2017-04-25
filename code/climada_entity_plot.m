@@ -51,6 +51,7 @@ function params=climada_entity_plot(entity,markersize,params)
 %    plot_log_value: if =1, plot log(entity.assets.Value), default=0
 %    plot_population: if =1, plot Population instead of Values, otherwise
 %       same as for Values (default=0, plot Value(s))
+%    blue_ocean: plot ocean bliue, if =1 (default=0)
 % OUTPUTS:
 %   params: the params structure, filled wit defaults, see
 %   a figure
@@ -67,6 +68,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170208, year introduced
 % David N. Bresch, david.bresch@gmail.com, 20170213, title correct if _
 % David N. Bresch, david.bresch@gmail.com, 20170217, plot_population
+% David N. Bresch, david.bresch@gmail.com, 20170423, blue_ocean
 %-
 
 global climada_global
@@ -88,6 +90,7 @@ if ~isfield(params,'year_i'),         params.year_i=[];end
 if ~isfield(params,'title_str'),      params.title_str='';end
 if ~isfield(params,'plot_log_value'), params.plot_log_value=[];end
 if ~isfield(params,'plot_population'),params.plot_population=[];end
+if ~isfield(params,'blue_ocean'),     params.blue_ocean=[];end
 
 % PARAMETERS
 %
@@ -104,6 +107,7 @@ if isempty(params.year_i),          params.year_i=1;end
 if ~isempty(params.year),params.year_i=-params.year;end % year does override year_i
 if isempty(params.plot_log_value),  params.plot_log_value=0;end
 if isempty(params.plot_population), params.plot_population=0;end
+if isempty(params.blue_ocean),      params.blue_ocean=1;end
 
 if strcmpi(entity,'params'),return;end % special case, return the full params structure
 
@@ -184,6 +188,11 @@ end
 
 if isempty(params.max_value),params.max_value=max(plot_Value);end
 mav=params.max_value*1.1; % to be on the safe side for all values to be plotted
+
+if params.blue_ocean
+    climada_plot_world_borders(-1,'','',0,[],country_color);
+    hold on
+end
 
 if ~isempty(params.cbar_ylabel)
     [cbar,~]= plotclr(entity.assets.lon, entity.assets.lat, plot_Value, 's',abs(markersize), 1,0,mav,cmap,1,0);

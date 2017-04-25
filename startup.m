@@ -5,6 +5,7 @@
 % 20160609: do not add climada core's code/old any more
 % 20161010: empty modules dir added
 % 20170108: hint to climada_git_pull added
+% 20170424: \t replaced by 2 spaces in output
 %
 % define the climada root directory
 % --------------------------------
@@ -36,7 +37,7 @@ if exist(climada_modules_dir,'dir')
     for a_i = 1:length(add_dir)
         if length(add_dir(a_i).name)>2 && exist([climada_modules_dir filesep add_dir(a_i).name filesep 'code'],'dir')
             addpath([climada_modules_dir filesep add_dir(a_i).name filesep 'code']);
-            fprintf('\t %s\n',add_dir(a_i).name);
+            fprintf('  %s\n',add_dir(a_i).name);
             
             % checking for sub-folders within code (only one level)
             sub_dir=[climada_modules_dir filesep add_dir(a_i).name filesep 'code'];
@@ -45,7 +46,7 @@ if exist(climada_modules_dir,'dir')
                 if add_subdir(as_i).isdir && length(add_subdir(as_i).name)>2 ...
                         && isempty(strfind(add_subdir(as_i).name,'@')) && isempty(strfind(add_subdir(as_i).name,'private'))
                     addpath([sub_dir filesep add_subdir(as_i).name]);
-                    fprintf('\t\t%s\n',add_subdir(as_i).name);
+                    fprintf('    %s\n',add_subdir(as_i).name);
                     
                     
                     % checking for sub-folders within code (only one more level)
@@ -55,7 +56,7 @@ if exist(climada_modules_dir,'dir')
                         if add_subsubdir(ass_i).isdir && length(add_subsubdir(ass_i).name)>2 ...
                                 && isempty(strfind(add_subsubdir(ass_i).name,'@')) && isempty(strfind(add_subsubdir(ass_i).name,'private'))
                             addpath([subsub_dir filesep add_subsubdir(ass_i).name]);
-                            fprintf('\t\t\t%s\n',add_subsubdir(ass_i).name);
+                            fprintf('      %s\n',add_subsubdir(ass_i).name);
                         end
                     end
                     
