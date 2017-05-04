@@ -18,6 +18,10 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 %   again. If one wants to plot, needs to either save the entity again or
 %   select another file and then cancel.
 %
+%   NOTE: in order to allow a very intuitive interface to get started with
+%   climada, the cases climada('TEST_CLIMADA', climada('DEMO') and
+%   climada('TC') have been implemented, too, see discription below.
+%
 %   Programmes's note: The present code mainly handles asdmin, i.e.
 %   checking files, while all calculations are run be the core climada
 %   functions, i.e. climada_entity_read, climada_measures_impact, 
@@ -27,7 +31,9 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 %   measures_impact=climada(entity,entitiy_future,hazard_today_file,hazard_future_file)
 % EXAMPLE:
 %   measures_impact=climada % all prompted for
-%   measures_impact=climada('TEST_CLIMADA'); % TEST mode
+%   climada('TEST_CLIMADA'); % TEST mode
+%   climada('DEMO'); % run the demo GUI (same as climada_demo)
+%   climada('TC'); % run a TC event damage calculation
 % INPUTS:
 %   entity_today_file: entity (assets, damagefunctions and measures) today
 %       a climada entity file, either an Excel (.xls or .xlsx) or Open
@@ -38,6 +44,10 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 %       > prompted for if empty
 %       ='TEST_CLIMADA': special test mode, the code uses the test files
 %       (as used in climada_demo and climada_demo_step_by_step)
+%       ='TC': special mode to calculate TC event damage, calls
+%       climada_tc_event_damage_ens_gui, i.e. allows you to select a basin,
+%       track and country (optional) in order to calculate TC damage.
+%       ='DEMO', invoke climada_demo
 %   entity_future_file: future entity (assets, damagefunctions and measures) to
 %       represent projected economic growth, a climada entity structure
 %       (see climada_entity_read, same remark as above)
@@ -59,6 +69,7 @@ function measures_impact=climada(entity_today_file,entity_future_file,hazard_tod
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150101, initial
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir and hazards_dir used
+% David N. Bresch, david.bresch@gmail.com, 20170504, 'TC' and 'DEMO' added
 %-
 
 measures_impact=[]; % init output
@@ -70,6 +81,14 @@ persistent entity_future_file_def
 persistent hazard_today_file_def
 persistent hazard_future_file_def
 persistent entity_today_file_last_date
+persistent FIRST_CALL
+
+% simple way to get started with climada
+if isempty(FIRST_CALL),FIRST_CALL=0;end
+if FIRST_CALL==0
+    fprintf('if this is the first time you use climada, try\n climada(''TEST_CLIMADA'')\n climada(''DEMO'')\n climada(''TC'')\n\n');
+    FIRST_CALL=1;
+end
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -93,6 +112,7 @@ show_questdlg=0; % default=0
 %
 % the files for TEST mode
 if strcmpi(entity_today_file,'TEST_CLIMADA')
+    TEST_mode=1;
     entity_today_file =[climada_global.entities_dir filesep 'demo_today' climada_global.spreadsheet_ext];
     entity_future_file=[climada_global.entities_dir filesep 'demo_today' climada_global.spreadsheet_ext];
     hazard_today_file =[climada_global.hazards_dir  filesep 'TCNA_today_small.mat'];
@@ -100,8 +120,18 @@ if strcmpi(entity_today_file,'TEST_CLIMADA')
     check_plots=1;
     show_questdlg=0;
     fprintf('SPECIAL climada TEST mode\n')
+    FIRST_CALL=0; % might be a first time user
+elseif strcmpi(entity_today_file,'DEMO')
+    climada_demo;
+    FIRST_CALL=0; % might be a first time user
+    return
+elseif strcmpi(entity_today_file,'TC')
+    climada_tc_event_damage_ens_gui;
+    FIRST_CALL=0; % might be a first time user
+    return
+else
+    TEST_mode=0;
 end
-
 
 % prompt for entity_today_file if not given
 if isempty(entity_today_file) % local GUI
@@ -244,6 +274,9 @@ measures_impact_today=climada_measures_impact(entity_today,hazard,'no');
 % read future entity
 entity_future=climada_entity_read(entity_future_file,hazard); % hazard contains still today's hazard
 
+% special for TEST mode inflate the Values (as in this case entity_future_file=entity_today_file)
+if TEST_mode,entity_future.assets.Value=entity_future.assets.Value*1.1;end
+
 % force encode to today's hazard
 entity_future=climada_assets_encode(entity_future,hazard); % hazard contains still today's hazard
 
@@ -266,6 +299,7 @@ entity_future=climada_assets_encode(entity_future,hazard); % hazard contains fut
 EDS_future_econ_clim=climada_EDS_calc(entity_future,hazard); % hazard contains future hazard
 
 % display waterfall graph
+figure('Name','waterfall graph');
 climada_waterfall_graph(EDS_today,EDS_future_econ,EDS_future_econ_clim,'AED');
 
 % calculate future measures impact, discount to today - the final calculation

@@ -12,7 +12,8 @@ function [entity,entity_file]=climada_entity_load(entity)
 % INPUTS:
 %   entity: the filename (and path, optional) of a previously saved entity
 %       structure. If no path provided, default path ../data/entities is used
-%       (and name can be without extension .mat or even without _entity.mat)
+%       (and name can be without extension .mat or even without
+%       _entity.mat, in some cases even the ISO3 code only is enough)
 %       > promted for if empty
 %       OR: an entity structure, in which case it is just returned (to allow
 %       calling climada_entity_load anytime, see e.g. climada_EDS_calc)
@@ -33,6 +34,7 @@ function [entity,entity_file]=climada_entity_load(entity)
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
 % David N. Bresch, david.bresch@gmail.com, 20161001, check for isentity
 % David N. Bresch, david.bresch@gmail.com, 20161120, try also to save with '-v7.3'
+% David N. Bresch, david.bresch@gmail.com, 20170503, allow also for ISO3 only
 %-
 
 global climada_global
@@ -69,6 +71,14 @@ entity_file=[fP filesep fN fE];
 if ~exist(entity_file,'file')
     [fP,fN,fE]=fileparts(entity_file);
     fN=[fN '_entity']; % append _entity
+    entity_file=[fP filesep fN fE];
+end
+
+if ~exist(entity_file,'file')
+    % one last try, could be somebody only entered 3-digit country code
+    [fP,fN,fE]=fileparts(entity_file);
+    [country_name,country_ISO3]=climada_country_name(strrep(fN,'_entity',''));
+    fN=[country_ISO3 '_' strrep(country_name,' ','') '_entity']; % append _entity
     entity_file=[fP filesep fN fE];
 end
 

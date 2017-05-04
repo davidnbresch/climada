@@ -50,6 +50,7 @@ function  fig = climada_waterfall_graph(EDS_today,EDS_dev,EDS_cc,return_period,c
 % Lea Mueller, muellele@gmail.com, 20151030, bugfix in climada_arrow
 % Lea Mueller, muellele@gmail.com, 20151209, set no_fig=1, add legend_on=1
 % David N. Bresch, david.bresch@gmail.com, 20160524, default legend_on=0, some simplifiactions
+% David N. Bresch, david.bresch@gmail.com, 20170504, small fix to show correct TIV
 %-
 
 fig=[]; % init dummy output
@@ -158,7 +159,9 @@ damage = damage*10^-digits;
 
 % TIV of portfolio
 [digit_TIV, digit_TIV_str] = climada_digit_set([EDS(1).Value]);
-TIV = unique([EDS(:).Value])*10^-digit_TIV;
+EDS(:).Value
+%TIV = unique([EDS(:).Value])*10^-digit_TIV; % until 20170504
+TIV = [EDS(:).Value].*10^-digit_TIV;
 
 % set ylabel
 if isfield(EDS,'Value_unit')

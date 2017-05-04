@@ -51,7 +51,7 @@ function params=climada_entity_plot(entity,markersize,params)
 %    plot_log_value: if =1, plot log(entity.assets.Value), default=0
 %    plot_population: if =1, plot Population instead of Values, otherwise
 %       same as for Values (default=0, plot Value(s))
-%    blue_ocean: plot ocean bliue, if =1 (default=0)
+%    blue_ocean: plot ocean bliue, if =1 (default=0, since faster)
 % OUTPUTS:
 %   params: the params structure, filled wit defaults, see
 %   a figure
@@ -69,6 +69,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170213, title correct if _
 % David N. Bresch, david.bresch@gmail.com, 20170217, plot_population
 % David N. Bresch, david.bresch@gmail.com, 20170423, blue_ocean
+% David N. Bresch, david.bresch@gmail.com, 20170504, blue_ocean default =0
 %-
 
 global climada_global
@@ -107,7 +108,7 @@ if isempty(params.year_i),          params.year_i=1;end
 if ~isempty(params.year),params.year_i=-params.year;end % year does override year_i
 if isempty(params.plot_log_value),  params.plot_log_value=0;end
 if isempty(params.plot_population), params.plot_population=0;end
-if isempty(params.blue_ocean),      params.blue_ocean=1;end
+if isempty(params.blue_ocean),      params.blue_ocean=0;end
 
 if strcmpi(entity,'params'),return;end % special case, return the full params structure
 

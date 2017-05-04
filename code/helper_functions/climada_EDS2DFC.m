@@ -27,8 +27,8 @@ function DFC=climada_EDS2DFC(EDS,return_period)
 %       return_period(i): the return periods
 %           if empty, the default return periods as in
 %           climada_global.DFC_return_periods are used
-%           if =-1, all points as returned by climada_damage_exceedence are
-%           used
+%           if =-1, all points as returned by climada_damage_exceedence are used
+%           if ='AED', the annual expected damage is returned, with return period=1
 %       damage(i): the damage for return_period(i)
 %       damage_of_value(i): damage as percentage of total asset value
 %       peril_ID: the peril_ID
@@ -37,6 +37,7 @@ function DFC=climada_EDS2DFC(EDS,return_period)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150120, initial
 % David N. Bresch, david.bresch@gmail.com, 20160429, DFC.Value instead of DFC.value
+% David N. Bresch, david.bresch@gmail.com, 20170504, allow for return_period='AED'
 %-
 
 DFC=[]; % init
@@ -107,6 +108,11 @@ for EDS_i=1:length(EDS)
         % return all return periods
         DFC(EDS_i).damage          = sorted_damage;
         DFC(EDS_i).return_period   = EDS_return_period;
+    elseif ischar(return_period)
+        if ~strcmpi(return_period,'AED'),fprintf('WARNING: returning AED\n');end
+        % simply return the annual expected damage
+        DFC(EDS_i).damage=DFC(EDS_i).ED;
+        DFC(EDS_i).return_period   = 1;
     else
         % simply interpolate to the standard return periods
         DFC(EDS_i).damage          = interp1(EDS_return_period,sorted_damage,return_period);
