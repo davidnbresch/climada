@@ -19,16 +19,15 @@ function DFC=climada_EDS2DFC(EDS,return_period)
 %       if EDS has the field annotation_name, the legend will show this
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
-%   return_period: the vector of return periods for whoch we'd like to
+%   return_period: the vector of return periods for which we'd like to
 %       obtain the damage. Default are the return periods as defined in
 %       climada_global.DFC_return_periods
+%       if empty, the default return periods as in climada_global.DFC_return_periods are used
+%       if =-1, all points as returned by climada_damage_exceedence are used
+%       if ='AED', the annual expected damage is returned, with return period=1
 % OUTPUTS:
 %   DFC: a strcture with a damage frequency curve (DFC)
 %       return_period(i): the return periods
-%           if empty, the default return periods as in
-%           climada_global.DFC_return_periods are used
-%           if =-1, all points as returned by climada_damage_exceedence are used
-%           if ='AED', the annual expected damage is returned, with return period=1
 %       damage(i): the damage for return_period(i)
 %       damage_of_value(i): damage as percentage of total asset value
 %       peril_ID: the peril_ID
