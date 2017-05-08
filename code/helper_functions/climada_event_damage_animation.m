@@ -82,6 +82,10 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       If strcmpi(computer,'GLNXA64') the code uses 'Motion JPEG AVI' as
 %       default already
 %    check_colors: if =1, check color maps, then abort, default=0
+%    plot_assets: whether we plot assets (=1, default) or not (=0)
+%       can be useful to show only hazard animation first
+%    plot_damage: whether we plot damage (=1, default) or not (=0)
+%       can be useful to show only hazard animation first
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -102,6 +106,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170105, frame_start, frame_end and plot_tc_track, video_profile
 % David N. Bresch, david.bresch@gmail.com, 20170228, npoints in params, schematic_tag removed, lots of old stuff removed
 % David N. Bresch, david.bresch@gmail.com, 20170301, 'check' option added
+% David N. Bresch, david.bresch@gmail.com, 20170508, plot_assets and plot_damage options added
 %-
 
 res=[]; % init output, mainly used to return (default) parameters
@@ -133,6 +138,8 @@ if ~isfield(params,'plot_tc_track'),params.plot_tc_track=[];end
 if ~isfield(params,'video_profile'),params.video_profile=[];end
 if ~isfield(params,'npoints'),params.npoints=[];end
 if ~isfield(params,'check_colors'),params.check_colors=[];end
+if ~isfield(params,'plot_assets'),params.plot_assets=[];end
+if ~isfield(params,'plot_damage'),params.plot_damage=[];end
 
 % PARAMETERS
 %
@@ -162,6 +169,8 @@ if isempty(params.video_profile)
 end
 if isempty(params.npoints),params.npoints=599;end % was 199
 if isempty(params.check_colors),params.check_colors=0;end
+if isempty(params.plot_assets),params.plot_assets=1;end
+if isempty(params.plot_damage),params.plot_damage=1;end
 %
 windfieldFaceAlpha=0.7; % transparent
 %
@@ -336,15 +345,18 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     
     hold off;clf % start with blank plot each time
     
-    % plot assets
-    % -----------
-    plotclr(hazard.assets.lon,hazard.assets.lat,asset_values,...
-        's',params.asset_markersize,0,0,max(asset_values)*1.05,assets_cmap,1,0);
-    hold on
-    axis(params.focus_region);
-    %axis equal
+    if params.plot_assets
+        % plot assets
+        % -----------
+        plotclr(hazard.assets.lon,hazard.assets.lat,asset_values,...
+            's',params.asset_markersize,0,0,max(asset_values)*1.05,assets_cmap,1,0);
+        hold on
+    end % params.plot_assets
+    %axis(params.focus_region);
+    axis equal
     x_lim=xlim;y_lim=ylim;
-
+    hold on
+    
     % plot hazard intensity
     % ---------------------
     int_values = full(hazard.intensity(frame_i,:));
@@ -403,6 +415,8 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     damage_values = max_damage_at_centroid;
     
     ok_points_pos=find(damage_values>1);
+    
+    if ~params.plot_damage,ok_points_pos=[];end
     
     if ~isempty(ok_points_pos)
         % show log of damage, since otherwise no spread...
