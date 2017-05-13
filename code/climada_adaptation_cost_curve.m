@@ -259,7 +259,8 @@ if annotate_measures
     end
 end
 
-if ~called_from_climada_demo
+if ~called_from_climada_demo && annotate_measures
+    
     % show net present value of total climate risk
     plot(tot_climate_risk,0,'d','color',[205 0 0]/255,'markerfacecolor',[205 0 0]/255,'markersize',10)
     tcr_str = sprintf('Total climate risk\n %.0f %s',tot_climate_risk,measures_impact.Value_display_unit_name);
