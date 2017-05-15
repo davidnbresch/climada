@@ -192,6 +192,7 @@ function entity=climada_nightlight_entity(admin0_name,admin1_name,parameters)
 % david.bresch@gmail.com, 20161005, added option climada_nightlight_entity('parameters')
 % david.bresch@gmail.com, 20170120, default squared, not cubed any more
 % david.bresch@gmail.com, 20170323, core functionality to work also when called in core module
+% david.bresch@gmail.com, 20170515, looks for country_risk module for high resolution
 
 entity=[]; % init
 
@@ -204,8 +205,9 @@ if ~exist('admin0_name','var'),admin0_name=''; end
 if ~exist('admin1_name','var'),admin1_name=''; end
 if ~exist('parameters','var'),parameters=struct;end
 
-% locate the moduel's data
-module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
+% locate the country risk module's data (only needed for high-res 1x1km, as
+% 10x10km is part of standard core climada)
+module_data_dir=[fileparts(fileparts(which('centroids_generate_hazard_sets'))) filesep 'data'];
 
 % check for some parameter fields we need
 if ~isfield(parameters,'resolution_km'),parameters.resolution_km=[];end
@@ -275,7 +277,16 @@ end
 if strcmpi(admin0_name,'parameters') || strcmpi(admin0_name,'params'),...
         entity=parameters;return;end % special case, return the full parameters strcture
 
-if parameters.resolution_km==10,full_img_filename=low_img_filename;end
+if parameters.resolution_km==10
+    full_img_filename=low_img_filename;
+else
+    if ~exist(full_img_filename,'file')
+        fprintf(['country risk module not found. Please download ' ...
+            '<a href="https://github.com/davidnbresch/climada_module_country_risk">'...
+            'climada_module_country_risk</a> from Github.\n'])
+        return
+    end
+end
 
 if parameters.verbose,fprintf('resolution %ix%i km\n',parameters.resolution_km,parameters.resolution_km);end
 
