@@ -82,10 +82,13 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %       If strcmpi(computer,'GLNXA64') the code uses 'Motion JPEG AVI' as
 %       default already
 %    check_colors: if =1, check color maps, then abort, default=0
+%    check_mode: if =1, run three frames about 70% into the animation to
+%       briefly check, default=0
 %    plot_assets: whether we plot assets (=1, default) or not (=0)
 %       can be useful to show only hazard animation first
 %    plot_damage: whether we plot damage (=1, default) or not (=0)
 %       can be useful to show only hazard animation first
+%    axis_equal: whether we scale axes equally, default=1, 0 otherwise
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -107,6 +110,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170228, npoints in params, schematic_tag removed, lots of old stuff removed
 % David N. Bresch, david.bresch@gmail.com, 20170301, 'check' option added
 % David N. Bresch, david.bresch@gmail.com, 20170508, plot_assets and plot_damage options added
+% David N. Bresch, david.bresch@gmail.com, 20170515, check_mode and axis_equal options added
 %-
 
 res=[]; % init output, mainly used to return (default) parameters
@@ -138,8 +142,10 @@ if ~isfield(params,'plot_tc_track'),params.plot_tc_track=[];end
 if ~isfield(params,'video_profile'),params.video_profile=[];end
 if ~isfield(params,'npoints'),params.npoints=[];end
 if ~isfield(params,'check_colors'),params.check_colors=[];end
+if ~isfield(params,'check_mode'),params.check_mode=[];end
 if ~isfield(params,'plot_assets'),params.plot_assets=[];end
 if ~isfield(params,'plot_damage'),params.plot_damage=[];end
+if ~isfield(params,'axis_equal'),params.axis_equal=[];end
 
 % PARAMETERS
 %
@@ -169,8 +175,10 @@ if isempty(params.video_profile)
 end
 if isempty(params.npoints),params.npoints=599;end % was 199
 if isempty(params.check_colors),params.check_colors=0;end
+if isempty(params.check_mode),params.check_mode=0;end
 if isempty(params.plot_assets),params.plot_assets=1;end
 if isempty(params.plot_damage),params.plot_damage=1;end
+if isempty(params.axis_equal),params.axis_equal=1;end
 %
 windfieldFaceAlpha=0.7; % transparent
 %
@@ -197,10 +205,8 @@ if strcmpi(animation_data_file,'colors'),
     animation_data_file=animation_data_file_DEF;
 end 
 if strcmpi(animation_data_file,'check')
-    check_mode=1;
+    params.check_mode=1;
     animation_data_file=animation_data_file_DEF;
-else
-    check_mode=0;
 end 
 
 % prompt for animation_data_file if not given
@@ -241,7 +247,7 @@ params.animation_mp4_file=[fP filesep fN fE];
 
 load(animation_data_file);
 
-if check_mode
+if params.check_mode
     fprintf('SPECIAL check mode\n');
     n_frames=size(hazard.intensity,1);
     params.frame_start=ceil(0.75*n_frames);
@@ -350,11 +356,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
         % -----------
         plotclr(hazard.assets.lon,hazard.assets.lat,asset_values,...
             's',params.asset_markersize,0,0,max(asset_values)*1.05,assets_cmap,1,0);
-        hold on
     end % params.plot_assets
-    %axis(params.focus_region);
-    axis equal
-    x_lim=xlim;y_lim=ylim;
     hold on
     
     % plot hazard intensity
@@ -388,8 +390,8 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     shading flat;
     caxis(c_ax);axis off
     plot(border.X,border.Y,'-k')
-    xlim(x_lim);ylim(y_lim);
-    %axis equal;axis(params.focus_region);
+    if params.axis_equal,axis equal;end
+    axis(params.focus_region);
     if ~params.schematic_tag,colorbar;end
     
     title_str='';

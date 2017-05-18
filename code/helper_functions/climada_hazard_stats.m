@@ -50,6 +50,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,fontsize
 % David N. Bresch, david.bresch@gmail.com, 20161006, minimum thresholds set for some perils
 % David N. Bresch, david.bresch@gmail.com, 20170202, parallelized
 % David N. Bresch, david.bresch@gmail.com, 20170216, small issue in line 274 (not fixed yet)
+% David N. Bresch, david.bresch@gmail.com, 20170518, small fix for EQ (caxis_max)
 %-
 
 % init global variables
@@ -117,6 +118,9 @@ switch hazard.peril_ID
         cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
     case 'EQ'
         intensity_threshold = 1;
+        caxis_max = 15;
+        xtick_    = caxis_max/5:caxis_max/5:caxis_max;
+        cbar_str  = [hist_str 'MMI'];
     otherwise
         % use default colormap, hence no cmap defined
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
