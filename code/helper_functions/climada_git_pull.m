@@ -41,6 +41,7 @@ function climada_git_pull(TEST_mode)
 % david.bresch@gmail.com, 20160616, pathsep
 % david.bresch@gmail.com, 20161013, note about error on cluster added
 % david.bresch@gmail.com, 20170106, using simple system command, not git.m (had some troubles e.g. on cluster)
+% david.bresch@gmail.com, 20170523, try..catch in module update
 %-
 
 global climada_global
@@ -74,13 +75,17 @@ while ~isempty(P)
         module_folder=strrep(token,[climada_global.modules_dir filesep],'');
         module_folder=fileparts(module_folder);
         if isempty(strfind(module_folder,filesep)) % only top level module folder
-            if isempty(strfind(module_folder(1),'_')) && isempty(strfind(module_folder,'TEST')) % avoid modules starting with _
-                full_module_folder=[climada_global.modules_dir filesep module_folder];
-                fprintf('* updating %s\n',module_folder);
-                cd(full_module_folder)
-                %if ~TEST_mode,git pull,end
-                if ~TEST_mode,climada_git_pull_local_git_pull;end
-            end
+            try
+                if isempty(strfind(module_folder(1),'_')) && isempty(strfind(module_folder,'TEST')) % avoid modules starting with _
+                    full_module_folder=[climada_global.modules_dir filesep module_folder];
+                    fprintf('* updating %s\n',module_folder);
+                    cd(full_module_folder)
+                    %if ~TEST_mode,git pull,end
+                    if ~TEST_mode,climada_git_pull_local_git_pull;end
+                end
+            catch ME
+                fprintf('%s\n',ME.message);
+            end % catch
         end
     end
 end % while ~isempty(P)
