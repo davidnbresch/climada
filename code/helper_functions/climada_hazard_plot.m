@@ -7,6 +7,8 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 %
 %   see also climada_plot_tc_footprint (works for TC only)
 %   and the high-resolution version climada_hazard_plot_hr
+%
+%   See also climada_hazard_plot_nogrid (later to be merged all in one)
 % CALLING SEQUENCE:
 %   res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids,entity)
 % EXAMPLE:
@@ -45,6 +47,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, cleanup
 % David N. Bresch, david.bresch@gmail.com, 20160930, legend added, if centroids are plotted
 % David N. Bresch, david.bresch@gmail.com, 20170110, entity added
+% David N. Bresch, david.bresch@gmail.com, 20170611, FontSize in PARAMETERS for plots
 %-
 
 res=[]; % init
@@ -69,9 +72,11 @@ if isempty(hazard),return;end
 % the threshold up to which the original centroid coordinates are used to
 % create the meshgrid (using fewer points for speedup, if above)
 % see code below for details (search for max_numel_lonlat)
-max_numel_lonlat=1000;
+max_numel_lonlat=1000000; % 1000
 %
 verbose=0; % default=0
+%
+FontSize=18; % default=9
 
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
@@ -170,6 +175,8 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
     axis(ax_lim)
     if ~isempty(caxis_range),caxis(caxis_range);end
     c=colorbar;
+    c.FontSize = FontSize;
+    c.Label.FontSize = FontSize;
     colormap(cmap)
     if isfield(hazard,'units')
         try % . notation allowed since version 7...
@@ -178,7 +185,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
             title_str=[title_str ' (' hazard.units ')']; % add units
         end % try
     end % isfield(hazard,'units')
-    title(title_str)
+    title(title_str);xlabel('Longitude');ylabel('Latitude');
     
 else
     fprintf('all intensities zero for event %i\n',event_i);
