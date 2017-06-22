@@ -34,6 +34,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % EXAMPLE:
 %   climada_event_damage_animation
 %   climada_event_damage_animation('ask'); % prompt for both input data and output animation filename
+%   climada_event_damage_animation('check'); % fast check
 %
 %   params=climada_event_damage_animation('params') % return default parameters
 %   climada_event_damage_animation('colors') % check color maps
