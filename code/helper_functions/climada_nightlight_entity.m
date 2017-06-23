@@ -259,7 +259,7 @@ admin0_shape_file=climada_global.map_border_file; % as we use the admin0 as in n
 admin1_shape_file=[module_data_dir filesep 'ne_10m_admin_1_states_provinces' filesep 'ne_10m_admin_1_states_provinces.shp'];
 %
 % base entity file, such that we do not need to construct the entity from scratch
-entity_file=[climada_global.entities_dir filesep 'entity_template.xls'];
+entity_file=[climada_global.entities_dir filesep 'entity_template' climada_global.spreadsheet_ext];
 %
 % whether we select admin0 or admin1 (see parameter selections)
 select_admin0=0; % default=0, to select admin1

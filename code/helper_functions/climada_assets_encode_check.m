@@ -77,6 +77,7 @@ else
                 hazard_filename = strrep(hazard_filename,'/',filesep); % switch filesep
             end
             [~,fN,fE]=fileparts(strrep(hazard_filename,'...',''));
+            if isempty(fE),fE='.mat';end
             hazard_filename=[climada_global.data_dir filesep 'hazards' filesep fN fE];
             if exist(hazard_filename,'file')
                 fprintf('loading %s (note: in default path)\n',hazard_filename);
