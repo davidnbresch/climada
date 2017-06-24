@@ -105,6 +105,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,verbo
 % david.bresch@gmail.com, 20161023, noparfor and verbose_mode added
 % david.bresch@gmail.com, 20170202, noparfor -> climada_global.parfor
 % david.bresch@gmail.com, 20170418, climada_global.save_file_version
+% david.bresch@gmail.com, 20170524, climada_progress2stdout
 %-
 
 hazard=[]; % init
@@ -289,27 +290,12 @@ if climada_global.parfor
         intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
     end %track_i
 else
-    mod_step=10;format_str='%s'; % init progress update
+    if verbose_mode,climada_progress2stdout;end % % init, see terminate below
     for track_i=1:n_tracks
         intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
-        
-        % following block only for progress measurement (waitbar or stdout)
-        if mod(track_i,mod_step)==0
-            mod_step          = 100;
-            t_elapsed_track   = etime(clock,t0)/track_i;
-            tracks_remaining  = n_tracks-track_i;
-            t_projected_sec   = t_elapsed_track*tracks_remaining;
-            if t_projected_sec<60
-                msgstr = sprintf('est. %3.0f sec left (%i/%i tracks)',t_projected_sec,   track_i,n_tracks);
-            else
-                msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
-            end
-            if verbose_mode,fprintf(format_str,msgstr);end
-            format_str=[repmat('\b',1,length(msgstr)) '%s'];
-        end
-        
+        climada_progress2stdout(track_i,n_tracks,100,'tracks'); % update
     end %track_i
-    if verbose_mode,fprintf(format_str,'');end % move carriage to begin of line
+    if verbose_mode,climada_progress2stdout(0);end % terminate
 end % climada_global.parfor
 
 hazard.intensity=sparse(intensity); % store into struct, sparse() to be safe
@@ -362,15 +348,9 @@ if create_yearset
     % see climada_EDS2YDS
     t0       = clock;
     n_tracks = length(tc_track);
-    msgstr   = sprintf('yearset: processing %i tracks',n_tracks);
-    mod_step = 10; % first time estimate after 10 tracks, then every 100
-    if climada_global.waitbar
-        if verbose_mode,fprintf('%s (updating waitbar with estimation of time remaining every 100th track)\n',msgstr);end
-        h        = waitbar(0,msgstr);
-        set(h,'Name','Hazard TC: tropical cyclones yearset');
-    else
-        if verbose_mode,fprintf('%s (waitbar suppressed)\n',msgstr);end
-        format_str='%s';
+    if verbose_mode
+        fprintf('yearset: processing %i tracks\n',n_tracks);
+        climada_progress2stdout; % init, see terminate below
     end
     
     year_i=1; % init
@@ -400,37 +380,15 @@ if create_yearset
             end
         end
         
-        % following block only for progress measurement (waitbar or stdout)
-        if mod(track_i,mod_step)==0
-            mod_step          = 100;
-            t_elapsed_track   = etime(clock,t0)/track_i;
-            tracks_remaining  = n_tracks-track_i;
-            t_projected_sec   = t_elapsed_track*tracks_remaining;
-            if t_projected_sec<60
-                msgstr = sprintf('est. %3.0f sec left (%i/%i tracks)',t_projected_sec,   track_i,n_tracks);
-            else
-                msgstr = sprintf('est. %3.1f min left (%i/%i tracks)',t_projected_sec/60,track_i,n_tracks);
-            end
-            if climada_global.waitbar
-                waitbar(track_i/n_tracks,h,msgstr); % update waitbar
-            else
-                if verbose_mode,fprintf(format_str,msgstr);end
-                format_str=[repmat('\b',1,length(msgstr)) '%s'];
-            end
-        end
+        if verbose_mode,climada_progress2stdout(track_i,n_tracks,100,'tracks');end % update
         
     end % track_i
+    if verbose_mode,climada_progress2stdout(0);end % terminate
     
     % save last year
     hazard.orig_yearset(year_i).yyyy=active_year;
     hazard.orig_yearset(year_i).event_count=event_count;
     hazard.orig_yearset(year_i).event_index=event_index;
-    
-    if climada_global.waitbar
-        close(h) % dispose waitbar
-    else
-        if verbose_mode,fprintf(format_str,'');end % move carriage to begin of line
-    end
     
     t_elapsed = etime(clock,t0);
     msgstr    = sprintf('generating yearset took %3.2f sec',t_elapsed);
