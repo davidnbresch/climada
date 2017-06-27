@@ -115,6 +115,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20170225, allow for minimal fields in hazard
 % David N. Bresch, david.bresch@gmail.com, 20170305, allow for entity.hazard
 % David N. Bresch, david.bresch@gmail.com, 20170313, any(abs(full(temp_damage))) allow for negative damage (i.e. profit)
+% David N. Bresch, david.bresch@gmail.com, 20170626, entity.assets.Value_unit used for EDS.Value_unit
 %-
 
 global climada_global
@@ -138,6 +139,10 @@ entity = climada_entity_load(entity); % prompt for entity if not given
 if isempty(entity),return;end
 if isempty(hazard) && isfield(entity,'hazard') % try hazard within entity
     hazard=entity.hazard;
+    if silent_mode<2,fprintf('hazard set from entity.hazard\n');end
+elseif isempty(hazard) && isfield(entity.assets,'hazard') % try hazard within entity
+    hazard=entity.assets.hazard.filename;
+    if silent_mode<2,fprintf('hazard set from entity.assets.hazard.filename\n');end
 end
 hazard = climada_hazard_load(hazard); % prompt for hazard_set if not given
 if isempty(hazard),return;end
@@ -206,7 +211,6 @@ if isfield(hazard,'orig_event_flag'),EDS.orig_event_flag=hazard.orig_event_flag;
 hazard_peril_ID       = char(hazard.peril_ID); % used below
 EDS.peril_ID          = hazard_peril_ID;
 EDS.hazard.peril_ID   = EDS.peril_ID; % backward compatibility
-EDS.Value_unit        = climada_global.Value_unit;
 
 if climada_global.damage_at_centroid
     % allocate the damage per centroid array (sparse, to manage memory)
@@ -223,6 +227,11 @@ PAA_0                 = zeros(size(hazard.intensity,1),1);
 % only process Value>0 and centroid_index>0, since otherwise no damage anyway
 valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
 nn_assets=length(valid_assets_pos);
+if isfield(entity.assets,'Value_unit')
+    EDS.Value_unit    = entity.assets.Value_unit{valid_assets_pos(1)};
+else
+    EDS.Value_unit    = climada_global.Value_unit; % in all cases until 20170626
+end
 
 % restrict damage functions to what we need
 % Note: quite some effort, but results in speedup

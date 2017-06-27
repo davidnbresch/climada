@@ -47,6 +47,7 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 % muellele@gmail.com, 20160308, add output DFC structure
 % david.bresch@gmail.com, 20160429, calling EDS2DFC, DFC.Value instead of DFC.value
 % david.bresch@gmail.com, 20170211, plotting symbols avoided if more than 20 curves shown
+% david.bresch@gmail.com, 20170626, label y-axis with DFC(1).Value_unit
 %-
 
 DFC = []; DFC_comparison = []; fig = []; legend_str = []; %init
@@ -98,6 +99,8 @@ color_     = [255 215   0 ;...   %today
 if length(EDS)>  size(color_,1)
     color_ = jet(length(EDS));
 end
+color_(1,:)=color_(3,:);
+
 % % order according to size of damage
 % damage_        = arrayfun(@(x)(sum(x.damage)), EDS);
 % [~,sort_index] = sort(damage_,'ascend');
@@ -133,7 +136,8 @@ xlabel('Return period [years]')
 if Percentage_Of_Value_Flag
     ylabel('Damage [% of value]')
 else
-    ylabel(['Damage [' climada_global.Value_display_unit_name ']']);
+    %ylabel(['Damage [' climada_global.Value_display_unit_name ']']); until 20170626
+    ylabel(['Damage [' DFC(1).Value_unit ']']);
 end
 
 % add title

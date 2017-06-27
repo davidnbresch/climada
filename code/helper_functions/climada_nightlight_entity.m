@@ -193,6 +193,7 @@ function entity=climada_nightlight_entity(admin0_name,admin1_name,parameters)
 % david.bresch@gmail.com, 20170120, default squared, not cubed any more
 % david.bresch@gmail.com, 20170323, core functionality to work also when called in core module
 % david.bresch@gmail.com, 20170515, looks for country_risk module for high resolution
+% david.bresch@gmail.com, 20170626, calling climada_assets_complete
 
 entity=[]; % init
 
@@ -862,6 +863,9 @@ if parameters.add_elevation_m
         entity.assets.elevation_m=etopo_elevation_m(entity.assets.lon,entity.assets.lat,check_plot);
     end % add elevation
 end
+
+% make sure we have all fields and they are 'correct'
+entity.assets = climada_assets_complete(entity.assets); 
 
 if parameters.save_entity
     if parameters.verbose,fprintf('saving entity as %s\n',parameters.entity_filename);end
