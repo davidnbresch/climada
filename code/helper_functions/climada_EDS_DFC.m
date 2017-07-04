@@ -99,7 +99,6 @@ color_     = [255 215   0 ;...   %today
 if length(EDS)>  size(color_,1)
     color_ = jet(length(EDS));
 end
-color_(1,:)=color_(3,:);
 
 % % order according to size of damage
 % damage_        = arrayfun(@(x)(sum(x.damage)), EDS);
