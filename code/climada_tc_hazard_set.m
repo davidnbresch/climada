@@ -25,8 +25,9 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,verbo
 %
 %   NOTE: this code listens to climada_global.parfor for substantial speedup
 %
-%   previous: likely climada_random_walk
+%   previous: isimip_tc_track_load and likely climada_random_walk
 %   next: diverse
+%   see also: job_isimip01 (to run this massively parallel on cluster)
 % CALLING SEQUENCE:
 %   res=climada_tr_hazard_set(tc_track,hazard_set_file,centroids,verbose_mode)
 % EXAMPLE:
