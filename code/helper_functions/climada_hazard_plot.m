@@ -48,7 +48,10 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20160930, legend added, if centroids are plotted
 % David N. Bresch, david.bresch@gmail.com, 20170110, entity added
 % David N. Bresch, david.bresch@gmail.com, 20170611, FontSize in PARAMETERS for plots
+% David N. Bresch, david.bresch@gmail.com, 20170706, hint to climada_hazard_plot_nogrid added
 %-
+
+fprintf('see also climada_hazard_plot_nogrid to plot exactly on centroids\n');
 
 res=[]; % init
 
