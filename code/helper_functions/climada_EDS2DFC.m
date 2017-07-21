@@ -38,6 +38,7 @@ function DFC=climada_EDS2DFC(EDS,return_period)
 % David N. Bresch, david.bresch@gmail.com, 20160429, DFC.Value instead of DFC.value
 % David N. Bresch, david.bresch@gmail.com, 20170504, allow for return_period='AED'
 % David N. Bresch, david.bresch@gmail.com, 20170626, DFC.Value_unit
+% David N. Bresch, david.bresch@gmail.com, 20170721, DFC.currency_unit
 %-
 
 DFC=[]; % init
@@ -103,6 +104,7 @@ for EDS_i=1:length(EDS)
     
     DFC(EDS_i).Value           = EDS(EDS_i).Value;
     DFC(EDS_i).Value_unit      = EDS(EDS_i).Value_unit;
+    DFC(EDS_i).currency_unit   = EDS(EDS_i).currency_unit;
     DFC(EDS_i).ED              = EDS(EDS_i).ED;
     DFC(EDS_i).peril_ID        = EDS(EDS_i).peril_ID;
     if isempty(return_period)

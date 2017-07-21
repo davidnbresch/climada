@@ -136,7 +136,17 @@ if Percentage_Of_Value_Flag
     ylabel('Damage [% of value]')
 else
     %ylabel(['Damage [' climada_global.Value_display_unit_name ']']); until 20170626
-    ylabel(['Damage [' DFC(1).Value_unit ']']);
+    Value_unit=DFC(1).Value_unit;
+    if isfield(DFC(1),'currency_unit')
+        if abs(DFC(1).currency_unit-1e9)<eps
+            Value_unit=[Value_unit ' bn'];
+        elseif abs(DFC(1).currency_unit-1e6)<eps
+            Value_unit=[Value_unit ' mio'];
+        elseif abs(DFC(1).currency_unit-1e3)<eps
+            Value_unit=['k ' Value_unit];
+        end
+    end
+    ylabel(['Damage [' Value_unit ']']);
 end
 
 % add title

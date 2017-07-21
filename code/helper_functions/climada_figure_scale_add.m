@@ -29,10 +29,11 @@ function climada_figure_scale_add(fig_axes,left_corner,bottom_corner)
 % Lea Mueller, muellele@gmail.com, 20151106, move to core
 % Lea Mueller, muellele@gmail.com, 20160311, start from the left and bottom
 % Lea Mueller, muellele@gmail.com, 20160404, only half of the x-tick length
+% david.bresch@gmail.com, 20170721, lifted a bit
 %-
 
 
-global climada_global
+%global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
@@ -46,7 +47,7 @@ if isempty(bottom_corner),bottom_corner = 1; end
 
 xticks = get(fig_axes, 'xtick');
 yticks = get(fig_axes, 'ytick');
-if isempty(xticks), fprintf('Unable to proceed.\n'), return; end
+if isempty(xticks), fprintf('Unable to proceed.\n'),return; end
 
 % calculate distance between two ticks
 if xticks(1)<=180 
@@ -69,19 +70,17 @@ if bottom_corner>numel(yticks), bottom_corner = numel(yticks);end
 if abs(left_corner)>numel(xticks), left_corner = numel(xticks)-1;end
 if abs(bottom_corner)>numel(yticks), bottom_corner = numel(yticks);end
 
+dy=diff(ylim)/20; % added to lift slightly up, 20170721
+
 % only half of the xtick length
 % finally plot the line and the length in meter
 x_coordinate = [xticks(left_corner) mean(xticks(left_corner:left_corner+1))];
-plot([xticks(left_corner) mean(xticks(left_corner:left_corner+1))], ones(2,1)*yticks(bottom_corner),'-k','linewidth',3)
-text(mean(x_coordinate), yticks(bottom_corner),scale_text,...
+plot([xticks(left_corner) mean(xticks(left_corner:left_corner+1))], ones(2,1)*yticks(bottom_corner)+dy,'-k','linewidth',3)
+text(mean(x_coordinate), yticks(bottom_corner)+dy,scale_text,...
     'verticalalignment','bottom','HorizontalAlignment','center','fontsize',14)
 
 % % finally plot the line and the length in meter
 % plot(xticks(left_corner:left_corner+1), ones(2,1)*yticks(bottom_corner),'-k','linewidth',3)
 % text(mean(xticks(left_corner:left_corner+1)), yticks(bottom_corner),scale_text,...
 %     'verticalalignment','bottom','HorizontalAlignment','center','fontsize',14)
-
-
-
-
-
+end % climada_figure_scale_add

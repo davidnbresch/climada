@@ -49,6 +49,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20170110, entity added
 % David N. Bresch, david.bresch@gmail.com, 20170611, FontSize in PARAMETERS for plots
 % David N. Bresch, david.bresch@gmail.com, 20170706, hint to climada_hazard_plot_nogrid added
+% David N. Bresch, david.bresch@gmail.com, 20170721, cleanup for title_str
 %-
 
 fprintf('see also climada_hazard_plot_nogrid to plot exactly on centroids\n');
@@ -100,27 +101,20 @@ ax_lim_buffer = scale/10;
 ax_lim = [min(hazard.lon)-ax_lim_buffer           max(hazard.lon)+ax_lim_buffer ...
     max(min(hazard.lat),-60)-ax_lim_buffer  min(max(hazard.lat),95)+ax_lim_buffer];
 
-title_str=''; % init
-
-switch hazard.peril_ID
-    case 'TC'
-        LevelList=0:10:120;
-        caxis_range=[min(LevelList) max(LevelList)];
-    otherwise
-        LevelList=[];
-end % switch
-
-event_ii=0;
+event_ii=0;yyyymmdd_str=''; % init
 if event_i<0
     % search for i-thlargest event
     if isempty(event_sum),event_sum=sum(hazard.intensity,2);end
     [~,sorted_i]=sort(event_sum);
     event_ii=sorted_i(length(sorted_i)+event_i+1);
     values=full(hazard.intensity(event_ii,:)); % extract one event
+    if isfield(hazard,'yyyy') && isfield(hazard,'mm') && isfield(hazard,'dd')
+        yyyymmdd_str=sprintf('%4.4i%2.2i%2.2i',hazard.yyyy(event_ii),hazard.mm(event_ii),hazard.dd(event_ii));  
+    end
     if event_i<-1
-        title_str=sprintf('%s %i-largest event (%i)',hazard.peril_ID,-event_i,event_ii);
+        title_str=sprintf('%s %i-largest event %s (%i)',hazard.peril_ID,-event_i,yyyymmdd_str,event_ii);
     else
-        title_str=sprintf('%s largest event (%i)',hazard.peril_ID,event_ii);
+        title_str=sprintf('%s largest event %s (%i)',hazard.peril_ID,yyyymmdd_str,event_ii);
     end
     % plot some further info to sdout:
     if (isfield(hazard,'name') && isfield(hazard,'yyyy')) && (isfield(hazard,'mm') && isfield(hazard,'dd'))
@@ -131,20 +125,23 @@ elseif event_i==0
     title_str=sprintf('%s max intensity at each centroid',hazard.peril_ID);
 else
     values=full(hazard.intensity(event_i,:)); % extract one event
-    % plot some further info to sdout:
-    if (isfield(hazard,'name') && isfield(hazard,'yyyy')) && (isfield(hazard,'mm') && isfield(hazard,'dd'))
+    if isfield(hazard,'yyyy') && isfield(hazard,'mm') && isfield(hazard,'dd')
+        yyyymmdd_str=sprintf('%4.4i%2.2i%2.2i',hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i));
+    end
+    if isfield(hazard,'name')
         hazard_name=hazard.name{event_i};
-        fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard_name,hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i),event_i);
+        fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard_name,yyyymmdd_str,event_i);
         gen_check=strfind(hazard_name,'gen'); % check for probabilistic event
         if ~isempty(gen_check)
-            gen_str=[' ' hazard_name(gen_check(1):end)];
+            gen_str=[' ' hazard_name(gen_check(1):end) ' '];
         else
-            gen_str='';
+            gen_str=' ';
         end
-        title_str=sprintf('%s %4.4i%2.2i%2.2i%s (%i)\n',hazard.peril_ID,...
-            hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i),gen_str,event_i);
+        title_str=sprintf('%s %s %s%s(%i)\n',hazard.peril_ID,yyyymmdd_str,hazard_name,gen_str,event_i);
+    else
+        title_str=sprintf('%s %s (%i)\n',hazard.peril_ID,yyyymmdd_str,event_i);
     end
-end % isfield(hazard,'name')
+end
 
 if sum(values(not(isnan(values))))>0 % nansum(values)>0
     
@@ -204,6 +201,7 @@ res.X=X;
 res.Y=Y;
 res.VALUE=gridded_VALUE;
 res.title_str=title_str;
+res.yyyymmdd_str=yyyymmdd_str;
 res.event_i=event_ii;
 try
     res.name=hazard.name(event_i);

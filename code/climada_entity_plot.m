@@ -41,8 +41,8 @@ function params=climada_entity_plot(entity,markersize,params)
 %       exist, to plot year instead of the first year (just passes on to
 %       year_i=-year, i.e. year overrides year_i). Default=[];
 %    year_i: the year index, if entity.assets.Values and .Values_yyyy
-%       exist, to plot year_i instead of the first (or only) data in
-%       entity.assets.Value. If negative, search for abs(year_i) in
+%       exist, to plot year_i instead of the data in entity.assets.Value
+%       If negative, search for abs(year_i) in
 %       Values_yyyy to plot the corresponding year (on output, params.year_i
 %       contains the index, not the year any more. See also params.year,
 %       which overrides year_i).
@@ -70,6 +70,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170217, plot_population
 % David N. Bresch, david.bresch@gmail.com, 20170423, blue_ocean
 % David N. Bresch, david.bresch@gmail.com, 20170504, blue_ocean default =0
+% David N. Bresch, david.bresch@gmail.com, 20170721, year_i treatment switched and currency_unit introduced
 %-
 
 global climada_global
@@ -104,7 +105,6 @@ country_color=[.6 .6 .6]; % light gray
 % populate default parameters in params
 if isempty(params.plot_centroids),  params.plot_centroids=0;end
 if isempty(params.cbar_ylabel),     params.cbar_ylabel='Value';end
-if isempty(params.year_i),          params.year_i=1;end
 if ~isempty(params.year),params.year_i=-params.year;end % year does override year_i
 if isempty(params.plot_log_value),  params.plot_log_value=0;end
 if isempty(params.plot_population), params.plot_population=0;end
@@ -154,7 +154,7 @@ if params.plot_population % just switch
     entity.assets.Value_unit{1}='#';
 end
 
-if isfield(entity.assets,'Values') && isfield(entity.assets,'Values_yyyy')
+if isfield(entity.assets,'Values') && isfield(entity.assets,'Values_yyyy') && ~isempty(params.year_i)
     if params.year_i<0
         pos=find(entity.assets.Values_yyyy==abs(params.year_i));
         if length(pos)==1
@@ -215,6 +215,15 @@ if ~isempty(params.cbar_ylabel)
             Value_unit=entity.assets.Value_unit{1};
         catch
             Value_unit=entity.assets.Value_unit(1);
+        end
+    end
+    if isfield(entity.assets,'currency_unit')
+        if abs(entity.assets.currency_unit)-1e9<eps
+            Value_unit=[Value_unit ' bn'];
+        elseif abs(entity.assets.currency_unit)-1e6<eps
+            Value_unit=[Value_unit ' mio'];
+        elseif abs(entity.assets.currency_unit)-1e3<eps
+            Value_unit=['k ' Value_unit];
         end
     end
     set(get(cbar,'ylabel'),'string',[plot_log_value_str params.cbar_ylabel ' (' Value_unit ')'],'fontsize',12);

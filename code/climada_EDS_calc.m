@@ -117,6 +117,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20170313, any(abs(full(temp_damage))) allow for negative damage (i.e. profit)
 % David N. Bresch, david.bresch@gmail.com, 20170626, entity.assets.Value_unit used for EDS.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20170715, small fix if no valid asset for EDS.Value_unit
+% David N. Bresch, david.bresch@gmail.com, 20170721, currency_unit added
 %-
 
 global climada_global
@@ -222,20 +223,25 @@ if climada_global.damage_at_centroid
 end
 
 % temp variables
-MDD_0                 = zeros(size(hazard.intensity,1),1);
-PAA_0                 = zeros(size(hazard.intensity,1),1);
+MDD_0 = zeros(size(hazard.intensity,1),1);
+PAA_0 = zeros(size(hazard.intensity,1),1);
 
 % only process Value>0 and centroid_index>0, since otherwise no damage anyway
 valid_assets_pos=find(entity.assets.Value>0 & entity.assets.centroid_index>0);
 nn_assets=length(valid_assets_pos);
 if isfield(entity.assets,'Value_unit')
     if nn_assets>0
-        EDS.Value_unit    = entity.assets.Value_unit{valid_assets_pos(1)};
+        EDS.Value_unit = entity.assets.Value_unit{valid_assets_pos(1)};
     else
-        EDS.Value_unit    = entity.assets.Value_unit{1};
+        EDS.Value_unit = entity.assets.Value_unit{1};
     end
 else
-    EDS.Value_unit    = climada_global.Value_unit; % in all cases until 20170626
+    EDS.Value_unit     = climada_global.Value_unit; % in all cases until 20170626
+end
+if isfield(entity.assets,'currency_unit')
+    EDS.currency_unit  = entity.assets.currency_unit;
+else
+    EDS.currency_unit  = 1; % default
 end
 
 % restrict damage functions to what we need
