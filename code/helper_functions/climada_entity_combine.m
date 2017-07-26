@@ -14,6 +14,9 @@ function [entity,entity_save_file] = climada_entity_combine(entity,entity2,entit
 %   entity = climada_entity_combine(entity,entity2)
 % INPUTS:
 %   entity: a climada entity structure, as returned by climada_entity_read
+%       If entity is empty on input, entity2 is returned. This can be
+%       useful to start summing up entities in a loop
+%       entity_c=climada_EDS_combine(entity_c,entity)...  
 %   entity2: a climada entity structure, as returned by climada_entity_read
 % OPTIONAL INPUT PARAMETERS:
 %   entity_save_file: the filename to save the combined entity to
@@ -26,6 +29,7 @@ function [entity,entity_save_file] = climada_entity_combine(entity,entity2,entit
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160120, initial
 % David N. Bresch, david.bresch@gmail.com, 20161008, small fix
+% David N. Bresch, david.bresch@gmail.com, 20170726, allow for EDS to be empty on input
 %-
 
 global climada_global
@@ -41,6 +45,11 @@ if ~exist('purge_flag','var'), purge_flag = 0;end
 
 % PARAMETERS
 %
+
+if isempty(entity) && ~isempty(entity2)
+    entity=entity2;
+    return
+end
 
 % prompt for entity if not given
 if isempty(entity) % local GUI

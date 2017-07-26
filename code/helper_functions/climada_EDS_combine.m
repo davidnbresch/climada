@@ -29,6 +29,9 @@ function [EDS,ok]=climada_EDS_combine(EDS,EDS2,force_combination,verbose)
 %       matching EDSs within (e.g. TC and TS, if damage vector is of same length)
 %       This way, climada_EDS_combine can be called once to sum up all
 %       matching EDSs.
+%       If EDS is empty on input, EDS2 gets processed, i.e. same as calling
+%       climada_EDS_combine(EDS2). This can be useful to start summing up
+%       an EDS in a loop EDS_c=climada_EDS_combine(EDS_c,EDS)...
 % OPTIONAL INPUT PARAMETERS:
 %   EDS2: a climada EDS (as returned eg by climada_EDS_calc)
 %       if EDS2 is an array of EDS2(i), the code will recursively treat
@@ -54,6 +57,7 @@ function [EDS,ok]=climada_EDS_combine(EDS,EDS2,force_combination,verbose)
 % David N. Bresch, david.bresch@gmail.com, 20150203, array of EDSs and empty EDS2 allowed
 % David N. Bresch, david.bresch@gmail.com, 20150215, Value taken from EDS, not added
 % David N. Bresch, david.bresch@gmail.com, 20151231, major overhaul, mastering complex cases, like many sub-perils at once
+% David N. Bresch, david.bresch@gmail.com, 20170726, allow for EDS to be empty on input
 %-
 
 ok=0; % init output
@@ -72,6 +76,10 @@ if ~exist('verbose','var'),verbose=0;end
 %
 % define all parameters here - no parameters to be defined in code below
 
+if isempty(EDS) % special case to add start adding up with an empty one to start with
+    EDS=EDS2;EDS2=[];
+end
+    
 if length(EDS)>1 % a bit of analysis of EDS
     damage_length=zeros(1,length(EDS)); % init
     for EDS_i=1:length(EDS)
