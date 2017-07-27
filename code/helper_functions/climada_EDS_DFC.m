@@ -1,4 +1,4 @@
-function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
+function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
 % climada
 % NAME:
 %   climada_EDS_DFC
@@ -35,6 +35,7 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 %       .ED, .Value, .Value_unit, and .annotation_name
 %   a figure with the DFC plot
 %   legend_str: the legend string
+%   legend_handle: the handle to the plots (to group legend correctly)
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20100108
 % david.bresch@gmail.com, 20100109, comparison added
@@ -48,9 +49,10 @@ function [DFC,fig,legend_str] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of
 % david.bresch@gmail.com, 20160429, calling EDS2DFC, DFC.Value instead of DFC.value
 % david.bresch@gmail.com, 20170211, plotting symbols avoided if more than 20 curves shown
 % david.bresch@gmail.com, 20170626, label y-axis with DFC(1).Value_unit
+% david.bresch@gmail.com, 20170727, legend_handle added
 %-
 
-DFC = []; DFC_comparison = []; fig = []; legend_str = []; %init
+DFC=[];DFC_comparison=[];fig=[];legend_str={};legend_handle=[]; %init
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -61,7 +63,18 @@ if ~exist('EDS_comparison','var'),EDS_comparison='';end
 if ~exist('Percentage_Of_Value_Flag','var'),Percentage_Of_Value_Flag=0;end
 if ~exist('plot_loglog','var'),plot_loglog=0;end
 
-LineWidth=1; % was 1.5
+% PARAMETERS
+%
+LineWidth  = 2; % was 1.5
+MarkerSize = 1; % was 5
+%
+% define line colors (cycled through)
+color_     = [255 215   0 ;...   %today
+    255 127   0 ;...   %eco
+    238  64   0 ;...   %clim
+    205   0   0 ;...   %total risk
+    120 120 120]/256;  %dotted line]/255;
+
 
 % prompt for EDS if not given
 EDS = climada_EDS_load(EDS);
@@ -86,15 +99,6 @@ if isfield(EDS,'EDS')
     EDS      = EDS_temp.EDS;
     EDS_temp = [];
 end
-
-%define figure parameters
-msize      = 5;
-legend_str = {};
-color_     = [255 215   0 ;...   %today
-    255 127   0 ;...   %eco
-    238  64   0 ;...   %clim
-    205   0   0 ;...   %total risk
-    120 120 120]/256;  %dotted line]/255;
 
 if length(EDS)>  size(color_,1)
     color_ = jet(length(EDS));
@@ -121,9 +125,9 @@ for DFC_i=1:length(DFC)
         damage=DFC(DFC_i).damage*climada_global.Value_display_unit_fact;
     end
     if plot_loglog
-        loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
+        legend_handle(end+1)=loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
     else
-        plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
+        legend_handle(end+1)=plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
     end
     hold on
     ii = ii+1; if ii>length(color_), ii=1; end
@@ -202,9 +206,9 @@ if ~isempty(EDS_comparison)
             damage=DFC_comparison(DFC_i).damage*climada_global.Value_display_unit_fact;
         end
         if plot_loglog
-            loglog(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
+            legend_handle(end+1)=loglog(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
         else
-            plot(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',msize);
+            legend_handle(end+1)=plot(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
         end
         hold on
         ii = ii+1; if ii>length(marker_), ii=1; end
@@ -222,7 +226,7 @@ end % comparison
 %title(title_strs,'FontSize',12);
 hold off
 set(gca,'fontsize',12)
-if ~isempty(legend_str),legend(legend_str,'Interpreter','none','location','NorthWest');end % add legend
+if ~isempty(legend_str),legend(legend_handle,legend_str,'Interpreter','none','location','NorthWest');end % add legend
 set(gcf,'Color',[1 1 1]) % white background
 
 % put the two together, DFC and DFC_comparison
@@ -230,4 +234,4 @@ n_DFC = numel(DFC);
 n_DFC_comparison = numel(DFC_comparison);
 if n_DFC_comparison>0, DFC(n_DFC+1:n_DFC+n_DFC_comparison) = DFC_comparison;end
 
-return
+end % climada_EDS_DFC
