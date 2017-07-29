@@ -82,41 +82,41 @@ intensity_threshold = 0; % default
 cmap = climada_colormap(hazard.peril_ID); % default
 caxis_min=0;caxis_max=full(max(max(hazard.intensity))); % default
 switch hazard.peril_ID
-    case 'TC'
+    case 'TC' % tropical cyclone wind
         intensity_threshold = 5;
         caxis_max = 100;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = [hist_str 'wind speed (m/s)'];
-    case 'TR'
+    case 'TR' % tropical cyclone rain
         caxis_max = 300; %caxis_max = 500;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = [hist_str 'rain sum (mm)'];
-    case 'TS'
+    case 'TS' % tropical cyclone surge
         caxis_max = 10;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = [hist_str 'surge height (m)'];
-    case 'MS'
+    case 'MS' % mudslides
         caxis_max = 3;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = sprintf('%%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
-    case 'LS'
+    case 'LS' % landslide
         caxis_max = 1;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
         cmap = flipud(climada_colormap(hazard.peril_ID));
-    case 'WS'
+    case 'WS' % storm europe
         intensity_threshold = 5;
         caxis_max = 60;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = [hist_str 'wind speed (m/s)'];
-    case 'HS'
+    case 'HS' % hail
         intensity_threshold = 10;
         if ~isfield(hazard,'units'),hazard.units='Ekin';end
         caxis_min = 200;
         caxis_max = 2000;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
-    case 'EQ'
+    case 'EQ' % earthquake
         intensity_threshold = 1;
         caxis_max = 15;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;

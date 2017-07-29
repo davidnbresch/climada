@@ -71,6 +71,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170423, blue_ocean
 % David N. Bresch, david.bresch@gmail.com, 20170504, blue_ocean default =0
 % David N. Bresch, david.bresch@gmail.com, 20170721, year_i treatment switched and currency_unit introduced
+% David N. Bresch, david.bresch@gmail.com, 20170729, currency_unit fixed
 %-
 
 global climada_global
@@ -218,11 +219,11 @@ if ~isempty(params.cbar_ylabel)
         end
     end
     if isfield(entity.assets,'currency_unit')
-        if abs(entity.assets.currency_unit)-1e9<eps
+        if abs(entity.assets.currency_unit-1e9)<eps
             Value_unit=[Value_unit ' bn'];
-        elseif abs(entity.assets.currency_unit)-1e6<eps
+        elseif abs(entity.assets.currency_unit-1e6)<eps
             Value_unit=[Value_unit ' mio'];
-        elseif abs(entity.assets.currency_unit)-1e3<eps
+        elseif abs(entity.assets.currency_unit-1e3)<eps
             Value_unit=['k ' Value_unit];
         end
     end
