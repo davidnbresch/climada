@@ -54,6 +54,7 @@ if isfield(hazard.intensity,'data')
     sparse_data=hazard.intensity.data;
     hazard=rmfield(hazard,'intensity');
     hazard.intensity=sparse(sparse_i,sparse_j,sparse_data,floor(hazard.event_count),length(hazard.lon));
+    hazard.peril_ID=char(hazard.peril_ID); % a fix, Octave reads chars as in arrays, it seems
     %fprintf(' done\n');
 end
 

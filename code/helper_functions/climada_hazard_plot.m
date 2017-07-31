@@ -80,7 +80,8 @@ max_numel_lonlat=1000000; % 1000
 %
 verbose=0; % default=0
 %
-FontSize=18; % default=9
+% Font size on plot, must be 2*n (as we use half the size, too)
+FontSize=12; % default=12 or 18
 
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 
@@ -185,7 +186,7 @@ if sum(values(not(isnan(values))))>0 % nansum(values)>0
             title_str=[title_str ' (' hazard.units ')']; % add units
         end % try
     end % isfield(hazard,'units')
-    title(title_str);xlabel('Longitude');ylabel('Latitude');
+    title(title_str,'FontSize',FontSize);xlabel('Longitude','FontSize',FontSize/2);ylabel('Latitude','FontSize',FontSize/2);
     
 else
     fprintf('all intensities zero for event %i\n',event_i);

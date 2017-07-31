@@ -226,7 +226,7 @@ end % comparison
 %title(title_strs,'FontSize',12);
 hold off
 set(gca,'fontsize',12)
-if ~isempty(legend_str),legend(legend_handle,legend_str,'Interpreter','none','location','NorthWest');end % add legend
+if ~isempty(legend_str),legend(legend_handle,legend_str,'location','NorthWest');end % add legend
 set(gcf,'Color',[1 1 1]) % white background
 
 % put the two together, DFC and DFC_comparison

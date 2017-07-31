@@ -53,6 +53,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20170107, EDS_at_centroid renamed to damage_at_centroid
 % David N. Bresch, david.bresch@gmail.com, 20170202, parfor
 % David N. Bresch, david.bresch@gmail.com, 20170413, save_file_version
+% David N. Bresch, david.bresch@gmail.com, 20170730, save_file_version for Octave compatibility
 %-
 
 global climada_global
@@ -233,7 +234,11 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     % climada_hazard_stats or climada_tc_hazard_set)
     climada_global.parfor=0; % default=0
     
-    climada_global.save_file_version='-v7.3';
+    % see version in save command (for .mat files)
+    % since Octave does not properly read cell arrays in -v7.3, use -v7 in
+    % case you store for later Octave use (some default .mat files are thus
+    % stored as -v7, like entity_template.mat (see climada_entity_read)
+    climada_global.save_file_version='-v7.3'; % default ='-v7.3' for hdf5
 
     climada_vars_initialised=1; % indicate we have initialized all vars
     
@@ -244,6 +249,9 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     if climada_octave % see climada_octave.m for specific settings
         climada_global.octave_mode=1;
         fprintf('Note: running on Octave\n')
+        % dealing with .mat (binary) files is not trivial to ensure
+        % compatibility between MATLAB and Octave, therefore:
+        climada_global.save_file_version='-mat7-binary'; % such that MATLAB can read them again
     end
     
     %     disabled 20160429

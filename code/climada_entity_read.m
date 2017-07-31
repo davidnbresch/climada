@@ -214,7 +214,7 @@ if climada_check_matfile(entity_filename,entity_save_file) && ~force_read
             entity.damagefunctions.filename=entity_save_file;
             entity.measures.filename=entity_save_file;
             entity.discount.filename=entity_save_file;
-            save(entity_save_file,'entity')
+            save(entity_save_file,'entity',climada_global.save_file_version)
         end
     end % isfield(entity,'assets')
     
@@ -237,10 +237,18 @@ else
     if isfield(entity.names,'reference_year'),...
             entity.assets.reference_year=entity.names.reference_year;end
     
+    climada_global_save_file_version=climada_global.save_file_version; % store
+    if strcmpi(fN,'entity_template')
+        climada_global.save_file_version='-v7';
+        fprintf('SPECIAL: saved as version %s for Octave compatibility\n',climada_global.save_file_version)
+    end
+    
     % save entity as .mat file for fast access
     fprintf('saving entity as %s\n',entity_save_file);
     save(entity_save_file,'entity',climada_global.save_file_version);
     
+    climada_global.save_file_version=climada_global_save_file_version; % reset
+
 end % climada_check_matfile
 
 end % climada_entity_read

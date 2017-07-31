@@ -102,6 +102,6 @@ if ishazard(hazard)
     hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
 else
     hazard=[];
-end % isentity(entity)
+end % ishazard(hazard)
 
 end % climada_hazard_load
