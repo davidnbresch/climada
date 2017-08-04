@@ -124,7 +124,7 @@ fprintf(out_fid,'<H1><FONT COLOR="FF0000">%s</FONT></FONT></H1>\r\n',html_title)
 fprintf(out_fid,'<P>\r\n');
 fprintf(out_fid,'Use <i>Find in page</i> ... from the Edit Menu to search for any text in all help-files.<P>\r\n');
 fprintf(out_fid,'Use the <i>which</i> command in MATLAB to locate the specific function.<P>\r\n');
-fprintf(out_fid,'This page has been automatically created by <i>compile_function_header_doc</i>.<P>\r\n');
+fprintf(out_fid,'This page has been automatically created by <i>compile_all_function_headers</i>.<P>\r\n');
 fprintf(out_fid,'Please consult <A HREF="climada_manual.pdf">climada_manual.pdf</A> for more information.<P>\r\n');
 fprintf(out_fid,'<P>\r\n');
 fprintf(out_fid,'<P>');
