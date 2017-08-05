@@ -194,6 +194,7 @@ function entity=climada_nightlight_entity(admin0_name,admin1_name,parameters)
 % david.bresch@gmail.com, 20170323, core functionality to work also when called in core module
 % david.bresch@gmail.com, 20170515, looks for country_risk module for high resolution
 % david.bresch@gmail.com, 20170626, calling climada_assets_complete
+% david.bresch@gmail.com, 20170805, more tolerant iro img file(s)
 
 entity=[]; % init
 
@@ -278,16 +279,7 @@ end
 if strcmpi(admin0_name,'parameters') || strcmpi(admin0_name,'params'),...
         entity=parameters;return;end % special case, return the full parameters strcture
 
-if parameters.resolution_km==10
-    full_img_filename=low_img_filename;
-else
-    if ~exist(full_img_filename,'file')
-        fprintf(['country risk module not found. Please download ' ...
-            '<a href="https://github.com/davidnbresch/climada_module_country_risk">'...
-            'climada_module_country_risk</a> from Github.\n'])
-        return
-    end
-end
+if parameters.resolution_km==10,full_img_filename=low_img_filename;end
 
 if parameters.verbose,fprintf('resolution %ix%i km\n',parameters.resolution_km,parameters.resolution_km);end
 
