@@ -20,7 +20,11 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %   limited (see <http://octave.sf.net/video/>) and the present code uses
 %   latest MATLAB videowriter (better performance than avifile...).
 %
-%   Soemtimes, it is faster to edit fields in hazard instead of re-running
+%   Note on title_str: it is taken from hazard.event_name if it exists or
+%   constructed based upon  hazard.tc_track.name (if exists) and
+%   hazard.tc_track.datenum.
+%
+%   Sometimes, it is faster to edit fields in hazard instead of re-running
 %   climada_event_damage_data_tc, like: for i=1:length(hazard.event_name),...
 %   hazard.event_name{i}=strrep(hazard.event_name{i},'NNN 1200706','Sidr');end
 %   (obviously, you first load and then save animation_data.mat)
@@ -90,6 +94,9 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    plot_damage: whether we plot damage (=1, default) or not (=0)
 %       can be useful to show only hazard animation first
 %    axis_equal: whether we scale axes equally, default=1, 0 otherwise
+%    calc_hazard_ts: if =1, show storm surge (TS) hazard and damage instead
+%       of TC. climada_event_damage_data_tc needs to have been run with
+%       params.calc_hazard_ts=1, too. Default=0, show TC hazard and damage
 % OUTPUTS:
 %   the .mp4 animation file in res.animation_mp4_file
 %   res: the parameter structure params as used (helpful to obtain all default
@@ -112,6 +119,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170301, 'check' option added
 % David N. Bresch, david.bresch@gmail.com, 20170508, plot_assets and plot_damage options added
 % David N. Bresch, david.bresch@gmail.com, 20170515, check_mode and axis_equal options added
+% David N. Bresch, david.bresch@gmail.com, 20170806, title_str improved
+% David N. Bresch, david.bresch@gmail.com, 20170806, calc_hazard_ts added
 %-
 
 res=[]; % init output, mainly used to return (default) parameters
@@ -147,6 +156,7 @@ if ~isfield(params,'check_mode'),params.check_mode=[];end
 if ~isfield(params,'plot_assets'),params.plot_assets=[];end
 if ~isfield(params,'plot_damage'),params.plot_damage=[];end
 if ~isfield(params,'axis_equal'),params.axis_equal=[];end
+if ~isfield(params,'calc_hazard_ts'),params.calc_hazard_ts=[];end
 
 % PARAMETERS
 %
@@ -180,6 +190,7 @@ if isempty(params.check_mode),params.check_mode=0;end
 if isempty(params.plot_assets),params.plot_assets=1;end
 if isempty(params.plot_damage),params.plot_damage=1;end
 if isempty(params.axis_equal),params.axis_equal=1;end
+if isempty(params.calc_hazard_ts),params.calc_hazard_ts=0;end
 %
 windfieldFaceAlpha=0.7; % transparent
 %
@@ -247,6 +258,28 @@ if isempty(fE),fE='.mp4';end
 params.animation_mp4_file=[fP filesep fN fE];
 
 load(animation_data_file);
+
+% switch to TS, if requested
+if params.calc_hazard_ts
+    if exist('hazard_ts','var')
+        if ~isempty(hazard_ts) % replace some fields in hazard
+            hazard.intensity = hazard_ts.intensity;
+            hazard.fraction  = hazard_ts.fraction;
+            hazard.damage    = hazard_ts.damage;
+            hazard.damage    = hazard_ts.damage;
+            hazard.peril_ID  = hazard_ts.peril_ID;
+            hazard.units     = hazard_ts.units;
+            fprintf('Note: processing surge damage (TS, not TC)\n');
+            params.animation_mp4_file=strrep(params.animation_mp4_file,'TC','TS');
+        else
+            fprintf('surge hazard set (hazard_ts) is empty, aborted\n(call climada_event_damage_data_tc with params.calc_hazard_ts=1)\n');
+            return
+        end
+    else
+        fprintf('surge hazard set (hazard_ts) does not exist, aborted\n(call climada_event_damage_data_tc with params.calc_hazard_ts=1)\n');
+        return
+    end
+end % params.calc_hazard_ts
 
 if params.check_mode
     fprintf('SPECIAL check mode\n');
@@ -336,7 +369,6 @@ if make_mp4
     open(vidObj);
 end
 
-t0=clock;
 if params.jump_step==1
     fprintf('processing %i frames (frame %i .. %i)\n',n_frames,params.frame_start,params.frame_end);
 else
@@ -348,6 +380,7 @@ hazard_lat_uni=hazard.lat(unique_pos);
 
 % start loop
 climada_progress2stdout(-1,[],1) % init, see terminate below
+t0=clock;
 for frame_i=params.frame_start:params.jump_step:params.frame_end
     
     hold off;clf % start with blank plot each time
@@ -362,6 +395,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     
     % plot hazard intensity
     % ---------------------
+    
     int_values = full(hazard.intensity(frame_i,:));
     %int_values(int_values<10)=NaN; % mask low intensities
     gridded_VALUE = griddata(hazard_lon_uni,hazard_lat_uni,int_values(unique_pos),X,Y,interp_method);
@@ -397,13 +431,18 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     
     title_str='';
     if isfield(hazard,'tc_track') % add some track information
-        if isfield(hazard,'event_name')
+        if isfield(hazard,'event_name') % take from name
             title_str=char(hazard.event_name{frame_i});
-        elseif isfield(hazard,'tc_track_node') % title
-            track_i=hazard.tc_track_track(frame_i);
-            node_i=hazard.tc_track_node(frame_i);
-            title_str=sprintf('%s %s',strrep(char(hazard.tc_track(track_i).name),'_',' '),...
-                datestr(hazard.tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
+        end
+        if isfield(hazard,'tc_track_node') && isempty(title_str)
+            track_i=hazard.tc_track_number(frame_i); % was tc_track_track
+            node_i =hazard.tc_track_node(frame_i);
+            if isfield(hazard.tc_track(track_i),'name')
+                tc_name=[strrep(char(hazard.tc_track(track_i).name),'_',' ') ' '];
+            else
+                tc_name='';
+            end
+            title_str=sprintf('%s%s',tc_name,datestr(hazard.tc_track(track_i).datenum(node_i),'dd-mmm-yyyy HH:MM'));
         end
     end
     

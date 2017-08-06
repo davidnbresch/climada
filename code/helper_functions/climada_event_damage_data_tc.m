@@ -1,4 +1,4 @@
-function hazard=climada_event_damage_data_tc(tc_track,entity,check_mode,params,segment_i)
+function [hazard,hazard_ts]=climada_event_damage_data_tc(tc_track,entity,check_mode,params,segment_i)
 % climada tc animation
 % MODULE:
 %   core
@@ -192,10 +192,12 @@ function hazard=climada_event_damage_data_tc(tc_track,entity,check_mode,params,s
 %       occurrs. Default=15 [m/s]. Only active if abs(DamageFun_exponent)>0
 %       Please check wind_threshold, too, easiest to set
 %       DamageFun_threshold=wind_threshold (as done per default).
-%   segment_i: to allow for storage of (large) animation data in segments
+%    segment_i: to allow for storage of (large) animation data in segments
 %       rather than one file. segment_i starts with the track(segment_i).
 %       Default=[]. This option apends _%4.4i to the filename passed in
 %       animation_data_file, e.g. animation_data.mat becomes animation_data_0001.mat
+%    calc_hazard_ts: if =1, also calculate storm surge (TS) hazard,
+%       default=0 (TC only)
 % OUTPUTS:
 %   hazard: a hazard structure (as usual) with additional fields:
 %       tc_track_node(i): the node i (tc_track.lon(i)...) for which the other
@@ -239,9 +241,11 @@ function hazard=climada_event_damage_data_tc(tc_track,entity,check_mode,params,s
 % David N. Bresch, david.bresch@gmail.com, 20170225, segment_i added
 % David N. Bresch, david.bresch@gmail.com, 20170227, simple damage approximation added
 % David N. Bresch, david.bresch@gmail.com, 20170228, further massive speedup, use i,j,v of sparse array
+% David N. Bresch, david.bresch@gmail.com, 20170806, hazard.tc_track(track_i).name added
+% David N. Bresch, david.bresch@gmail.com, 20170806, calc_hazard_ts added
 %-
 
-hazard=[]; % init output
+hazard=[];hazard_ts=[]; % init output
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -274,6 +278,7 @@ if ~isfield(params,'trim_assets'),        params.trim_assets=[];end
 if ~isfield(params,'DamageFun_exponent'), params.DamageFun_exponent=[];end
 if ~isfield(params,'DamageFun_threshold'),params.DamageFun_threshold=[];end
 if ~isfield(params,'wind_threshold'),     params.wind_threshold=[];end
+if ~isfield(params,'calc_hazard_ts'),     params.calc_hazard_ts=[];end
 
 % PARAMETERS
 %
@@ -305,6 +310,7 @@ if isempty(params.trim_assets),           params.trim_assets=1;end
 if isempty(params.DamageFun_exponent),    params.DamageFun_exponent=0;end
 if isempty(params.DamageFun_threshold),   params.DamageFun_threshold=15;end
 if isempty(params.wind_threshold),        params.wind_threshold=15;end
+if isempty(params.calc_hazard_ts),        params.calc_hazard_ts=0;end
 %
 % some overriders for check mode
 if check_mode==1,params.tc_track_timestep=1;end % 1h for checks
@@ -669,7 +675,6 @@ else
 
 end % params.DamageFun_exponent
 
-
 hazard.assets.Values_yyyy=1; % dummy for the time being
 
 % save the relevant TC track information for nicer plot options
@@ -677,6 +682,7 @@ for track_i=1:length(tc_track)
     hazard.tc_track(track_i).lon     = tc_track(track_i).lon;
     hazard.tc_track(track_i).lat     = tc_track(track_i).lat;
     hazard.tc_track(track_i).datenum = tc_track(track_i).datenum;
+    hazard.tc_track(track_i).name    = tc_track(track_i).name;
 end % track_i
 clear tc_track % also store tc_track to hazard
 
@@ -697,7 +703,35 @@ fprintf('%s: max cumulated TC damage %g\n',segment_str,full(max(hazard.max_damag
 
 hazard.matrix_density=nnz(hazard.intensity)/numel(hazard.intensity);
 
+% also calculater TS (storm surge)
+if params.calc_hazard_ts
+    fprintf('calculating hazard_ts (storm surge)\n');
+    hazard_ts=climada_ts_hazard_set(hazard,'NO_SAVE',0,0); % set first 0 to 1 for debugging
+    
+    % remove some fields one better takes from hazard
+    hazard_ts=rmfield(hazard_ts,'tc_track_number');
+    hazard_ts=rmfield(hazard_ts,'tc_track_node');
+    hazard_ts=rmfield(hazard_ts,'tc_track_ID_no');
+    hazard_ts=rmfield(hazard_ts,'event_name');
+    hazard_ts=rmfield(hazard_ts,'datenum');
+    hazard_ts=rmfield(hazard_ts,'assets');
+    hazard_ts=rmfield(hazard_ts,'tc_track');
+    hazard_ts=rmfield(hazard_ts,'focus_region');
+    hazard_ts=rmfield(hazard_ts,'damage');
+    
+    climada_global_damage_at_centroid=climada_global.damage_at_centroid; % store
+    climada_global.damage_at_centroid=1; % store damage at each centroid
+    EDS=climada_EDS_calc(entity,hazard_ts,'',0,2); % last=2 silent
+    
+    hazard_ts.damage=sparse(EDS.damage_at_centroid)';
+    climada_global.damage_at_centroid=climada_global_damage_at_centroid; % reset
+    
+    hazard_ts.max_damage = max(hazard_ts.damage,[],1); % store max damage
+    fprintf('%s: max cumulated TS damage %g\n',segment_str,full(max(hazard_ts.max_damage)));
+    
+end
+
 fprintf('%s: saving animation data in %s\n',segment_str,params.animation_data_file);
-save(params.animation_data_file,'hazard',climada_global.save_file_version); % use '-v7.3' for HDF5 format (portability)
+save(params.animation_data_file,'hazard','hazard_ts',climada_global.save_file_version); % use '-v7.3' for HDF5 format (portability)
 
 end % climada_event_damage_data_tc
