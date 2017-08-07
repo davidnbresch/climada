@@ -41,6 +41,7 @@ function measures=climada_measures_encode(measures)
 % David N. Bresch, david.bresch@gmail.com, 20150518, safety checkin
 % Lea Mueller, muellele@gmail.com, 20150902, rename to hazard_intensity_impact_b from hazard_intensity_impact
 % David N. Bresch, david.bresch@gmail.com, 20150907, keep color_RGB if provided on input
+% David N. Bresch, david.bresch@gmail.com, 20170807, all fields transposed (1xN)
 %-
 
 %global climada_global
@@ -67,12 +68,12 @@ if isfield(measures,'peril_ID')
 end
 
 if ~isfield(measures,'color_RGB')
-    measures.color_RGB=repmat([255 219 105]/255,length(measures.cost),1); % init yellow
+    measures.color_RGB=repmat([255 219 105]/255,1,length(measures.cost)); % init yellow ,20170807 transposed
 end
-if size(measures.color_RGB,1)<length(measures.cost)
+if size(measures.color_RGB,2)<length(measures.cost)
     % init missing ones
-    measures.color_RGB=[measures.color_RGB;repmat([255 219 105]/255,...
-        length(measures.cost)-size(measures.color_RGB,1),1)];
+    measures.color_RGB=[measures.color_RGB;repmat([255 219 105]/255,1,...
+        length(measures.cost)-size(measures.color_RGB,2))]; % 20170807 transposed
 end
 
 if isfield(measures,'color')
@@ -81,11 +82,11 @@ if isfield(measures,'color')
     for measure_i=1:length(measures.cost)
         try
             % color takes precendence
-            measures.color_RGB(measure_i,:)=str2num(measures.color{measure_i});
+            measures.color_RGB(:,measure_i)=str2num(measures.color{measure_i})';
         catch
             % troubles reading this particular field from .ods, since a triple)
             color_warning=color_warning+1;
-            if sum(measures.color_RGB(measure_i,:))<1 % otherwise assume user already defined meaningfully
+            if sum(measures.color_RGB(:,measure_i))<1 % otherwise assume user already defined meaningfully
                 measures.color_RGB(measure_i,:)=[255 219 105]/255; % each range 0..1
             end
         end

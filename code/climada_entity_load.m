@@ -1,4 +1,4 @@
-function [entity,entity_file]=climada_entity_load(entity)
+function [entity,entity_file]=climada_entity_load(entity,nosave_flag)
 % climada
 % NAME:
 %   climada_entity_load
@@ -6,7 +6,7 @@ function [entity,entity_file]=climada_entity_load(entity)
 %   load a previously saved entity (just to avoid typing long paths and
 %   filenames in the command window)
 % CALLING SEQUENCE:
-%   entity_out=climada_entity_load(entity)
+%   entity_out=climada_entity_load(entity,nosave_flag)
 % EXAMPLE:
 %   entity=climada_entity_load('demo_today')
 % INPUTS:
@@ -18,6 +18,10 @@ function [entity,entity_file]=climada_entity_load(entity)
 %       OR: an entity structure, in which case it is just returned (to allow
 %       calling climada_entity_load anytime, see e.g. climada_EDS_calc)
 % OPTIONAL INPUT PARAMETERS:
+%   nosave_flag: if =1, do not save back (to preserver entity as on disk,
+%       just complete fields as necessary. Useful for example to preserve
+%       entities in save versions compatible with Octave when re-loading
+%       with either MATLAB or Ocatve. Default=0 (save back)
 % OUTPUTS:
 %   entity: a struct, see climada_entity_read for details
 %   entity_file: the full filename the entity was loaded from
@@ -35,6 +39,8 @@ function [entity,entity_file]=climada_entity_load(entity)
 % David N. Bresch, david.bresch@gmail.com, 20161001, check for isentity
 % David N. Bresch, david.bresch@gmail.com, 20161120, try also to save with '-v7.3'
 % David N. Bresch, david.bresch@gmail.com, 20170503, allow also for ISO3 only
+% David N. Bresch, david.bresch@gmail.com, 20170806, nosave_flag added
+% David N. Bresch, david.bresch@gmail.com, 20170807, climada_damagefunctions_complete and climada_measures_complete added
 %-
 
 global climada_global
@@ -42,6 +48,8 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('entity','var'),entity=[];end
+if ~exist('nosave_flag','var'),nosave_flag=[];end
+if isempty(nosave_flag),nosave_flag=0;end
 
 % if already a complete hazard, return
 if isstruct(entity)
@@ -101,11 +109,15 @@ if isentity(entity)
             entity.damagefunctions.filename=entity_file;
             entity.measures.filename=entity_file;
             entity.discount.filename=entity_file;
-            save(entity_file,'entity',climada_global.save_file_version); % HDF5 format (portability)
+            if ~nosave_flag,save(entity_file,'entity',climada_global.save_file_version);end
         end
     end
 else
     entity=[];
 end % isentity(entity)
+
+% for the time being, since we now expect fields in damagefunctons and measures to be 1xN
+entity.damagefunctions = climada_damagefunctions_complete(entity.damagefunctions);
+entity.measures = climada_measures_complete(entity.measures);
 
 end % climada_entity_load

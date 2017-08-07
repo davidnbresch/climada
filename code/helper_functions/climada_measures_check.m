@@ -40,12 +40,18 @@ if isempty(measures), fprintf('No measures given.\n'), return, end
 
 % check measures_impact
 if isfield(measures, 'cost')
+    if size(measures.cost,1)>size(measures.cost,2)
+        fprintf('WARNING: Looks like fields in measures are transposed, executing climada_measures_complete ...\n')
+        measures = climada_measures_complete(measures);
+    end
     if any(isnan(measures.cost))
         fprintf('WARNING: There are NaN-values in your costs. You might want to check.\n')
     end
     if any(measures.cost<=0)
         fprintf('WARNING: Costs are 0 or negative. You might want to check.\n')
     end
+else
+    fprintf('SEVERE WARNING: cost missing, invalid measures structure\n');
 end
 if isfield(measures, 'hazard_intensity_impact_a')
     if any(isnan(measures.hazard_intensity_impact_a))

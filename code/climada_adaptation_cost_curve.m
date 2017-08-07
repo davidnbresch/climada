@@ -35,7 +35,7 @@ function [insurance_benefit,insurance_cost]=climada_adaptation_cost_curve(measur
 %   measures_impact_comparison: same as measures_impact, but for comparison
 %       (will be shown in overlay). Not prompted for, so please specify in
 %       call, or enter 'ASK' in climada_adaptation_cost_curve('','ASK')
-%       If theres is a field measures_impact_comparison.label_comparison,
+%       If there is a field measures_impact_comparison.label_comparison,
 %       it defines whether comparison wll be labeld (=1, default) or not (=0)
 %       If =0, also do not label TCR (total climate risk) for comparison
 %       These setting are usually good for decluttered plots for presentations
@@ -190,7 +190,7 @@ end
 if ~measures_impact.color_keep
     try
         cmap = climada_colormap('measures',numel(measures_impact.measures.name));
-        measures_impact.measures.color_RGB(sort_index,:) = cmap;
+        measures_impact.measures.color_RGB(:,sort_index) = cmap;
     catch
         fprintf('WARNING: automatic color assignment failed, colors as defined in measures used\n');
     end
@@ -240,10 +240,10 @@ for measure_i = 1:n_measures+add_insurance_measure
         % NOTE: this section not relevant for lecture
         area(cumulated_benefit(measure_i:measure_i+1), [insurance_cb, insurance_cb],...
             'FaceColor',[193 193 193 ]/255,'EdgeColor','w'); %grey
-    else
+    else        
         area(cumulated_benefit(measure_i:measure_i+1),...
             [sorted_cb_ratio(measure_i), sorted_cb_ratio(measure_i)],...
-            'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),'EdgeColor','w');
+            'FaceColor',measures_impact.measures.color_RGB(:,sort_index(measure_i)),'EdgeColor','w');
     end
 end
 
@@ -398,14 +398,14 @@ if ~isempty(measures_impact_comparison)
         if version_no>6 % for version 7 and later
             patch([cumulated_benefit(measure_i:measure_i+1) cumulated_benefit(measure_i+1:-1:measure_i)],... %
                 [0 0 sorted_cb_ratio(measure_i) sorted_cb_ratio(measure_i)],...
-                measures_impact.measures.color_RGB(sort_index(measure_i),:),...
+                measures_impact.measures.color_RGB(:,sort_index(measure_i)),...
                 'FaceAlpha',0.2, 'EdgeColor',[.9 .9 .9]);
         else % reverse compatibility
             % area('v6',...) creates patch objects instead of areaseries
             % objects for compatibility with MATLAB 6.5 and earlier.
             area('v6',cumulated_benefit(measure_i:measure_i+1),... %
                 [sorted_cb_ratio(measure_i),sorted_cb_ratio(measure_i)],...
-                'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),...
+                'FaceColor',measures_impact.measures.color_RGB(:,sort_index(measure_i)),...
                 'FaceAlpha',0.2,'EdgeColor',[.9 .9 .9]);
         end % version
     end

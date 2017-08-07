@@ -21,6 +21,7 @@ function measures = climada_measures_complete(measures)
 %
 %   called from: climada_measures_read
 %   next call: climada_measures_encode (recommended)
+%   see also: climada_measures_check
 % CALLING SEQUENCE:
 %   measures = climada_measures_complete(measures)
 % EXAMPLE:
@@ -34,6 +35,7 @@ function measures = climada_measures_complete(measures)
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20160918, initial
 % david.bresch@gmail.com, 20160920, fix for bug in number of measures for assets_file
+% david.bresch@gmail.com, 20170806, al field transposed, to be really ob 1xN on output
 %-
 
 %global climada_global
@@ -73,6 +75,7 @@ if ~isfield(measures,'name'),               measures.name = repmat({'undef'},siz
 if ~isfield(measures,'color'),              measures.color = repmat({'.5 .5 .5'},size(measures.MDD_impact_a));end                     
                   
 % make sure we have Nx1 arrays
+if isfield(measures,'cost'),measures.cost = clmeco_LOCAL_TRANSPOSE(measures.cost);end
 if isfield(measures,'hazard_intensity_impact_a'),measures.hazard_intensity_impact_a = clmeco_LOCAL_TRANSPOSE(measures.hazard_intensity_impact_a);end
 if isfield(measures,'hazard_intensity_impact_b'),measures.hazard_intensity_impact_b = clmeco_LOCAL_TRANSPOSE(measures.hazard_intensity_impact_b);end
 if isfield(measures,'PAA_impact_a'),measures.PAA_impact_a = clmeco_LOCAL_TRANSPOSE(measures.PAA_impact_a);end
@@ -88,9 +91,14 @@ if isfield(measures,'assets_file'),measures.assets_file = clmeco_LOCAL_TRANSPOSE
 if isfield(measures,'peril_ID'),measures.peril_ID = clmeco_LOCAL_TRANSPOSE(measures.peril_ID);end
 if isfield(measures,'name'),measures.name = clmeco_LOCAL_TRANSPOSE(measures.name);end
 if isfield(measures,'color'),measures.color = clmeco_LOCAL_TRANSPOSE(measures.color);end
-         
+if isfield(measures,'color_RGB')
+    if size(measures.color_RGB,2)==3 && size(measures.color_RGB,1)~=3
+        measures.color_RGB=measures.color_RGB';
+    end
+end
 end % climada_measures_complete
 
 function arr=clmeco_LOCAL_TRANSPOSE(arr)
-if size(arr,1)<size(arr,2),arr=arr';end
+%if size(arr,1)<size(arr,2),arr=arr';end % until 20170806
+if size(arr,1)>size(arr,2),arr=arr';end
 end % clmeco_LOCAL_TRANSPOSE

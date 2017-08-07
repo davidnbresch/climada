@@ -1,4 +1,4 @@
-function hazard=climada_hazard_load(hazard)
+function hazard=climada_hazard_load(hazard,nosave_flag)
 % climada
 % NAME:
 %   climada_hazard_load
@@ -7,15 +7,16 @@ function hazard=climada_hazard_load(hazard)
 %   filenames in the command window)
 %
 %    the code checkes wehther hazard.filename is current (if loaded from a
-%    file) and updates, if necessary
+%    file) and updates, if necessary (and saves the updated hazard back to
+%    the .mat file, see nosave_flag)
 %
 %    if loading a hazard, the code checks whether a field hazard.fraction
 %    exists. If not, it is added to the hazard and the .mat file is updated
-%    (speeds up EDS calc)
+%    (speeds up EDS calc, see again nosave_flag)
 %
 %   next call: climada_EDS_calc, climada_hazard_plot
 % CALLING SEQUENCE:
-%   hazard=climada_hazard_load(hazard)
+%   hazard=climada_hazard_load(hazard,nosave_flag)
 % EXAMPLE:
 %   hazard=climada_hazard_load(hazard)
 % INPUTS:
@@ -26,6 +27,10 @@ function hazard=climada_hazard_load(hazard)
 %       OR: a hazard structure, in which cas it is just returned (to allow
 %       calling climada_hazard_load anytime, see e.g. climada_EDS_calc)
 % OPTIONAL INPUT PARAMETERS:
+%   nosave_flag: if =1, do not save back (to preserver hazard as on disk,
+%       just complete fields as necessary. Useful for example to preserve
+%       hazards in save versions compatible with Octave when re-loading
+%       with either MATLAB or Ocatve. Default=0 (save back)
 % OUTPUTS:
 %   hazard: a struct, see e.g. climada_tc_hazard_set
 % MODIFICATION HISTORY:
@@ -39,6 +44,7 @@ function hazard=climada_hazard_load(hazard)
 % David N. Bresch, david.bresch@gmail.com, 20160916, hazards_dir used
 % David N. Bresch, david.bresch@gmail.com, 20161008, check for ishazard
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
+% David N. Bresch, david.bresch@gmail.com, 20170806, nosave_flag added
 %-
 
 global climada_global
@@ -46,6 +52,8 @@ if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 if ~exist('hazard','var'),hazard=[];end
+if ~exist('nosave_flag','var'),nosave_flag=[];end
+if isempty(nosave_flag),nosave_flag=0;end
 
 % if already a complete hazard, return
 if isstruct(hazard)
@@ -84,7 +92,7 @@ if ishazard(hazard)
     % check for valid/correct hazard.filename
     if ~strcmp(hazard_file,hazard.filename)
         hazard.filename=hazard_file;
-        if ~climada_global.octave_mode % do not save in Octave (file unreadable for MATLAB afterwards)
+        if ~climada_global.octave_mode && ~nosave_flag % do not save in Octave (file unreadable for MATLAB afterwards)
             save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
         end
     end
@@ -93,7 +101,7 @@ if ishazard(hazard)
     if ~isfield(hazard,'fraction')
         fprintf('adding hazard.fraction ...');
         hazard.fraction=spones(hazard.intensity); % fraction 100%
-        if ~climada_global.octave_mode % do not save in Octave (file unreadable for MATLAB afterwards)
+        if ~climada_global.octave_mode && ~nosave_flag% do not save in Octave (file unreadable for MATLAB afterwards)
             save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
         end
         fprintf(' done\n');

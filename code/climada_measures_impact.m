@@ -31,7 +31,7 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %   this centroid, hence are again a CRUDE PROXY. Again, the difference of
 %   the fgu and net values is more telling than the absolute numbers.
 % CALLING SEQUENCE:
-%   measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures)
+%   measures_impact=climada_measures_impact(entity,hazard,measures_impact_reference,measures,map_risk_premium,sanity_check)
 % EXAMPLE:
 %   measures_impact=climada_measures_impact % all prompted for
 %   hazard_set_file='...\climada\data\hazards\TCNA_A_Probabilistic.mat';
@@ -59,6 +59,12 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 %       measures and without any measures(fgu). Default=0 
 %       Please note that this risk premium is a proxy for a real premium,
 %       as it just consistes of the expected damage at each centroid.
+%   sanity_check: perform climada_damagefunctions_check in climada_EDS_calc
+%       to make sure all damagefunctions map correctly and ranges do cover
+%       occurring hazard intensities. Default=0
+%       If =-1, it's rather 'insane', i.e. the code does NOT re-encode
+%       even if a different hazard set is specified (speeds up for treating
+%       e.g. TS with an entity encoded to TC).
 % OUTPUTS:
 %   measures_impact: a structure with
 %       EDS(measure_i): the event damage set for each measure, last one EDS(end) for no measures
@@ -94,7 +100,8 @@ function measures_impact=climada_measures_impact(entity,hazard,measures_impact_r
 % David N. Bresch, david.bresch@gmail.com, 20160429, automatic determination of display units
 % David N. Bresch, david.bresch@gmail.com, 20160429, title_str without measures name
 % David N. Bresch, david.bresch@gmail.com, 20160606, display units synchronized if same unit_name
-% David N. Bresch, david.bresch@gmail.com, 20170416, comprehensive chech for encoded entity
+% David N. Bresch, david.bresch@gmail.com, 20170416, comprehensive check for encoded entity
+% David N. Bresch, david.bresch@gmail.com, 201700806, climada_measures_complete added
 %-
 
 global climada_global
@@ -187,14 +194,18 @@ if ~isstruct(measures)
     end
 end
 
+measures=climada_measures_complete(measures); % 20170806 added for safety
+
 % check for correct encoding to the hazard
-if ~isfield(entity.assets,'hazard')
+if ~isfield(entity.assets,'centroid_index')
     force_re_encode=1; % entity not encoded yet
-elseif ~isfield(entity.assets.hazard,'filename')
+elseif ~isfield(entity.assets,'hazard') && sanity_check>=0
+    force_re_encode=1; % entity not encoded yet
+elseif ~isfield(entity.assets.hazard,'filename') && sanity_check>=0
     force_re_encode=1; % entity not encoded yet
 else
     % assets have been encoded, check whether for same hazard
-    if ~strcmp(entity.assets.hazard.filename,hazard.filename)
+    if ~strcmp(entity.assets.hazard.filename,hazard.filename) && sanity_check>=0
         % not the same hazard set, force re-encoding to be on the safe side
         % (it's likely that the climate scenario hazard event set is valid at
         % the exact same centroids, but encoding is much faster than any later
@@ -204,6 +215,7 @@ else
         force_re_encode=0; % entity encoded
     end
 end
+if sanity_check==-1,sanity_check=0;end % as used for encoding, NOT for damagefunctions check
 
 if force_re_encode, entity = climada_assets_encode(entity,hazard); end
 
@@ -211,15 +223,26 @@ if force_re_encode, entity = climada_assets_encode(entity,hazard); end
 % -----------------------------------------------------------
 
 % make (backup) copies of the original data in entity:
-entity_orig_damagefunctions = entity.damagefunctions;
+entity.damagefunctions      = climada_damagefunctions_complete(entity.damagefunctions); % 20170807 added for safety
+entity_orig_damagefunctions = entity.damagefunctions; % for control run
+
 orig_assets_DamageFunID     = entity.assets.DamageFunID;
 orig_assets = entity.assets; % backup
 
 if isfield(measures,'damagefunctions') % append measure's vulnerabilities
-    entity.damagefunctions.DamageFunID = measures.damagefunctions.DamageFunID;
-    entity.damagefunctions.Intensity   = measures.damagefunctions.Intensity;
-    entity.damagefunctions.MDD         = measures.damagefunctions.MDD;
-    entity.damagefunctions.PAA         = measures.damagefunctions.PAA;
+    measures.damagefunctions = climada_damagefunctions_complete(measures.damagefunctions); % 20170807 added for safety
+
+    fprintf('using measures.damagefunctions (not entity.damagefunctions)\n');
+    if length(measures.damagefunctions.DamageFunID)<length(entity.damagefunctions.DamageFunID)
+        fprintf('WARNING: less entries in measures.damagefunctions than entity.damagefunctions\n');
+    end
+    entity.damagefunctions = measures.damagefunctions;
+    
+    % OLD
+    %entity.damagefunctions.DamageFunID = measures.damagefunctions.DamageFunID;
+    %entity.damagefunctions.Intensity   = measures.damagefunctions.Intensity;
+    %entity.damagefunctions.MDD         = measures.damagefunctions.MDD;
+    %entity.damagefunctions.PAA         = measures.damagefunctions.PAA;
     
     %entity.damagefunctions.DamageFunID = [entity.damagefunctions.DamageFunID,measures.damagefunctions.DamageFunID];
     %entity.damagefunctions.Intensity   = [entity.damagefunctions.Intensity,measures.damagefunctions.Intensity];
@@ -301,8 +324,10 @@ for measure_i = 1:n_measures+1 % last with no measures
         if ~isempty(assets)
             entity.assets = climada_assets_encode(assets,hazard);
             assets_switched = 1;
-            %save entity.assets so that it can be used in climada_EDS_ED_report
-            if ~isempty(strfind(entity.assets.filename,'.mat')),save(entity.assets.filename,'entity'),end
+            % save entity.assets so that it can be used in climada_EDS_ED_report
+            % 20170807, switched off, as FAR TOO DANGEROUS (seems to have
+            % been introduced by somebody in San Salvador study)
+            %if ~isempty(strfind(entity.assets.filename,'.mat')),save(entity.assets.filename,'entity'),end
         end
         
         for map_i = 1:length(measures.damagefunctions_mapping(measure_i).map_from)

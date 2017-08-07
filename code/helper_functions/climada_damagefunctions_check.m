@@ -27,6 +27,7 @@ function entity_out = climada_damagefunctions_check(entity,hazard,silent_mode)
 %   entity with enlarged entity.damagefunctions fields (.Intentiy, .MDD, .PAA, etc.)
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20150907, init
+% david.bresch@gmail.com, 20170807, climada_damagefunctions_complete added
 %-
 
 global climada_global
@@ -101,6 +102,12 @@ else
     is_intensity_unit = entity.damagefunctions.Intensity*0+1;
 end
 is_valid = logical(is_peril.* is_intensity_unit);
+
+if size(entity.damagefunctions.DamageFunID,1)>size(entity.damagefunctions.DamageFunID,2)
+    fprintf('WARNING: Looks like fields in damagefunctions are transposed, executing climada_damagefunctions_complete ...\n')
+    entity.damagefunctions = climada_damagefunctions_complete(entity.damagefunctions);
+end
+
 
 DamageFunID_all = unique(entity.damagefunctions.DamageFunID);
 [DamageFunID_valid,is_unique,position_valid_damagefun] = unique(entity.damagefunctions.DamageFunID(is_valid));

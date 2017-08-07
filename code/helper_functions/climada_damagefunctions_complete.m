@@ -27,6 +27,7 @@ function damagefunctions = climada_damagefunctions_complete(damagefunctions)
 %    damagefunctions: same as input, with fields completed
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20160918, initial
+% david.bresch@gmail.com, 20170807, fields transposed, see cldaco_LOCAL_TRANSPOSE
 %-
 
 %global climada_global
@@ -65,5 +66,6 @@ if isfield(damagefunctions,'datenum'),    damagefunctions.datenum     = cldaco_L
 end % climada_damagefunctions_complete
 
 function arr=cldaco_LOCAL_TRANSPOSE(arr)
-if size(arr,1)<size(arr,2),arr=arr';end
+%if size(arr,1)<size(arr,2),arr=arr';end % until 20170807
+if size(arr,1)>size(arr,2),arr=arr';end
 end % cldaco_LOCAL_TRANSPOSE

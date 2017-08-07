@@ -22,10 +22,10 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   next (likely): climada_EDS_DFC or climada_EDS2DFC, climada_EDS_DFC_report
 %   See also climada_EDS_calc_parfor for a parallelized version (beta)
 % CALLING SEQUENCE:
-%   EDS=climada_EDS_calc(entity,hazard,annotation_name)
+%   EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode,sanity_check)
 % EXAMPLE:
 %   EDS=climada_EDS_calc(climada_assets_encode(climada_assets_read))
-%   EDS=climada_EDS_calc('demo_today','TCNA_today_small')
+%   EDS=climada_EDS_calc('demo_today','TCNA_today_small','TC today')
 % INPUTS:
 %   entity: an entity structure or an entity .mat file, see climada_assets_encode(climada_assets_read)
 %       If a file and no path provided, default path ../data/entities is
@@ -42,12 +42,15 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   annotation_name: a free text that will appear e.g. on plots for
 %       annotation, default is the name of the hazard set
 %   force_re_encode: if =1, force re-encoding (either to be on the safe
-%       side, or if the entity has been encoded t a different hazard event
+%       side, or if the entity has been encoded to a different hazard event
 %       set). Default=0
 %   silent_mode: suppress any output to stdout (useful i.e. if called many times)
 %       default=0 (output to stdout), =1: no output and no waitbar at all
 %       command-line progress output is still shown with silent_mode=1, but
 %       suppressed if =2. 
+%   sanity_check: perform climada_damagefunctions_check to make sure all
+%       damagefunctions map correctly and ranges do cover occurring hazard
+%       intensities. Default=0
 % OUTPUTS:
 %   EDS, the event damage set with:
 %       ED: the total expected annual damage (=EDS.damage*EDS.frequency')
@@ -194,7 +197,7 @@ if sum(min(entity.assets.Cover-(entity.assets.Value),0))<0
 end
 
 if sanity_check ~=0
-    entity = climada_damagefunctions_check(entity,hazard); %silent_mode as default
+    entity = climada_damagefunctions_check(entity,hazard); % silent_mode as default
 end
 
 % initialize the event damage set (EDS)
