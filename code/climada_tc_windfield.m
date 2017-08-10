@@ -1,4 +1,4 @@
-function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
+function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~,treat_extratropical_transition)
 % TC windfield calculation
 % MODULE:
 %   core
@@ -51,7 +51,13 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 %       max_wind_at_bullseye in code).
 %       Note: if length(tc_track.lon)=2 (i.e. two nodes) and
 %       silent_mode=-1, only use first node in order to return one single
-%       step windfield.  
+%       step windfield.
+%   treat_extratropical_transition: treat the extratropical transition
+%       celerity exceeding vmax problem an issue e.g. for Northern US, where
+%       this should be set=1 (in climada_init_vars, default=0, since
+%       non-standard iro Holland). Default=0. In the past, was implemented
+%       via climada_global, i.e.
+%       treat_extratropical_transition=climada_global.tc.extratropical_transition; 
 % OUTPUTS:
 %   gust: the windfield [m/s] at all centroids, NOT sparse for speedup
 %       i.e. convert like hazard.intensity()=sparse(res.gust)...
@@ -66,18 +72,20 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~)
 % David N. Bresch, david.bresch@gmail.com, 20161225, Celerity fixed (dipole)
 % David N. Bresch, david.bresch@gmail.com, 20161226, further speedup, all to arrays, no struct in main loop
 % David N. Bresch, david.bresch@gmail.com, 20170103, special case silent_mode=-1 for single node
-% David N. Bresch, david.bresch@gmail.com, 20170216, CALLING SEQUENCE correct 
+% David N. Bresch, david.bresch@gmail.com, 20170216, CALLING SEQUENCE correct
+% David N. Bresch, david.bresch@gmail.com, 20170810, CALLING SEQUENCE correct
 %-
 
 gust = []; % init output
 
-global climada_global
+%global climada_global
 
 % for SPEEDUP, we assume init_vars to have been executed
 %if ~climada_init_vars, return; end
 if ~exist('tc_track' ,'var'), tc_track       = []; end
 if ~exist('centroids','var'), centroids      = []; end
 if ~exist('silent_mode','var'), silent_mode  =  1; end
+if ~exist('treat_extratropical_transition','var'), treat_extratropical_transition  = 0; end
 
 % PARAMETERS
 %
@@ -91,7 +99,7 @@ wind_threshold=15; % in m/s, default=0 until 20150124
 % treat the extratropical transition celerity exceeding vmax problem
 % an issue e.g. for Northern US, where this should be set=1
 % (in climada_init_vars, default=0, since non-standard iro Holland)
-treat_extratropical_transition=climada_global.tc.extratropical_transition;
+%treat_extratropical_transition=climada_global.tc.extratropical_transition;
 %
 % for speed, up only process centroids within a coastal range (on/offshore)
 coastal_range_km=375; % in km, 300 until 20150124, 5*75=375 (see D<5*R below)
@@ -139,7 +147,7 @@ cos_tc_track_lat  = cos(tc_track.lat/180*pi); % calculate once for speedup
 diff_tc_track_lon = diff(tc_track.lon);
 diff_tc_track_lat = diff(tc_track.lat);
 if ~isfield(tc_track,'Celerity') % forward speed (=celerity, km/h)
-    % calculate degree distance between nodes  
+    % calculate degree distance between nodes
     ddx                   = diff_tc_track_lon.*cos_tc_track_lat(2:end);
     dd                    = sqrt(diff_tc_track_lat.^2+ddx.^2)*111.1; % approx. conversion into km
     tc_track.Celerity     = dd./tc_track.TimeStep(1:length(dd)); % avoid troubles with TimeStep sometimes being one longer
@@ -155,7 +163,7 @@ node_len=sqrt(node_dx.^2+node_dy.^2); % length of track forward vector
 % x2=x* cos(a)+y*sin(a), with a=pi/2,cos(a)=0,sin(a)=1
 % y2=x*-sin(a)+Y*cos(a), therefore
 node_tmp=node_dx;node_dx=node_dy;node_dy=-node_tmp;
-        
+
 % keep only windy nodes
 pos = find(tc_track.MaxSustainedWind > (wind_threshold*3.6)); % cut-off in km/h
 if length(tc_track.lon)==2 && silent_mode==-1,pos=pos(1:end-1);end % ignore last node if single step

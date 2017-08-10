@@ -1,4 +1,4 @@
-function [measures, measures_impact] = climada_measures_read(measures_filename)
+function [measures, measures_impact] = climada_measures_read(measures_filename,entity_damagefunctions_filename)
 % climada measures read import
 % NAME:
 %   climada_measures_read
@@ -20,6 +20,10 @@ function [measures, measures_impact] = climada_measures_read(measures_filename)
 %   measures_filename: the filename of the Excel file with the measures
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
+%   entity_damagefunctions_filename: the filename (if possible with path) of damagefunctions
+%       already in entity, if the same as the filename for measures, do NOT
+%       read damagefunctions again. If not passed, measures do read
+%       damagefunctions tab (if it exists) of the file.
 % OUTPUTS:
 %   measures: a structure, with the measures, including .regional_scope if
 %   assets tab found wich specifies the regional_scope of a measure
@@ -37,6 +41,7 @@ function [measures, measures_impact] = climada_measures_read(measures_filename)
 % Lea Mueller, muellele@gmail.com, 20160523, complete extension, if missing
 % Lea Mueller, muellele@gmail.com, 20160523, add measures_impact, invoke climada_measures_impact_read
 % David Bresch, david.bresch@gmail.com, 20160917, re-calling encode disabled
+% David Bresch, david.bresch@gmail.com, 20170810, entity_damagefunctions_filename added
 %-
 
 global climada_global
@@ -48,6 +53,7 @@ measures_impact = [];
 
 % poor man's version to check arguments
 if ~exist('measures_filename','var'),measures_filename=[];end
+if ~exist('entity_damagefunctions_filename','var'),entity_damagefunctions_filename='';end
 
 % PARAMETERS
 %
@@ -116,12 +122,14 @@ if ~isfield(measures,'cost')
     return
 end
     
-measures.damagefunctions = climada_damagefunctions_read(measures_filename);
-fprintf('Special damagefunctions for measures found\n')
-if isempty(measures.damagefunctions)
-    measures = rmfield(measures, 'damagefunctions');
-else
-    measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID'); % delete NaNs if there are
+if ~strcmp(entity_damagefunctions_filename,measures.filename)
+    measures.damagefunctions = climada_damagefunctions_read(measures_filename);
+    fprintf('Special damagefunctions for measures found (measures.damagefunctions filled in)\n')
+    if isempty(measures.damagefunctions)
+        measures = rmfield(measures, 'damagefunctions');
+    else
+        measures.damagefunctions = climada_entity_check(measures.damagefunctions,'DamageFunID'); % delete NaNs if there are
+    end
 end
 
 % rename vuln_map, since otherwise climada_measures_encode does not treat it
@@ -142,8 +150,9 @@ measures = climada_measures_complete(measures);
 % encode measures
 measures = climada_measures_encode(measures);
 
-% sanity check for measures
-measures = climada_measures_check(measures); % 20160917, return value added
+% % sanity check for measures
+% measures = climada_measures_check(measures); % 20160917, return value added
+% 'checked'
 
 % create measures_impact struct directly if "benefit" per measure is given. 
 % shortcut instead of calculating measures_impact with climada_measures_impact

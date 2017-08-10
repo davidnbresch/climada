@@ -290,6 +290,9 @@ switch peril_ID
         
     case 'colorbrewer_diverging' % from http://colorbrewer2.org/#type=sequential&scheme=OrRd&n=4
         cmap=[230,97,1;253,184,99;178,171,210;94,60,153];
+        
+    otherwise
+        fprintf('WARNING %s not defined in %s\n',peril_ID,mfilename)
 end
 
 if only_one_step

@@ -107,6 +107,7 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,verbo
 % david.bresch@gmail.com, 20170202, noparfor -> climada_global.parfor
 % david.bresch@gmail.com, 20170418, climada_global.save_file_version
 % david.bresch@gmail.com, 20170524, climada_progress2stdout
+% david.bresch@gmail.com, 20170810, extratrop transition passed to climada_tc_windfield, see last parameter
 %-
 
 hazard=[]; % init
@@ -288,12 +289,12 @@ t0=clock;
 
 if climada_global.parfor
     parfor track_i=1:n_tracks
-        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0,1); % last ,1); added 20170810
     end %track_i
 else
     if verbose_mode,climada_progress2stdout;end % % init, see terminate below
     for track_i=1:n_tracks
-        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0);
+        intensity(track_i,:) = climada_tc_windfield(tc_track(track_i),centroids,0,1,0,1); % last ,1); added 20170810
         climada_progress2stdout(track_i,n_tracks,100,'tracks'); % update
     end %track_i
     if verbose_mode,climada_progress2stdout(0);end % terminate

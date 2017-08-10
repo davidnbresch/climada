@@ -163,6 +163,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard,
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir used
 % David N. Bresch, david.bresch@gmail.com, 20160919, reading tab names added
 % David N. Bresch, david.bresch@gmail.com, 20160920, try .xlsx if .xls not found, documentation updated
+% David N. Bresch, david.bresch@gmail.com, 20170910, damagefunctions filename passed to climada_measures_read
 %-
 
 global climada_global
@@ -226,7 +227,8 @@ else
     entity.damagefunctions = climada_damagefunctions_read(entity_filename);
     
     % read measures
-    entity.measures = climada_measures_read(entity_filename);
+    if ~isfield(entity.damagefunctions,'filename'),entity.damagefunctions.filename='';end
+    entity.measures = climada_measures_read(entity_filename,entity.damagefunctions.filename);
     
     % read discount sheet
     entity.discount = climada_discount_read(entity_filename);
