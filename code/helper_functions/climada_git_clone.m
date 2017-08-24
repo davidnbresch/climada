@@ -31,6 +31,7 @@ function climada_git_clone(TEST_mode)
 % david.bresch@gmail.com, 20161013, initial
 % david.bresch@gmail.com, 20161109, most modules switched on
 % david.bresch@gmail.com, 20170106, climada_data_check
+% david.bresch@gmail.com, 20170824, fallback for Windows with no LD_LIBRARY_PATH
 %-
 
 global climada_global
@@ -88,8 +89,8 @@ for module_i=1:length(module_list)
         fprintf('%s already cloned, skipped\n',module_dir);
     else
         fprintf('cloning %s to >> %s\n',module_name,module_dir);
-        %system_cmd=['git clone ' module_list{module_i}];
         system_cmd=['LD_LIBRARY_PATH="" git clone ' module_list{module_i}];  % fix to avoid using Matlab-Libs for git command
+        system_cmd2=['git clone ' module_list{module_i}];  % no Libs fix for Windows
         if TEST_mode
             fprintf('TEST: %s\n',system_cmd);
         else
@@ -97,8 +98,12 @@ for module_i=1:length(module_list)
             [status,result] = system(system_cmd);
             if status>0 % =0 mean success
                 fprintf('ERROR: %s\n',result)
-                fprintf('aborted\n')
-                return
+                [status,result] = system(system_cmd2);
+                if status>0 % =0 mean success
+                    fprintf('ERROR: %s\n',result)
+                    fprintf('aborted\n')
+                    return
+                end
             end
             % move to the shorted folder name
             [SUCCESS,MESSAGE] = movefile(orig_module_dir,module_dir);

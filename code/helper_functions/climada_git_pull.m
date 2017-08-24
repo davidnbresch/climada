@@ -42,6 +42,7 @@ function climada_git_pull(TEST_mode)
 % david.bresch@gmail.com, 20161013, note about error on cluster added
 % david.bresch@gmail.com, 20170106, using simple system command, not git.m (had some troubles e.g. on cluster)
 % david.bresch@gmail.com, 20170523, try..catch in module update
+% david.bresch@gmail.com, 20170824, trial attempt to fix issue for machines with no LD_LIBRARY_PATH
 %-
 
 global climada_global
@@ -108,6 +109,14 @@ ok=0; % init output
 ok=~status;
 if status>0 % =0 mean success
     fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n
+    % try again (might work on some devices with git installed but not UNIX/LINUX) 20170824
+    [status,result]=system('git pull'); % fix to avoid using Matlab-Libs for git command
+    ok=~status;
+    if status>0 % =0 mean success
+        fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n
+    else
+        fprintf('%s',result); % seems to contain EoL, hence no \n
+    end
 else
     fprintf('%s',result); % seems to contain EoL, hence no \n
 end
