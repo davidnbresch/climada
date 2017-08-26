@@ -35,8 +35,7 @@ function [res,params]=climada_hazard_plot_nogrid(hazard,event_i,markersize,param
 %    cbar_ylabel: label for the color bar, default 'Value'
 %       if empty, indicate entity value locations by black circles, e.g. for
 %       climada_hazard_plot(hazard);hold on;climada_entity_plot(entity,1,0,[],'')
-%    title_str: the title of the plot, if empty, use contents of
-%       entity.assets to define it
+%    title_str: the title of the plot, if empty, use contents of hazard to define it
 %    blue_ocean: plot ocean bliue, if =1 (default=0, since faster)
 %    intensity_threshold: the intensity threshold below which we do not plot
 %       intensities, default=0.
@@ -47,6 +46,7 @@ function [res,params]=climada_hazard_plot_nogrid(hazard,event_i,markersize,param
 %    entity: if provided, do not show 'biggest' hazard in terms of itensity,
 %       but regarding resulting damage based on entity
 %       Only makes sense for event_i<0, as it shows the i-th largest damage
+%    figure_scale: if =1, plot figure scale (default), =0 not
 % OUTPUTS:
 %   creates a figure
 %   res: a structure with the core data, i.e. lon,lat and value as shown
@@ -77,6 +77,7 @@ if ~isfield(params,'intensity_threshold'),params.intensity_threshold=[];end
 if ~isfield(params,'label'),          params.label=[];end
 if ~isfield(params,'entity'),         params.entity=[];end
 if ~isfield(params,'max_value'),      params.max_value=[];end
+if ~isfield(params,'figure_scale'),   params.figure_scale=[];end
 
 % PARAMETERS
 %
@@ -95,6 +96,7 @@ if isempty(params.plot_centroids),  params.plot_centroids=0;end
 if isempty(params.cbar_ylabel),     params.cbar_ylabel='Intensity';end
 if isempty(params.blue_ocean),      params.blue_ocean=0;end
 if isempty(params.intensity_threshold),params.intensity_threshold=0;end
+if isempty(params.figure_scale),    params.figure_scale=1;end
 
 if strcmpi(hazard,'params'),res=params;return;end % special case, return the full params structure
 
@@ -204,7 +206,7 @@ if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
     
     if params.plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
     
-    if ~climada_global.octave_mode,climada_figure_scale_add;end
+    if ~climada_global.octave_mode && params.figure_scale,climada_figure_scale_add;end
     set(gcf,'Color',[1 1 1])
     hold off
     drawnow
