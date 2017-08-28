@@ -21,6 +21,7 @@ function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi
 % EXAMPLE:
 %   damage=climada_tc_event_damage_ens('w_pacific','2015','KOPPU',5)
 %   [damage,track_filename]=climada_tc_event_damage_ens('','NONE','NONE',5) % prompt for track file
+%   climada_tc_event_damage_ens('atlantic','2017','HARVEY',5,'United States'); % no GUI at all
 % INPUTS:
 %   UNISYS_regi: the UNISYS region, i.e. 'atlantic','e_pacific','w_pacific'
 %       's_pacific','s_indian' or 'n_indian'
@@ -40,7 +41,8 @@ function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi
 %       UNISYS and processed
 %   n_tracks: number of tracks (incl original one), default=100
 %   auto_sel_assets: whether the code automatically selects assets 
-%       (=1, default) or not (=0)
+%       (=1) or not (=0, default)
+%       OR: a valid country name, exact spelling as in climada_country_name('SINGLE')
 %   call_from_GUI: switch to direct to the correct axes
 %       if empty, not called from GUI, otherwise contains the axes handles
 % OPTIONAL INPUT PARAMETERS:
@@ -55,6 +57,7 @@ function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi
 % David N. Bresch, david.bresch@gmail.com, 20151021, special case for no web access added
 % David N. Bresch, david.bresch@gmail.com, 20161009, massive speedup using only assets in vicinity of track
 % David N. Bresch, david.bresch@gmail.com, 20161009, auto_sel_assets added
+% David N. Bresch, david.bresch@gmail.com, 20170828, explicit country name in auto_sel_assets added
 %-
 
 damage=[];track_filename='';err_msg=''; % init output
@@ -191,17 +194,22 @@ end
 % resolve issue with +/-180 at dateline
 tc_track.lon=climada_dateline_resolve(tc_track.lon);
 
-% automatically detec country/ies
-country_list={};
-shapes=climada_shaperead(climada_global.map_border_file); % get country shapes
-for shape_i = 1:length(shapes)
-    in = inpolygon(tc_track.lon,tc_track.lat,shapes(shape_i).X,shapes(shape_i).Y);
-    if sum(in)>0
-        country_list{end+1}=shapes(shape_i).NAME;
-    end
-end % shape_i
-
-if ~auto_sel_assets,country_list='';end % force prompting
+if ischar(auto_sel_assets)
+    country_list{1}=auto_sel_assets;
+elseif auto_sel_assets
+    % automatically detect country/ies
+    country_list={};
+    shapes=climada_shaperead(climada_global.map_border_file); % get country shapes
+    for shape_i = 1:length(shapes)
+        %in = inpolygon(tc_track.lon,tc_track.lat,shapes(shape_i).X,shapes(shape_i).Y); % until 20170828
+        in = climada_inpolygon(tc_track.lon,tc_track.lat,shapes(shape_i).X,shapes(shape_i).Y);
+        if sum(in)>0
+            country_list{end+1}=shapes(shape_i).NAME;
+        end
+    end % shape_i
+else
+    country_list=''; % force prompting
+end
 
 if isempty(country_list) % prompt for country, as no direct hit
     country_list{1}=climada_country_name('SINGLE'); % obtain country
@@ -226,34 +234,38 @@ for country_i=1:length(country_list)
     tc_tracks=climada_tc_random_walk(tc_track,n_tracks-1,0.1,pi/30); % /15
     
     % get entity
-    entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_entity'];
+    %entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_entity']; % until 20170828
+    entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_10x10']; % since 20170828
     entity_file=[climada_global.entities_dir filesep entity_filename '.mat'];
     
     if exist(entity_file,'file')
         entity=climada_entity_load(entity_file);
     else
         % try to create the entity
-        if exist('climada_create_GDP_entity','file')
-            % invoke the country_risk module to generate the entity
-            fprintf('*** creating %s (takes a moment)\n\n',entity_filename)
-            if ~isempty(call_from_GUI)
-                cla(call_from_GUI.axes_left)
-                axes(call_from_GUI.axes_left);
-                text(0.1,0.5,'creating assets (takes a moment) ...','FontSize',FontSize);drawnow
-            end
-            [~,entity] = climada_create_GDP_entity(country_name,[],0,1);
-            save(entity_file,'entity');
-            climada_entity_value_GDP_adjust(entity_file); % assets based on GDP
-            entity=climada_entity_load(entity_file);
-            fprintf('%s created\n\n',entity_filename)
-        else
-            fprintf(['%s not found. Please download ' ...
-                '<a href="https://github.com/davidnbresch/climada_module_country_risk">' ...
-                'climada_module_country_risk</a> from Github in order to create it.\n'],entity_filename)
-            err_msg=sprintf('Please create %s entity first, see command line',country_name);
-            return
+        %if exist('climada_create_GDP_entity','file')
+        % until 20170828: invoke the country_risk module to generate the entity
+        % since 20170828: use core climada (10x10km)
+        fprintf('*** creating %s (takes a moment)\n\n',entity_filename)
+        if ~isempty(call_from_GUI)
+            cla(call_from_GUI.axes_left)
+            axes(call_from_GUI.axes_left);
+            text(0.1,0.5,' creating assets (takes a moment) ...','FontSize',FontSize);drawnow
         end
+        entity=climada_nightlight_entity(country_name); % 20170828, use core climada
+        % [~,entity] = climada_create_GDP_entity(country_name,[],0,1);
+        % save(entity_file,'entity');
+        % climada_entity_value_GDP_adjust(entity_file); % assets based on GDP
+        % entity=climada_entity_load(entity_file);
+        fprintf('%s created\n\n',entity_filename)
+        %else
+        %    fprintf(['%s not found. Please download ' ...
+        %        '<a href="https://github.com/davidnbresch/climada_module_country_risk">' ...
+        %        'climada_module_country_risk</a> from Github in order to create it.\n'],entity_filename)
+        %    err_msg=sprintf('Please create %s entity first, see command line',country_name);
+        %    return
+        %end
     end % exist(entity_file,'file')
+    fprintf('estimate based on assets from %s\n',entity_file);
     
     % resolve issue with +/-180 at dateline
     entity.assets.lon=climada_dateline_resolve(entity.assets.lon);
@@ -292,20 +304,21 @@ for country_i=1:length(country_list)
     Value_unit=climada_global.Value_unit;
     if isfield(entity.assets,'Value_unit'),Value_unit=entity.assets.Value_unit{1};end
     
-    climada_entity_plot(entity,4); hold on
+    % plot assets and tracks
+    % ----------------------
+    params.figure_scale=0;climada_entity_plot(entity,4,params);hold on
     plot(tc_track.lon,tc_track.lat,'-r')
     plot(tc_track.lon(logical(tc_track.forecast)),tc_track.lat(logical(tc_track.forecast)),'xr')
-    
     for track_i=1:length(tc_tracks),plot(tc_tracks(track_i).lon,tc_tracks(track_i).lat,'-b');end
     plot(tc_tracks(1).lon,tc_tracks(1).lat,'-r','LineWidth',2); % orig track
     axis off
     ylabel('');
-    xlabel('red crosses: forecast timesteps, blue:ensemble members','FontSize',8);
-    title(country_name,'FontSize',FontSize,'FontWeight','normal');drawnow
+    xlabel('red: forecast timesteps, blue: ensemble members','FontSize',8);
+    title(country_name,'FontSize',FontSize,'FontWeight','normal');
     
     if isempty(call_from_GUI)
-        figure('Name',['TC ensemble ' country_name],'Position',[199 55 1076 618],'Color',[1 1 1]);
         subplot(1,2,2)
+        axis off
     else
         cla(call_from_GUI.axes_right)
         axes(call_from_GUI.axes_right);
@@ -320,10 +333,9 @@ for country_i=1:length(country_list)
     EDS=climada_EDS_calc(entity,hazard);
     damage=EDS.damage;
     
-    cla
     if sum(damage)>0
         [counts,X]=hist(damage); % get info
-        hold off;bar(X,counts);hold on;
+        cla;bar(X,counts);hold on;
         set(gca,'FontSize',FontSize),xlabel(['damage [' Value_unit ']'],'FontSize',FontSize),ylabel('event count','FontSize',FontSize)
         plot(damage(1),0,'xr');xlim([0,max(damage)]);y_lim=ylim;
         ddamage=(max(damage)-min(damage))/(2*length(counts));
@@ -345,16 +357,17 @@ for country_i=1:length(country_list)
     end
     tc_track_name=lower(tc_track.name);
     title([[upper(tc_track_name(1)) tc_track_name(2:end)]  ' @ ' country_name],'FontSize',FontSize,'FontWeight','normal');
-    drawnow
     
-    if isempty(call_from_GUI)
-        subplot(1,2,1);hold on;
-    else
-        axes(call_from_GUI.axes_left);
-        hold on
+    if ~climada_global.octave_mode
+        if isempty(call_from_GUI)
+            subplot(1,2,1); % does clear the axes in Octave
+        else
+            axes(call_from_GUI.axes_left);
+        end
+        hold on;plot(tc_tracks(track_i).lon,tc_tracks(track_i).lat,'-b','LineWidth',2); % max damage track
     end
-    plot(tc_tracks(track_i).lon,tc_tracks(track_i).lat,'-b','LineWidth',2); % max damage track
     
+    drawnow
     call_from_GUI=[]; % second plot in new figure
     
 end % country_i

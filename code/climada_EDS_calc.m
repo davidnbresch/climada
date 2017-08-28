@@ -121,6 +121,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20170626, entity.assets.Value_unit used for EDS.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20170715, small fix if no valid asset for EDS.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20170721, currency_unit added
+% David N. Bresch, david.bresch@gmail.com, 20170828, try/catch in full_unique for Octave compatibility
 %-
 
 global climada_global
@@ -266,7 +267,11 @@ full_unique=[];
 for i = 1:length(DamageFunID)
     damfun_pos    = find(entity_damagefunctions_DamageFunID == DamageFunID(i));
     [~,is_unique] = unique(entity_damagefunctions_Intensity(damfun_pos));
-    full_unique   = [full_unique;is_unique+damfun_pos(1)-1];
+    try
+        full_unique   = [full_unique;is_unique+damfun_pos(1)-1]; % MATLAB
+    catch
+        full_unique   = [full_unique is_unique+damfun_pos(1)-1]; % Octave
+    end
 end % i
 full_unique=sort(full_unique);
 entity_damagefunctions_DamageFunID=entity_damagefunctions_DamageFunID(full_unique);
@@ -411,7 +416,7 @@ else % CLIMADA_OPT
 end % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);
-msgstr    = sprintf('calculation took %3.1f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
+msgstr    = sprintf('calculation took %3.2f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
 %fprintf('%s\n',msgstr);
 EDS.comment         = msgstr;
 % since a hazard event set might have been created on another Machine, make

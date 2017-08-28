@@ -32,6 +32,7 @@ function AEV = climada_adaptation_event_view(measures_impact,comparison_return_p
 % David N. Bresch, david.bresch@gmail.com, 20150402, compatibility with version 8ff (R2014...)
 % David N. Bresch, david.bresch@gmail.com, 20151021, checked to work for index insurance, too
 % Lea Mueller, muellele@gmail.com, 20151125, correct 'FaceColor' issue for version 8
+% David N. Bresch, david.bresch@gmail.com, 20170828, measures_impact.measures.color_RGB transposed
 %-
 
 global climada_global
@@ -135,7 +136,7 @@ for return_period_i=1:length(comparison_return_periods)
             h=area([x1 x2],Y,'BaseValue',0,'EdgeColor','none');hold on
         end % measure_i
         for measure_i=1:n_measures
-            color = measures_impact.measures.color_RGB(sort_index(measure_i),:);
+            color = measures_impact.measures.color_RGB(:,sort_index(measure_i)); % 20170828, transposed
             set(h(measure_i),'FaceColor',color)
             % this does not work for version 8
             %h(measure_i).FaceColor = measures_impact.measures.color_RGB(sort_index(measure_i),:);

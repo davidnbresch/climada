@@ -52,6 +52,7 @@ function params=climada_entity_plot(entity,markersize,params)
 %    plot_population: if =1, plot Population instead of Values, otherwise
 %       same as for Values (default=0, plot Value(s))
 %    blue_ocean: plot ocean bliue, if =1 (default=0, since faster)
+%    figure_scale: if =1, plot geographical scale, =0 not (default)
 % OUTPUTS:
 %   params: the params structure, filled wit defaults, see
 %   a figure
@@ -94,6 +95,7 @@ if ~isfield(params,'title_str'),      params.title_str='';end
 if ~isfield(params,'plot_log_value'), params.plot_log_value=[];end
 if ~isfield(params,'plot_population'),params.plot_population=[];end
 if ~isfield(params,'blue_ocean'),     params.blue_ocean=[];end
+if ~isfield(params,'figure_scale'),   params.figure_scale=[];end
 
 % PARAMETERS
 %
@@ -110,6 +112,7 @@ if ~isempty(params.year),params.year_i=-params.year;end % year does override yea
 if isempty(params.plot_log_value),  params.plot_log_value=0;end
 if isempty(params.plot_population), params.plot_population=0;end
 if isempty(params.blue_ocean),      params.blue_ocean=0;end
+if isempty(params.figure_scale),    params.figure_scale=1;end
 
 if strcmpi(entity,'params'),return;end % special case, return the full params structure
 
@@ -236,7 +239,7 @@ set(gca,'xlim',x_range,'ylim',y_range)
 if params.plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
 
 hold on
-climada_figure_scale_add
+if params.figure_scale,climada_figure_scale_add;end
 hold off
 drawnow
 
