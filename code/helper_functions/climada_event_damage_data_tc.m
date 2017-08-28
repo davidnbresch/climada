@@ -262,6 +262,7 @@ if ~exist('segment_i','var'),     segment_i=[];end
 % check for some parameter fields we need
 if ~isfield(params,'animation_data_file'),params.animation_data_file='';end
 if ~isfield(params,'add_surge'),          params.add_surge=[];end
+if ~isfield(params,'add_rain'),           params.add_rain=[];end
 if ~isfield(params,'focus_region'),       params.focus_region=[];end
 if ~isfield(params,'show_footprint'),     params.show_footprint=[];end
 if ~isfield(params,'tc_track_timestep'),  params.tc_track_timestep=[];end
