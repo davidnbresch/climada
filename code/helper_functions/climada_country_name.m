@@ -1,4 +1,4 @@
-function [country_name,country_ISO3,shape_index] = climada_country_name(input_name)
+function [country_name,country_ISO3,shape_index] = climada_country_name(input_name,last_menu_entry)
 % check country name ISO3
 % MODULE:
 %   core climada
@@ -11,6 +11,7 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 %   [country_name,country_ISO3,shape_index] = climada_country_name(input_name)
 % EXAMPLE:
 % 	[country_name,country_ISO3,shape_index] = climada_country_name('Switzerland')
+% 	[country_name,country_ISO3,shape_index] = climada_country_name('SINGLE','select manually ...')
 %   climada_country_name % to return a list of all valid country names (and their ISO3 codes)
 % INPUTS:
 %   input_name: name of country (string) or an ISO3 code (needs to be uppercase, like 'CHE')
@@ -19,6 +20,9 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 %       if ='all', as 'ALL', but do not write the list to stdout
 %       if ='Single' or 'Multiple', select single country or multiple
 %       countries from a list dialog
+% OPTIONAL INPUT PARAMETERS:
+%   last_menu_entry: additional entry at the end of the menu (user-defined)
+%       default: none, empty
 % OUTPUTS:
 %   country_name: country name(s), empty string if no match
 %   country_ISO3: country ISO3 code(s) (like 'CHE'), empty if no match
@@ -28,6 +32,7 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 % David N. Bresch, david.bresch@gmail.com, 20141209, ISO3 country code added
 % David N. Bresch, david.bresch@gmail.com, 20141211, switched to admin0 instead of world*.gen
 % Lea Mueller, muellele@gmail.com, 20141016, compare with strcmpi to find valid country names
+% David N. Bresch, david.bresch@gmail.com, 20170830, last_menu_entry
 %-
 
 country_name='';
@@ -37,6 +42,7 @@ shape_index=[];
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 if ~exist('input_name','var'),input_name = ''; end
+if ~exist('last_menu_entry','var'),last_menu_entry = ''; end
 
 % PARAMETERS
 %
@@ -91,10 +97,15 @@ elseif strcmpi(input_name,'SINGLE') || strcmpi(input_name,'MULTIPLE')
         country_ISO3s{shape_i}=shapes(shape_i).ADM0_A3;
     end % shape_i
     
+    if ~isempty(last_menu_entry)
+        country_NAMEs{end+1}=last_menu_entry;
+        country_ISO3s{end+1}='XXX';
+    end
+    
     [liststr,sort_index] = sort(country_NAMEs); % sort alphabetically
-    [selection,ok] = listdlg('PromptString','Select countries (or one):',...
+    [selection] = listdlg('PromptString','Select countries (or one):',...
         'ListString',liststr,'SelectionMode',input_name);
-    pause(0.1)
+    %pause(0.1)
     if ~isempty(selection)
         country_name = country_NAMEs(sort_index(selection));
         country_ISO3 = country_ISO3s(sort_index(selection));

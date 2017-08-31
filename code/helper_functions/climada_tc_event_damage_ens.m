@@ -43,6 +43,8 @@ function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi
 %   auto_sel_assets: whether the code automatically selects assets 
 %       (=1) or not (=0, default)
 %       OR: a valid country name, exact spelling as in climada_country_name('SINGLE')
+%       If =0, the last menu entry is 'browse for assets...' which opens a
+%       file dialog to select any entity (as .mat)
 %   call_from_GUI: switch to direct to the correct axes
 %       if empty, not called from GUI, otherwise contains the axes handles
 % OPTIONAL INPUT PARAMETERS:
@@ -58,6 +60,7 @@ function [damage,track_filename,err_msg]=climada_tc_event_damage_ens(UNISYS_regi
 % David N. Bresch, david.bresch@gmail.com, 20161009, massive speedup using only assets in vicinity of track
 % David N. Bresch, david.bresch@gmail.com, 20161009, auto_sel_assets added
 % David N. Bresch, david.bresch@gmail.com, 20170828, explicit country name in auto_sel_assets added
+% David N. Bresch, david.bresch@gmail.com, 20170830, ability to browse for entity (last menu entry)
 %-
 
 damage=[];track_filename='';err_msg=''; % init output
@@ -212,33 +215,37 @@ else
 end
 
 if isempty(country_list) % prompt for country, as no direct hit
-    country_list{1}=climada_country_name('SINGLE'); % obtain country
+    country_list{1}=climada_country_name('SINGLE','Select entity ...'); % obtain country
     if isempty(country_list{1}),return;end
 end
 
 for country_i=1:length(country_list)
-    %for country_i=1:1
     
     country_name=char(country_list{country_i});
     
-    fprintf('*** processing %s:\n',country_name);
-    
-    if isempty(country_name) % usually not the case any more, but left in, in case one would like to use this
-        [country_name,country_ISO3,~]=climada_country_name('SINGLE'); % obtain country
+    if strcmpi (country_name,'select manually ...')
+        entity_file=[climada_global.entities_dir filesep '*.mat'];
+        [filename, pathname] = uigetfile(entity_file, 'Select entity:');
+        if isequal(filename,0) || isequal(pathname,0)
+            return; % cancel
+        else
+            entity_file=fullfile(pathname,filename);
+        end
     else
+        fprintf('*** processing %s:\n',country_name);
         [country_name,country_ISO3,~]=climada_country_name(country_name); % just get ISO3
+        country_name=char(country_name);
+        country_ISO3=char(country_ISO3);
+        
+        %entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_entity']; % until 20170828
+        entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_10x10']; % since 20170828
+        entity_file=[climada_global.entities_dir filesep entity_filename '.mat'];
     end
-    country_name=char(country_name);
-    country_ISO3=char(country_ISO3);
     
     tc_tracks=climada_tc_random_walk(tc_track,n_tracks-1,0.1,pi/30); % /15
     
-    % get entity
-    %entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_entity']; % until 20170828
-    entity_filename=[country_ISO3 '_' strrep(country_name,' ','') '_10x10']; % since 20170828
-    entity_file=[climada_global.entities_dir filesep entity_filename '.mat'];
-    
     if exist(entity_file,'file')
+        fprintf('loading %s ...\n',entity_file);
         entity=climada_entity_load(entity_file);
     else
         % try to create the entity
@@ -278,7 +285,7 @@ for country_i=1:length(country_list)
         axes(call_from_GUI.axes_left);
     end
     
-    % restrict entoty to a reasonable area around the track (speedup)
+    % restrict entity to a reasonable area around the track (speedup)
     n_assets=length(entity.assets.lon);
     if n_assets>5000
         milo=min(tc_track.lon)-BB_width_degree;malo=max(tc_track.lon)+BB_width_degree;
@@ -299,7 +306,6 @@ for country_i=1:length(country_list)
         fprintf('entity restricted from %i to %i points (%i%%)\n',...
             n_assets,length(entity.assets.lon),ceil(length(entity.assets.lon)/n_assets*100));
     end
-    
     
     Value_unit=climada_global.Value_unit;
     if isfield(entity.assets,'Value_unit'),Value_unit=entity.assets.Value_unit{1};end
