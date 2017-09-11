@@ -7,7 +7,7 @@ function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 % PURPOSE:
 %   read CHIRPS netCDF file, see  http://chg.geog.ucsb.edu/data/chirps/#_Data
 %
-%   currently reading global daily data, i.e. from files obtained from 
+%   currently reading global daily data, i.e. from files obtained from
 %   ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0//global_daily/netcdf/p05/by_month/
 %
 %   currently VERY innefficient memory use, as we store all (70%) of ocean
@@ -21,6 +21,8 @@ function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 % INPUTS:
 %   nc_files: netCDF filename(s) with path. If more than one file, pass as
 %       struct, i.e. nc_files{i} a single filename with path
+%       If empty, use TEST files (you might need to edit the code, see
+%       section PARAMETERS)
 % OPTIONAL INPUT PARAMETERS:
 %   lonlatrect: [minlon maxlon minlat maxlat] to read a rectangular region
 %       instead of the wholw world, default=[].
@@ -41,14 +43,14 @@ function res=chirps_read(nc_files,lonlatrect,check_animation,verbose)
 %       image(res.lon,res.lat,res.precip(:,end:-1:1,1)');axis equal
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160103, initial
-% David N. Bresch, david.bresch@gmail.com, 20160603, pat of core climada
-% David N. Bresch, david.bresch@gmail.com, 20161228, pat of core climada
+% David N. Bresch, david.bresch@gmail.com, 20160603, part of core climada
+% David N. Bresch, david.bresch@gmail.com, 20170911, fix to obtain lonlatrect, thanks to antoine.leblois@gmail.com
 %-
 
 res=[]; % init
 
 %global climada_global
-if ~climada_init_vars,return;end % init/import global variables
+%if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
 % and to set default value where  appropriate
@@ -70,20 +72,45 @@ chirps_misdat=-9999;
 %
 animation_mp4_file='CHIRPS_animation';
 %
-% TEST filename(s)
-data_folder='/Users/bresch/Documents/software_data/CHIRPS';
-%
-nc_files{ 1}=[ data_folder filesep 'chirps-v2.0.2015.01.days_p05.nc']; % Jan 2015
-nc_files{ 2}=[ data_folder filesep 'chirps-v2.0.2015.02.days_p05.nc']; % Feb 2015
-nc_files{ 3}=[ data_folder filesep 'chirps-v2.0.2015.03.days_p05.nc']; % Mar 2015
-nc_files{ 4}=[ data_folder filesep 'chirps-v2.0.2015.04.days_p05.nc']; % Apr 2015
-nc_files{ 5}=[ data_folder filesep 'chirps-v2.0.2015.05.days_p05.nc']; % Mai 2015
-nc_files{ 6}=[ data_folder filesep 'chirps-v2.0.2015.06.days_p05.nc']; % Jun 2015
-nc_files{ 7}=[ data_folder filesep 'chirps-v2.0.2015.07.days_p05.nc']; % Jul 2015
-nc_files{ 8}=[ data_folder filesep 'chirps-v2.0.2015.08.days_p05.nc']; % Aug 2015
-nc_files{ 9}=[ data_folder filesep 'chirps-v2.0.2015.09.days_p05.nc']; % Sep 2015
-nc_files{10}=[ data_folder filesep 'chirps-v2.0.2015.10.days_p05.nc']; % Oct 2015
-nc_files{11}=[ data_folder filesep 'chirps-v2.0.2015.11.days_p05.nc']; % Nov 2015
+if isempty(nc_files)
+    % TEST filename(s)
+    %
+    % Please provide your own files, as they need to be downloaded from e.g. 
+    % ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRPS-2.0//global_daily/netcdf/p05/by_month/
+    % and stored in a local folder
+    data_folder='/Users/bresch/Documents/software_data/CHIRPS';
+    nc_files{ 1}=[ data_folder filesep 'chirps-v2.0.2015.01.days_p05.nc']; % Jan 2015
+    nc_files{ 2}=[ data_folder filesep 'chirps-v2.0.2015.02.days_p05.nc']; % Feb 2015
+    nc_files{ 3}=[ data_folder filesep 'chirps-v2.0.2015.03.days_p05.nc']; % Mar 2015
+    nc_files{ 4}=[ data_folder filesep 'chirps-v2.0.2015.04.days_p05.nc']; % Apr 2015
+    nc_files{ 5}=[ data_folder filesep 'chirps-v2.0.2015.05.days_p05.nc']; % Mai 2015
+    nc_files{ 6}=[ data_folder filesep 'chirps-v2.0.2015.06.days_p05.nc']; % Jun 2015
+    nc_files{ 7}=[ data_folder filesep 'chirps-v2.0.2015.07.days_p05.nc']; % Jul 2015
+    nc_files{ 8}=[ data_folder filesep 'chirps-v2.0.2015.08.days_p05.nc']; % Aug 2015
+    nc_files{ 9}=[ data_folder filesep 'chirps-v2.0.2015.09.days_p05.nc']; % Sep 2015
+    nc_files{10}=[ data_folder filesep 'chirps-v2.0.2015.10.days_p05.nc']; % Oct 2015
+    nc_files{11}=[ data_folder filesep 'chirps-v2.0.2015.11.days_p05.nc']; % Nov 2015
+    nc_files{11}=[ data_folder filesep 'chirps-v2.0.2015.12.days_p05.nc']; % Nov 2015
+    %
+    % data_folder='/home/ant1/Documents/MATLAB/PluvioDeforNightLights/Chirps';
+    % nc_files{ 1}=[ data_folder filesep 'chirps-v2.0.2000.days_p05.nc']; % 2000
+    % nc_files{ 2}=[ data_folder filesep 'chirps-v2.0.2001.days_p05.nc'];
+    % nc_files{ 3}=[ data_folder filesep 'chirps-v2.0.2002.days_p05.nc'];
+    % nc_files{ 4}=[ data_folder filesep 'chirps-v2.0.2003.days_p05.nc'];
+    % nc_files{ 5}=[ data_folder filesep 'chirps-v2.0.2004.days_p05.nc'];
+    % nc_files{ 6}=[ data_folder filesep 'chirps-v2.0.2005.days_p05.nc'];
+    % nc_files{ 7}=[ data_folder filesep 'chirps-v2.0.2006.days_p05.nc'];
+    % nc_files{ 8}=[ data_folder filesep 'chirps-v2.0.2007.days_p05.nc'];
+    % nc_files{ 9}=[ data_folder filesep 'chirps-v2.0.2008.days_p05.nc'];
+    % nc_files{10}=[ data_folder filesep 'chirps-v2.0.2009.days_p05.nc'];
+    % nc_files{11}=[ data_folder filesep 'chirps-v2.0.2010.days_p05.nc'];
+    % nc_files{12}=[ data_folder filesep 'chirps-v2.0.2011.days_p05.nc'];
+    % nc_files{13}=[ data_folder filesep 'chirps-v2.0.2012.days_p05.nc'];
+    % nc_files{14}=[ data_folder filesep 'chirps-v2.0.2013.days_p05.nc'];
+    % nc_files{15}=[ data_folder filesep 'chirps-v2.0.2014.days_p05.nc'];
+    % nc_files{16}=[ data_folder filesep 'chirps-v2.0.2015.days_p05.nc'];
+    %
+end % isempty(nc_files)
 
 if ~iscell(nc_files)
     nc_file=nc_files;clear nc_files
@@ -112,31 +139,31 @@ if ~isempty(lonlatrect)
     x=res.lon;y=res.lat; % copy into x and y for convenience (same proceudre as in etopo_get)
     % figure which subset of the etopometry to obtain
     Lon1=lonlatrect(1); Lon2=lonlatrect(2);
-    Lat1=lonlatrect(3); Lat2=lonlatrect(4);
     inds=1:numel(x); inds=inds(:);
-    if Lon1<0
+    if Lon1>0
         startx = floor(interp1(x,inds,Lon1)); % x(startx)
     else
         startx = ceil(interp1(x,inds,Lon1)); % x(startx)
     end
-    if Lon2<0
+    if Lon2<=0
         endx   = ceil (interp1(x,inds,Lon2)); % x(endx)
     else
         endx   = floor (interp1(x,inds,Lon2)); % x(endx)
     end
+    Lat1=lonlatrect(3); Lat2=lonlatrect(4);
     inds=1:numel(y);
     if Lat1>0
         starty = floor(interp1(y,inds,Lat1)); % y(starty)
     else
         starty = ceil(interp1(y,inds,Lat1)); % y(starty)
     end
-    if Lat2>0
+    if Lat2<=0
         endy   = ceil (interp1(y,inds,Lat2)); % y(endy)
     else
         endy   = floor (interp1(y,inds,Lat2)); % y(endy)
     end
-    countx=endx-startx-1; % x(startx+countx)
-    county=endy-starty+1; % y(starty+county)
+    countx=endx-startx; % x(startx+countx)
+    county=endy-starty; % y(starty+county)
     if isnan(startx),startx=1;end
     if isnan(countx),countx=1;end
     res.lon=res.lon(startx:endx);
@@ -174,7 +201,7 @@ res.time_str=datestr(res.time); % convert to user-readable date/time
 if check_animation
     
     if verbose,fprintf('animation (%i frames) ...\n',size(res.precip,3));end
-
+    
     fig_visible='on';if check_animation==3,fig_visible='off';end
     fig_handle = figure('Name','CHIRPS animation','visible',fig_visible,'Color',[1 1 1],'Position',[2 274 1365 399]);
     
