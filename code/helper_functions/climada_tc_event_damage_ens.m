@@ -223,7 +223,7 @@ for country_i=1:length(country_list)
     
     country_name=char(country_list{country_i});
     
-    if strcmpi (country_name,'select manually ...')
+    if strcmpi (country_name,'Select entity ...')
         entity_file=[climada_global.entities_dir filesep '*.mat'];
         [filename, pathname] = uigetfile(entity_file, 'Select entity:');
         if isequal(filename,0) || isequal(pathname,0)

@@ -33,6 +33,7 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 % David N. Bresch, david.bresch@gmail.com, 20141211, switched to admin0 instead of world*.gen
 % Lea Mueller, muellele@gmail.com, 20141016, compare with strcmpi to find valid country names
 % David N. Bresch, david.bresch@gmail.com, 20170830, last_menu_entry
+% David N. Bresch, david.bresch@gmail.com, 20170914, last_menu_entry really last
 %-
 
 country_name='';
@@ -97,12 +98,15 @@ elseif strcmpi(input_name,'SINGLE') || strcmpi(input_name,'MULTIPLE')
         country_ISO3s{shape_i}=shapes(shape_i).ADM0_A3;
     end % shape_i
     
-    if ~isempty(last_menu_entry)
+    [liststr,sort_index] = sort(country_NAMEs); % sort alphabetically
+    
+     if ~isempty(last_menu_entry)
+         liststr{end+1}=last_menu_entry;
         country_NAMEs{end+1}=last_menu_entry;
         country_ISO3s{end+1}='XXX';
-    end
+        sort_index(end+1)=length(sort_index)+1;
+     end
     
-    [liststr,sort_index] = sort(country_NAMEs); % sort alphabetically
     [selection] = listdlg('PromptString','Select countries (or one):',...
         'ListString',liststr,'SelectionMode',input_name);
     %pause(0.1)
