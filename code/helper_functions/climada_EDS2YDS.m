@@ -20,6 +20,9 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 %   its own yearset. See climada_tc_hazard_set for a good example of how
 %   such an hazard.orig_yearset is constructed.
 % CALLING SEQUENCE:
+%   entity=climada_entity_read('demo_today');
+%   hazard=climada_hazard_load('TCNA_today_small');
+%   EDS=climada_EDS_calc(entity,hazard);
 %   YDS=climada_EDS2YDS(EDS,hazard,number_of_years)
 % EXAMPLE:
 %   YDS=climada_EDS2YDS(climada_EDS_calc('',hazard),hazard)
@@ -71,6 +74,7 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 % David N. Bresch, david.bresch@gmail.com, 20160307, sampling_vect as optional output
 % David N. Bresch, david.bresch@gmail.com, 20160308, allow for no hazard set
 % David N. Bresch, david.bresch@gmail.com, 20160420, orig_year_flag improved
+% David N. Bresch, david.bresch@gmail.com, 20170919, example improved
 %-
 
 YDS=[]; % init output
@@ -125,9 +129,9 @@ if ischar(hazard) % a filename instead of a hazard set struct passed
 end
 
 if ~isfield(hazard,'orig_yearset')
-    fprintf('Warning: %s hazard event set does not contain orig_yearset\n',hazard.peril_ID)
+    fprintf('\nWARNING: %s hazard event set does not contain orig_yearset\n',hazard.peril_ID)
     fprintf('  Note that for TS and TR, the TC hazard event set contains\n')
-    fprintf('  hazard.orig_yearset, not each sub-peril hazard event set\n')
+    fprintf('  hazard.orig_yearset, not each sub-peril hazard event set\n\n')
     
     % artificially generate a generic yearset (by just sampling the event damage set)
     % ---------------------------------------
