@@ -98,11 +98,8 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
         end
         
         if ~exist(climada_global.root_dir,'dir')
-            climada_global.root_dir=['C:' filesep 'Documents and Settings' filesep 'All Users' filesep 'Documents' filesep 'climada'];
-        end
-        
-        if ~exist(climada_global.root_dir,'dir')
-            climada_global.root_dir=['D:' filesep 'Data' filesep 'climada'];
+            climada_global.root_dir=pwd;
+            fprintf('WARNING: using present directory %s as root folder\n',climada_global.root_dir);
         end
         
     end % climada_LOCAL_ROOT_DIR
