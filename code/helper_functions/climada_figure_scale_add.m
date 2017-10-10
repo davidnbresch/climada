@@ -30,6 +30,7 @@ function climada_figure_scale_add(fig_axes,left_corner,bottom_corner)
 % Lea Mueller, muellele@gmail.com, 20160311, start from the left and bottom
 % Lea Mueller, muellele@gmail.com, 20160404, only half of the x-tick length
 % david.bresch@gmail.com, 20170721, lifted a bit
+% david.bresch@gmail.com, 20171009, made sure coords are double
 %-
 
 
@@ -76,7 +77,7 @@ dy=diff(ylim)/20; % added to lift slightly up, 20170721
 % finally plot the line and the length in meter
 x_coordinate = [xticks(left_corner) mean(xticks(left_corner:left_corner+1))];
 plot([xticks(left_corner) mean(xticks(left_corner:left_corner+1))], ones(2,1)*yticks(bottom_corner)+dy,'-k','linewidth',3)
-text(mean(x_coordinate), yticks(bottom_corner)+dy,scale_text,...
+text(double(mean(x_coordinate)),double(yticks(bottom_corner)+dy),scale_text,...
     'verticalalignment','bottom','HorizontalAlignment','center','fontsize',14)
 
 % % finally plot the line and the length in meter
