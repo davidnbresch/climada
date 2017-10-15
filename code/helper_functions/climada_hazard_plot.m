@@ -50,6 +50,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20170611, FontSize in PARAMETERS for plots
 % David N. Bresch, david.bresch@gmail.com, 20170706, hint to climada_hazard_plot_nogrid added
 % David N. Bresch, david.bresch@gmail.com, 20170721, cleanup for title_str
+% David N. Bresch, david.bresch@gmail.com, 20171013, small fix in fprintf
 %-
 
 fprintf('see also climada_hazard_plot_nogrid to plot exactly on centroids\n');
@@ -131,7 +132,8 @@ else
     end
     if isfield(hazard,'name')
         hazard_name=hazard.name{event_i};
-        fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard_name,yyyymmdd_str,event_i);
+        %fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard_name,yyyymmdd_str,event_i);
+        fprintf('%s, %s, event %i\n',hazard_name,yyyymmdd_str,event_i);
         gen_check=strfind(hazard_name,'gen'); % check for probabilistic event
         if ~isempty(gen_check)
             gen_str=[' ' hazard_name(gen_check(1):end) ' '];
