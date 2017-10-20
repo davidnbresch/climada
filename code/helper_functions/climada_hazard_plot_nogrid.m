@@ -9,10 +9,9 @@ function [res,params]=climada_hazard_plot_nogrid(hazard,event_i,markersize,param
 %   and the high-resolution version climada_hazard_plot_hr
 %   See also climada_hazard_plot (later to be merged all in one)
 % CALLING SEQUENCE:
-%   res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids,entity)
+%   [res,params]=climada_hazard_plot_nogrid(hazard,event_i,markersize,params)
 % EXAMPLE:
-%   climada_hazard_plot(climada_hazard_load,1); % plot first event
-%   climada_hazard_plot; % prompt for hazard event set, plot largest event
+%   climada_hazard_plot_nogrid(climada_hazard_load('TCNA_today_small'),-1); % TEST
 % INPUTS:
 %   hazard: hazard structure
 %       > prompted for if empty
@@ -204,7 +203,7 @@ if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
     box % box axes
     climada_plot_world_borders(0.7*sign(markersize),'','',1,[],country_color);
     
-    if params.plot_centroids,plot(entity.assets.lon, entity.assets.lat,'.r','MarkerSize',1);end
+    if params.plot_centroids,plot(hazard.lon,hazard.lat,'.r','MarkerSize',1);end
     
     if ~climada_global.octave_mode && params.figure_scale,climada_figure_scale_add;end
     set(gcf,'Color',[1 1 1])
