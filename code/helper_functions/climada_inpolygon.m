@@ -13,6 +13,8 @@ function in=climada_inpolygon(xq,yq,xv,yv,check_plot)
 %   climada_global.octave_mode=1. But some places, we call
 %   climada_inpolygon, as this way, one can, once Octave has fixed the
 %   issues, just make the chnage here in climada_inpolygon once.
+%
+%   See also: climada_inshape to check within shapes directly
 % CALLING SEQUENCE:
 %   in=climada_inpolygon(xq,yq,xv,yv,TEST_mode)
 % EXAMPLE:
@@ -28,6 +30,7 @@ function in=climada_inpolygon(xq,yq,xv,yv,check_plot)
 %   in: the indices of the points within the polygon (see help inpolygon)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20161002, initial
+% David N. Bresch, david.bresch@gmail.com, 20171020, hint to climada_inshape added
 %-
 
 in=[]; % init output
