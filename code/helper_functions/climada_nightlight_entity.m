@@ -92,7 +92,7 @@ function entity=climada_nightlight_entity(admin0_name,admin1_name,parameters)
 %       Also useful if a img_filename is passed in parameters
 %       and thus if admin0_name is defined, the respective country is cut out.
 %       If ='parameters' or 'params', return all default parameters
-%   admin1_name: if passed on, do not prompt for admin1 name
+%   admin1_name: if passed on, do not prompt for admin1 name, ='ask' to prompt for
 %       > If empty together with admin0_name, a list dialog lets the user select (default)
 %       Most useful for subsequent calls, i.e. once one knows the exact
 %       admin1 name. Also useful if a img_filename is passed in parameters
@@ -195,6 +195,7 @@ function entity=climada_nightlight_entity(admin0_name,admin1_name,parameters)
 % david.bresch@gmail.com, 20170515, looks for country_risk module for high resolution
 % david.bresch@gmail.com, 20170626, calling climada_assets_complete
 % david.bresch@gmail.com, 20170805, more tolerant iro img file(s)
+% david.bresch@gmail.com, 20171103, 'ask' better documented
 
 entity=[]; % init
 
