@@ -87,15 +87,17 @@ switch peril_ID
         
     case 'TS' % create colormap for surge
         c_ax = [1 10];
-        startcolor   = [238 224 229]/255; %lavenderblush 2
-        middlecolor1 = [119 136 153]/255; %lightslategray
-        middlecolor2 = [255 181 197]/255; %pink 1
-        endcolor     = [104  34 139]/255; %darkorchid 4
-        for i=1:3
-            cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
-            cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
-        end
-        cmap = [[1 1 1];cmap1; cmap2]; 
+        cmap=colormap; % 20171103, david.bresch@gmail.com
+        
+%         startcolor   = [238 224 229]/255; %lavenderblush 2
+%         middlecolor1 = [119 136 153]/255; %lightslategray
+%         middlecolor2 = [255 181 197]/255; %pink 1
+%         endcolor     = [104  34 139]/255; %darkorchid 4
+%         for i=1:3
+%             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
+%             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
+%         end
+%         cmap = [[1 1 1];cmap1; cmap2]; 
         
     case 'FL' % create colormap for flood
         c_ax = [0.05 1.15];
