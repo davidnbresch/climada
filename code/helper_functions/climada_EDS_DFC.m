@@ -90,6 +90,8 @@ if strcmp(EDS_comparison,'ASK')
     end
 end
 
+if isempty(EDS) && isempty(EDS_comparison),return;end
+
 if exist('measures_impact','var') % if a results file is loaded
     EDS=measures_impact.EDS;
 end
