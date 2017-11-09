@@ -78,6 +78,7 @@ function [output_file, mat_version] = climada_save_mat_for_octave(input_file,pat
 % MODIFICATION HISTORY:
 % Samuel Eberenz, samweli@posteo.de, 20171031, init
 % Samuel Eberenz, samweli@posteo.de, 20171102, parameters "same_dir" and "force_overwrite" added
+% Samuel Eberenz, samweli@posteo.de, 20171109, debugged while loop
 %%
 
 % Check whether input_file is a string or char specifying a file or a struct to
@@ -171,6 +172,7 @@ while force_overwrite~=1 && exist(output_file,'file')
     fprintf('Added "_oct" to output file name to avoid overwritting. \n')
     else
         fprintf(['Overwriting file: ' output_file ' \n'])
+        force_overwrite = 1;
     end
 end
 %% LOAD INPUT FILE
