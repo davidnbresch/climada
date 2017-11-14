@@ -110,7 +110,11 @@ if isfield(entity.assets,'Value_unit') && isfield(entity2.assets,'Value_unit')
 elseif isfield(entity.assets,'Value_unit')
     entity.assets=rmfield(entity.assets,'Value_unit');
 end
-
+if isfield(entity.assets,'centroid_admin0_ISO3') && isfield(entity2.assets,'centroid_admin0_ISO3')
+    entity.assets.centroid_admin0_ISO3=[entity.assets.centroid_admin0_ISO3 entity2.assets.centroid_admin0_ISO3];
+elseif isfield(entity.assets,'centroid_admin0_ISO3')
+    entity.assets=rmfield(entity.assets,'centroid_admin0_ISO3');
+end
 
 fprintf('Warning: only assets (lon,lat,Value,DamageFunID,Deductible and Cover) combined\n');
 fprintf('entity.damagefunctions, entity.measures and entity.discount taken from first entity\n');
