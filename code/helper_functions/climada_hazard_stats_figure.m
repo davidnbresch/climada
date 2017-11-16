@@ -113,17 +113,22 @@ switch peril_ID
         xtick_ = [0:caxis_max/8:caxis_max]; 
         %cmap = flipud(climada_colormap(peril_ID));   
         
-        % overwrite original intensites (0-1) with distance_m 
-        is_max_intensity = hazard.intensity_fit>0.999;
-        hazard.intensity_fit = (1.-hazard.intensity_fit)*hazard.cutoff_m;
-        hazard.intensity_fit(is_max_intensity) = 1;
+        % overwrite original intensites (0-1) with distance_m
+        % is_max_intensity = hazard.intensity_fit>0.999; until 20171116
+        % hazard.intensity_fit = (1.-hazard.intensity_fit)*hazard.cutoff_m;
+        % hazard.intensity_fit(is_max_intensity) = 1;
+        
+        is_max_intensity = hazard.map.intensity>0.999;
+        hazard.map.intensity = (1-hazard.map.intensity)*hazard.cutoff_m;
+        hazard.map.intensity(is_max_intensity) = 1;
+        
         cbar_str  = sprintf('%s Distance to landslide (m)', hazard.peril_ID);
         plot_method = 'plotclr'; 
         %markersize = 2.2; marker = 's';
 
     otherwise
         % use default colormap, hence no cmap defined  
-        caxis_max = full(max(max(hazard.intensity_fit)));
+        caxis_max = full(max(max(hazard.intensity)));
         %xtick_    = [];
         xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
         xtick_    = round(xtick_*1)/1;
