@@ -3,7 +3,7 @@ function fig = climada_hazard_stats_figure(hazard,return_periods,intensity_xtick
 %   climada_hazard_stats_figure
 % PURPOSE:
 %   plot hazard intensity maps for different return periods
-%   based on statistics 
+%   based on statistics
 %     .intensity_fit_ori
 %     .intensity_fit
 %     .R_fit (requested return periods)
@@ -31,7 +31,10 @@ function fig = climada_hazard_stats_figure(hazard,return_periods,intensity_xtick
 % Lea Mueller, muellele@gmail.com, 20150914, separate from climada_hazard_stats
 % Lea Mueller, muellele@gmail.com, 20160226, add intensity_xtick and plot_method
 % Lea Mueller, muellele@gmail.com, 20160314, add climada_global.admin1_plot, bugfix
+% David N. Bresch, david.bresch@gmail.com, 20171117, check plots fixed
 %-
+
+fig=[];
 
 % init global variables
 global climada_global
@@ -62,9 +65,8 @@ else
     return_periods_show = return_periods;
 end
 
-
 % check if statistics are available
-if ~isfield(hazard,'intensity_fit') || ~isfield(hazard,'R_fit') 
+if ~isfield(hazard,'intensity_fit') || ~isfield(hazard,'R_fit')
     fprintf('Add hazard statistics.\n')
     hazard = climada_hazard_stats(hazard,return_periods);
 end
@@ -77,9 +79,9 @@ end
 
 % set figure parameters depending on peril_ID
 fontsize = 12;
-cmap = climada_colormap(peril_ID);    
+cmap = climada_colormap(peril_ID);
 % create extrapolation with gridded Values.
-% if plotclr_on = 1, do not extrapolate but plot single points 
+% if plotclr_on = 1, do not extrapolate but plot single points
 plotclr_on = 0; %default
 switch peril_ID
     case 'TC'
@@ -88,30 +90,30 @@ switch peril_ID
         xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
         %xtick_    = [20 40 60 80 caxis_max];
         cbar_str  = 'Probabilistic wind speed (m/s)';
-
+        
     case 'TR'
         caxis_max = 300; %caxis_max = 500;
-        xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+        xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
         %xtick_    = [10 50 100 200 caxis_max];
         cbar_str  = 'Probabilistic rain sum (mm)';
-
+        
     case 'TS'
         caxis_max = 3;
-        xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+        xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
         %xtick_    = [1 2 4 caxis_max];
         cbar_str  = 'Probabilistic surge height (m)';
-
+        
     case 'MS'
         caxis_max = 3;
-        xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+        xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
         cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
-
+        
     case 'LS'
-        %caxis_max = 400; 
+        %caxis_max = 400;
         caxis_max = 1000;
         if isfield(hazard,'cutoff_m'), caxis_max = hazard.cutoff_m; end
-        xtick_ = [0:caxis_max/8:caxis_max]; 
-        %cmap = flipud(climada_colormap(peril_ID));   
+        xtick_ = [0:caxis_max/8:caxis_max];
+        %cmap = flipud(climada_colormap(peril_ID));
         
         % overwrite original intensites (0-1) with distance_m
         % is_max_intensity = hazard.intensity_fit>0.999; until 20171116
@@ -123,21 +125,21 @@ switch peril_ID
         hazard.map.intensity(is_max_intensity) = 1;
         
         cbar_str  = sprintf('%s Distance to landslide (m)', hazard.peril_ID);
-        plot_method = 'plotclr'; 
+        plot_method = 'plotclr';
         %markersize = 2.2; marker = 's';
-
+        
     otherwise
-        % use default colormap, hence no cmap defined  
+        % use default colormap, hence no cmap defined
         caxis_max = full(max(max(hazard.intensity)));
         %xtick_    = [];
-        xtick_    = [caxis_max/5:caxis_max/5:caxis_max]; 
+        xtick_    = [caxis_max/5:caxis_max/5:caxis_max];
         xtick_    = round(xtick_*1)/1;
         cbar_str  = sprintf('%s Intensity (%s)', hazard.peril_ID, hazard.units);
 end
 
 % overwrite xtick with user_input if given
 if ~isempty(intensity_xtick), xtick_ = intensity_xtick; end
-        
+
 % admin1_plot = 0;
 % % ----special case for Vietnam-----
 % admin1_plot = 1;
@@ -158,7 +160,7 @@ centroids.lon = hazard.lon;
 centroids.lat = hazard.lat;
 scale = max(centroids.lon)-min(centroids.lon);
 scale2= (max(centroids.lon)-min(centroids.lon)+scale*2/30)...
-       /(max(centroids.lat)-min(centroids.lat)+scale*2/30);
+    /(max(centroids.lat)-min(centroids.lat)+scale*2/30);
 
 %------------------
 % probabilistic map
@@ -177,77 +179,82 @@ if wi>1.2
     he = 1.2/scale_tot;
 end
 
-fig = climada_figuresize(he+0.1, wi);
-subaxis(x_no, y_no, 1,'MarginTop',0.15, 'mb',0.05)
-
-% colorbar
-subaxis(2);
-pos = get(subaxis(2),'pos');
-% distance in normalized units from the top of the axes
-dist = .06;
-hc = colorbar('location','northoutside', 'position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
-set(get(hc,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);
-caxis([0 caxis_max])
-set(gca,'fontsize',fontsize)
-hold on
-
-msgstr   = sprintf('Plotting intensity vs return period map: probabilistic data');
-if climada_global.waitbar,h = waitbar(0,msgstr);end
-
-for i=1:return_count %x_no*y_no %return_count
-    if climada_global.waitbar,waitbar(i/return_count, h, msgstr);end % update waitbar
-    subaxis(i)
-
-    fit_index = return_periods_show(i) == hazard.R_fit;
-    values    = full(hazard.intensity_fit(fit_index,:));
-    if sum(values(not(isnan(values))))>0 % nansum(values)>0
-        switch plot_method
-            case 'contourf'
-                [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
-                gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
-                contourf(X, Y, gridded_VALUE,200,'linecolor','none')
-            case 'plotclr'
-                marker = ''; markersize = ''; colorbar_on = 0; miv = ''; mav = ''; % mav = caxis_max;
-                plotclr(centroids.lon,centroids.lat,values,marker,markersize,colorbar_on,miv,mav,cmap);
-                %box on; grid off %hold on;axis equal; % filled contour plot
+if isfield(hazard,'R_fit')
+    
+    fig = climada_figuresize(he+0.1, wi);
+    subaxis(x_no, y_no, 1,'MarginTop',0.15, 'mb',0.05)
+    
+    % colorbar
+    subaxis(2);
+    pos = get(subaxis(2),'pos');
+    % distance in normalized units from the top of the axes
+    dist = .06;
+    hc = colorbar('location','northoutside', 'position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
+    set(get(hc,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);
+    caxis([0 caxis_max])
+    set(gca,'fontsize',fontsize)
+    hold on
+    
+    
+    msgstr   = sprintf('Plotting intensity vs return period map: probabilistic data');
+    if climada_global.waitbar,h = waitbar(0,msgstr);end
+    
+    for i=1:return_count %x_no*y_no %return_count
+        if climada_global.waitbar,waitbar(i/return_count, h, msgstr);end % update waitbar
+        subaxis(i)
+        
+        fit_index = return_periods_show(i) == hazard.R_fit;
+        values    = full(hazard.intensity_fit(fit_index,:));
+        if sum(values(not(isnan(values))))>0 % nansum(values)>0
+            switch plot_method
+                case 'contourf'
+                    [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids);
+                    gridded_VALUE(gridded_VALUE<(0.1)) = NaN;
+                    contourf(X, Y, gridded_VALUE,200,'linecolor','none')
+                case 'plotclr'
+                    marker = ''; markersize = ''; colorbar_on = 0; miv = ''; mav = ''; % mav = caxis_max;
+                    plotclr(centroids.lon,centroids.lat,values,marker,markersize,colorbar_on,miv,mav,cmap);
+                    %box on; grid off %hold on;axis equal; % filled contour plot
+            end
+            hold on
+            %if admin1_plot
+            %    for admin1_i = 1:length(admin1_shapes)
+            %        plot(admin1_shapes(admin1_i).X,admin1_shapes(admin1_i).Y,'-r','LineWidth',1);
+            %        %text(admin1_shapes(admin1_i).longitude,admin1_shapes(admin1_i).latitude,admin1_shapes(admin1_i).name);
+            %    end
+            %end
+        else
+            text(mean([min(centroids.lon) max(centroids.lon)]),...
+                mean([min(centroids.lat ) max(centroids.lat )]),...
+                'no data for this return period available','fontsize',8,...
+                'HorizontalAlignment','center')
         end
         hold on
-        %if admin1_plot
-        %    for admin1_i = 1:length(admin1_shapes)
-        %        plot(admin1_shapes(admin1_i).X,admin1_shapes(admin1_i).Y,'-r','LineWidth',1);
-        %        %text(admin1_shapes(admin1_i).longitude,admin1_shapes(admin1_i).latitude,admin1_shapes(admin1_i).name);     
-        %    end
-        %end
-    else
-        text(mean([min(centroids.lon) max(centroids.lon)]),...
-            mean([min(centroids.lat ) max(centroids.lat )]),...
-            'no data for this return period available','fontsize',8,...
-            'HorizontalAlignment','center')
-    end
-    hold on
-    if admin1_plot, climada_shapeplotter(admin1_shapes,'','X','Y','linewidth',1,'color',[ 186 186 186  ]/255); end % light grey
-    climada_plot_world_borders(0.7)    
-    title([int2str(hazard.R_fit(fit_index)) ' yr intensity'],'fontsize',fontsize);
-    axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
-        min(centroids.lat )-scale/30  max(centroids.lat )+scale/30])
-    % do not display xticks, nor yticks
-    set(subaxis(i),'xtick',[],'ytick',[],'DataAspectRatio',[1 1 1])
-    caxis([0 caxis_max])
-    if ~exist('cmap','var'), cmap = '';end
-    if ~isempty(cmap), colormap(cmap);end
-    set(gca,'fontsize',fontsize)
-    set(hc,'XTick',xtick_)
-
-    %%-----specially for San Salvador------
-    %salvador_lon = -89.218600;
-    %salvador_lat =  13.694261;
-    %plot(salvador_lon, salvador_lat, 'ok')
-    %plot(salvador_lon, salvador_lat, 'xk')
-    %-------------------------------------
-
-end %return_i
-
-if climada_global.waitbar,close(h);end % dispose waitbar
+        if admin1_plot, climada_shapeplotter(admin1_shapes,'','X','Y','linewidth',1,'color',[ 186 186 186  ]/255); end % light grey
+        climada_plot_world_borders(0.7)
+        title([int2str(hazard.R_fit(fit_index)) ' yr intensity'],'fontsize',fontsize);
+        axis([min(centroids.lon)-scale/30  max(centroids.lon)+scale/30 ...
+            min(centroids.lat )-scale/30  max(centroids.lat )+scale/30])
+        % do not display xticks, nor yticks
+        set(subaxis(i),'xtick',[],'ytick',[],'DataAspectRatio',[1 1 1])
+        caxis([0 caxis_max])
+        if ~exist('cmap','var'), cmap = '';end
+        if ~isempty(cmap), colormap(cmap);end
+        set(gca,'fontsize',fontsize)
+        set(hc,'XTick',xtick_)
+        
+        %%-----specially for San Salvador------
+        %salvador_lon = -89.218600;
+        %salvador_lat =  13.694261;
+        %plot(salvador_lon, salvador_lat, 'ok')
+        %plot(salvador_lon, salvador_lat, 'xk')
+        %-------------------------------------
+        
+    end %return_i
+    
+    if climada_global.waitbar,close(h);end % dispose waitbar
+    
+end % isfield(hazard,'R_fit')
 
 % if check_printplot %(>=1)
 %     choice = questdlg('print?','print');
@@ -260,7 +267,5 @@ if climada_global.waitbar,close(h);end % dispose waitbar
 %     close
 %     cprintf([255 127 36 ]/255,'saved 1 FIGURE in folder %s \n', foldername);
 % end
-    
 
-
-return
+end % climada_hazard_stats_figure
