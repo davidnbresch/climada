@@ -13,6 +13,7 @@ function [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,interp_m
 %   centroids
 % OPTIONAL INPUT PARAMETERS:
 %   interp_method: method in griddata, like 'linear', 'cubic',...
+%       ='plot': also plot the data in this routine (often handy)
 %   npoints: the number of points used, default =499
 %   stencil_ext: to extend the stencil range (in units of the target grid,
 %       default=0
@@ -24,6 +25,7 @@ function [X, Y, gridded_VALUE] = climada_gridded_VALUE(values,centroids,interp_m
 % David N. Bresch, david.bresch@gmail.com, 20120430
 % Lea Mueller, muellele@gmail.com, 20110517
 % David N. Bresch, david.bresch@gmail.com, 20161006, npoints default=499
+% David N. Bresch, david.bresch@gmail.com, 20171123, interp_method='plot'
 %-
 
 X=[];Y=[];gridded_VALUE=[]; % init output
@@ -47,6 +49,9 @@ if isempty(stencil_ext   ), stencil_ext   =  0          ;end
 % to avoid masking areas far away from CalcUnits
 % no_mask = 1;
 no_mask = 0;
+
+check_plot=0; % default
+if strcmpi(interp_method,'plot'),check_plot=1;interp_method = 'linear';end
 
 lon = centroids.lon;
 lat = centroids.lat;
@@ -77,5 +82,14 @@ end % no_mask
 
 gridded_VALUE = griddata(lon,lat,values,X,Y,interp_method)+mask; % interpolate to grid 'linear'
 % gridded_VALUE(gridded_VALUE == 0) = nan;
+
+if check_plot
+    %gridded_VALUE(gridded_VALUE<0.1) = NaN; % avoid tiny values
+    contourf(X, Y, gridded_VALUE,200,'linecolor','none')
+    hold on
+    climada_plot_world_borders(2,'','',0,[],[0 0 0])
+    colorbar
+    caxis([min(values) max(values)])
+end
 
 end % climada_gridded_VALUE
