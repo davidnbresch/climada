@@ -49,7 +49,7 @@ function [output_file, mat_version] = climada_save_mat_for_octave(input_file,pat
 %           1 = output file is saved in same folder as input file,
 %               with '_oct' added to filename.
 %               Warning: same_dir = 1 can overwrite output path handed over in path_out_or_type
-%           (Default: 0)
+%           (Default: 1)
 %                Example:
 %           same_dir = 1
 %           input_file  = '~/Documents/MATLAB/climada_data/hazards/MEX_Mexico_atl_TC.mat'
@@ -96,7 +96,7 @@ end
 
 if ~exist('mat_version','var') || isempty(mat_version) || isequal(mat_version,''),mat_version='-v6';end
 if isnumeric(mat_version), mat_version = ['-v' num2str(mat_version)] ; end
-if ~exist('same_dir','var') || isempty(same_dir),same_dir=0;end
+if ~exist('same_dir','var') || isempty(same_dir),same_dir=1;end
 if ~exist('force_overwrite','var') || isempty(force_overwrite),force_overwrite=-1;end
 
 if exist('path_out_or_type','var') && ~isempty(path_out_or_type) 
