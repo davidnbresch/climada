@@ -13,7 +13,9 @@ function [entity,entity_file]=climada_entity_load(entity,nosave_flag)
 %   entity: the filename (and path, optional) of a previously saved entity
 %       structure. If no path provided, default path ../data/entities is used
 %       (and name can be without extension .mat or even without
-%       _entity.mat, in some cases even the ISO3 code only is enough)
+%       _entity.mat or _10x10x.mat). In essence, the country ISO3 code is
+%       enough to load a country entity (if ='USA', it first checks for
+%       USA_UnitedStates_entity. mat, then for USA_UnitedStates_10x10. mat)
 %       > promted for if empty
 %       OR: an entity structure, in which case it is just returned (to allow
 %       calling climada_entity_load anytime, see e.g. climada_EDS_calc)
@@ -22,6 +24,7 @@ function [entity,entity_file]=climada_entity_load(entity,nosave_flag)
 %       just complete fields as necessary. Useful for example to preserve
 %       entities in save versions compatible with Octave when re-loading
 %       with either MATLAB or Ocatve. Default=0 (save back)
+%       =-1: as =1, plus silent mode, do not write anything to stdout 
 % OUTPUTS:
 %   entity: a struct, see climada_entity_read for details
 %   entity_file: the full filename the entity was loaded from
@@ -41,6 +44,7 @@ function [entity,entity_file]=climada_entity_load(entity,nosave_flag)
 % David N. Bresch, david.bresch@gmail.com, 20170503, allow also for ISO3 only
 % David N. Bresch, david.bresch@gmail.com, 20170806, nosave_flag added
 % David N. Bresch, david.bresch@gmail.com, 20170807, climada_damagefunctions_complete and climada_measures_complete added
+% David N. Bresch, david.bresch@gmail.com, 20171129, _10x10 also allowed (in addition to _entity)
 %-
 
 global climada_global
@@ -51,9 +55,12 @@ if ~exist('entity','var'),entity=[];end
 if ~exist('nosave_flag','var'),nosave_flag=[];end
 if isempty(nosave_flag),nosave_flag=0;end
 
+silent_mode=0;
+if nosave_flag<0,silent_mode=1;nosave_flag=abs(nosave_flag);end
+
 % if already a complete hazard, return
 if isstruct(entity)
-    if ~isentity(entity),fprintf('ERROR: not an entity\n');entity=[];end
+    if ~silent_mode,if ~isentity(entity),fprintf('ERROR: not an entity\n');entity=[];end;end
     return % already a hazard
 else
     entity_file=entity;entity=[];
@@ -85,19 +92,23 @@ end
 if ~exist(entity_file,'file')
     % one last try, could be somebody only entered 3-digit country code
     [fP,fN,fE]=fileparts(entity_file);
-    [country_name,country_ISO3]=climada_country_name(strrep(fN,'_entity',''));
+    [country_name,country_ISO3]=climada_country_name(strrep(strrep(fN,'_10x10',''),'_entity',''));
     fN=[country_ISO3 '_' strrep(country_name,' ','') '_entity']; % append _entity
     entity_file=[fP filesep fN fE];
+    if ~exist(entity_file,'file')
+        fN=[country_ISO3 '_' strrep(country_name,' ','') '_10x10']; % append _10x10
+        entity_file=[fP filesep fN fE];
+    end
 end
 
 if ~exist(entity_file,'file')
-    fprintf('ERROR: entity does not exist %s\n',entity_file);
+    if ~silent_mode,fprintf('ERROR: entity does not exist %s\n',entity_file);end
     return
 else
     try
         load(entity_file); % contains entity, the only line that really matters ;-)
     catch ME
-        fprintf('ERROR: entity not loaded (%s)\n',ME.message);
+        if ~silent_mode,fprintf('ERROR: entity not loaded (%s)\n',ME.message);end
     end % try
 end
 
