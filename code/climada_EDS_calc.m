@@ -36,8 +36,8 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %       used (and name can be without extension .mat). If hazard is empty
 %       and entity contains hazard in entity.hazard, this hazard is used.
 %       > promted for if not given
-%       Minimum fileds of hazard struct are: 
-%       peril_ID, event_ID, centroid_ID, intensity and frequency 
+%       Minimum fileds of hazard struct are:
+%       peril_ID, event_ID, centroid_ID, intensity and frequency
 % OPTIONAL INPUT PARAMETERS:
 %   annotation_name: a free text that will appear e.g. on plots for
 %       annotation, default is the name of the hazard set
@@ -47,7 +47,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   silent_mode: suppress any output to stdout (useful i.e. if called many times)
 %       default=0 (output to stdout), =1: no output and no waitbar at all
 %       command-line progress output is still shown with silent_mode=1, but
-%       suppressed if =2. 
+%       suppressed if =2.
 %   sanity_check: perform climada_damagefunctions_check to make sure all
 %       damagefunctions map correctly and ranges do cover occurring hazard
 %       intensities. Default=0
@@ -122,6 +122,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20170715, small fix if no valid asset for EDS.Value_unit
 % David N. Bresch, david.bresch@gmail.com, 20170721, currency_unit added
 % David N. Bresch, david.bresch@gmail.com, 20170828, try/catch in full_unique for Octave compatibility
+% David N. Bresch, david.bresch@gmail.com, 20171201, climada_progress2stdout
 %-
 
 global climada_global
@@ -290,26 +291,19 @@ end
 
 % follows the calculation of the event damage set (EDS), outer loop explicit for clarity
 % innermost loop (over hazard events) by matrix calc
-t0 = clock;
-msgstr=sprintf('Calculating damage for %i assets (>0) and %i events ',nn_assets,length(hazard.frequency));
+msgstr=sprintf('Calculating damage for %i assets (>0) and %i events ',nn_assets,length(hazard.frequency)); % CLIMADA_OPT
 
-format_str='%s'; % CLIMADA_OPT
-if ~silent_mode % CLIMADA_OPT
-    if climada_global.waitbar % CLIMADA_OPT
-        fprintf('%s (updating waitbar with estimation of time remaining every 100th event)\n',msgstr); % CLIMADA_OPT
-        h = waitbar(0,msgstr,'Name',sprintf('Calculating %s damage for assets',hazard.peril_ID)); % CLIMADA_OPT
-    else % CLIMADA_OPT
-        fprintf('%s\n',msgstr); % CLIMADA_OPT
-    end % CLIMADA_OPT
-end % CLIMADA_OPT
-
-mod_step = 2; % first time estimate after 2 calcs, then every 100
-loop_mod_step = max(ceil(nn_assets/20),100);
+loop_mod_step = max(ceil(nn_assets/20),100); % CLIMADA_OPT
+if silent_mode<2 % CLIMADA_OPT
+    fprintf('%s\n',msgstr); % CLIMADA_OPT
+    climada_progress2stdout(-1,nn_assets,2); % CLIMADA_OPT
+end % init, see terminate below % CLIMADA_OPT
 
 % start the calculation
 % ---------------------
-% see also climada_code_optimizer, which removes all slowing code...
+% see also climada_code_optimizer, which removes all slowing code ...
 
+t0 = clock;
 for asset_ii=1:nn_assets
     
     asset_i=valid_assets_pos(asset_ii);
@@ -389,31 +383,13 @@ for asset_ii=1:nn_assets
         % TEST output
         %%fprintf('%i, max MDD %f, PAA %f, ED %f\n',asset_i,max(full(MDD)),max(full(PAA)),full(sum(temp_damage'.*EDS.frequency)));
         
-        if mod(asset_ii,mod_step)==0 % CLIMADA_OPT
-            mod_step         = loop_mod_step; % CLIMADA_OPT
-            t_elapsed_calc   = etime(clock,t0)/asset_ii; % CLIMADA_OPT
-            calcs_remaining  = nn_assets-asset_ii; % CLIMADA_OPT
-            t_projected_calc = t_elapsed_calc*calcs_remaining; % CLIMADA_OPT
-            msgstr           = sprintf('est. %i seconds left (%i/%i assets>0)',ceil(t_projected_calc),asset_ii,nn_assets); % CLIMADA_OPT
-            
-            if climada_global.waitbar % CLIMADA_OPT
-                waitbar(asset_ii/nn_assets,h,msgstr); % update waitbar % CLIMADA_OPT
-            else % CLIMADA_OPT
-                if silent_mode<2,fprintf(format_str,msgstr);end % write progress to stdout % CLIMADA_OPT
-                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line % CLIMADA_OPT
-            end % CLIMADA_OPT
-            
-        end % CLIMADA_OPT
+        if silent_mode<2,climada_progress2stdout(asset_ii,nn_assets,loop_mod_step,'assets');end % update % CLIMADA_OPT
         
     end % ~isempty(asset_damfun_pos)
     
 end % asset_ii
 
-if climada_global.waitbar % CLIMADA_OPT
-    close(h) % dispose waitbar % CLIMADA_OPT
-else % CLIMADA_OPT
-    if silent_mode<2,fprintf(format_str,'');end % move carriage to begin of line % CLIMADA_OPT
-end % CLIMADA_OPT
+if silent_mode<2,climada_progress2stdout(0);end % % move carriage to begin of line % CLIMADA_OPT
 
 t_elapsed = etime(clock,t0);
 msgstr    = sprintf('calculation took %3.2f sec (%1.4f sec/event)',t_elapsed,t_elapsed/n_assets);
