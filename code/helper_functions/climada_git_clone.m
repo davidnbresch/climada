@@ -95,15 +95,15 @@ for module_i=1:length(module_list)
             fprintf('TEST: %s\n',system_cmd);
         else
             % clone the repository
-            [status,result] = system(system_cmd);
+            if ismember({computer('arch')},{'win64','win32'}) % check if windows computer
+                [status,result] = system(system_cmd2); % execute command on windows system
+            else
+                [status,result] = system(system_cmd); % execute command on other systems
+            end
             if status>0 % =0 mean success
                 fprintf('ERROR: %s\n',result)
-                [status,result] = system(system_cmd2);
-                if status>0 % =0 mean success
-                    fprintf('ERROR: %s\n',result)
-                    fprintf('aborted\n')
-                    return
-                end
+                fprintf('aborted\n')
+                return
             end
             % move to the shorted folder name
             [SUCCESS,MESSAGE] = movefile(orig_module_dir,module_dir);

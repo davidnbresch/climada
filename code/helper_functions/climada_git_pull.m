@@ -105,18 +105,15 @@ function ok=climada_git_pull_local_git_pull
 % local simple system command to execute git pull, return status=0 if OK
 ok=0; % init output
 %[status,result]=system('git pull'); % works on MAC, but not on cluster
-[status,result]=system('LD_LIBRARY_PATH="" git pull'); % fix to avoid using Matlab-Libs for git command
+if ismember({computer('arch')},{'win64','win32'}) % check if windows computer %maybe add other systems 
+    % try again (might work on some devices with git installed but not UNIX/LINUX) 20170824
+    [status,result]=system('git pull'); % fix to avoid using Matlab-Libs for git command
+else
+    [status,result]=system('LD_LIBRARY_PATH="" git pull'); % fix to avoid using Matlab-Libs for git command
+end
 ok=~status;
 if status>0 % =0 mean success
     fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n
-    % try again (might work on some devices with git installed but not UNIX/LINUX) 20170824
-    [status,result]=system('git pull'); % fix to avoid using Matlab-Libs for git command
-    ok=~status;
-    if status>0 % =0 mean success
-        fprintf('ERROR: %s',result) % seems to contain EoL, hence no \n
-    else
-        fprintf('%s',result); % seems to contain EoL, hence no \n
-    end
 else
     fprintf('%s',result); % seems to contain EoL, hence no \n
 end
