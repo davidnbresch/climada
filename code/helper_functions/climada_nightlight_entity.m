@@ -843,7 +843,7 @@ end % parameters.value_threshold>=0
 if parameters.add_distance2coast_km
     % add distance to coast
     if parameters.verbose,fprintf('adding distance to coast [km] (might take some time) ...\n');end
-    entity.assets.distance2coast_km=climada_distance2coast_km(entity.assets.lon,entity.assets.lat,check_plot);
+    entity.assets.distance2coast_km=climada_distance2coast_km(entity.assets.lon,entity.assets.lat,parameters.check_plot);
 end
 
 if parameters.add_elevation_m
@@ -853,7 +853,7 @@ if parameters.add_elevation_m
         fprintf('Note: no elevation added (no etopo_get function found)\n Please download from github and install the climada elevation_models module\n https://github.com/davidnbresch/climada_module_elevation_models\n');
     else
         if parameters.verbose,fprintf('adding elevation [m] (might take some time) ...\n');end
-        entity.assets.elevation_m=etopo_elevation_m(entity.assets.lon,entity.assets.lat,check_plot);
+        entity.assets.elevation_m=etopo_elevation_m(entity.assets.lon,entity.assets.lat,parameters.check_plot);
     end % add elevation
 end
 
