@@ -24,9 +24,14 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % CALLING SEQUENCE:
 %   damagefunctions = climada_damagefunctions_read(damagefunction_filename)
 % EXAMPLE:
-%   damagefunctions = climada_damagefunctions_read
+%   damagefunctions=climada_damagefunctions_read('entity_template');
+%
+%   % to first read an entity, then replace its damagefunctions
+%   entity=climada_entity_read('entity_template','TCNA_today_small',1);
+%   [~,entity]=climada_damagefunctions_read('entity_template',entity);
 % INPUTS:
 %   damagefunction_filename: the filename of the Excel file with the assets
+%       If no path provided, default path in climada_global.entities_dir is used
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   entity: if an entity is passed, it's entity.damagefunctions is replaced
@@ -46,6 +51,7 @@ function [damagefunctions,entity] = climada_damagefunctions_read(damagefunction_
 % Lea Mueller, muellele@gmail.com, 20151119, read first sheet if sheet "damagefunctions" is not found
 % David Bresch, david.bresch@gmail.com, 20151119, bugfix for Octave to try/catch xlsinfo
 % David Bresch, david.bresch@gmail.com, 20160918, climada_damagefunctions_complete
+% David Bresch, david.bresch@gmail.com, 20171221, example improved to test the function
 %-
 
 global climada_global
@@ -70,6 +76,16 @@ if isempty(damagefunction_filename) % local GUI
         return; % cancel
     else
         damagefunction_filename = fullfile(pathname,filename);
+    end
+end
+
+[fP,fN,fE] = fileparts(damagefunction_filename);
+if isempty(fE),fE=climada_global.spreadsheet_ext;end
+if isempty(fP) % complete path, if missing
+    damagefunction_filename=[climada_global.entities_dir filesep fN fE];
+    if ~exist(damagefunction_filename,'file');
+        fprintf('Note: %s does nor exist, switched to .xlsx\n',damagefunction_filename)
+        damagefunction_filename=[climada_global.entities_dir filesep fN '.xlsx']; % try this, too
     end
 end
 

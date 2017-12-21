@@ -38,7 +38,7 @@ function [entity,entity_save_file] = climada_entity_read(entity_filename,hazard,
 %   entity=climada_entity_read('entity_template_ADVANCED','TCNA_today_small',1);
 % INPUTS:
 %   entity_filename: the filename of the Excel (.xls, .xlsx or .ods) file with the assets
-%       If no path provided, default path ../data/entities is used
+%       If no path provided, default path in climada_global.entities_dir is used
 %       > promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   hazard: either a hazard set (struct) or a hazard set file (.mat with a struct)
