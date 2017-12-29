@@ -51,6 +51,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,fontsize
 % David N. Bresch, david.bresch@gmail.com, 20170202, parallelized
 % David N. Bresch, david.bresch@gmail.com, 20170216, small issue in line 274 (not fixed yet)
 % David N. Bresch, david.bresch@gmail.com, 20170518, small fix for EQ (caxis_max)
+% David N. Bresch, david.bresch@gmail.com, 20171229, plot distribution improved
 %-
 
 % init global variables
@@ -199,9 +200,10 @@ if abs(check_plot)>0
     centroids.lon=hazard.lon; % to pass on below
     centroids.lat=hazard.lat; % to pass on below
     
+    % figure how many plots and how to place
     RP_count = length(return_periods);
-    if RP_count < 3; y_no = RP_count; else y_no  = 3; end
-    x_no         = ceil(RP_count/3);
+    y_no = ceil(sqrt(RP_count));
+    x_no = ceil(RP_count/y_no);
     
     subaxis(x_no, y_no, 1,'MarginTop',0.15, 'mb',0.05)
     

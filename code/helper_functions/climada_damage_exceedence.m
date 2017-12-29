@@ -34,6 +34,7 @@ function [sorted_damage,exceedence_freq,cumulative_probability,sorted_freq,event
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20120430
 % David N. Bresch, david.bresch@gmail.com, 20170727, return_damage_RP_clean added
+% David N. Bresch, david.bresch@gmail.com, 20171229, bug in return_damage_RP_clean fixed
 %-
 
 event_index_out=[]; % init
@@ -56,5 +57,5 @@ cumulative_probability=[1 1-exceedence_freq(1:end-1)/exceedence_freq(end)]; % si
 if return_damage_RP_clean
     nonzero_pos     = find(exceedence_freq);
     sorted_damage   = sorted_damage(nonzero_pos);
-    exceedence_freq = 1./exceedence_freq(nonzero_pos);
+    exceedence_freq = exceedence_freq(nonzero_pos);
 end % climada_damage_exceedence
