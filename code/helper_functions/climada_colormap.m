@@ -38,6 +38,7 @@ function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20160426, finetune lack of greenness colors
 % Lea Mueller, muellele@gmail.com, 20160816, set number of colours to step10, in schematic, landslide and factor of safety
 % David N. Bresch, david.bresch@gmail.com, 20170728, http://colorbrewer2.org maps  added
+% David N. Bresch, david.bresch@gmail.com, 20171230, TC and WS maps updated
 %-
 
 cmap = []; c_ax = []; %init output
@@ -59,18 +60,25 @@ if steps10 == 1, steps10 = steps10+1; only_one_step = 1; end
 switch peril_ID
     case 'TC' % create colormap for wind:
         c_ax = [0 90];
-        cmap =[  1.0000    1.0000    1.0000;
-            %0.8100    0.8100    0.8100;
-            0.6300    0.6300    0.6300;
-            1.0000    0.8000    0.2000;
-            %0.9420    0.6667    0.1600;
-            0.8839    0.5333    0.1200;
-            0.8259    0.4000    0.0800;
-            %0.7678    0.2667    0.0400;
-            0.7098    0.1333         0;
-            0.5412    0.1020         0;
-            0.4078    0.1333    0.5451;
-            0.3333    0.1020    0.5451];
+        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
+        cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
+        
+        %test with: colormap(cmap),hc=colorbar,caxis(c_ax),set(hc,'XTick',10:5:c_ax(2)); %special, start not with zero
+        %           set(get(hc,'xlabel'),'String','m/s','fontsize',16);set(hc,'FontSize',16)
+        
+        % until 20171230
+        % cmap =[  1.0000    1.0000    1.0000;
+        %     %0.8100    0.8100    0.8100;
+        %     0.6300    0.6300    0.6300;
+        %     1.0000    0.8000    0.2000;
+        %     %0.9420    0.6667    0.1600;
+        %     0.8839    0.5333    0.1200;
+        %     0.8259    0.4000    0.0800;
+        %     %0.7678    0.2667    0.0400;
+        %     0.7098    0.1333         0;
+        %     0.5412    0.1020         0;
+        %     0.4078    0.1333    0.5451;
+        %     0.3333    0.1020    0.5451];
         
     case {'TR','XR'} % create colormap for rain
         % 3 green colors, 5 blue colors (instead of originally 10)
@@ -112,19 +120,26 @@ switch peril_ID
         cmap = [1.0 1.0 1.0; cmap1; cmap2];
         
     case 'WS' % create colormap for wind storm:
-        c_ax = [0 80];
-        cmap =[  1.0000    1.0000    1.0000;
-            %0.8100    0.8100    0.8100;
-            0.6300    0.6300    0.6300;
-            1.0000    0.8000    0.2000;
-            %0.9420    0.6667    0.1600;
-            0.8839    0.5333    0.1200;
-            0.8259    0.4000    0.0800;
-            %0.7678    0.2667    0.0400;
-            0.7098    0.1333         0;
-            0.5412    0.1020         0;
-            0.4078    0.1333    0.5451;
-            0.3333    0.1020    0.5451];    
+        c_ax = [0 60];
+        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
+        cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
+        
+        %test with: colormap(cmap),hc=colorbar,caxis(c_ax),set(hc,'XTick',10:5:c_ax(2)); %special, start not with zero
+        %           set(get(hc,'xlabel'),'String','m/s','fontsize',16);set(hc,'FontSize',16)
+        
+        % old, until 20171230
+        % cmap =[  1.0000    1.0000    1.0000;
+        %     0.8100    0.8100    0.8100; %
+        %     0.6300    0.6300    0.6300;
+        %     1.0000    0.8000    0.2000;
+        %     0.9420    0.6667    0.1600; %
+        %     0.8839    0.5333    0.1200;
+        %     0.8259    0.4000    0.0800;
+        %     0.7678    0.2667    0.0400; %
+        %     0.7098    0.1333         0;
+        %     0.5412    0.1020         0;
+        %     0.4078    0.1333    0.5451;
+        %     0.3333    0.1020    0.5451];
         
     case 'MS' % create colormap for mudslides
         c_ax = [];

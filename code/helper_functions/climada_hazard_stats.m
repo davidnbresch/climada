@@ -52,6 +52,7 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,fontsize
 % David N. Bresch, david.bresch@gmail.com, 20170216, small issue in line 274 (not fixed yet)
 % David N. Bresch, david.bresch@gmail.com, 20170518, small fix for EQ (caxis_max)
 % David N. Bresch, david.bresch@gmail.com, 20171229, plot distribution improved
+% David N. Bresch, david.bresch@gmail.com, 20171230, climada_progress2stdout and additional vertical colorbar
 %-
 
 % init global variables
@@ -84,9 +85,9 @@ cmap = climada_colormap(hazard.peril_ID); % default
 caxis_min=0;caxis_max=full(max(max(hazard.intensity))); % default
 switch hazard.peril_ID
     case 'TC' % tropical cyclone wind
-        intensity_threshold = 5;
-        caxis_max = 100;
-        xtick_    = caxis_max/5:caxis_max/5:caxis_max;
+        intensity_threshold = 10;
+        caxis_max = 90;
+        xtick_    = 10:10:caxis_max;
         cbar_str  = [hist_str 'wind speed (m/s)'];
     case 'TR' % tropical cyclone rain
         caxis_max = 300; %caxis_max = 500;
@@ -99,16 +100,16 @@ switch hazard.peril_ID
     case 'MS' % mudslides
         caxis_max = 3;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
-        cbar_str  = sprintf('%%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
+        cbar_str  = sprintf('%s %s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
     case 'LS' % landslide
         caxis_max = 1;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
-        cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
+        cbar_str  = sprintf('%s %s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
         cmap = flipud(climada_colormap(hazard.peril_ID));
     case 'WS' % storm europe
-        intensity_threshold = 5;
+        intensity_threshold = 10;
         caxis_max = 60;
-        xtick_    = caxis_max/5:caxis_max/5:caxis_max;
+        xtick_    = 10:10:caxis_max;
         cbar_str  = [hist_str 'wind speed (m/s)'];
     case 'HS' % hail
         intensity_threshold = 10;
@@ -116,7 +117,7 @@ switch hazard.peril_ID
         caxis_min = 200;
         caxis_max = 2000;
         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
-        cbar_str  = sprintf('%s%s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
+        cbar_str  = sprintf('%s %s intensity (%s)',hist_str,hazard.peril_ID,hazard.units);
     case 'EQ' % earthquake
         intensity_threshold = 1;
         caxis_max = 15;
@@ -151,35 +152,23 @@ if ~isfield(hazard,'map')
     
     fprintf('calculate hazard statistics: processing %i %sevents at %i (non-zero) centroids\n',n_sel_event,hist_str,n_nonzero_centroids);
 
-    t0       = clock;
+    t0 = clock;
     if climada_global.parfor
         parfor centroid_i = 1:n_nonzero_centroids
             map_intensity(:,centroid_i)=LOCAL_map_intensity(intensity(:,centroid_i),intensity_threshold,frequency,return_periods);
         end % centroid_i
     else
-        mod_step = 10; % first time estimate after 10 tracks, then every 100
-        format_str='%s';
+        climada_progress2stdout % init
+        mod_step = 100;
+        if n_centroids>10000,mod_step=1000;end
+        if n_centroids>100000,mod_step=10000;end
         for centroid_i = 1:n_nonzero_centroids
             map_intensity(:,centroid_i)=LOCAL_map_intensity(intensity(:,centroid_i),intensity_threshold,frequency,return_periods);
             
-            if mod(centroid_i,mod_step)==0 % progress report
-                mod_step = 100;
-                if n_centroids>10000,mod_step=1000;end
-                if n_centroids>100000,mod_step=10000;end
-                t_elapsed = etime(clock,t0)/centroid_i;
-                n_remaining = n_centroids-centroid_i;
-                t_projected_sec = t_elapsed*n_remaining;
-                if t_projected_sec<60
-                    msgstr = sprintf('est. %3.0f sec left (%i/%i centroids)',t_projected_sec, centroid_i, n_centroids);
-                else
-                    msgstr = sprintf('est. %3.1f min left (%i/%i centroids)',t_projected_sec/60, centroid_i, n_centroids);
-                end
-                fprintf(format_str,msgstr); % write progress to stdout
-                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
-            end
+            climada_progress2stdout(centroid_i,n_centroids,mod_step,'centroids'); % update
             
         end % centroid_i
-        fprintf(format_str,''); % move carriage to begin of line
+        climada_progress2stdout(0) % terminate
     end
     fprintf('processing %i non-zero centroids took %2.2f sec\n',n_nonzero_centroids,etime(clock,t0));
     
@@ -194,7 +183,7 @@ end % calculation
 
 if abs(check_plot)>0
     
-    fprintf('plotting %sintensity vs return periods maps (be patient) ',hist_str)
+    fprintf('plotting %sintensity vs return period maps (be patient) ',hist_str)
     
     scale = max(hazard.lon)-min(hazard.lon);
     centroids.lon=hazard.lon; % to pass on below
@@ -202,22 +191,32 @@ if abs(check_plot)>0
     
     % figure how many plots and how to place
     RP_count = length(return_periods);
-    y_no = ceil(sqrt(RP_count));
-    x_no = ceil(RP_count/y_no);
+    subplots_hor = ceil(sqrt(RP_count));
+    subplots_ver = ceil(RP_count/subplots_hor);
     
-    subaxis(x_no, y_no, 1,'MarginTop',0.15, 'mb',0.05)
+    subaxis(subplots_ver, subplots_hor, 1,'MarginTop',0.15, 'mb',0.05)
     
     % colorbar
-    subaxis(2);
-    pos = get(subaxis(2),'pos');
+    subaxis(subplots_hor); % last subplot (upper right)
+    pos = get(subaxis(subplots_hor),'pos');
     % distance in normalized units from the top of the axes
-    dist = .06;
-    hc = colorbar('location','northoutside', 'position',[pos(1) pos(2)+pos(4)+dist pos(3) 0.03]);
-    set(get(hc,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);
-    caxis([caxis_min caxis_max])
+    dist = .03;
+    hc_hor=colorbar('location','northoutside', 'position',[pos(1) pos(2)+pos(4)+dist pos(3) dist*.75]);
+    set(get(hc_hor,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);set(hc_hor,'FontSize',fontsize)
+    colormap(cmap);caxis([caxis_min caxis_max])
     set(gca,'fontsize',fontsize)
     hold on
     
+    % and a vertical bar, too
+    subaxis(2*subplots_hor); % last subplot (upper right)
+    pos = get(subaxis(2*subplots_hor),'pos');
+    dist = .01;pos(1)=pos(1)+pos(3)+dist;pos(3)=1.5*dist; % in normalized units
+    hc_ver=colorbar('Location','EastOutside','Position',pos);
+    set(get(hc_ver,'xlabel'), 'String',cbar_str, 'fontsize',fontsize);set(hc_ver,'FontSize',fontsize)
+    colormap(cmap);caxis([caxis_min caxis_max])
+    set(gca,'fontsize',fontsize);axis off
+    hold on
+        
     for rp_i=1:n_return_periods
         
         fprintf('.') % simplest progress indicator
@@ -246,7 +245,8 @@ if abs(check_plot)>0
         if ~exist('cmap','var'), cmap = '';end
         if ~isempty(cmap), colormap(cmap);end
         set(gca,'fontsize',fontsize)
-        set(hc,'XTick',xtick_)
+        set(hc_hor,'XTick',xtick_);set(hc_ver,'XTick',xtick_)
+        axis on
         
     end % rp_i
     
