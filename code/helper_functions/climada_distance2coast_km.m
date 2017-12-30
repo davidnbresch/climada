@@ -43,6 +43,7 @@ function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,forc
 % David N. Bresch, david.bresch@gmail.com, 20150514, speedup factor ten or more implemented
 % David N. Bresch, david.bresch@gmail.com, 20150515, check_inpolygon implemented
 % David N. Bresch, david.bresch@gmail.com, 20170208, parfor implemented
+% David N. Bresch, david.bresch@gmail.com, 20171230, climada_progress2stdout and enabled for multiple shapes
 %-
 
 distance_km=[];
@@ -83,20 +84,16 @@ end
 load(climada_global.coastline_file) % contains coastline as 'Point'
 
 cos_lat=cos(lat./180.*pi);
-distance_km=cos_lat*0; % init
-
-% progress to stdout
-t0            = clock;
-if length(cos_lat)>1000
-    mod_step  = 100; % first time estimate after 100 points processed
-    format_str= '%s';
-else
-    mod_step=-1;
-end
+distance_km=cos_lat*0+1e12; % init with big value
+distance_km_tmp=distance_km;
 
 n_shapes=length(shapes);
 n_points=length(cos_lat);
 n_shapes_n_points=n_shapes*n_points;
+
+% progress to stdout
+if ~climada_global.parfor && length(cos_lat)>1000,climada_progress2stdout;end % init, see terminate below
+t0            = clock;
 
 for shape_i=1:n_shapes
     % usually one shape, but this way, it would work for multiple ones,
@@ -125,7 +122,6 @@ for shape_i=1:n_shapes
     
     if climada_global.parfor
         
-        mod_step=-1; % no time est. to stdout
         parfor point_i=1:n_points
             distance_km(point_i)=min(( (eff_shp_X-lon(point_i)).*cos_lat(point_i) ).^2 + (eff_shp_Y-lat(point_i)).^2);
         end % point_i
@@ -136,29 +132,11 @@ for shape_i=1:n_shapes
             
             % next line eats up almost all time
             %dist2=min(( (eff_shp_X-lon(point_i)).*cos_lat(point_i) ).^2 + (eff_shp_Y-lat(point_i)).^2);
+            %distance_km(point_i)=min(distance_km(point_i),dist2);
             distance_km(point_i)=min(( (eff_shp_X-lon(point_i)).*cos_lat(point_i) ).^2 + (eff_shp_Y-lat(point_i)).^2);
             
-            %distance_km(point_i)=min(distance_km(point_i),dist2);
-            
-            if mod(point_i,mod_step)==1
-                if mod_step==100
-                    mod_step=1000; % 2nd time 1000
-                else
-                    mod_step=10000; % later
-                end
-                
-                n_points_proc     = point_i+(shape_i-1)*point_i;
-                t_elapsed_point   = etime(clock,t0)/n_points_proc;
-                points_remaining  = n_shapes_n_points-n_points_proc;
-                t_projected_sec   = t_elapsed_point*points_remaining;
-                if t_projected_sec<60
-                    msgstr = sprintf('est. %3.0f sec left (%i/%i points)',t_projected_sec,   n_points_proc,n_shapes_n_points);
-                else
-                    msgstr = sprintf('est. %3.1f min left (%i/%i points)',t_projected_sec/60,n_points_proc,n_shapes_n_points);
-                end
-                fprintf(format_str,msgstr); % write progress to stdout
-                format_str=[repmat('\b',1,length(msgstr)) '%s']; % back to begin of line
-            end
+            n_points_proc     = point_i+(shape_i-1)*point_i;
+            climada_progress2stdout(n_points_proc,n_shapes_n_points,10000,'points'); % update
             
         end % point_i
         
@@ -175,9 +153,13 @@ for shape_i=1:n_shapes
         distance_km(in)=-distance_km(in);
     end %
     
+    distance_km_tmp=min(distance_km_tmp,distance_km); % keep shortest distance
+    
 end % shape_i
 
-if mod_step>0,fprintf(format_str,'');end % move carriage to begin of line
+distance_km=distance_km_tmp; clear distance_km_tmp % using _tmp for lisibility
+
+if ~climada_global.parfor && length(cos_lat)>1000,climada_progress2stdout(0);end % terminate
 
 distance_km=sqrt(distance_km)*111.12; % convert to km (approx.)
 
