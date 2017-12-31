@@ -44,8 +44,8 @@ function hazard = climada_tc_hazard_set(tc_track,hazard_set_file,centroids,verbo
 %       > promted for if not given
 %   hazard_set_file: the name (and path, optional) of the hazard set file
 %       If no path provided, default path ../data/hazards is used (and name
-%       can be without extension .mat). If ='NOSAVE', the hazard set is not
-%       saved (but returned as output)
+%       can be without extension .mat). If ='NOSAVE' (or 'NO_SAVE'), the
+%       hazard set is not saved (but still returned as output) 
 %       > promted for if not given
 %   centroids: the variable grid centroids (see climada_centroids_read)
 %       a structure with
@@ -403,7 +403,7 @@ if verbose_mode,fprintf('adding hazard.fraction ...');end
 hazard.fraction=spones(hazard.intensity); % fraction 100%
 if verbose_mode,fprintf(' done\n');end
 
-if isempty(strfind(hazard_set_file,'NOSAVE'))
+if isempty(strfind(hazard_set_file,'NOSAVE')) && isempty(strfind(hazard_set_file,'NO_SAVE')) 
     if verbose_mode,fprintf('saving TC wind hazard set as %s\n',hazard_set_file);end
     save(hazard_set_file,'hazard',climada_global.save_file_version) % for HDF5 format (portability)
 end

@@ -1,19 +1,18 @@
-function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids,entity)
+function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 % climada plot single hazard event footprint
 % NAME:
 %   climada_hazard_plot
 % PURPOSE:
 %   plot hazard event as contour on a map, works for all perils
+%   RENAMED from climada_hazard_plot_nogrid to climada_hazard_plot
 %
 %   see also climada_plot_tc_footprint (works for TC only)
 %   and the high-resolution version climada_hazard_plot_hr
-%
-%   See also climada_hazard_plot_nogrid (later to be merged all in one)
+%   See also climada_hazard_plot (later to be merged all in one)
 % CALLING SEQUENCE:
-%   res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids,entity)
+%   [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 % EXAMPLE:
-%   climada_hazard_plot(climada_hazard_load,1); % plot first event
-%   climada_hazard_plot; % prompt for hazard event set, plot largest event
+%   climada_hazard_plot(climada_hazard_load('TCNA_today_small'),-1); % TEST
 % INPUTS:
 %   hazard: hazard structure
 %       > prompted for if empty
@@ -23,85 +22,109 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 %           e.g. for event_i=-2, the second largest event is shown
 %       default=-1 (just to get something on the screen ;-)
 %       Different meaning in case you pass entity (see optional parameters)
+%   markersize: the size of the 'tiles', one might need to experiment a
+%       bit (that's why markersize is not part of params.), as the code
+%       tries (hard) to set a reasonabls default (based on resolution).
+%       If <0, plot ocean blue and land grey (looks nicer, but takes a bit longer)
 % OPTIONAL INPUT PARAMETERS:
-%   label: a struct with a label to add on the plot (i.e. a place)
+%   params: a structure with fields (see also entity='params' above):
+%    plot_centroids: =1: plot centroids as small red dots
+%       =0: do not plot centroids (default)
+%    max_value: the maximum value to color, default is max(entity.assets.Value)
+%       if =-1, use largest Value in entity.assets.Values, instead of .Value
+%    cbar_ylabel: label for the color bar, default 'Value'
+%       if empty, indicate entity value locations by black circles, e.g. for
+%       climada_hazard_plot(hazard);hold on;climada_entity_plot(entity,1,0,[],'')
+%    title_str: the title of the plot, if empty, use contents of hazard to define it
+%    blue_ocean: plot ocean bliue, if =1 (default=0, since faster)
+%    intensity_threshold: the intensity threshold below which we do not plot
+%       intensities, default=0.
+%    label: a struct with a label to add on the plot (i.e. a place)
 %       longitude: the longitude (decimal)
 %       latitude: the latitude (decimal)
-%       name: the label itself, like 'gaga'
-%   caxis_range: [minval maxval], the range of the color axis, e.g. [20 40]
-%       to show colors for values brtween 20 and 40
-%   plot_centroids: =1, plot centroids, =0 no (default)
-%   entity: if provided, do not show 'biggest' hazard in terms of itensity,
+%       name: the label itself, like 'this city'
+%    entity: if provided, do not show 'biggest' hazard in terms of itensity,
 %       but regarding resulting damage based on entity
 %       Only makes sense for event_i<0, as it shows the i-th largest damage
+%    figure_scale: if =1, plot figure scale (default), =0 not
 % OUTPUTS:
 %   creates a figure
-%   res, a structure with the core data, i.e. X,Y and VALUE as shown
+%   res: a structure with the core data, i.e. lon,lat and value as shown
+%   params: the params structure, filled wit defaults, see
 % MODIFICATION HISTORY:
-% David N. Bresch, david.bresch@gmail.com, 20140302
-% David N. Bresch, david.bresch@gmail.com, 20150114, Octave compatibility for -v7.3 mat-files
-% David N. Bresch, david.bresch@gmail.com, 20150225, res instead of [X,Y,gridded_VALUE]
-% Lea Mueller, muellele@gmail.com, 20150424, colormap according to peril_ID
-% Lea Mueller, muellele@gmail.com, 20150427, higher resolution, npoints set to 2000 (instead of 199)
-% Lea Mueller, muellele@gmail.com, 20150512, switched to griddata instead of climada_gridded_Value
-% David N. Bresch, david.bresch@gmail.com, cleanup
-% David N. Bresch, david.bresch@gmail.com, 20160930, legend added, if centroids are plotted
-% David N. Bresch, david.bresch@gmail.com, 20170110, entity added
-% David N. Bresch, david.bresch@gmail.com, 20170611, FontSize in PARAMETERS for plots
-% David N. Bresch, david.bresch@gmail.com, 20170706, hint to climada_hazard_plot_nogrid added
-% David N. Bresch, david.bresch@gmail.com, 20170721, cleanup for title_str
-% David N. Bresch, david.bresch@gmail.com, 20171013, small fix in fprintf 
+% David N. Bresch, david.bresch@gmail.com, 20170611, initial copy from climada_entity_plot
+% David N. Bresch, david.bresch@gmail.com, 20170730, scaling same as climada_entity_plot
+% David N. Bresch, david.bresch@gmail.com, 20170801, Octave compatibility
+% David N. Bresch, david.bresch@gmail.com, 20171231, renamed from
+% climada_hazard_plot_nogrid to climada_hazard_plot and small fix in fprintf
 %-
-
-fprintf('see also climada_hazard_plot_nogrid to plot exactly on centroids\n');
 
 res=[]; % init
 
-%global climada_global
+global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 
 % poor man's version to check arguments
-if ~exist('hazard','var'),hazard=[];end
-if ~exist('event_i','var'),event_i=-1;end
-if ~exist('label','var'),label=[];end
-if ~exist('caxis_range','var'),caxis_range=[];end
-if ~exist('plot_centroids','var'),plot_centroids=0;end
-if ~exist('entity','var'),entity=[];end
+if ~exist('hazard','var'),     hazard=[];end
+if ~exist('event_i','var'),    event_i=-1;end
+if ~exist('markersize','var'), markersize=[];end
+if ~exist('params','var'),     params=struct;end
 
-if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
-if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
-if isempty(hazard),return;end
+% check for some parameter fields we need
+if ~isfield(params,'plot_centroids'), params.plot_centroids=[];end
+if ~isfield(params,'cbar_ylabel'),    params.cbar_ylabel='';end
+if ~isfield(params,'title_str'),      params.title_str='';end
+if ~isfield(params,'blue_ocean'),     params.blue_ocean=[];end
+if ~isfield(params,'intensity_threshold'),params.intensity_threshold=[];end
+if ~isfield(params,'label'),          params.label=[];end
+if ~isfield(params,'entity'),         params.entity=[];end
+if ~isfield(params,'max_value'),      params.max_value=[];end
+if ~isfield(params,'figure_scale'),   params.figure_scale=[];end
 
 % PARAMETERS
 %
 % the threshold up to which the original centroid coordinates are used to
 % create the meshgrid (using fewer points for speedup, if above)
 % see code below for details (search for max_numel_lonlat)
-max_numel_lonlat=1000000; % 1000
-%
-verbose=0; % default=0
 %
 % Font size on plot, must be 2*n (as we use half the size, too)
 FontSize=12; % default=12 or 18
+%
+% color of land, only used, if markersize<0
+country_color=[.6 .6 .6]; % light gray
+%
+% populate default parameters in params
+if isempty(params.plot_centroids),  params.plot_centroids=0;end
+if isempty(params.cbar_ylabel),     params.cbar_ylabel='Intensity';end
+if isempty(params.blue_ocean),      params.blue_ocean=0;end
+if isempty(params.intensity_threshold),params.intensity_threshold=0;end
+if isempty(params.figure_scale),    params.figure_scale=1;end
 
+if strcmpi(hazard,'params'),res=params;return;end % special case, return the full params structure
+
+if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, if empty
+if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
+if isempty(hazard),return;end
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
-
-if ~isfield(hazard,'units'),hazard.units='';end
-
-if ~isempty(entity)
-    EDS=climada_EDS_calc(entity,hazard);
-    event_sum=EDS.damage; % pass damage instead of intensity
-else
-    event_sum=[];
-end
-
-% calculate figure scaling parameters
-scale  = max(hazard.lon) - min(hazard.lon);
+if isfield(hazard,'units'),params.cbar_ylabel=hazard.units;end
 
 % calculate figure characteristics
-ax_lim_buffer = scale/10;
+scale  = max( max(hazard.lon)-min(hazard.lon), max(hazard.lat)-min(hazard.lat));
+ax_lim_buffer = scale/20;
 ax_lim = [min(hazard.lon)-ax_lim_buffer           max(hazard.lon)+ax_lim_buffer ...
     max(min(hazard.lat),-60)-ax_lim_buffer  min(max(hazard.lat),95)+ax_lim_buffer];
+
+if isempty(markersize)
+    % a crude way to get an appropriate markersize
+    markersize=max(2,15-ceil(scale));
+    fprintf('markersize = %i\n',markersize);
+end
+
+event_sum=[];
+if ~isempty(params.entity)
+    EDS=climada_EDS_calc(entity,hazard);
+    event_sum=EDS.damage; % pass damage instead of intensity
+end
 
 event_ii=0;yyyymmdd_str=''; % init
 if event_i<0
@@ -109,10 +132,11 @@ if event_i<0
     if isempty(event_sum),event_sum=sum(hazard.intensity,2);end
     [~,sorted_i]=sort(event_sum);
     event_ii=sorted_i(length(sorted_i)+event_i+1);
-    values=full(hazard.intensity(event_ii,:)); % extract one event
+    plot_Value=full(hazard.intensity(event_ii,:)); % extract one event
     if isfield(hazard,'yyyy') && isfield(hazard,'mm') && isfield(hazard,'dd')
-        yyyymmdd_str=sprintf('%4.4i%2.2i%2.2i',hazard.yyyy(event_ii),hazard.mm(event_ii),hazard.dd(event_ii));  
+        yyyymmdd_str=sprintf('%4.4i%2.2i%2.2i',hazard.yyyy(event_ii),hazard.mm(event_ii),hazard.dd(event_ii));
     end
+    
     if event_i<-1
         title_str=sprintf('%s %i-largest event %s (%i)',hazard.peril_ID,-event_i,yyyymmdd_str,event_ii);
     else
@@ -123,16 +147,15 @@ if event_i<0
         fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard.name{event_ii},hazard.yyyy(event_ii),hazard.mm(event_ii),hazard.dd(event_ii),event_ii);
     end
 elseif event_i==0
-    values=full(max(hazard.intensity)); % max intensity at each point
+    plot_Value=full(max(hazard.intensity)); % max intensity at each point
     title_str=sprintf('%s max intensity at each centroid',hazard.peril_ID);
 else
-    values=full(hazard.intensity(event_i,:)); % extract one event
+    plot_Value=full(hazard.intensity(event_i,:)); % extract one event
     if isfield(hazard,'yyyy') && isfield(hazard,'mm') && isfield(hazard,'dd')
         yyyymmdd_str=sprintf('%4.4i%2.2i%2.2i',hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i));
     end
     if isfield(hazard,'name')
         hazard_name=hazard.name{event_i};
-        %fprintf('%s, %4.4i%2.2i%2.2i, event %i\n',hazard_name,yyyymmdd_str,event_i);
         fprintf('%s, %s, event %i\n',hazard_name,yyyymmdd_str,event_i);
         gen_check=strfind(hazard_name,'gen'); % check for probabilistic event
         if ~isempty(gen_check)
@@ -146,66 +169,66 @@ else
     end
 end
 
-if sum(values(not(isnan(values))))>0 % nansum(values)>0
+if isempty(params.title_str),params.title_str=title_str;end
+
+plot_Value(plot_Value<params.intensity_threshold)=NaN;
+
+if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
     
-    [cmap,~]      = climada_colormap(hazard.peril_ID);
+    [cmap,c_ax]      = climada_colormap(hazard.peril_ID);
     
-    ulon=unique(hazard.lon);ulat=unique(hazard.lat);
-    if max(numel(ulon),numel(ulat))>max_numel_lonlat
-        fprintf('Note: grid on appropriate resolution, not on original centroids,');
-        verbose=1;
-        ddlon=max(abs(diff(ulon)));ddlat=max(abs(diff(ulat)));
-        dlon=(max(ulon)-min(ulon))/1000;
-        dlat=(max(ulat)-min(ulat))/1000;
-        ulon=min(ulon)-ddlon:dlon:max(ulon)+ddlon;
-        ulat=min(ulat)-ddlat:dlat:max(ulat)+ddlat;
+    if isempty(params.max_value)
+        %params.max_value=max(plot_Value); % until 20170809
+        params.max_value=max(c_ax);
     end
-    [X, Y]    = meshgrid(ulon,ulat);
-    if verbose,fprintf(' gridding ...');end
-    gridded_VALUE = griddata(hazard.lon,hazard.lat,values,X,Y);
-    if verbose,fprintf(' done\n');end
-    contourf(X, Y, gridded_VALUE,'linecolor','none')
-    %contourf(X, Y, gridded_VALUE,'linecolor','none','LevelList',LevelList)
+    %mav=params.max_value*1.1; % to be on the safe side for all values to be plotted
+    mav=params.max_value; % you get what you ask for
+    
+    if params.blue_ocean
+        climada_plot_world_borders(-1,'','',0,[],country_color);
+        hold on
+    end
+    
+    [cbar,~]= plotclr(hazard.lon,hazard.lat,plot_Value, 's',abs(markersize), 1,0,mav,cmap,0,0); % 1,0)
+    %         plotclr(x,         y,         v,       marker,markersize,colorbar_on, miv, mav, map, zero_off, v_exp)
+
     hold on
-    box on
-    if plot_centroids
-        plot(hazard.lon,hazard.lat,'.b','MarkerSize',1);
-        legend({['hazard intensity [' hazard.units ']'],'centroids'});
-    end % plot_centroids
-    climada_plot_world_borders(0.5)
-    axis(ax_lim)
+    set(gca,'FontSize',FontSize)
+    set(cbar,'FontSize',FontSize) % cbar.FontSize = FontSize;
+    %set(get(cbar,'Label' ),'FontSize',FontSize) % cbar.Label.FontSize = FontSize;
+    set(get(cbar,'ylabel'),'string',params.cbar_ylabel,'fontsize',FontSize);
+    
+    if ~isempty(params.title_str),title(params.title_str,'FontSize',FontSize);end
+    xlabel('Longitude','FontSize',FontSize);ylabel('Latitude','FontSize',FontSize);
+    
     axis equal
     axis(ax_lim)
-    if ~isempty(caxis_range),caxis(caxis_range);end
-    c=colorbar;
-    c.FontSize = FontSize;
-    c.Label.FontSize = FontSize;
-    colormap(cmap)
-    if isfield(hazard,'units')
-        try % . notation allowed since version 7...
-            c.Label.String = hazard.units;
-        catch
-            title_str=[title_str ' (' hazard.units ')']; % add units
-        end % try
-    end % isfield(hazard,'units')
-    title(title_str,'FontSize',FontSize);xlabel('Longitude','FontSize',FontSize/2);ylabel('Latitude','FontSize',FontSize/2);
+    box % box axes
+    climada_plot_world_borders(0.7*sign(markersize),'','',1,[],country_color);
+    
+    if params.plot_centroids,plot(hazard.lon,hazard.lat,'.r','MarkerSize',1);end
+    
+    if ~climada_global.octave_mode && params.figure_scale,climada_figure_scale_add;end
+    set(gcf,'Color',[1 1 1])
+    hold off
+    drawnow
     
 else
-    fprintf('all intensities zero for event %i\n',event_i);
+    fprintf('all intensities < %2.2f for event %i\n',params.intensity_threshold,event_i);
     return
 end
 
-if ~isempty(label)
-    text(label.longitude,label.latitude,label.name)
-    plot(label.longitude,label.latitude,'xk');
+if ~isempty(params.label)
+    text(params.label.longitude,params.label.latitude,params.label.name)
+    plot(params.label.longitude,params.label.latitude,'xk');
 end
 
-res.X=X;
-res.Y=Y;
-res.VALUE=gridded_VALUE;
+res.X=hazard.lon;
+res.Y=hazard.lat;
+res.VALUE=plot_Value;
 res.title_str=title_str;
-res.yyyymmdd_str=yyyymmdd_str;
 res.event_i=event_ii;
+res.yyyymmdd_str=yyyymmdd_str;
 try
     res.name=hazard.name(event_i);
 catch % empty catch

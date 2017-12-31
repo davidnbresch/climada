@@ -114,7 +114,7 @@ arr_target_val=unique_i*0+NaN;
 t0=clock;
 if climada_global.parfor && use_parfor
     arr_source_val=arr_source.val; % to direct data for parallelizatioon
-    if verbose,fprintf('calculating values at %i centroids (aprallel)',length(arr_target.lon));end
+    if verbose,fprintf('calculating values at %i centroids (parallel)',length(arr_target.lon));end
     parfor point_ii=1:length(unique_i) % loop over non-zero surge points
         arr_target_val(point_ii)=mean(arr_source_val(target_i==unique_i(point_ii))); % average height
     end % centroid_i
