@@ -50,7 +50,7 @@ function res=climada_hazard_plot(hazard,event_i,label,caxis_range,plot_centroids
 % David N. Bresch, david.bresch@gmail.com, 20170611, FontSize in PARAMETERS for plots
 % David N. Bresch, david.bresch@gmail.com, 20170706, hint to climada_hazard_plot_nogrid added
 % David N. Bresch, david.bresch@gmail.com, 20170721, cleanup for title_str
-% David N. Bresch, david.bresch@gmail.com, 20171013, small fix in fprintf
+% David N. Bresch, david.bresch@gmail.com, 20171013, small fix in fprintf 
 %-
 
 fprintf('see also climada_hazard_plot_nogrid to plot exactly on centroids\n');
