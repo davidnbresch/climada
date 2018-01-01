@@ -150,6 +150,7 @@ if check_plot>0
     end % source_ii
     plot(arr_target.lon,arr_target.lat,'xb'); % to show again on top
     set(gcf,'Color',[1 1 1]),title(strrep(mfilename,'_','\_'));
+    set(gca,'FontSize',16)
     fprintf(' done\n');
 end % check_plot
 
