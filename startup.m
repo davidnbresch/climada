@@ -77,6 +77,8 @@ fprintf('initializing climada... ');
 %initialises the global variables
 climada_init_vars;
 
+if exist('startupp','file'),try,startupp;catch,end;end % try, the comma is necessary
+
 if strcmp(computer,'GLNXA64'),climada_global.waitbar=0;end % NCAR
 
 fprintf('done (consider running climada_git_pull every now and then, at least weekly)\n');

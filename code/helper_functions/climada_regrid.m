@@ -138,12 +138,14 @@ fprintf('calculating values took %f sec.\n',arr_source.val_time);
 
 if check_plot>0
     fprintf('plot mapping, might take some time ...');
+    %save([climada_global.results_dir filesep '_climada_regrid_data'],'arr_source','arr_target'); % for illustrative plots
     figure('Name',mfilename);
-    plot(arr_source.lon,arr_source.lat,'.g');hold on;plot(arr_target.lon,arr_target.lat,'xb');legend({'source','target'});
+    set(gca,'FontSize',16)
+    plot(arr_source.lon,arr_source.lat,'.g','MarkerSize',3);hold on;plot(arr_target.lon,arr_target.lat,'xb','MarkerSize',5);legend({'source','target'});
     for source_ii=1:n_source_points
         if arr_source.target_i(source_ii)>0
             plot([arr_source.lon(source_ii),arr_target.lon(arr_source.target_i(source_ii))],...
-                [arr_source.lat(source_ii),arr_target.lat(arr_source.target_i(source_ii))],'-g');
+                [arr_source.lat(source_ii),arr_target.lat(arr_source.target_i(source_ii))],'-k','LineWidth',.1);
         end
     end % source_ii
     plot(arr_target.lon,arr_target.lat,'xb'); % to show again on top

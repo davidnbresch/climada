@@ -47,6 +47,7 @@ function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 %       but regarding resulting damage based on entity
 %       Only makes sense for event_i<0, as it shows the i-th largest damage
 %    figure_scale: if =1, plot figure scale (default), =0 not
+%    FontSize: the font size, default =12
 % OUTPUTS:
 %   creates a figure
 %   res: a structure with the core data, i.e. lon,lat and value as shown
@@ -55,8 +56,8 @@ function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170611, initial copy from climada_entity_plot
 % David N. Bresch, david.bresch@gmail.com, 20170730, scaling same as climada_entity_plot
 % David N. Bresch, david.bresch@gmail.com, 20170801, Octave compatibility
-% David N. Bresch, david.bresch@gmail.com, 20171231, renamed from
-% climada_hazard_plot_nogrid to climada_hazard_plot and small fix in fprintf
+% David N. Bresch, david.bresch@gmail.com, 20171231, renamed from climada_hazard_plot_nogrid to climada_hazard_plot and small fix in fprintf
+% David N. Bresch, david.bresch@gmail.com, 20180101, all color settings from climada_colorscale
 %-
 
 res=[]; % init
@@ -80,15 +81,13 @@ if ~isfield(params,'label'),          params.label=[];end
 if ~isfield(params,'entity'),         params.entity=[];end
 if ~isfield(params,'max_value'),      params.max_value=[];end
 if ~isfield(params,'figure_scale'),   params.figure_scale=[];end
+if ~isfield(params,'FontSize'),       params.FontSize=[];end
 
 % PARAMETERS
 %
 % the threshold up to which the original centroid coordinates are used to
 % create the meshgrid (using fewer points for speedup, if above)
 % see code below for details (search for max_numel_lonlat)
-%
-% Font size on plot, must be 2*n (as we use half the size, too)
-FontSize=12; % default=12 or 18
 %
 % color of land, only used, if markersize<0
 country_color=[.6 .6 .6]; % light gray
@@ -99,6 +98,7 @@ if isempty(params.cbar_ylabel),     params.cbar_ylabel='Intensity';end
 if isempty(params.blue_ocean),      params.blue_ocean=0;end
 if isempty(params.intensity_threshold),params.intensity_threshold=0;end
 if isempty(params.figure_scale),    params.figure_scale=1;end
+if isempty(params.FontSize),        params.FontSize=12;end
 
 if strcmpi(hazard,'params'),res=params;return;end % special case, return the full params structure
 
@@ -106,7 +106,7 @@ if isempty(hazard),hazard=climada_hazard_load;end % prompt for and load hazard, 
 if ischar(hazard),hazard=climada_hazard_load(hazard);end % special, if name instead of struct is passed
 if isempty(hazard),return;end
 hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
-if isfield(hazard,'units'),params.cbar_ylabel=hazard.units;end
+if ~isfield(hazard,'units'),hazard.units='';end
 
 % calculate figure characteristics
 scale  = max( max(hazard.lon)-min(hazard.lon), max(hazard.lat)-min(hazard.lat));
@@ -169,37 +169,33 @@ else
     end
 end
 
+% obtain a few peril-specific settings
+[cmap,c_ax,xtickvals,params.cbar_ylabel,intensity_threshold,hazard.units]=climada_colormap(hazard.peril_ID,'',hazard.units);
+
+if isempty(params.intensity_threshold),params.intensity_threshold=intensity_threshold;end
 if isempty(params.title_str),params.title_str=title_str;end
+if isempty(params.max_value),params.max_value=max(c_ax);end
 
 plot_Value(plot_Value<params.intensity_threshold)=NaN;
 
 if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
-    
-    [cmap,c_ax]      = climada_colormap(hazard.peril_ID);
-    
-    if isempty(params.max_value)
-        %params.max_value=max(plot_Value); % until 20170809
-        params.max_value=max(c_ax);
-    end
-    %mav=params.max_value*1.1; % to be on the safe side for all values to be plotted
-    mav=params.max_value; % you get what you ask for
-    
+        
+    hold off
     if params.blue_ocean
         climada_plot_world_borders(-1,'','',0,[],country_color);
         hold on
     end
     
-    [cbar,~]= plotclr(hazard.lon,hazard.lat,plot_Value, 's',abs(markersize), 1,0,mav,cmap,0,0); % 1,0)
+    [hcbar,~]= plotclr(hazard.lon,hazard.lat,plot_Value, 's',abs(markersize), 1,0,params.max_value,cmap,0,0); % 1,0)
     %         plotclr(x,         y,         v,       marker,markersize,colorbar_on, miv, mav, map, zero_off, v_exp)
-
     hold on
-    set(gca,'FontSize',FontSize)
-    set(cbar,'FontSize',FontSize) % cbar.FontSize = FontSize;
-    %set(get(cbar,'Label' ),'FontSize',FontSize) % cbar.Label.FontSize = FontSize;
-    set(get(cbar,'ylabel'),'string',params.cbar_ylabel,'fontsize',FontSize);
+    set(gca,'FontSize',params.FontSize)
+    set(hcbar,'XTick',xtickvals);
+    set(get(hcbar,'xlabel'),'String',params.cbar_ylabel,'FontSize',params.FontSize)
+    set(hcbar,'FontSize',params.FontSize)
     
-    if ~isempty(params.title_str),title(params.title_str,'FontSize',FontSize);end
-    xlabel('Longitude','FontSize',FontSize);ylabel('Latitude','FontSize',FontSize);
+    if ~isempty(params.title_str),title(params.title_str,'FontSize',params.FontSize);end
+    xlabel('Longitude','FontSize',params.FontSize);ylabel('Latitude','FontSize',params.FontSize);
     
     axis equal
     axis(ax_lim)
@@ -209,10 +205,8 @@ if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
     if params.plot_centroids,plot(hazard.lon,hazard.lat,'.r','MarkerSize',1);end
     
     if ~climada_global.octave_mode && params.figure_scale,climada_figure_scale_add;end
-    set(gcf,'Color',[1 1 1])
     hold off
     drawnow
-    
 else
     fprintf('all intensities < %2.2f for event %i\n',params.intensity_threshold,event_i);
     return

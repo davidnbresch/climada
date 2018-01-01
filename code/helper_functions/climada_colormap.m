@@ -1,4 +1,4 @@
-function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
+function [cmap,c_ax,xtickvals,cbar_str,intensity_threshold,peril_units] = climada_colormap(peril_ID,steps10,peril_units)
 % climada color map
 % NAME:
 %   climada_colormap
@@ -8,17 +8,30 @@ function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
 % CALLING SEQUENCE:
 %   cmap = climada_colormap(peril_ID)
 % EXAMPLE:
-%   cmap = climada_colormap('TC')
+%   [cmap,c_ax,xtickvals,cbar_str,intensity_threshold,peril_units]=climada_colormap('TC') % test with:
+%   colormap(cmap);caxis(c_ax);hcbar=colorbar;set(hcbar,'XTick',xtickvals);
+%   set(get(hcbar,'xlabel'),'String',cbar_str)
 % INPUTS:
 %   peril_ID: a 2-digit char peril ID, currently implemented are 'TC',
-%   'TS', 'TR', 'FL', 'LS', 'FS' (factor of safety), see code for latest.
+%       'TS', 'TR', 'FL', 'LS', 'FS' (factor of safety), see code for latest.
 %       Or some (very) specific color maps, like:
-%       ='assets','damage','schematic' or 'benefit'
+%       ='assets','damage','schematic' or 'benefit', peril_units in this
+%           case is just set = peril_ID and c_ax, xtickvals, cbar_str and
+%           intensity_threshold are not defined
 %       ='colorbrewer_sequential' for a colormap for sequential data that
-%       prints well in b/w and even when photocopied (http://colorbrewer2.org)
-%       ='colorbrewer_diverging': if values range -x..o..y        
+%           prints well in b/w and even when photocopied (http://colorbrewer2.org)
+%       ='colorbrewer_diverging': if values range -x..o..y
+%   peril_units: the units of the respective peril, usuallly, pass hazard.units
 % OPTIONAL INPUT PARAMETERS:
 % OUTPUTS:
+%   cmap: the colormap, e.g. used in colormap(cmap)
+%   c_ax: the axis min ans max, e.g. used in caxis(c_ax)
+%   xtickvals: the tick values on the axis, e.g. hcbar=coloarbar;set(hcbar,'XTick',xtickvals);
+%   cbar_str: the annotation of the colorbar, e.g. set(get(hcbar,'xlabel'),'String',cbar_str)
+%   intensity_threshold: a threshould below which not to show intensities,
+%       applied such as values(values<intensity_threshold)=NaN before plotting
+%   peril_units: as on input, if defined on input, otherwise defaut units
+%       for givdn peril
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141121, raw documentation
 % Lea Mueller, muellele@gmail.com, 20140429, add colormaps for damage and schematic
@@ -39,16 +52,20 @@ function [cmap, c_ax] = climada_colormap(peril_ID, steps10)
 % Lea Mueller, muellele@gmail.com, 20160816, set number of colours to step10, in schematic, landslide and factor of safety
 % David N. Bresch, david.bresch@gmail.com, 20170728, http://colorbrewer2.org maps  added
 % David N. Bresch, david.bresch@gmail.com, 20171230, TC and WS maps updated
+% David N. Bresch, david.bresch@gmail.com, 20180101, outputs xtickvals,cbar_str,intensity_threshold and peril_units added
 %-
 
-cmap = []; c_ax = []; %init output
+cmap=[];c_ax=[];xtickvals=[]; %init outputs
+cbar_str='';
+intensity_threshold=0;
 
 %global climada_global % init global variables
 if ~climada_init_vars, return; end
 
 % poor man's version to check arguments
-if ~exist('peril_ID', 'var'), peril_ID = ''; end
-if ~exist('steps10' , 'var'), steps10  = ''; end
+if ~exist('peril_ID',    'var'), peril_ID     = ''; end
+if ~exist('steps10' ,    'var'), steps10      = ''; end
+if ~exist('peril_units', 'var'), peril_units  = ''; end
 
 if isempty(steps10); steps10 = 10;end
 cmap1   = []; cmap2   = [];
@@ -58,13 +75,15 @@ only_one_step = 0;
 if steps10 == 1, steps10 = steps10+1; only_one_step = 1; end
 
 switch peril_ID
+    
     case 'TC' % create colormap for wind:
-        c_ax = [0 90];
+        c_ax      = [0 90];
+        if isempty(peril_units),peril_units='m/s';end
+        cbar_str  = sprintf('wind speed (%s)',peril_units);
+        xtickvals = 10:10:c_ax(2);
+        intensity_threshold = 10;
         cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
         cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
-        
-        %test with: colormap(cmap),hc=colorbar,caxis(c_ax),set(hc,'XTick',10:5:c_ax(2)); %special, start not with zero
-        %           set(get(hc,'xlabel'),'String','m/s','fontsize',16);set(hc,'FontSize',16)
         
         % until 20171230
         % cmap =[  1.0000    1.0000    1.0000;
@@ -83,6 +102,11 @@ switch peril_ID
     case {'TR','XR'} % create colormap for rain
         % 3 green colors, 5 blue colors (instead of originally 10)
         c_ax = [20 80];
+        
+        %         caxis_max = 300; %caxis_max = 500;
+        %         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
+        %         cbar_str  = [hist_str 'rain sum (mm)'];
+        
         startcolor   = [0.89	0.93	0.89];
         middlecolor1 = [0.55	0.78	0.59];
         middlecolor2 = [0.43	0.84	0.78];
@@ -94,18 +118,23 @@ switch peril_ID
         cmap = [1.0 1.0 1.0; cmap1; cmap2];
         
     case 'TS' % create colormap for surge
-        c_ax = [1 10];
+        
+        c_ax      = [0 10];
+        if isempty(peril_units),peril_units='m';end
+        cbar_str  = sprintf('surge height (%s)',peril_units);
+        xtickvals = [ .2 .5 1 2 3 4 5 7.5 10];
+        intensity_threshold = 10;
         cmap=colormap; % 20171103, david.bresch@gmail.com
         
-%         startcolor   = [238 224 229]/255; %lavenderblush 2
-%         middlecolor1 = [119 136 153]/255; %lightslategray
-%         middlecolor2 = [255 181 197]/255; %pink 1
-%         endcolor     = [104  34 139]/255; %darkorchid 4
-%         for i=1:3
-%             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
-%             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
-%         end
-%         cmap = [[1 1 1];cmap1; cmap2]; 
+        %         startcolor   = [238 224 229]/255; %lavenderblush 2
+        %         middlecolor1 = [119 136 153]/255; %lightslategray
+        %         middlecolor2 = [255 181 197]/255; %pink 1
+        %         endcolor     = [104  34 139]/255; %darkorchid 4
+        %         for i=1:3
+        %             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
+        %             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
+        %         end
+        %         cmap = [[1 1 1];cmap1; cmap2];
         
     case 'FL' % create colormap for flood
         c_ax = [0.05 1.15];
@@ -120,12 +149,13 @@ switch peril_ID
         cmap = [1.0 1.0 1.0; cmap1; cmap2];
         
     case 'WS' % create colormap for wind storm:
-        c_ax = [0 60];
+        c_ax      = [0 60];
+        if isempty(peril_units),peril_units='m/s';end
+        cbar_str  = sprintf('wind speed (%s)',peril_units);
+        xtickvals = 10:10:c_ax(2);
+        intensity_threshold = 10;
         cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
         cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
-        
-        %test with: colormap(cmap),hc=colorbar,caxis(c_ax),set(hc,'XTick',10:5:c_ax(2)); %special, start not with zero
-        %           set(get(hc,'xlabel'),'String','m/s','fontsize',16);set(hc,'FontSize',16)
         
         % old, until 20171230
         % cmap =[  1.0000    1.0000    1.0000;
@@ -141,8 +171,28 @@ switch peril_ID
         %     0.4078    0.1333    0.5451;
         %     0.3333    0.1020    0.5451];
         
+    case 'HS'
+        c_ax      = [200 2000];
+        if isempty(peril_units),peril_units='Ekin';end
+        cbar_str  = peril_units;
+        xtickvals = c_ax(1):200:c_ax(2);
+        intensity_threshold = 200;
+        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
+        cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
+        
+    case 'EQ' % earthquake
+        c_ax      = [0 15];
+        if isempty(peril_units),peril_units='MMI';end
+        cbar_str  = peril_units;
+        xtickvals = [1 2 3 4 5 6 7 8 9 10 11 12 15];
+        intensity_threshold = 1;
+        
     case 'MS' % create colormap for mudslides
-        c_ax = [];
+        c_ax = [0 3];
+        
+        xtickvals    = 0:caxis_max/10:caxis_max;
+        if isempty(peril_units),peril_units='m/m';end
+        cbar_str  = peril_units;
         startcolor   = [0.6118   0.4   0.1216]; %brick
         middlecolor  = [0.9569   0.6431   0.3765]; %sandybrown
         endcolor     = [0.1333   0.5451   0.1333]; %forest green
@@ -150,23 +200,30 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor(i)-startcolor(i))/(ceil(steps10/2)-1):middlecolor(i);
             cmap2(:,i)= middlecolor(i):(endcolor(i)-middlecolor(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [cmap1; cmap2];     
+        cmap = [cmap1; cmap2];
         
     case 'LS' % landslide
         % create colormap for landslide (distance to landslide)
-        c_ax = [0 1];       
+        c_ax = [0 1];
+        if isempty(peril_units),peril_units='m/m';end
+        cbar_str  = peril_units;
         cmap = flipud(jet(steps10));
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
+        %cmap = flipud(cmap);
         
-    case 'FS' %factor of safety for landslides
-        c_ax = [0 10];       
+    case 'FS' % factor of safety for landslides
+        c_ax = [0 10];
+        if isempty(peril_units),peril_units='factor';end
+        cbar_str  = peril_units;
         cmap = flipud(jet(steps10));
         cmap(end-3:end,:) = [];
         cmap = [cmap; 1 1 1; 1 1 1];
         
     case 'LR' % create colormap for lack of rain (LR)
         c_ax = [ ];
+        if isempty(peril_units),peril_units='mm';end
+        cbar_str  = peril_units;
         cmap = [  1.0000    1.0000    1.0000;
             %0.8100    0.8100    0.8100;
             0.6300    0.6300    0.6300;
@@ -181,8 +238,10 @@ switch peril_ID
         %;  0.3333    0.1020    0.5451
         cmap = flipud(cmap);
         
-     case 'LG' % create colormap for lack of greenness (NDVI)
+    case 'LG' % create colormap for lack of greenness (NDVI)
         c_ax = [0 1.0];
+        if isempty(peril_units),peril_units='NDVI';end
+        cbar_str  = peril_units;
         % create colormap for rain
         % 4 brown to yellow colors, 4 green colors (instead of originally 10)
         startcolor   = [199 97 20]/255;  %brown
@@ -196,6 +255,7 @@ switch peril_ID
         cmap = [cmap1; cmap2];
         
     case 'assets'
+        cbar_str = peril_ID;
         beginColor  = [232 232 232 ]/255; %light grey
         middleColor = [105 105 105 ]/255; %dark grey
         cmap1 = makeColorMap(beginColor, middleColor, 4);
@@ -205,7 +265,7 @@ switch peril_ID
         cmap  = [cmap1; cmap2; cmap3];
         
     case 'damage' % create colormap for damage
-        c_ax = [ ];
+        cbar_str = peril_ID;
         startcolor   = [238 224 229]/255; %lavenderblush 2
         middlecolor1 = [255 181 197]/255; %pink 1
         middlecolor2 = [238  18 137]/255; %deeppink 2
@@ -214,10 +274,10 @@ switch peril_ID
             cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/3)-1):middlecolor1(i);
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
         end
-        cmap = [cmap1; cmap2]; 
+        cmap = [cmap1; cmap2];
         
     case 'schematic' % create schematic colormap (gray red)
-        c_ax = [ ];
+        cbar_str = peril_ID;
         startcolor   = [244 244 244]/255; %sgi gray 96
         middlecolor1 = [193 193 193]/255; %sgi gray 76
         middlecolor2 = [255 114  86]/255; %coral 1
@@ -225,10 +285,10 @@ switch peril_ID
         cmap1 = makeColorMap(startcolor, middlecolor1, steps10);
         cmap2 = makeColorMap(middlecolor1, middlecolor2, steps10);
         cmap3 = makeColorMap(middlecolor2, endcolor, steps10);
-        cmap = [cmap1; cmap2; cmap3];  
+        cmap = [cmap1; cmap2; cmap3];
         
     case 'waterfall' % create colormap for ECA waterfall graph
-        c_ax = [ ];
+        cbar_str = peril_ID;
         startcolor   = [255 193  37]/255; %goldenrod 1
         middlecolor1 = [254 125  64]/255; %flesh
         middlecolor2 = [205  51  51]/255; %brown 3
@@ -249,12 +309,12 @@ switch peril_ID
         %cmap(1:4,:) = brighten(cmap(1:4,:),0.3);
         
     case 'benefit' % create colormap for climada_MI_plot (averted damage)
-        c_ax = [ ];
+        cbar_str = peril_ID;
         
         beginColor1  = [232 232 232]/255; %light grey
         middleColor1 = [105 105 105]/255; %dark grey
-          
-        beginColor2  = [255 236 139]/255; %lightgolden 
+        
+        beginColor2  = [255 236 139]/255; %lightgolden
         %beginColor2  = [255 215   0]/255; %gold 1
         middleColor2 = [102 205 0 ]/255; %chartreuse3
         beginColor3 = [32 178 170 ]/255; %lightseagreen
@@ -273,13 +333,13 @@ switch peril_ID
         %end
         %cmap = [cmap1; cmap2];
         
-     case 'measures' % create colormap for measures (adaptation_cost_curve)
-        c_ax = [ ];
+    case 'measures' % create colormap for measures (adaptation_cost_curve)
+        cbar_str = peril_ID;
         startcolor   = [  0 139  69]/255; %springgreen 3 %[ 69 139 116]/255; %aquamarine 4
         middlecolor  = [255 215   0]/255; %gold1
-        endcolor     = [255 127   0]/255; %darkorange 1    
+        endcolor     = [255 127   0]/255; %darkorange 1
         endcolor2    = [193 193 193]/255; %sgi gray 76
-
+        
         n_steps = ceil(steps10/3);
         if n_steps>1, cmap1 = makeColorMap(startcolor,middlecolor,n_steps); else cmap1 = startcolor; end
         if steps10-2*n_steps>1, cmap2 = makeColorMap(middlecolor,endcolor,steps10-2*n_steps); else cmap2 = middlecolor; end
@@ -295,7 +355,7 @@ switch peril_ID
         %cmap  = [cmap1; cmap2; cmap3];
         
     case 'benefit_adaptation_bar_chart' % create colormap for climada_MI_plot (averted damage)
-        c_ax = [ ];
+        cbar_str = peril_ID;
         startcolor   = [ 51 153 51]/255; % green for benefits
         middlecolor  = [154 205 50]/255; % lighter green for reference benefits
         %endcolor     = [173 255 47]/255; % greenyellow
@@ -303,9 +363,11 @@ switch peril_ID
         cmap = makeColorMap(startcolor,middlecolor,endcolor,steps10);
         
     case 'colorbrewer_sequential' % from http://colorbrewer2.org/#type=sequential&scheme=OrRd&n=4
+        cbar_str = peril_ID;
         cmap=[254,240,217;253,204,138;252,141,89;215,48,31];
         
     case 'colorbrewer_diverging' % from http://colorbrewer2.org/#type=sequential&scheme=OrRd&n=4
+        cbar_str = peril_ID;
         cmap=[230,97,1;253,184,99;178,171,210;94,60,153];
         
     otherwise
@@ -316,6 +378,6 @@ if only_one_step
     cmap = cmap(1,:);
 end
 
-if isempty(cmap)
-    cmap = jet(15);
-end
+if isempty(cmap),cmap = jet(15);end
+
+end % climada_colormap
