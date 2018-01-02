@@ -34,6 +34,7 @@ function [h, h_points] = plotclr(x,y,v, marker, markersize, colorbar_on, miv, ma
 % Lea Mueller, muellele@gmail.com, 20151207, include climada_global.markersize
 % Lea Mueller, muellele@gmail.com, 20151207, include climada_global.marker
 % Lea Mueller, muellele@gmail.com, 20161023, plot instead of plot3
+% David N. Bresch, david.bresch@gmail.com, 20180102, colormap(gca,map)
 %-
 
 global climada_global
@@ -115,7 +116,7 @@ h_points(end+[1:length(iv)]) = ...
 
 if colorbar_on    
     caxis([miv-clrstep mav])
-    colormap(map)
+    colormap(gca,map) % until 20180102 colormap(map) which set all colormaps of the figure
     %h = colorbar('ylim',[miv-clrstep mav]);
     if miv == mav, mav = miv+1; end
     h = colorbar('ylim',[miv mav]);

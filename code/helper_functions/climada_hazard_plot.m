@@ -14,7 +14,11 @@ function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 % EXAMPLE:
 %   climada_hazard_plot(climada_hazard_load('TCNA_today_small'),-1); % TEST
 % INPUTS:
-%   hazard: hazard structure
+%   hazard: hazard structure, hazard.peril_ID determines color scale etc.
+%       if the field hazard.peril_ID='fraction', we plot hazard.fraction
+%       instead of hazard.intensity. This selects event_i based on
+%       fraction, too (i.e. event with largest fraction) and sets some
+%       other parameters accordingly, since fraction is in the range 0..1  
 %       > prompted for if empty
 %   event_i: the i-th event in the hazard event set to be displayed
 %       if event_i=0, the maximum intensity at each centroid is shown
@@ -48,6 +52,11 @@ function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 %       Only makes sense for event_i<0, as it shows the i-th largest damage
 %    figure_scale: if =1, plot figure scale (default), =0 not
 %    FontSize: the font size, default =12
+%    difference: if =1, hazard.intensity is the difference of two hazards,
+%       hence we do not use the standard (positive semidefinite)
+%       colortable. Default =0 (obviously)
+%    c_ax: just pass on the color range, as [c_ax(1) c_ax(2)]. By default,
+%       this is deztermined by the function
 % OUTPUTS:
 %   creates a figure
 %   res: a structure with the core data, i.e. lon,lat and value as shown
@@ -82,6 +91,7 @@ if ~isfield(params,'entity'),         params.entity=[];end
 if ~isfield(params,'max_value'),      params.max_value=[];end
 if ~isfield(params,'figure_scale'),   params.figure_scale=[];end
 if ~isfield(params,'FontSize'),       params.FontSize=[];end
+if ~isfield(params,'difference'),     params.difference=[];end
 
 % PARAMETERS
 %
@@ -94,11 +104,12 @@ country_color=[.6 .6 .6]; % light gray
 %
 % populate default parameters in params
 if isempty(params.plot_centroids),  params.plot_centroids=0;end
-if isempty(params.cbar_ylabel),     params.cbar_ylabel='Intensity';end
+if isempty(params.cbar_ylabel),     params.cbar_ylabel='';end
 if isempty(params.blue_ocean),      params.blue_ocean=0;end
 if isempty(params.intensity_threshold),params.intensity_threshold=0;end
 if isempty(params.figure_scale),    params.figure_scale=1;end
 if isempty(params.FontSize),        params.FontSize=12;end
+if isempty(params.difference),      params.difference=0;end
 
 if strcmpi(hazard,'params'),res=params;return;end % special case, return the full params structure
 
@@ -124,6 +135,13 @@ event_sum=[];
 if ~isempty(params.entity)
     EDS=climada_EDS_calc(entity,hazard);
     event_sum=EDS.damage; % pass damage instead of intensity
+end
+
+if ~isfield(hazard,'peril_ID'),hazard.peril_ID='';end
+if strcmpi(hazard.peril_ID,'fraction') && isfield(hazard,'fraction')
+    hazard.intensity=hazard.fraction;
+    hazard.units='fraction';
+    fprintf('SPECIAL: dealing with hazard.fraction instead of hazard.intensity\n');
 end
 
 event_ii=0;yyyymmdd_str=''; % init
@@ -169,14 +187,22 @@ else
     end
 end
 
-% obtain a few peril-specific settings
-[cmap,c_ax,xtickvals,params.cbar_ylabel,intensity_threshold,hazard.units]=climada_colormap(hazard.peril_ID,'',hazard.units);
-
-if isempty(params.intensity_threshold),params.intensity_threshold=intensity_threshold;end
+if params.difference
+    cmap=redbluecmap(11);
+    mimax=max(abs(min(plot_Value)),abs(max(plot_Value)));
+    mimax=ceil(mimax*10)/10; % round
+    c_ax=[-mimax mimax];dmimax=mimax/5; % in essence 5=floor(size(cmap,1)/2)
+    xtickvals=-mimax:dmimax:mimax;
+    if isempty(params.cbar_ylabel),params.cbar_ylabel=hazard.units;end
+    %xtickvals,
+else
+    % obtain a few peril-specific settings
+    [cmap,c_ax,xtickvals,params.cbar_ylabel,intensity_threshold,hazard.units]=climada_colormap(hazard.peril_ID,'',hazard.units);
+    if isempty(params.intensity_threshold),params.intensity_threshold=intensity_threshold;end
+    plot_Value(plot_Value<params.intensity_threshold)=NaN;
+end
 if isempty(params.title_str),params.title_str=title_str;end
 if isempty(params.max_value),params.max_value=max(c_ax);end
-
-plot_Value(plot_Value<params.intensity_threshold)=NaN;
 
 if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
         
@@ -186,7 +212,7 @@ if sum(plot_Value(not(isnan(plot_Value))))>0 % nansum(values)>0
         hold on
     end
     
-    [hcbar,~]= plotclr(hazard.lon,hazard.lat,plot_Value, 's',abs(markersize), 1,0,params.max_value,cmap,0,0); % 1,0)
+    [hcbar,~]= plotclr(hazard.lon,hazard.lat,plot_Value, 's',abs(markersize), 1,c_ax(1),c_ax(2),cmap,0,0); % 1,0)
     %         plotclr(x,         y,         v,       marker,markersize,colorbar_on, miv, mav, map, zero_off, v_exp)
     hold on
     set(gca,'FontSize',params.FontSize)

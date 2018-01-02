@@ -34,6 +34,9 @@ function params=climada_entity_plot(entity,markersize,params)
 %       =0: do not plot centroids (default)
 %    max_value: the maximum value to color, default is max(entity.assets.Value)
 %       if =-1, use largest Value in entity.assets.Values, instead of .Value
+%    unit_scale: the scale of units to be shown, i.e. 1 (default) or 
+%       1e6 (for millions), 1e9 (billion). Please ensure no conflict with
+%       entity.assets.currency_unit, as this already sets the scale, if not =1
 %    cbar_ylabel: label for the color bar, default 'Value'
 %       if empty, indicate entity value locations by black circles, e.g. for
 %       climada_hazard_plot(hazard);hold on;climada_entity_plot(entity,1,0,[],'')
@@ -73,6 +76,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170504, blue_ocean default =0
 % David N. Bresch, david.bresch@gmail.com, 20170721, year_i treatment switched and currency_unit introduced
 % David N. Bresch, david.bresch@gmail.com, 20170729, currency_unit fixed
+% David N. Bresch, david.bresch@gmail.com, 20180102, nicer colorscale (now also using climada_colormap)
 %-
 
 global climada_global
@@ -96,6 +100,7 @@ if ~isfield(params,'plot_log_value'), params.plot_log_value=[];end
 if ~isfield(params,'plot_population'),params.plot_population=[];end
 if ~isfield(params,'blue_ocean'),     params.blue_ocean=[];end
 if ~isfield(params,'figure_scale'),   params.figure_scale=[];end
+if ~isfield(params,'unit_scale'),     params.unit_scale=[];end
 
 % PARAMETERS
 %
@@ -113,6 +118,7 @@ if isempty(params.plot_log_value),  params.plot_log_value=0;end
 if isempty(params.plot_population), params.plot_population=0;end
 if isempty(params.blue_ocean),      params.blue_ocean=0;end
 if isempty(params.figure_scale),    params.figure_scale=1;end
+if isempty(params.unit_scale),      params.unit_scale=1;end
 
 if strcmpi(entity,'params'),return;end % special case, return the full params structure
 
@@ -126,13 +132,15 @@ if sum(isnan(entity.assets.Value))==length(entity.assets.Value)
     return
 end
 
-beginColor  = [232 232 232 ]/255;
-middleColor = [105 105 105 ]/255;
-cmap1 = makeColorMap(beginColor, middleColor, 4);
-cmap2 = makeColorMap([255 236 139]/255, [255 97 3 ]/255, 6); %[255 153 18]/255 yellow
-cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 yellow
+cmap=climada_colormap('assets');
 
-cmap  = [cmap1; cmap2; cmap3];
+% beginColor  = [232 232 232 ]/255;
+% middleColor = [105 105 105 ]/255;
+% cmap1 = makeColorMap(beginColor, middleColor, 4);
+% cmap2 = makeColorMap([255 236 139]/255, [255 97 3 ]/255, 6); %[255 153 18]/255 yellow
+% cmap3 = makeColorMap([255 64 64 ]/255, [176 23 31 ]/255, 2); %[255 153 18]/255 yellow
+% 
+% cmap  = [cmap1; cmap2; cmap3];
 
 % plot the assets
 x_range = [min(entity.assets.lon)-d max(entity.assets.lon)+d];
@@ -182,6 +190,9 @@ if sum(plot_Value)==0
     return
 end
 
+plot_Value=plot_Value/params.unit_scale;
+entity.assets.currency_unit=params.unit_scale;
+
 if params.plot_log_value
     gtz_pos=(plot_Value>0);
     plot_Value(gtz_pos)=log10(plot_Value(gtz_pos));
@@ -192,7 +203,7 @@ else
 end
 
 if isempty(params.max_value),params.max_value=max(plot_Value);end
-mav=params.max_value*1.1; % to be on the safe side for all values to be plotted
+mav=ceil(params.max_value*10)/10; % round
 
 if params.blue_ocean
     climada_plot_world_borders(-1,'','',0,[],country_color);
