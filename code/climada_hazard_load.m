@@ -101,7 +101,7 @@ if ishazard(hazard)
     if ~isfield(hazard,'fraction')
         fprintf('adding hazard.fraction ...');
         hazard.fraction=spones(hazard.intensity); % fraction 100%
-        if ~climada_global.octave_mode && ~nosave_flag% do not save in Octave (file unreadable for MATLAB afterwards)
+        if ~climada_global.octave_mode && ~nosave_flag % do not save in Octave (file unreadable for MATLAB afterwards)
             save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
         end
         fprintf(' done\n');
