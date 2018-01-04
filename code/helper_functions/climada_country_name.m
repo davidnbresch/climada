@@ -1,4 +1,4 @@
-function [country_name,country_ISO3,shape_index] = climada_country_name(input_name,last_menu_entry)
+function [country_name,country_ISO3,shape_index,incountry] = climada_country_name(input_name,last_menu_entry,lon,lat)
 % check country name ISO3
 % MODULE:
 %   core climada
@@ -12,6 +12,7 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 % EXAMPLE:
 % 	[country_name,country_ISO3,shape_index] = climada_country_name('Switzerland')
 % 	[country_name,country_ISO3,shape_index] = climada_country_name('SINGLE','select manually ...')
+% 	[country_name,country_ISO3,shape_index,incountry] = climada_country_name('Switzerland','',rand(100,1)*4+6,rand(100,1)*4+45)
 %   climada_country_name % to return a list of all valid country names (and their ISO3 codes)
 % INPUTS:
 %   input_name: name of country (string) or an ISO3 code (needs to be uppercase, like 'CHE')
@@ -23,10 +24,15 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 % OPTIONAL INPUT PARAMETERS:
 %   last_menu_entry: additional entry at the end of the menu (user-defined)
 %       default: none, empty
+%   lon(i),lat(i): lon/lat points to be checked to be within country borders, see
+%       output incountry. Does NOT work for input_name='ALL', nor for
+%       'all', nor for 'Single' or 'Multiple'.
 % OUTPUTS:
 %   country_name: country name(s), empty string if no match
 %   country_ISO3: country ISO3 code(s) (like 'CHE'), empty if no match
 %   shape_index: index(s) of the corresponding shapes (of the file as in climada_global.map_border_file
+%   incountry(i): whether lon(i)/lat(i) are within the country borders (=1), 
+%       or not (=0). Test with plot(lon(incountry),lat(incountry),'xg');
 % MODIFICATION HISTORY:
 % Lea Mueller, muellele@gmail.com, 20141016
 % David N. Bresch, david.bresch@gmail.com, 20141209, ISO3 country code added
@@ -34,16 +40,19 @@ function [country_name,country_ISO3,shape_index] = climada_country_name(input_na
 % Lea Mueller, muellele@gmail.com, 20141016, compare with strcmpi to find valid country names
 % David N. Bresch, david.bresch@gmail.com, 20170830, last_menu_entry
 % David N. Bresch, david.bresch@gmail.com, 20170914, last_menu_entry really last
+% David N. Bresch, david.bresch@gmail.com, 20180104, lon and lat added
 %-
 
 country_name='';
 country_ISO3='';
-shape_index=[];
+shape_index=[];incountry=[];
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
 if ~exist('input_name','var'),input_name = ''; end
 if ~exist('last_menu_entry','var'),last_menu_entry = ''; end
+if ~exist('lon','var'),lon = []; end
+if ~exist('lat','var'),lat = []; end
 
 % PARAMETERS
 %
@@ -137,6 +146,14 @@ else
     country_name=shapes(shape_index).NAME;
     country_ISO3=shapes(shape_index).ADM0_A3;
     
+end
+
+if ~isempty(lon) && ~isempty(lat)
+    if length(lon)==length(lat)
+        incountry=climada_inpolygon(lon,lat,shapes(shape_index).X,shapes(shape_index).Y);
+        % for test:
+        %plot(shapes(shape_index).X,shapes(shape_index).Y,'-k');hold on;plot(lon,lat,'or');plot(lon(incountry),lat(incountry),'xg');
+    end
 end
 
 

@@ -8,6 +8,8 @@ function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect
 %   Prints information of tracks to stdout (name, date....) and shows
 %   (nice) plots of historic (and probabilistic) tracks
 %
+%   Does also allow for track selection, see centroids
+%
 %   Prior call: climada_tc_read_unisys_tc_track, climada_tc_track_quality_check
 %   Possible subsequent call: hold on;climada_entity_plot
 % CALLING SEQUENCE:
@@ -28,9 +30,10 @@ function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect
 %       =2: only check plot and only historic events (to create the e.g.
 %       the slide to show hist/prob, see boundary_rect also)
 %   boundary_rect: the boundary to plot [minlon maxlon minlat maxlat]
-%       default is whole globe
+%       default is whole globe.
 %   centroids: a structure with centroids.lon, centroids.lat
-%       if provided, only show tracks intersecting centroids
+%       if provided, only show tracks intersecting centroids (and also
+%       return only those tracks)
 %   manual_select: if =1, alow for user to define point(s) on the map to
 %       select tracks in vicinity (press enter after clicking on the map)
 %       Best use is to define a 'gate', i.e. two points on the left and
@@ -46,6 +49,7 @@ function [tc_track,info]=climada_tc_track_info(tc_track,check_plot,boundary_rect
 % David N. Bresch, david.bresch@gmail.com, 20160528, centroids and manual_select added
 % David N. Bresch, david.bresch@gmail.com, 20170125, climada_tc_track_quality_check
 % David N. Bresch, david.bresch@gmail.com, 20170201, check_plot simplified, climada_tc_track_quality_check removed
+% David N. Bresch, david.bresch@gmail.com, 20170201, boundary_rect for selection
 %-
 
 info=[]; % init output
