@@ -27,10 +27,11 @@ function hazard=climada_hazard_load(hazard,nosave_flag)
 %       OR: a hazard structure, in which cas it is just returned (to allow
 %       calling climada_hazard_load anytime, see e.g. climada_EDS_calc)
 % OPTIONAL INPUT PARAMETERS:
-%   nosave_flag: if =1, do not save back (to preserver hazard as on disk,
+%   nosave_flag: if =1, do not save back (to preserve hazard as on disk,
 %       just complete fields as necessary. Useful for example to preserve
 %       hazards in save versions compatible with Octave when re-loading
-%       with either MATLAB or Ocatve. Default=0 (save back)
+%       with either MATLAB or Octave. Default=0 (save back)
+%       =2: do not save (as =1) and do not add hazard.fraction, if missing.
 % OUTPUTS:
 %   hazard: a struct, see e.g. climada_tc_hazard_set
 % MODIFICATION HISTORY:
@@ -45,6 +46,7 @@ function hazard=climada_hazard_load(hazard,nosave_flag)
 % David N. Bresch, david.bresch@gmail.com, 20161008, check for ishazard
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
 % David N. Bresch, david.bresch@gmail.com, 20170806, nosave_flag added
+% David N. Bresch, david.bresch@gmail.com, 20180105, islogical(hazard.orig_event_flag) and nosave_flag=2
 %-
 
 global climada_global
@@ -99,15 +101,26 @@ if ishazard(hazard)
     
     % add hazard.fraction (for FL, other perils no slowdown)
     if ~isfield(hazard,'fraction')
-        fprintf('adding hazard.fraction ...');
-        hazard.fraction=spones(hazard.intensity); % fraction 100%
-        if ~climada_global.octave_mode && ~nosave_flag % do not save in Octave (file unreadable for MATLAB afterwards)
-            save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
+        if nosave_flag<2
+            fprintf('adding hazard.fraction ...');
+            hazard.fraction=spones(hazard.intensity); % fraction 100%
+            if ~climada_global.octave_mode && ~nosave_flag % do not save in Octave (file unreadable for MATLAB afterwards)
+                save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
+            end
+            fprintf(' done\n');
+        else
+            fprintf('note: hazard.fraction not added, add for performant use in climada_EDS_calc\n');
         end
-        fprintf(' done\n');
     end
     
     hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
+    
+    if isfield(hazard,'orig_event_flag')
+        if ~islogical(hazard.orig_event_flag)
+            hazard.orig_event_flag=logical(hazard.orig_event_flag); % to be sure
+        end
+    end
+    
 else
     hazard=[];
 end % ishazard(hazard)

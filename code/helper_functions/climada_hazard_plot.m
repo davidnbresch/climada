@@ -188,7 +188,18 @@ else
 end
 
 if params.difference
-    cmap=redbluecmap(11);
+    cmap=[ % cmap=redbluecmap(11);
+        0.0196    0.1882    0.3804
+        0.1294    0.4000    0.6745
+        0.2627    0.5765    0.7647
+        0.5725    0.7725    0.8706
+        0.8196    0.8980    0.9412
+        0.9686    0.9686    0.9686
+        0.9922    0.8588    0.7804
+        0.9569    0.6471    0.5098
+        0.8392    0.3765    0.3020
+        0.6980    0.0941    0.1686
+        0.4039         0    0.1216];
     mimax=max(abs(min(plot_Value)),abs(max(plot_Value)));
     mimax=ceil(mimax*10)/10; % round
     c_ax=[-mimax mimax];dmimax=mimax/5; % in essence 5=floor(size(cmap,1)/2)
