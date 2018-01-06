@@ -52,6 +52,11 @@ function hazard = climada_hazard_stats(hazard,return_periods,check_plot,fontsize
 %       =-1: calculate and plot the return period maps based on historic
 %       events only (needs hazard.orig_event_flag to exist)
 %       =-10: as -1, but do NOT PLOT, just return historic
+%       If check_plot has three elements, check plot (2) defines the number
+%       of images in horizontal (x) and check plot (e) the number
+%       of images in vertical (y) direction, i.e. check_plot=[1 4 1]
+%       creates 4 check plots in horizontal direction. The user is
+%       responsible for number of return periods<=check_plot(3)*check_plot(4)
 %   fontsize: default =12
 %   store_stats2hazard: if =1 (default), store hazard.stats
 %       =-1: ONLY return stats, i.e. only key fields (hazard.lon, .lat, .peril_ID,
@@ -138,10 +143,10 @@ else
     sel_event_pos=1:length(hazard.frequency);
 end
 
-if check_plot<0
+if check_plot(1)<0
     hist_str='historic ';
     historic_flag=1;
-    if check_plot<-1,check_plot=0;end
+    if check_plot(1)<-1,check_plot(1)=0;end
 else
     hist_str='';
     historic_flag=0;
@@ -249,7 +254,7 @@ end % calculation
 % figures
 % -------
 
-if abs(check_plot)>0
+if abs(check_plot(1))>0
     
     n_return_periods=length(hazard.stats.return_period);
     fprintf('plotting %i %sintensity vs return period maps (be patient) ',n_return_periods,hist_str)
@@ -260,8 +265,16 @@ if abs(check_plot)>0
     
     % figure how many plots and how to place
     n_return_periods = length(hazard.stats.return_period);
-    subplots_hor = ceil(sqrt(n_return_periods));
-    subplots_ver = ceil(n_return_periods/subplots_hor);
+    if length(check_plot)==3
+        subplots_hor=check_plot(2);
+        subplots_ver=check_plot(3);
+        if subplots_hor*subplots_ver<n_return_periods
+            fprintf('WARNING: check plot arrangement not adequate\n');
+        end
+    else
+        subplots_hor = ceil(sqrt(n_return_periods));
+        subplots_ver = ceil(n_return_periods/subplots_hor);
+    end
     
     subaxis(subplots_ver, subplots_hor, 1,'MarginTop',0.15, 'mb',0.05)
     
