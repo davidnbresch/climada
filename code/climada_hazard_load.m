@@ -31,7 +31,9 @@ function hazard=climada_hazard_load(hazard,nosave_flag)
 %       just complete fields as necessary. Useful for example to preserve
 %       hazards in save versions compatible with Octave when re-loading
 %       with either MATLAB or Octave. Default=0 (save back)
-%       =2: do not save (as =1) and do not add hazard.fraction, if missing.
+%       =2: do not save (as =1) and do not add anything (neither
+%       hazard.fraction nor converting hazard.orig_event_flag to logical),
+%       if missing.  
 % OUTPUTS:
 %   hazard: a struct, see e.g. climada_tc_hazard_set
 % MODIFICATION HISTORY:
@@ -47,6 +49,7 @@ function hazard=climada_hazard_load(hazard,nosave_flag)
 % David N. Bresch, david.bresch@gmail.com, 20161008, hazard.fraction added
 % David N. Bresch, david.bresch@gmail.com, 20170806, nosave_flag added
 % David N. Bresch, david.bresch@gmail.com, 20180105, islogical(hazard.orig_event_flag) and nosave_flag=2
+% David N. Bresch, david.bresch@gmail.com, 20180109, no change to hazard in order to allow passing as reference
 %-
 
 global climada_global
@@ -92,7 +95,7 @@ end
 
 if ishazard(hazard)
     % check for valid/correct hazard.filename
-    if ~strcmp(hazard_file,hazard.filename)
+    if ~strcmp(hazard_file,hazard.filename) && nosave_flag<2
         hazard.filename=hazard_file;
         if ~climada_global.octave_mode && ~nosave_flag % do not save in Octave (file unreadable for MATLAB afterwards)
             save(hazard_file,'hazard',climada_global.save_file_version) % HDF5 format (portability)
@@ -116,7 +119,7 @@ if ishazard(hazard)
     hazard=climada_hazard2octave(hazard); % Octave compatibility for -v7.3 mat-files
     
     if isfield(hazard,'orig_event_flag')
-        if ~islogical(hazard.orig_event_flag)
+        if ~islogical(hazard.orig_event_flag) && nosave_flag<2
             hazard.orig_event_flag=logical(hazard.orig_event_flag); % to be sure
         end
     end

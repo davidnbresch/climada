@@ -54,6 +54,7 @@ function ok=climada_init_vars(reset_flag)
 % David N. Bresch, david.bresch@gmail.com, 20170202, parfor
 % David N. Bresch, david.bresch@gmail.com, 20170413, save_file_version
 % David N. Bresch, david.bresch@gmail.com, 20170730, save_file_version for Octave compatibility
+% David N. Bresch, david.bresch@gmail.com, 20180108, present_reference_year=2018,future_reference_year=2040
 %-
 
 global climada_global
@@ -178,8 +179,8 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.cost_display_unit_fact = 1;
     
     % evaluation and NPV (net present value) specific parameters
-    climada_global.present_reference_year = 2016; % yyyy, 20160411, srzdnb
-    climada_global.future_reference_year  = 2030; % yyyy
+    climada_global.present_reference_year = 2018; % yyyy, 20160411, 20180108
+    climada_global.future_reference_year  = 2040; % yyyy, 20180108
     % time dependence of impacts (1 for linear, default)
     % >1 concave (eg 2: cubic), <1 for convex (eg 1/2: like quare root)
     % concave means: damage increases slowly first (see climada_measures_impact)
