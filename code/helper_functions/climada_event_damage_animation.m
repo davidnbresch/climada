@@ -78,6 +78,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    frame_start: frame to start with (default=1). Sometimes useful to
 %       shorten animation without re-generating animation_data.mat
 %    frame_end: last frame to process (default=last frame on animation_data.mat)
+%    frame_rate: frame rate in frames per second (default is 30, the
+%       default of the videowriter)
 %    jump_step: the steps to jump (in order to first check, e.g. only show
 %       every 5th frame by setting jump_step=5, default=1 (all steps).
 %    plot_tc_track: show tc track as a black dotted line (default=1, plot it).
@@ -121,6 +123,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170515, check_mode and axis_equal options added
 % David N. Bresch, david.bresch@gmail.com, 20170806, title_str improved
 % David N. Bresch, david.bresch@gmail.com, 20170806, calc_hazard_ts added
+% Thomas Roosli, thomas.roeoesli@gmail.com, 20180116, frame_rate added
 %-
 
 res=[]; % init output, mainly used to return (default) parameters
@@ -148,6 +151,7 @@ if ~isfield(params,'Position'),params.Position=[];end
 if ~isfield(params,'jump_step'),params.jump_step=[];end
 if ~isfield(params,'frame_start'),params.frame_start=[];end
 if ~isfield(params,'frame_end'),params.frame_end=[];end
+if ~isfield(params,'frame_rate'),params.frame_rate=[];end
 if ~isfield(params,'plot_tc_track'),params.plot_tc_track=[];end
 if ~isfield(params,'video_profile'),params.video_profile=[];end
 if ~isfield(params,'npoints'),params.npoints=[];end
@@ -366,6 +370,7 @@ border.Y=[];for i=1:length(shapes),border.Y=[border.Y shapes(i).Y];end
 % Prepare the new file
 if make_mp4
     vidObj = VideoWriter(params.animation_mp4_file,params.video_profile);
+    if ~isempty(params.frame_rate), vidObj.FrameRate = params.frame_rate; end
     open(vidObj);
 end
 
