@@ -92,6 +92,7 @@ function stats = climada_hazard_stats(hazard,return_period,check_plot,fontsize)
 % David N. Bresch, david.bresch@gmail.com, 20180103, store_stats2hazard added
 % David N. Bresch, david.bresch@gmail.com, 20180105, hazard='global' added
 % David N. Bresch, david.bresch@gmail.com, 20180110, store_stats2hazard and hazard='global' removed
+% David N. Bresch, david.bresch@gmail.com, 20180122, stats.* used in plotting
 %-
 
 % init global variables
@@ -220,7 +221,9 @@ if ~isfield(hazard,'return_period')
     stats.return_period = return_period;
     stats.intensity     = spalloc(n_return_period,n_centroids,ceil(n_return_period*n_nonzero_centroids)); % allocate
     stats.intensity(:,nonzero_centroid_pos)=intensity_stats;clear intensity_stats % fill in
-    
+else
+    fprintf('interpreting hazard as previous output, plots only\n');
+    stats=hazard; % function called to plot only
 end % calculation
 
 % figures
@@ -228,15 +231,15 @@ end % calculation
 
 if abs(check_plot(1))>0
     
-    n_return_period=length(hazard.return_period);
+    n_return_period=length(stats.return_period);
     fprintf('plotting %i %sintensity vs return period maps (be patient) ',n_return_period,hist_str)
     
-    scale = max(hazard.lon)-min(hazard.lon);
-    centroids.lon=hazard.lon; % to pass on below
-    centroids.lat=hazard.lat; % to pass on below
+    scale = max(stats.lon)-min(stats.lon);
+    centroids.lon=stats.lon; % to pass on below
+    centroids.lat=stats.lat; % to pass on below
     
     % figure how many plots and how to place
-    n_return_period = length(hazard.return_period);
+    n_return_period = length(stats.return_period);
     if length(check_plot)==3
         subplots_hor=check_plot(2);
         subplots_ver=check_plot(3);
@@ -278,23 +281,23 @@ if abs(check_plot(1))>0
         fprintf('.') % simplest progress indicator
         subaxis(rp_i)
         
-        values = full(hazard.intensity(rp_i,:));
+        values = full(stats.intensity(rp_i,:));
         
         if sum(values(not(isnan(values))))>0 % nansum(values)>0
             [X, Y, gridded_VALUE] = climada_gridded_VALUE(values, centroids);
             gridded_VALUE(gridded_VALUE<0.1) = NaN; % avoid tiny values
             contourf(X, Y, gridded_VALUE,200,'linecolor','none')
         else
-            text(mean([min(hazard.lon) max(hazard.lon)]),...
-                mean([min(hazard.lat ) max(hazard.lat )]),...
+            text(mean([min(stats.lon) max(stats.lon)]),...
+                mean([min(stats.lat ) max(stats.lat )]),...
                 'no data for this return period available','fontsize',10,...
                 'HorizontalAlignment','center')
         end
         hold on
         climada_plot_world_borders(2,'','',0,[],[0 0 0])
-        title([int2str(hazard.return_period(rp_i)) ' yr'],'fontsize',fontsize);
-        axis([min(hazard.lon)-scale/30  max(hazard.lon)+scale/30 ...
-            min(hazard.lat )-scale/30  max(hazard.lat )+scale/30])
+        title([int2str(stats.return_period(rp_i)) ' yr'],'fontsize',fontsize);
+        axis([min(stats.lon)-scale/30  max(stats.lon)+scale/30 ...
+            min(stats.lat )-scale/30  max(stats.lat )+scale/30])
         % do not display xticks, nor yticks
         set(subaxis(rp_i),'xtick',[],'ytick',[],'DataAspectRatio',[1 1 1])
         colormap(cmap);caxis(c_ax)
