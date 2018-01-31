@@ -28,7 +28,7 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index,new_figure)
 %       4:  Violet/light violet
 %       5:  Dark orange/golden
 %       6:  Black/gray
-%   new_figure: =1 (default) create new figure, =0 create none
+%   new_figure: =1 create new figure, =0 create none (default)
 % OUTPUTS:
 % MODIFICATION HISTORY:
 % Gilles Stassen, gillesstassen@hotmail.com, 20150130
@@ -39,9 +39,10 @@ function climada_IFC_plot(IFC,hist_check,check_log,color_index,new_figure)
 % david.bresch@gmail.com, 20160609, bugfix if no historical data improved
 % david.bresch@gmail.com, 20160916, new figure added, helpful if called as climada_IFC_plot(climada_hazard2IFC)
 % david.bresch@gmail.com, 20161010, make sure max x and y work
+% david.bresch@gmail.com, 20180131, avoid _ in legend labels and no new figure by default
 %-
 
-if ~exist('IFC','var'),
+if ~exist('IFC','var')
     fprintf('ERROR: provide IFC struct as input. See climada_hazard2IFC\n');
     return
 end
@@ -49,7 +50,7 @@ end
 if ~exist('hist_check',     'var'), hist_check  = 1;    end
 if ~exist('check_log',      'var'), check_log   = 0;    end
 if ~exist('color_index',    'var'), color_index = 1;    end
-if ~exist('new_figure',     'var'), new_figure  = 1;    end
+if ~exist('new_figure',     'var'), new_figure  = 0;    end
 % if ~exist('Gumbel_check',   'var'), Gumbel_check= 1;    end
 
 if new_figure,figure;end
@@ -100,8 +101,8 @@ for poi_ii = 1:length(IFCs)
         max_x=max(max_y,max(IFC.fit_return_periods));
         max_y=max(max_y,max(IFC.intensity_fit(poi_i,:)));
         lgd_str{end+1} = sprintf('%s %s intensity at centroid %i',...
-            IFC.annotation_name,IFC.peril_ID,IFC.centroid_ID(poi_i));
-        lgd_str{end+1} = sprintf('%s %s fitted intensity',IFC.annotation_name,IFC.peril_ID);
+            strrep(IFC.annotation_name,'_',' '),IFC.peril_ID,IFC.centroid_ID(poi_i));
+        lgd_str{end+1} = sprintf('%s %s fitted intensity',strrep(IFC.annotation_name,'_',' '),IFC.peril_ID);
         lgd_hdl = [lgd_hdl h(1:2)];
         
         % historical data
@@ -112,7 +113,7 @@ for poi_ii = 1:length(IFCs)
                 max_x=max(max_y,max(IFC.hist_return_periods(poi_i,pos_indx)));
                 max_y=max(max_y,max(IFC.hist_intensity(poi_i,pos_indx)));
                 lgd_str{end+1} = sprintf('%s %s historical intensity',...
-                    IFC.annotation_name,IFC.peril_ID);
+                    strrep(IFC.annotation_name,'_',' '),IFC.peril_ID);
                 lgd_hdl = [lgd_hdl h(3)];
             end
         end
