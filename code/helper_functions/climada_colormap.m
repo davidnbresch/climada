@@ -14,6 +14,12 @@ function [cmap,c_ax,xtickvals,cbar_str,intensity_threshold,peril_units] = climad
 % INPUTS:
 %   peril_ID: a 2-digit char peril ID, currently implemented are 'TC',
 %       'TS', 'TR', 'FL', 'LS', 'FS' (factor of safety), see code for latest.
+%       ='difference': the plot the difference of two fields, centered
+%           around zero. c_ax,xtickvals are returned empty, use:
+%           mimax=max(abs(min(PLOT_VALUES)),abs(max(PLOT_VALUES)));
+%           mimax=ceil(mimax*10)/10; % round
+%           c_ax=[-mimax mimax];dmimax=mimax/5; % in essence 5=floor(size(cmap,1)/2)
+%           xtickvals=-mimax:dmimax:mimax;
 %       ='fraction': to plot hazard.fraction instead of hazard.intensity
 %           This sets some other parameters accordingly, since fraction is
 %           in the range 0..1
@@ -57,11 +63,12 @@ function [cmap,c_ax,xtickvals,cbar_str,intensity_threshold,peril_units] = climad
 % David N. Bresch, david.bresch@gmail.com, 20171230, TC and WS maps updated
 % David N. Bresch, david.bresch@gmail.com, 20180101, outputs xtickvals,cbar_str,intensity_threshold and peril_units added
 % David N. Bresch, david.bresch@gmail.com, 20180102, 'fraction' added
+% David N. Bresch, david.bresch@gmail.com, 20180126, 'difference' added
 %-
 
 cmap=[];c_ax=[];xtickvals=[]; %init outputs
 cbar_str='';
-intensity_threshold=0;
+intensity_threshold=[];
 
 %global climada_global % init global variables
 if ~climada_init_vars, return; end
@@ -72,7 +79,6 @@ if ~exist('steps10' ,    'var'), steps10      = ''; end
 if ~exist('peril_units', 'var'), peril_units  = ''; end
 
 if isempty(steps10); steps10 = 10;end
-cmap1   = []; cmap2   = [];
 
 % special case if only one colour is required
 only_one_step = 0;
@@ -291,6 +297,24 @@ switch peril_ID
         end
         cmap = [cmap1; cmap2];
         
+    case 'difference' % create colormap for differences
+        
+        c_ax=[]; % to be defined by user
+        cbar_str='difference';
+        if isempty(peril_units),peril_units='difference';end
+        cmap=[ % cmap=redbluecmap(11);
+            0.0196    0.1882    0.3804
+            0.1294    0.4000    0.6745
+            0.2627    0.5765    0.7647
+            0.5725    0.7725    0.8706
+            0.8196    0.8980    0.9412
+            0.9686    0.9686    0.9686
+            0.9922    0.8588    0.7804
+            0.9569    0.6471    0.5098
+            0.8392    0.3765    0.3020
+            0.6980    0.0941    0.1686
+            0.4039         0    0.1216];
+       
     case 'fraction' % create colormap for hazard.fraction
         c_ax = [0 1.0];
         xtickvals    = c_ax(1):c_ax(2)/10:c_ax(2);
@@ -550,7 +574,5 @@ end
 if only_one_step
     cmap = cmap(1,:);
 end
-
-if isempty(cmap),cmap = jet(15);end
 
 end % climada_colormap
