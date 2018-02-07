@@ -117,7 +117,7 @@ if isempty(peril_ID)
     c_ax = [min(value) max(value)];
     xtickvals = c_ax(1):10:c_ax(2);
     intensity_threshold = 10;
-    cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
+    cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],abs(c_ax(2)/5-3));
     cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
 else
     [cmap,c_ax,xtickvals,params.cbar_ylabel,params.intensity_threshold,params.units]=climada_colormap(peril_ID,'',params.units);
