@@ -76,9 +76,9 @@ function [output_file, mat_version] = climada_save_mat_for_octave(input_file,pat
 %   output_file = '~/Documents/MATLAB/climada_data_octave/hazards/MEX_Mexico_atl_TC.mat'
 %
 % MODIFICATION HISTORY:
-% Samuel Eberenz, samweli@posteo.de, 20171031, init
-% Samuel Eberenz, samweli@posteo.de, 20171102, parameters "same_dir" and "force_overwrite" added
-% Samuel Eberenz, samweli@posteo.de, 20171109, debugged while loop
+% Samuel Eberenz, eberenz@posteo.eu, 20171031, init
+% Samuel Eberenz, eberenz@posteo.eu, 20171102, parameters "same_dir" and "force_overwrite" added
+% Samuel Eberenz, eberenz@posteo.eu, 20171109, debugged while loop
 %%
 
 % Check whether input_file is a string or char specifying a file or a struct to
