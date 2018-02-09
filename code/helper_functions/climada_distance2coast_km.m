@@ -1,4 +1,4 @@
-function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1000km,check_inpolygon)
+function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1000km,check_inpolygon,exclude_sea)
 % climada distance km coast
 % NAME:
 %   climada_distance2coast
@@ -32,7 +32,10 @@ function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,forc
 %       if check_inpolygon<0, only the points closer than
 %       abs(check_inpolygon) [km] are checked and returned (see oputput
 %       arguments lon lat in this case. This options speeds up the
-%       inpolygon search substantially
+%       inpolygon search substantially (default = 0);
+%   exclude_sea: if=1, set distance negative if outside the polygon (i.e. on sea)
+%       if=2, set distance to 0 if outside the polygon (i.e. on sea)
+%       (default =0)
 % OUTPUTS:
 %   distance_km: distance to coast in km for each lat/lon
 %   lon and lat: same as on input, except for check_inpolygon<0, whre only
@@ -44,6 +47,7 @@ function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,forc
 % David N. Bresch, david.bresch@gmail.com, 20150515, check_inpolygon implemented
 % David N. Bresch, david.bresch@gmail.com, 20170208, parfor implemented
 % David N. Bresch, david.bresch@gmail.com, 20171230, climada_progress2stdout and enabled for multiple shapes
+% Samuel Eberenz, eberenz@posteo.eu, 20180209, add input option "exclude_sea"
 %-
 
 distance_km=[];
@@ -59,6 +63,7 @@ if ~exist('lat','var'),return;end
 if ~exist('check_plot','var'),check_plot=0;end
 if ~exist('force_beyond_1000km','var'),force_beyond_1000km=0;end
 if ~exist('check_inpolygon','var'),check_inpolygon=0;end
+if ~exist('exclude_sea','var'),exclude_sea=0;end
 
 % locate the module's data
 %module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
@@ -151,8 +156,16 @@ for shape_i=1:n_shapes
         end
         in=inpolygon(lon,lat,shapes(shape_i).X,shapes(shape_i).Y);
         distance_km(in)=-distance_km(in);
-    end %
-    
+    end 
+    if exclude_sea
+        in=inpolygon(lon,lat,shapes(shape_i).X,shapes(shape_i).Y);
+        out = ~in;
+        if exclude_sea == 2
+            distance_km(out)=0; % set points on sea to 0.
+        else
+            distance_km(out)=-distance_km(out); % set points on sea negative.
+        end
+    end
     distance_km_tmp=min(distance_km_tmp,distance_km); % keep shortest distance
     
 end % shape_i
@@ -161,7 +174,7 @@ distance_km=distance_km_tmp; clear distance_km_tmp % using _tmp for lisibility
 
 if ~climada_global.parfor && length(cos_lat)>1000,climada_progress2stdout(0);end % terminate
 
-distance_km=sqrt(distance_km)*111.12; % convert to km (approx.)
+distance_km=sign(distance_km).*sqrt(abs(distance_km))*111.12; % convert to km (approx.)
 
 if check_plot
     fprintf('time elapsed %f sec\n',etime(clock,t0));
