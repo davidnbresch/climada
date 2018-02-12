@@ -1,4 +1,4 @@
-function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1000km,check_inpolygon,exclude_sea)
+function [distance_km,lon,lat,onLand]=climada_distance2coast_km(lon,lat,check_plot,force_beyond_1000km,check_inpolygon,onLand)
 % climada distance km coast
 % NAME:
 %   climada_distance2coast
@@ -29,17 +29,21 @@ function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,forc
 %   force_beyond_1000km: =1 to claculate all distances precisely, even for
 %       points >1000km from coast (default=0)
 %   check_inpolygon: if=1, set distance negative if inside the polygon (i.e. on land)
+%       if=2, set distance negative if outside the polygon (i.e. on sea)
+%       if=3, set distance to 0 if outside the polygon (i.e. on sea) 
 %       if check_inpolygon<0, only the points closer than
 %       abs(check_inpolygon) [km] are checked and returned (see oputput
 %       arguments lon lat in this case. This options speeds up the
-%       inpolygon search substantially (default = 0);
-%   exclude_sea: if=1, set distance negative if outside the polygon (i.e. on sea)
-%       if=2, set distance to 0 if outside the polygon (i.e. on sea)
+%       inpolygon search substantially.
 %       (default =0)
+%       (slow for large data if no onLand vector is provided!)
+%   onLand: vector of on-land mask (1= on land, 0 = on sea), same length as
+%       lon & lat. This significantly speeds up inpolygon
 % OUTPUTS:
 %   distance_km: distance to coast in km for each lat/lon
 %   lon and lat: same as on input, except for check_inpolygon<0, whre only
 %       the points closer than abs(check_inpolygon) [km] are returned
+%   onLand: same as on input, NaN if not provided and not computed.
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20141225, initial
 % David N. Bresch, david.bresch@gmail.com, 20150514, progress indication for more than 1000 points added
@@ -47,7 +51,7 @@ function [distance_km,lon,lat]=climada_distance2coast_km(lon,lat,check_plot,forc
 % David N. Bresch, david.bresch@gmail.com, 20150515, check_inpolygon implemented
 % David N. Bresch, david.bresch@gmail.com, 20170208, parfor implemented
 % David N. Bresch, david.bresch@gmail.com, 20171230, climada_progress2stdout and enabled for multiple shapes
-% Samuel Eberenz, eberenz@posteo.eu, 20180209, add input option "exclude_sea"
+% Samuel Eberenz, eberenz@posteo.eu, 20180209, add inpolygon options to exclude points on sea and possible input onLand
 %-
 
 distance_km=[];
@@ -63,7 +67,6 @@ if ~exist('lat','var'),return;end
 if ~exist('check_plot','var'),check_plot=0;end
 if ~exist('force_beyond_1000km','var'),force_beyond_1000km=0;end
 if ~exist('check_inpolygon','var'),check_inpolygon=0;end
-if ~exist('exclude_sea','var'),exclude_sea=0;end
 
 % locate the module's data
 %module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
@@ -147,25 +150,29 @@ for shape_i=1:n_shapes
         
     end % parfor
     
-    if abs(check_inpolygon)>0
+    if abs(check_inpolygon)>0 % differentiate between sea and land
+        
         if check_inpolygon<0 % special case, only keep points within abs(check_inpolygon) range
             check_dist=(abs(check_inpolygon)/111.12)^2; % convert, see conversion below
             pos=find(distance_km<=check_dist);
             distance_km=distance_km(pos);
             lon=lon(pos);lat=lat(pos);
         end
-        in=inpolygon(lon,lat,shapes(shape_i).X,shapes(shape_i).Y);
-        distance_km(in)=-distance_km(in);
-    end 
-    if exclude_sea
-        in=inpolygon(lon,lat,shapes(shape_i).X,shapes(shape_i).Y);
-        out = ~in;
-        if exclude_sea == 2
-            distance_km(out)=0; % set points on sea to 0.
-        else
-            distance_km(out)=-distance_km(out); % set points on sea negative.
+        if ~(exist('onLand','var') && length(onLand)==length(lon))
+            fprintf('\n onLand not provided or in the wrong format:\n Running inpolygon. This can take a while...\n');
+            onLand=inpolygon(lon,lat,shapes(shape_i).X,shapes(shape_i).Y); %inpolygon, slow
         end
-    end
+        onLand = boolean(onLand);
+        distance_km(onLand)=-distance_km(onLand); % set points on land negative...
+        switch abs(check_inpolygon)
+            case 2 % invert to make points on sea negative
+                distance_km=-distance_km;
+            case 3 % invert and set points on sea to 0
+                distance_km=-distance_km;
+                distance_km(distance_km<0)=0;           
+        end         
+    end 
+
     distance_km_tmp=min(distance_km_tmp,distance_km); % keep shortest distance
     
 end % shape_i
@@ -184,5 +191,5 @@ if check_plot
     end
     climada_circle_plot(distance_km,lon,lat)
 end
-
+if ~exist('onLand','var'), onLand = NaN.*lon;
 end % climada_distance2coast_km
