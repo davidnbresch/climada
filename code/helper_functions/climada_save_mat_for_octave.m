@@ -76,9 +76,10 @@ function [output_file, mat_version] = climada_save_mat_for_octave(input_file,pat
 %   output_file = '~/Documents/MATLAB/climada_data_octave/hazards/MEX_Mexico_atl_TC.mat'
 %
 % MODIFICATION HISTORY:
-% Samuel Eberenz, samweli@posteo.de, 20171031, init
-% Samuel Eberenz, samweli@posteo.de, 20171102, parameters "same_dir" and "force_overwrite" added
-% Samuel Eberenz, samweli@posteo.de, 20171109, debugged while loop
+% Samuel Eberenz, eberenz@posteo.eu, 20171031, init
+% Samuel Eberenz, eberenz@posteo.eu, 20171102, parameters "same_dir" and "force_overwrite" added
+% Samuel Eberenz, eberenz@posteo.eu, 20171109, debugged while loop
+% Samuel Eberenz, eberenz@posteo.eu, 20180209, added flexibility in folder names
 %%
 
 % Check whether input_file is a string or char specifying a file or a struct to
@@ -100,6 +101,9 @@ if ~exist('same_dir','var') || isempty(same_dir),same_dir=1;end
 if ~exist('force_overwrite','var') || isempty(force_overwrite),force_overwrite=-1;end
 
 if exist('path_out_or_type','var') && ~isempty(path_out_or_type) 
+    if  isequal(path_out_or_type,'hazard'),path_out_or_type='hazards';end
+    if  isequal(path_out_or_type,'entity'),path_out_or_type='entities';end
+    if  isequal(path_out_or_type,'result'),path_out_or_type='results';end
     switch path_out_or_type
         case 'centroids'
             ipath = climada_global.centroids_dir;

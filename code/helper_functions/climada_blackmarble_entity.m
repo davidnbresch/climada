@@ -102,6 +102,10 @@ function entity=climada_blackmarble_entity(admin0_name,admin1_name,parameters)
 %           After this Values are normalized to sum up to 1.
 %           Note that if a whole country is requested, Values are then
 %           scaled to sum up to GDP*(income_group+1).
+%       scale_GDP: wheter we scale up asset values based on a country's 
+%           estimated total asset value (=1, default) or not (=0). 
+%           Note: this sets parameters.nightlight_transform_poly=[0 0 0 0]
+%           if not provided otherwise)
 %       value_threshold: if empty or =0, all centroids (also those with zero
 %           value) are kept in the entity (default). If set to a value,
 %           only centroids with entity.Value>value_threshold are kept (note
@@ -162,6 +166,7 @@ function entity=climada_blackmarble_entity(admin0_name,admin1_name,parameters)
 % MODIFICATION HISTORY:
 % david.bresch@gmail.com, 20171103, major part copied from climada_nightlight_entity.m
 % thomas.roeoesli@usys.ethz.ch, 20171114, initial
+% Dario Stocker & Samuel Eberenz, eberenz@posteo.eu, 20180209, add switch parameters.scale_GDP
 
 entity=[]; % init
 
@@ -187,6 +192,7 @@ if ~isfield(parameters,'img_filename'),parameters.img_filename='';end
 if ~isfield(parameters,'save_entity'),parameters.save_entity=[];end
 if ~isfield(parameters,'entity_filename'),parameters.entity_filename='';end
 if ~isfield(parameters,'value_threshold'),parameters.value_threshold=[];end
+if ~isfield(parameters,'scale_GDP'),parameters.scale_GDP=[];end
 if ~isfield(parameters,'add_distance2coast_km'),parameters.add_distance2coast_km=[];end
 if ~isfield(parameters,'add_elevation_m'),parameters.add_elevation_m=[];end
 if ~isfield(parameters,'check_plot'),parameters.check_plot=[];end
@@ -194,15 +200,20 @@ if ~isfield(parameters,'verbose'),parameters.verbose=[];end
 
 % set default values (see header for details)
 %if isempty(parameters.nightlight_transform_poly),parameters.nightlight_transform_poly=[1 0 0 0];end % until 20170119
-if isempty(parameters.nightlight_transform_poly),parameters.nightlight_transform_poly=[0 1 0 0];end
+
 if isempty(parameters.restrict_Values_to_country),parameters.restrict_Values_to_country=1;end
 if isempty(parameters.grid_spacing_multiplier),parameters.grid_spacing_multiplier=5;end
 if isempty(parameters.save_entity),parameters.save_entity=1;end
 if isempty(parameters.value_threshold),parameters.value_threshold=0;end
+if isempty(parameters.scale_GDP),parameters.scale_GDP=1;end
 if isempty(parameters.add_distance2coast_km),parameters.add_distance2coast_km=0;end
 if isempty(parameters.add_elevation_m),parameters.add_elevation_m=0;end
 if isempty(parameters.check_plot),parameters.check_plot=0;end
 if isempty(parameters.verbose),parameters.verbose=1;end
+if isempty(parameters.nightlight_transform_poly)
+    if parameters.scale_GDP, parameters.nightlight_transform_poly=[0 1 0 0]; % default GDP
+    else, parameters.nightlight_transform_poly=[0 0 0 0];end % default pure night light
+end
 
 % PARAMETERS
 %
@@ -670,11 +681,12 @@ end
 entity.assets.Deductible=entity.assets.Value*0;
 entity.assets.Cover=entity.assets.Value;
 
-if select_admin0 && parameters.restrict_Values_to_country % only one country
+
+if parameters.scale_GDP && select_admin0 && parameters.restrict_Values_to_country % only one country
     % following lines added GDP and population info from shapefile, but outdated
-    %entity.assets.GDP_from_shapefile=admin0_shapes(selection_admin0_shape_i).GDP_MD_EST*1e6; % USD
-    %entity.assets.population_from_shapefile=admin0_shapes(selection_admin0_shape_i).POP_EST;
-    %if parameters.verbose,fprintf('Note: GDP %g, Population %i (from shapefile, just for info)\n',entity.assets.GDP_from_shapefile,entity.assets.population_from_shapefile);end
+%     entity.assets.GDP_from_shapefile=admin0_shapes(selection_admin0_shape_i).GDP_MD_EST*1e6; % USD
+%     entity.assets.population_from_shapefile=admin0_shapes(selection_admin0_shape_i).POP_EST;
+%     if parameters.verbose,fprintf('Note: GDP %g, Population %i (from shapefile, just for info)\n',entity.assets.GDP_from_shapefile,entity.assets.population_from_shapefile);end
     
     % Scale up asset values based on a country's estimated total asset value
     entity=climada_entity_value_GDP_adjust_one(entity,parameters.verbose); % ***********
@@ -712,6 +724,10 @@ end
 % make sure we have all fields and they are 'correct'
 entity.assets = climada_assets_complete(entity.assets); 
 
+% set value unit to 'NLX' for night light if not scaled with GDP, where X indicates highest polynomial degree:
+if ~parameters.scale_GDP, entity.assets.Value_unit = repmat({sprintf('NL%i',...
+        find(parameters.nightlight_transform_poly>0, 1, 'last' ))},size(entity.assets.Value)); end
+
 if parameters.save_entity
     if parameters.verbose,fprintf('saving entity as %s\n',parameters.entity_filename);end
     entity.assets.filename=parameters.entity_filename;
@@ -726,5 +742,3 @@ if parameters.check_plot>2
 end
 
 end % climada_nightlight_entity
-
-

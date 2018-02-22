@@ -10,7 +10,8 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % CALLING SEQUENCE:
 %   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
 % EXAMPLE:
-%   climada_EDS_DFC(climada_EDS_calc(climada_entity_read))
+%   EDS=climada_EDS_calc('demo_today','TCNA_today_small');
+%   climada_EDS_DFC(EDS)
 % INPUTS:
 %   EDS: either an event damage set, as e.g. returned by climada_EDS_calc or
 %       a file containing such a structure
@@ -21,6 +22,10 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % OPTIONAL INPUT PARAMETERS:
 %   EDS_comparison: like EDS see above, plotted (fine lines) for comparison
 %       not prompted for, if not given,unless set to 'ASK'
+%       ='EM-DAT': plot EM-DAT damage data for comparison, works for single
+%       country, single peril, needs the field EDS.assets.admin0_ISO3 to
+%       figure the country ISO3 code. Uses EM-DAT peril, selection on
+%       disaster_type.
 %   Percentage_Of_Value_Flag: if =1, scale vertical axis with Value, such
 %       that damage as percentage of value is shown, instead of damage amount,
 %       default=0 (damage amount shown). Very useful to compare DFCs of
@@ -50,6 +55,7 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % david.bresch@gmail.com, 20170211, plotting symbols avoided if more than 20 curves shown
 % david.bresch@gmail.com, 20170626, label y-axis with DFC(1).Value_unit
 % david.bresch@gmail.com, 20170727, legend_handle added
+% david.bresch@gmail.com, 20180207, EDS_comparison='EM-DAT' added
 %-
 
 DFC=[];DFC_comparison=[];fig=[];legend_str={};legend_handle=[]; %init
@@ -88,6 +94,14 @@ if strcmp(EDS_comparison,'ASK')
     else
         EDS_comparison=fullfile(pathname,filename);
     end
+elseif strcmp(EDS_comparison,'EM-DAT')
+    % compare with emdat
+    if isfield(EDS,'assets')
+        if isfield(EDS.assets,'admin0_ISO3')
+            em_data=emdat_read('',EDS.assets.admin0_ISO3,['-' EDS(1).peril_ID],1,1);
+        end
+    end
+    EDS_comparison='';
 end
 
 if isempty(EDS) && isempty(EDS_comparison),return;end
@@ -163,6 +177,12 @@ title_str        = strrep(title_str,'_',' '); % since title is LaTEX format
 title_str        = strrep(title_str,'|','\otimes'); % LaTEX format
 title_strs{1}    = title_str;
 
+if exist('em_data','var')
+    if ~isempty(em_data)
+        [legend_str,legend_handle]=emdat_barplot(em_data,'dm','om','EM-DAT',legend_str,legend_handle,'SouthEast');
+    end
+end
+            
 if ~isempty(EDS_comparison)
     
     if length(EDS)>20
