@@ -425,7 +425,12 @@ BM = matfile(full_img_filename);
 blackmarble_lat = BM.blackmarble_lat; %only a function
 blackmarble_lon = BM.blackmarble_lon; %only a function
 blackmarble_ind = BM.blackmarble_ind; %only a function
-extraction_ind = blackmarble_ind(bbox(2), bbox(4), bbox(1), bbox(3));% bbox=[minlon minlat maxlon maxlat] define indizes for extraction
+try
+    extraction_ind = blackmarble_ind(bbox(2), bbox(4), bbox(1), bbox(3));% bbox=[minlon minlat maxlon maxlat] define indizes for extraction
+catch
+    disp('ERROR: you are using a old version of matlab with a different behaviour of the function  + (plus). Please update MATLAB to a newer version.');
+    return;
+end
 nightlight_intensity = BM.nightlight_intensity; % creates the actual values using BM (matfile object)
 VALUES = double(nightlight_intensity(extraction_ind)); % copy needed box of nightlight intensity to VALUES and transform to double
 clear nightlight_intensity
