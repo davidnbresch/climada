@@ -400,7 +400,8 @@ else
     end % isempty(admin1_name)
 
     if isempty(selection_admin1_shape_i)
-        fprintf('Error: %s not found, consider using admin1_code, run once without specifying admin1 to see list of codes\n',admin1_name);
+        admin1_name
+        fprintf('Error: %s not found, consider using admin1_code, run once without specifying admin1 to see list of codes\n',char(admin1_name));
         return
     end
 
