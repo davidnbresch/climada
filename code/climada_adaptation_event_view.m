@@ -33,6 +33,7 @@ function AEV = climada_adaptation_event_view(measures_impact,comparison_return_p
 % David N. Bresch, david.bresch@gmail.com, 20151021, checked to work for index insurance, too
 % Lea Mueller, muellele@gmail.com, 20151125, correct 'FaceColor' issue for version 8
 % David N. Bresch, david.bresch@gmail.com, 20170828, measures_impact.measures.color_RGB transposed
+% David N. Bresch, david.bresch@gmail.com, 20180305, measures_impact.measures.color_RGB transposed in line 122,too
 %-
 
 global climada_global
@@ -115,9 +116,10 @@ for return_period_i=1:length(comparison_return_periods)
     % plot each measure
     if strcmp(version_str(1),'6') || climada_global.octave_mode
         for measure_i=n_measures:-1:1
+            
             area([x1 x2],...
                 [AEV.cumulated{return_period_i}.effect(measure_i+1),AEV.cumulated{return_period_i}.effect(measure_i+1)],...
-                'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),'EdgeColor','none');
+                'FaceColor',measures_impact.measures.color_RGB(:,sort_index(measure_i)),'EdgeColor','none');        
         end % measure_i
         
     elseif strcmp(version_str(1),'7')
@@ -125,7 +127,7 @@ for return_period_i=1:length(comparison_return_periods)
             area([x1 x2],...
                 [AEV.cumulated{return_period_i}.effect(measure_i+1),AEV.cumulated{return_period_i}.effect(measure_i+1)],...
                 'BaseValue',AEV.cumulated{return_period_i}.effect(measure_i+1),...
-                'FaceColor',measures_impact.measures.color_RGB(sort_index(measure_i),:),'EdgeColor','none');
+                'FaceColor',measures_impact.measures.color_RGB(:,sort_index(measure_i)),'EdgeColor','none');
         end % measure_i
         
     else % version 8 and later

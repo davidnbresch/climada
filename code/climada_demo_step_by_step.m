@@ -29,6 +29,7 @@
 % David N. Bresch, david.bresch@gmail.com, 20160809, checked, compatible with Octave 4.0.3
 % David N. Bresch, david.bresch@gmail.com, 20160908, entities_dir and hazards_dir used
 % David N. Bresch, david.bresch@gmail.com, 20160911, climada_tc_equal_timestep for single track also
+% David N. Bresch, david.bresch@gmail.com, 20180305, small edit for Octave
 %-
 
 global climada_global % make global variables accessible
@@ -48,7 +49,10 @@ tc_track=climada_tc_read_unisys_database(tc_track_file);
 
 % for illustration purpose, show one track
 demo_track_number=1170; % track number 1170 is hurricane ANDREW, 1992
-if climada_global.octave_mode,demo_track_number=68;end % JEANNE, 2004
+if climada_global.octave_mode
+    demo_track_number=68; % JEANNE, 2004
+    fprintf('OCTAVE: using Jeanne (2004) instead of Andrew (1992)\n')
+end
 figure; plot(tc_track(demo_track_number).lon,tc_track(demo_track_number).lat,'-r');
 hold on; set(gcf,'Color',[1 1 1]); axis equal; title(tc_track(demo_track_number).name)
 climada_plot_world_borders(2,'','',1) % plot world borders (for orientation)
@@ -121,8 +125,8 @@ if ~climada_global.octave_mode
         hazard = climada_tc_hazard_set(tc_track_prob,hazard_set_file,centroids); % approx 2 min
     end
     % let's inspect this hazard event set:
-    figure; climada_hazard_plot(hazard); set(gcf,'Color',[1 1 1]); % plot largest event
-    climada_hazard_stats(hazard); set(gcf,'Color',[1 1 1]); % plot the hazard intensity maps for various return periods
+    figure; climada_hazard_plot(hazard,-1,40); set(gcf,'Color',[1 1 1]); % plot largest event
+    climada_hazard_stats(hazard); % plot the hazard intensity maps for various return periods
     
 else
     fprintf('OCTAVE: generation of full proabilistic set skipped (takes much longer than in MATLAB)\n')
@@ -174,7 +178,7 @@ entity=climada_entity_read(entity_excel_filename,hazard);
 % centroid index onto which asset k is mapped in the hazard event set.
 
 if ~climada_global.octave_mode
-    figure; climada_entity_plot(entity,4); set(gcf,'Color',[1 1 1])
+    figure; climada_entity_plot(entity,7); % 7 for larger 'dots'
 end
 
 % The damagefunctions sub-structure contains all damage function
