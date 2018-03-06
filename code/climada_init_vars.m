@@ -156,7 +156,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     % country-specific csv delimiter (to read and convert to Excel properly)
     climada_global.csv_delimiter=';'; % ';' default
-    if contains(computer,'MAC'),climada_global.csv_delimiter=',';end
+    if strfind(computer,'MAC'),climada_global.csv_delimiter=',';end
     
     % tropical cyclone (TC) specific parameters
     climada_global.tc.default_min_TimeStep=1; % 1 hour, see climada_tc_equal_timestep
