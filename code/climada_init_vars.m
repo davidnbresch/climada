@@ -134,7 +134,11 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     climada_global.results_dir=[climada_global.data_dir filesep 'results']; % added 20160908
     if ~isdir(climada_global.results_dir),mkdir(climada_global.data_dir,'results');end
- 
+    
+    % set project directory, the user can this way store some data in his
+    % own folders, outside of core climada (e.g. no automatic sync with GitHub)
+    climada_global.project_dir = climada_global.data_dir;
+    
     % the map border file as used by climada_plot_world_borders
     % (see the short documentation in climada_global.system_dir/admin0.txt)
     climada_global.map_border_file=[climada_global.system_dir filesep 'admin0.mat'];
@@ -152,7 +156,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     
     % country-specific csv delimiter (to read and convert to Excel properly)
     climada_global.csv_delimiter=';'; % ';' default
-    if strfind(computer,'MAC'),climada_global.csv_delimiter=',';end
+    if contains(computer,'MAC'),climada_global.csv_delimiter=',';end
     
     % tropical cyclone (TC) specific parameters
     climada_global.tc.default_min_TimeStep=1; % 1 hour, see climada_tc_equal_timestep
@@ -216,11 +220,7 @@ if length(climada_vars_initialised)<1 % initialise and check only first time cal
     climada_global.demo_gui.hazard_present        =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_today_small.mat'];
     climada_global.demo_gui.hazard_moderate_change=[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030med_small.mat'];
     climada_global.demo_gui.hazard_high_change    =[climada_global.data_dir filesep 'hazards' filesep 'TCNA_2030high_small.mat'];
-    
-    % set project directory, the user can this way store some data in his
-    % own folders, outside of core climada (e.g. no automatic sync with GitHub)
-    climada_global.project_dir = climada_global.data_dir;
-    
+       
     % to scale (some) fonts in plots, usefule to create eg ppt visuals
     % (larger fonts than on the screen for expert users)
     climada_global.font_scale=1; % integer only, please, default=1, useful for ppt is 2 or 3
