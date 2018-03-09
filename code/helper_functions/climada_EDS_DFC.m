@@ -12,6 +12,7 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % EXAMPLE:
 %   EDS=climada_EDS_calc('demo_today','TCNA_today_small');
 %   climada_EDS_DFC(EDS)
+%   climada_EDS_DFC(EDS,'EM-DAT') % automatically compare with EM-DAT
 % INPUTS:
 %   EDS: either an event damage set, as e.g. returned by climada_EDS_calc or
 %       a file containing such a structure

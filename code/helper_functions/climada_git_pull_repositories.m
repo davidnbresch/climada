@@ -3,6 +3,10 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 % NAME:
 %   climada_git_pull_repositories
 % PURPOSE:
+%   Use use climada_git_clone to clone all repositories locally
+%
+%   This present code is OLD and will be deleted soon.
+%
 %   Execute a git pull on core climada and all repositories
 %
 %   NEW version: see climada_git_pull. The code here just calls
@@ -39,6 +43,7 @@ function climada_git_pull_repositories(TEST_mode,git_pull_command)
 % David N. Bresch, david.bresch@gmail.com, 20141107, TEST_mode added
 % David N. Bresch, david.bresch@gmail.com, 20150305, csh script option added
 % David N. Bresch, david.bresch@gmail.com, 20160609, switch to climada_git_pull
+% David N. Bresch, david.bresch@gmail.com, 20180307, switch to climada_git_clone
 %-
 
 %global climada_global
@@ -50,7 +55,8 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('TEST_mode','var'), TEST_mode = 0;end
 if ~exist('git_pull_command','var'), git_pull_command = 'git pull';end
 
-climada_git_pull_repositories(TEST_mode);
+fprintf('--> use climada_git_clone to clone all repositories locally\n');
+%climada_git_pull_repositories(TEST_mode);
 return
 
 % BELOW: OLD CODE, NOT USED ANY MORE
