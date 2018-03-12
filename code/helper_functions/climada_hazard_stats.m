@@ -28,6 +28,11 @@ function stats = climada_hazard_stats(hazard,return_period,check_plot,fontsize)
 %   climada_hazard_stats(hazard);
 %   climada_hazard_stats(hazard,[1 2 10 20],-1); % show historic events only
 %
+%   to plot the difference of two sets of return periods:
+%   stats_diff=stats_1;stats_diff.peril_ID='difference';
+%   stats_diff.intensity=stats_2.intensity-stats_1.intensity;
+%   climada_hazard_stats(stats_diff); % plot difference stats_2-stats_1
+%
 %   DISABLED use (left in case we need in future)
 %   global hazard % define hazard as global variable
 %   load('WISC_eur_WS'); % better use load than climada_hazard_load
@@ -42,6 +47,8 @@ function stats = climada_hazard_stats(hazard,return_period,check_plot,fontsize)
 %       swapping for huge hazard sets...). In this case, do NOT specify any
 %       ouput (as otherwise, there might be troubles in return).
 %       > prompted for if not given
+%   OR a previous output, i.e. stats, if stats.peril_ID='difference', we
+%       assume stats.intensity to contain differences and plot accordingly
 % OPTIONAL INPUT PARAMETERS:
 %   return_period: vector containing the requested return periods
 %       (default=[50 50 100 250])
@@ -93,6 +100,7 @@ function stats = climada_hazard_stats(hazard,return_period,check_plot,fontsize)
 % David N. Bresch, david.bresch@gmail.com, 20180105, hazard='global' added
 % David N. Bresch, david.bresch@gmail.com, 20180110, store_stats2hazard and hazard='global' removed
 % David N. Bresch, david.bresch@gmail.com, 20180122, stats.* used in plotting
+% David N. Bresch, david.bresch@gmail.com, 20180312, difference plot for stats
 %-
 
 % init global variables
@@ -211,7 +219,6 @@ if ~isfield(hazard,'return_period')
     stats.lat=hazard.lat;
     stats.peril_ID=hazard.peril_ID;
     stats.units=hazard_units;
-    stats.event_ID=hazard.event_ID;
     stats.centroid_ID=hazard.centroid_ID;
     stats.intensity=[];
     stats.frequency=[];
@@ -232,8 +239,19 @@ end % calculation
 if abs(check_plot(1))>0
     
     n_return_period=length(stats.return_period);
-    fprintf('plotting %i %sintensity vs return period maps (be patient) ',n_return_period,hist_str)
-    
+
+    if strcmpi(stats.peril_ID,'difference')
+        mimax=max(abs(min(min(stats.intensity))),abs(max(max(stats.intensity))));
+        mimax=ceil(mimax*10)/10; % round
+        c_ax=[-mimax mimax];dmimax=mimax/5; % in essence 5=floor(size(cmap,1)/2)
+        xtick_=-mimax:dmimax:mimax;
+        if isempty(cmap),cmap=colormap;end % default, if not returned
+        cbar_str  = [hist_str cbar_str ' (' hazard_units ')']; % pre-prend 'historic'
+        fprintf('plotting %i %sintensity vs return period difference maps (be patient) ',n_return_period,hist_str)
+    else
+        fprintf('plotting %i %sintensity vs return period maps (be patient) ',n_return_period,hist_str)
+    end
+        
     scale = max(stats.lon)-min(stats.lon);
     centroids.lon=stats.lon; % to pass on below
     centroids.lat=stats.lat; % to pass on below
