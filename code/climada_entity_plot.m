@@ -77,6 +77,7 @@ function params=climada_entity_plot(entity,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170721, year_i treatment switched and currency_unit introduced
 % David N. Bresch, david.bresch@gmail.com, 20170729, currency_unit fixed
 % David N. Bresch, david.bresch@gmail.com, 20180102, nicer colorscale (now also using climada_colormap)
+% David N. Bresch, david.bresch@gmail.com, 20180314, entity.assets.currency_unit fixed
 %-
 
 global climada_global
@@ -191,7 +192,7 @@ if sum(plot_Value)==0
 end
 
 plot_Value=plot_Value/params.unit_scale;
-entity.assets.currency_unit=params.unit_scale;
+entity.assets.currency_unit=entity.assets.currency_unit*params.unit_scale;
 
 if params.plot_log_value
     gtz_pos=(plot_Value>0);
