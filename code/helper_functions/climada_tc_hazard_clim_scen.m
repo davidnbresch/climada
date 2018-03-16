@@ -56,13 +56,13 @@ if ~exist('hazard_clim_file','var'),hazard_clim_file=[];end
 if ~exist('frequency_screw','var'),frequency_screw=[];end
 if ~exist('intensity_screw','var'),intensity_screw=[];end
 if ~exist('category_thres','var'),category_thres=[];end
-
-% PARAMETERS
-
-if isempty(tc_track)
+if ~exist('tc_track','var')
 	tc_track = [];
 	fprintf('No tc_track defined. Change intensity/frequency of all storms.')		
 end %if no input, apply intensity_screw/frequency_screw to all storms 
+
+% PARAMETERS
+
 
 % If category of storms not determined yet, do it now
 if ~isempty(tc_track)
