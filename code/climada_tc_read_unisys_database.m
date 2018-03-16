@@ -460,7 +460,7 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
     
     if check_plot
         subplot(2,2,2)
-        for i=1:length(tc_track);plot(tc_track(i).lon,tc_track(i).lat,'-b');hold on;end; % all tracks
+        for i=1:length(tc_track);plot(tc_track(i).lon,tc_track(i).lat,'-b','HandleVisibility','off');hold on;end; % all tracks
         hold on
         if exist('climada_plot_world_borders','file'),climada_plot_world_borders;end % plot coastline
         subplot(2,2,3)

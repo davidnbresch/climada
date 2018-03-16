@@ -148,7 +148,7 @@ for shape_i = 1:length(shapes)
             shapes(shape_i).Y=shapes(shape_i).Y_ALL;
         end
     end
-    plot(shapes(shape_i).X,shapes(shape_i).Y, 'color',border_color,'LineWidth',linewidth);
+    plot(shapes(shape_i).X,shapes(shape_i).Y, 'color',border_color,'LineWidth',linewidth,'HandleVisibility','off');
     hold on
     if fill_land
         % a bit trricky, as fill does not like NaNs:

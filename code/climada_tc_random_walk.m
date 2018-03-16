@@ -185,8 +185,8 @@ if check_plot
     plot(tc_track_out(1).lon,tc_track_out(1).lat,'-b');hold on;title('TC ensemble set')
     plot(tc_track(1).lon,tc_track(1).lat,'-r');hold on
     legend('derived tracks','original tracks');
-    for i=2:length(tc_track_out);plot(tc_track_out(i).lon,tc_track_out(i).lat,'-b');hold on;end;title('TC ensemble set')
-    for i=2:length(tc_track);plot(tc_track(i).lon,tc_track(i).lat,'-r');hold on;end;
+    for i=2:length(tc_track_out);plot(tc_track_out(i).lon,tc_track_out(i).lat,'-b','HandleVisibility','off');hold on;end;title('TC ensemble set')
+    for i=2:length(tc_track);plot(tc_track(i).lon,tc_track(i).lat,'-r','HandleVisibility','off');hold on;end;
     if exist('climada_plot_world_borders','file'),climada_plot_world_borders;end % plot coastline
     set(gcf,'Color',[1 1 1]); % background to white
 end
