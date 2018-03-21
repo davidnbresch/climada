@@ -192,7 +192,11 @@ if sum(plot_Value)==0
 end
 
 plot_Value=plot_Value/params.unit_scale;
-entity.assets.currency_unit=entity.assets.currency_unit*params.unit_scale;
+if isfield(entity.assets,'currency_unit')
+    entity.assets.currency_unit=entity.assets.currency_unit*params.unit_scale;
+else
+    entity.assets.currency_unit=params.unit_scale;
+end
 
 if params.plot_log_value
     gtz_pos=(plot_Value>0);
