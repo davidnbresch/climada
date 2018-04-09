@@ -36,7 +36,7 @@ function entity=climada_blackmarble_entity(admin0_name,admin1_name,parameters)
 %   centroids is performed.
 %
 %   The niglight image is not stored within the climada structure. It can
-%   be created using blackmarble_read.m
+%   be created using climada_blackmarble_read.m
 %   The original data needs to be aquired from 
 %   https://earthobservatory.nasa.gov/Features/NightLights/page3.php
 %
@@ -167,6 +167,7 @@ function entity=climada_blackmarble_entity(admin0_name,admin1_name,parameters)
 % david.bresch@gmail.com, 20171103, major part copied from climada_nightlight_entity.m
 % thomas.roeoesli@usys.ethz.ch, 20171114, initial
 % Dario Stocker & Samuel Eberenz, eberenz@posteo.eu, 20180209, add switch parameters.scale_GDP
+% Dario Stocker, 20180406, adapted to changed climada_blackmarble_read function (new output filename)
 
 entity=[]; % init
 
@@ -221,7 +222,7 @@ end
 % see http://ngdc.noaa.gov/eog/dmsp/downloadV4composites.html#AVSLCFC3
 % and the detailed instructions where to obtain in the file
 % F182012.v4c_web.stable_lights.avg_vis.txt in the module's data dir.
-full_img_filename=[module_data_dir filesep 'BlackMarble_2016_geo_gray.mat'];
+full_img_filename=[module_data_dir filesep 'BlackMarble_2016_geo_gray_15arcsec.mat'];
 % min_South=-65; % degree, defined on the webpage above
 % max_North= 75; % defined on the webpage above
 %
@@ -266,7 +267,7 @@ selection_admin1_shape_i=[]; % init
 
 % check for full global night light image being locally available
 if ~exist(full_img_filename,'file')
-    fprintf(['nightlight file "' full_img_filename '" does not exist. Use function "blackmarble_read.m" to create it.']);
+    fprintf(['nightlight file "' full_img_filename '" does not exist. Use function "climada_blackmarble_read.m" to create it.']);
     return
 end
 
@@ -400,8 +401,7 @@ else
     end % isempty(admin1_name)
 
     if isempty(selection_admin1_shape_i)
-        admin1_name
-        fprintf('Error: %s not found, consider using admin1_code, run once without specifying admin1 to see list of codes\n',char(admin1_name));
+        fprintf('Error: %s not found, consider using admin1_code, run once without specifying admin1 to see list of codes\n',admin1_name);
         return
     end
 
@@ -426,11 +426,7 @@ BM = matfile(full_img_filename);
 blackmarble_lat = BM.blackmarble_lat; %only a function
 blackmarble_lon = BM.blackmarble_lon; %only a function
 blackmarble_ind = BM.blackmarble_ind; %only a function
-try
-    extraction_ind = blackmarble_ind(bbox(2), bbox(4), bbox(1), bbox(3));% bbox=[minlon minlat maxlon maxlat] define indizes for extraction
-catch
-    error('ERROR: you are using a old version of matlab with a different behaviour of the function  + (plus). Please update MATLAB to a newer version.');
-end
+extraction_ind = blackmarble_ind(bbox(2), bbox(4), bbox(1), bbox(3));% bbox=[minlon minlat maxlon maxlat] define indizes for extraction
 nightlight_intensity = BM.nightlight_intensity; % creates the actual values using BM (matfile object)
 VALUES = double(nightlight_intensity(extraction_ind)); % copy needed box of nightlight intensity to VALUES and transform to double
 clear nightlight_intensity
@@ -666,14 +662,14 @@ end % params.restrict_Values_to_country
 entity.assets.DamageFunID=entity.assets.Value*0+1;
 entity.assets.reference_year=climada_global.present_reference_year;
 
-if sum(parameters.nightlight_transform_poly)>0 && max(entity.assets.Value)>0
-    entity.assets.Value=entity.assets.Value/max(entity.assets.Value); % normalize to range [0..1]
-    entity.assets.Value = polyval(parameters.nightlight_transform_poly,entity.assets.Value); % ***********
-    entity.assets.Value=entity.assets.Value/sum(entity.assets.Value); % normalize to sum=1
-    entity.assets.nightlight_transform_poly=parameters.nightlight_transform_poly;
-    entity.assets.comment='nightlights transformed using polynomial, then normalized to 1';
-    if parameters.verbose,fprintf('%s\n',entity.assets.comment);end
-end % parameters.nightlight_transform_poly
+% if sum(parameters.nightlight_transform_poly)>0 && max(entity.assets.Value)>0
+%     entity.assets.Value=entity.assets.Value/max(entity.assets.Value); % normalize to range [0..1]
+%     entity.assets.Value = polyval(parameters.nightlight_transform_poly,entity.assets.Value); % ***********
+%     entity.assets.Value=entity.assets.Value/sum(entity.assets.Value); % normalize to sum=1
+%     entity.assets.nightlight_transform_poly=parameters.nightlight_transform_poly;
+%     entity.assets.comment='nightlights transformed using polynomial, then normalized to 1';
+%     if parameters.verbose,fprintf('%s\n',entity.assets.comment);end
+% end % parameters.nightlight_transform_poly
 
 entity.assets.admin0_name=admin0_name;
 entity.assets.admin0_ISO3=admin0_shapes(selection_admin0_shape_i).ADM0_A3;

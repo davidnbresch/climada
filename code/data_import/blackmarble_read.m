@@ -1,4 +1,4 @@
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%% IMPORT BLACKMARBLE %%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % this script imports the data from the files of the blackmarble nightlight
@@ -7,7 +7,7 @@
 % (https://earthobservatory.nasa.gov/Features/NightLights/page3.php). Then
 % change the variable bm_folder in the script below to direct to the folder
 % where you saved the files on your computer.
-
+warning('This script is deprecated. Use function climada_read_blackmarble instead.')
 % Thomas R??sli, thomas.roeoesli@usys.ethz.ch, init
 
 %% folder and file names
