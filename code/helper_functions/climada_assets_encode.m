@@ -1,4 +1,4 @@
-function entityORassets = climada_assets_encode(entityORassets,hazard,max_encoding_distance_m)
+function entityORassets = climada_assets_encode(entityORassets,hazard,max_encoding_distance_m,speed_up)
 % climada assets encode
 % NAME:
 %   climada_assets_encode
@@ -43,6 +43,12 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 %       location to a centroid (in meters, e.g. 1e5 for 100km). Default
 %       is climada_global.max_encoding_distance_m, or, if there is a field
 %       hazard.max_encoding_distance_m.
+%   speed_up: if=1, centroids and hazards are binned in geographical
+%       bounding boxes of size 5x5 degree or 10x10 (depending on size of
+%       asset set) and encoded box by box. This can lead to minor errors
+%       for assets close to the boxes boundaries, but is much faster.
+%       Set speed_up to 0 for encoding without boxes (slow but most
+%       precise). Default is 1.
 % OUTPUTS:
 %   the encoded assets, means locations mapped to calculation centroids
 %       new field assets.centroid_index added
@@ -64,6 +70,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 % David N. Bresch, david.bresch@gmail.com, 20160606, max_distance_to_hazard renamed to max_encoding_distance_m and speedup
 % David N. Bresch, david.bresch@gmail.com, 20161120, (waitbar) comments removed
 % David N. Bresch, david.bresch@gmail.com, 20170228, progress to stdout fewer times
+% Samuel Eberenz, eberenz@posteo.eu, 20180416, add option speed_up for use of bounding boxes
 %-
 
 global climada_global
@@ -73,7 +80,7 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('entityORassets','var'),entityORassets=[];end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('max_encoding_distance_m','var'),max_encoding_distance_m=[];end
-
+if ~exist('speed_up','var'),speed_up=1;end
 
 % PARAMETERS
 %
@@ -157,34 +164,96 @@ end
 
 % start encoding
 n_assets              = length(indx);
-assets.centroid_index = assets.Value*0; % init
+assets.centroid_index = zeros(size(assets.Value)); % init
 
 fprintf('encoding %i assets (max distance %d m) ...\n',n_assets,max_encoding_distance_m);
 
 cos_centroids_lat = cos(centroids.lat/180*pi); % calculate once for speedup
 
 climada_progress2stdout    % init, see terminate below
-for asset_i=1:n_assets
-    
-    % we used climada_geo_distance before (slower, since cos(lat) calculated each time)
-    dd=((centroids.lon-assets.lon(indx(asset_i))).*cos_centroids_lat).^2+(centroids.lat-assets.lat(indx(asset_i))).^2; % in km^2
-    [min_dist,min_dist_index]    = min(dd);
-    min_dist=sqrt(min_dist)*111.12*1000; % to km, then to m
-    % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
-    if min_dist>max_encoding_distance_m
-        min_dist_index = 0;
+
+if speed_up % speed up by using this routine, encoding box by box.
+    if n_assets>5e5, box_size = 5; % 5 degree lon/lat box_size for very large asset sets
+    elseif n_assets>1e4, box_size = 10; % 5 degree lon/lat box_size lor large asset sets
+    else box_size = 0; % no usage of boxes for small asset sets (<10k)
     end
-    %indx3                        = find(indx2 == asset_i); until 20160606
-    indx3                        = indx2 == asset_i;
-    assets.centroid_index(indx3) = min_dist_index;
-        
-    mod_step=10000;
-    if asset_i<10000,mod_step=1000;end
-    if asset_i<1000,mod_step=100;end
-    climada_progress2stdout(asset_i,n_assets,mod_step,'assets'); % update
     
-end % asset_i
+    lon_min = floor(min(assets.lon)*1/box_size)*box_size;
+    lon_max = ceil(max(assets.lon)*1/box_size)*box_size;
+    lat_min = floor(min(assets.lat)*1/box_size)*box_size;
+    lat_max = ceil(max(assets.lat)*1/box_size)*box_size;
+    lon_box = lon_min:box_size:lon_max;
+    lat_box = lat_min:box_size:lat_max;
+    box_count=0;
+
+    for box_i=1:length(lon_box)-1 % double loop through all populated bounding boxes
+        for box_j=1:length(lat_box)-1
+            box_count=box_count+1;
+            asset_box_indx = find(assets.lon(indx)>=lon_box(box_i) &...
+                               assets.lon(indx)<lon_box(box_i+1) & ...
+                               assets.lat(indx)>=lat_box(box_j) & ...
+                               assets.lat(indx)<lat_box(box_j+1));
+            centroid_box_indx = find(centroids.lon>=lon_box(box_i) &...
+                               centroids.lon<lon_box(box_i+1) & ...
+                               centroids.lat>=lat_box(box_j) & ...
+                               centroids.lat<lat_box(box_j+1));
+            if isempty(asset_box_indx),break;
+            elseif isempty(centroid_box_indx)
+                assets.centroid_index(asset_box_indx)=0;
+                break;
+            end
+            for asset_box_i = 1:length(asset_box_indx)
+                    dd=((centroids.lon(centroid_box_indx)-assets.lon(indx(asset_box_indx(asset_box_i)))).*...
+                        cos_centroids_lat(centroid_box_indx)).^2+...
+                        (centroids.lat(centroid_box_indx)-assets.lat(indx(asset_box_indx(asset_box_i)))).^2; % in km^2
+                    [min_dist,min_dist_index]    = min(dd);
+                    min_dist=sqrt(min_dist)*111.12*1000; % to km, then to m
+                    % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
+                    if min_dist>max_encoding_distance_m
+                        min_dist_index = 0;
+                    else
+                        min_dist_index = centroid_box_indx(min_dist_index);
+                    end
+                    %indx3                        = find(indx2 == asset_i); until 20160606
+                    indx3                        = indx2 == asset_box_indx(asset_box_i);
+                    assets.centroid_index(indx3) = min_dist_index;
+
+
+            end
+        end
+    mod_step=5;
+    if box_count<=10,mod_step=1;end % this time prediction is unprecise for boxes, but still kept here for now.
+    climada_progress2stdout(box_count,length(lon_box)*length(lat_box),mod_step,'bounding boxes'); % update
+    end
+else
+    % default encoding processes without bounding boxes
+    % (default till 20180416). activate by setting speed_up=0.
+    for asset_i=1:n_assets
+
+        % we used climada_geo_distance before (slower, since cos(lat) calculated each time)
+        dd=((centroids.lon-assets.lon(indx(asset_i))).*cos_centroids_lat).^2+(centroids.lat-assets.lat(indx(asset_i))).^2; % in km^2
+        [min_dist,min_dist_index]    = min(dd);
+        min_dist=sqrt(min_dist)*111.12*1000; % to km, then to m
+        % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
+        if min_dist>max_encoding_distance_m
+            min_dist_index = 0;
+        end
+        %indx3                        = find(indx2 == asset_i); until 20160606
+        indx3                        = indx2 == asset_i;
+        assets.centroid_index(indx3) = min_dist_index;
+
+        mod_step=10000;
+        if asset_i<10000,mod_step=1000;end
+        if asset_i<1000,mod_step=100;end
+        climada_progress2stdout(asset_i,n_assets,mod_step,'assets'); % update
+
+    end % asset_i
+end
 climada_progress2stdout(0) % terminate
+
+if speed_up
+    assets.comment = [assets.comment '. Encoded using bounding boxes for speed up'];
+end
 
 assets.hazard.filename = 'assets encode'; % default
 assets.hazard.comment  = 'assets encode'; % default
