@@ -14,9 +14,11 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 %   normally called from: climada_entity_read
 %   see also: climada_assets_encode_check
 % CALLING SEQUENCE:
-%   entityORassets=climada_assets_encode(entityORassets,hazard,max_encoding_distance_m)
-% EXAMPLE:
+%   entityORassets=climada_assets_encode(entityORassets,hazard,max_encoding_distance_m,speed_up)
+% EXAMPLES:
 %   assets=climada_assets_encode(climada_entity_load)
+%   entity=climada_assets_encode(entity,hazard,45000); % high performance due to smaller encoding distance
+%   entity=climada_assets_encode(entity,hazard,[],3); % high performance by maximum speed_up
 % INPUTS:
 %   entityORassets: an assets structure (such as entity.assets), see
 %       climada_entity_read. Or just the full entity (with assets in entity.assets)
@@ -43,12 +45,22 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 %       location to a centroid (in meters, e.g. 1e5 for 100km). Default
 %       is climada_global.max_encoding_distance_m, or, if there is a field
 %       hazard.max_encoding_distance_m.
-%   speed_up: if=1, centroids and hazards are binned in geographical
-%       bounding boxes of size 5x5 degree or 10x10 (depending on size of
-%       asset set) and encoded box by box. This can lead to minor errors
-%       for assets close to the boxes boundaries, but is much faster.
-%       Set speed_up to 0 for encoding without boxes (slow but most
-%       precise). Default is 1.
+%   speed_up: speed up encoding by using bounding boxes:
+%       >0: entities are binned in geographical
+%       bounding boxes of size 3x3 to 6x6 degree (depending on max. encoding distance)
+%       and encoded box by box. centroids are restricted to larger boxes containing the boundary boxes 
+%       with a buffer to account for assets close to the boxes' boundaries.
+%       = 1: buffer= 1.1*max_encoding_distance (default). For further speed-up, you can reduce
+%       max_encoding_distance_m to a sensitive value.
+%       >1: faster than 1, using smaller buffers. This can lead to minor
+%           errors:
+%       =2: faster. centroid boxes only buffer=0.55*max_encoding_distance larger than
+%           asset boxes, pretty save for evenly gridded assets and centroids.
+%       >=3: buffer=0, fastest. This will most certainly omit some assets close
+%           to the boxes' boundaries.
+%       =0 for encoding without bounding boxes (~10 to 15 times slower,
+%           should produce same results as =1, default until 20180416)
+%           (no speed_up is used for small samples of less than 500 assets)
 % OUTPUTS:
 %   the encoded assets, means locations mapped to calculation centroids
 %       new field assets.centroid_index added
@@ -71,6 +83,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 % David N. Bresch, david.bresch@gmail.com, 20161120, (waitbar) comments removed
 % David N. Bresch, david.bresch@gmail.com, 20170228, progress to stdout fewer times
 % Samuel Eberenz, eberenz@posteo.eu, 20180416, add option speed_up for use of bounding boxes
+% Samuel Eberenz, eberenz@posteo.eu, 20180417, debug, speed_up: include buffer and speed_up options 1 to 3
 %-
 
 global climada_global
@@ -80,11 +93,10 @@ if ~climada_init_vars,return;end % init/import global variables
 if ~exist('entityORassets','var'),entityORassets=[];end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('max_encoding_distance_m','var'),max_encoding_distance_m=[];end
-if ~exist('speed_up','var'),speed_up=1;end
+if ~exist('speed_up','var'),speed_up=[];end
 
 % PARAMETERS
 %
-
 
 % prompt for assets (entity) if not given
 if isempty(entityORassets) % local GUI
@@ -116,6 +128,14 @@ if isempty(max_encoding_distance_m)
     else
     max_encoding_distance_m = climada_global.max_encoding_distance_m; %max_encoding_distance_m = 10^6; 
     end
+end
+
+if isempty(speed_up),speed_up=1;end
+if speed_up>1
+    warning('speed_up > 1: Some assets might not be encoded.')
+end
+if ~speed_up
+    warning('Consider option speed_up=1 for faster encoding..')
 end
 
 % figure whether we got an entity OR assets as input
@@ -172,36 +192,62 @@ cos_centroids_lat = cos(centroids.lat/180*pi); % calculate once for speedup
 
 climada_progress2stdout    % init, see terminate below
 
-if speed_up % speed up by using this routine, encoding box by box.
-    if n_assets>5e5, box_size = 5; % 5 degree lon/lat box_size for very large asset sets
-    elseif n_assets>1e4, box_size = 10; % 5 degree lon/lat box_size lor large asset sets
-    else box_size = 0; % no usage of boxes for small asset sets (<10k)
+if speed_up && n_assets>500 % speed up by using this routine, encoding box by box.
+                    % set buffer for overlaping centroids box,
+                    % to avoid non-encoded assets close to boundaries of
+                    % boxes. (The centroid box contains the asset box)
+    if speed_up==1 % 1: save not to miss any assets within max_encoding max_encoding_distance_m (default)
+            buffer = 1.1*max_encoding_distance_m/(111.12*1000); % converting m to degree
+        elseif speed_up==2 % 2: faster, smaller overlap, save for regular grids if max encoding distace is set properly
+            buffer = .55*max_encoding_distance_m/(111.12*1000); 
+        elseif speed_up>=3 % 3: fastest, no overlap, will most certainly miss a few assets.
+            buffer = 0;
     end
+    % set optimal degree lon x lat box_size:
+    if max_encoding_distance_m > 75000
+        box_size = 6; % ~6x6 optimal performance for large encoding distances, tested for n_assets = 8'000
+    elseif max_encoding_distance_m > 25000
+        box_size = 4; % 4x4 optimal performance for ~50000m, tested for n_assets = 8'000 & 150'000
+    else
+        box_size = 3; % 3x3 degrees for small encoding distances, performance not tested.
+    end
+    % set bounding boxes for assets, rounded according to box_size:
+    lon_box=floor(min(assets.lon)*1/box_size)*box_size:box_size:ceil(max(assets.lon)*1/box_size)*box_size;
+    lat_box=floor(min(assets.lat)*1/box_size)*box_size:box_size:ceil(max(assets.lat)*1/box_size)*box_size;
     
-    lon_min = floor(min(assets.lon)*1/box_size)*box_size;
-    lon_max = ceil(max(assets.lon)*1/box_size)*box_size;
-    lat_min = floor(min(assets.lat)*1/box_size)*box_size;
-    lat_max = ceil(max(assets.lat)*1/box_size)*box_size;
-    lon_box = lon_min:box_size:lon_max;
-    lat_box = lat_min:box_size:lat_max;
-    box_count=0;
+    cos_max_lat = cos(max(abs(assets.lat))/180*pi);
+    assets_count=0;
 
-    for box_i=1:length(lon_box)-1 % double loop through all populated bounding boxes
+    for box_i=1:length(lon_box)-1 % begin double loop through all populated bounding boxes
+        if box_i==length(lon_box)-1 % find indices for box in longitude
+            lon_dummy_assets=assets.lon(indx)>=lon_box(box_i) &...
+                      assets.lon(indx)<=lon_box(box_i+1);
+            lon_dummy_centroids=centroids.lon>=(lon_box(box_i)-buffer/cos_max_lat) &... % lon min
+                centroids.lon<=(lon_box(box_i+1)+buffer/cos_max_lat); % lon max                  
+        else
+            lon_dummy_assets=assets.lon(indx)>=lon_box(box_i) &...
+                      assets.lon(indx)< lon_box(box_i+1);
+            lon_dummy_centroids=centroids.lon>=(lon_box(box_i)-buffer/cos_max_lat) &... % lon min
+                centroids.lon<(lon_box(box_i+1)+buffer/cos_max_lat); % lon max
+        end
         for box_j=1:length(lat_box)-1
-            box_count=box_count+1;
-            asset_box_indx = find(assets.lon(indx)>=lon_box(box_i) &...
-                               assets.lon(indx)<lon_box(box_i+1) & ...
-                               assets.lat(indx)>=lat_box(box_j) & ...
-                               assets.lat(indx)<lat_box(box_j+1));
-            centroid_box_indx = find(centroids.lon>=lon_box(box_i) &...
-                               centroids.lon<lon_box(box_i+1) & ...
-                               centroids.lat>=lat_box(box_j) & ...
-                               centroids.lat<lat_box(box_j+1));
-            if isempty(asset_box_indx),break;
-            elseif isempty(centroid_box_indx)
+             % find indices for box in latitude
+            asset_box_indx = find(lon_dummy_assets &...
+                    assets.lat(indx)>=lat_box(box_j) & ...
+                    assets.lat(indx)<=lat_box(box_j+1));
+         
+            if isempty(asset_box_indx),continue;
+            else,assets_count=assets_count+length(asset_box_indx);end 
+            
+            centroid_box_indx = find(lon_dummy_centroids & ...
+                centroids.lat>=(lat_box(box_j  )- buffer) & ... % lat min
+                centroids.lat<=(lat_box(box_j+1)+ buffer)); % lat max
+            
+            if isempty(centroid_box_indx)
                 assets.centroid_index(asset_box_indx)=0;
-                break;
+                continue;
             end
+            % loop through assets in bounding box:
             for asset_box_i = 1:length(asset_box_indx)
                     dd=((centroids.lon(centroid_box_indx)-assets.lon(indx(asset_box_indx(asset_box_i)))).*...
                         cos_centroids_lat(centroid_box_indx)).^2+...
@@ -218,12 +264,13 @@ if speed_up % speed up by using this routine, encoding box by box.
                     indx3                        = indx2 == asset_box_indx(asset_box_i);
                     assets.centroid_index(indx3) = min_dist_index;
 
-
-            end
+                    mod_step=10000;
+                    if assets_count<10000,mod_step=1000;end
+                    if assets_count<1000,mod_step=100;end
+                    climada_progress2stdout(min(assets_count,n_assets),n_assets,mod_step,'assets'); % update
+            end            
         end
-    mod_step=5;
-    if box_count<=10,mod_step=1;end % this time prediction is unprecise for boxes, but still kept here for now.
-    climada_progress2stdout(box_count,length(lon_box)*length(lat_box),mod_step,'bounding boxes'); % update
+    clear lon_dummy_*
     end
 else
     % default encoding processes without bounding boxes
