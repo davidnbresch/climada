@@ -134,9 +134,6 @@ if isempty(speed_up),speed_up=1;end
 if speed_up>1
     warning('speed_up > 1: Some assets might not be encoded.')
 end
-if ~speed_up
-    warning('Consider option speed_up=1 for faster encoding..')
-end
 
 % figure whether we got an entity OR assets as input
 if isfield(entityORassets,'assets') % an entity instead of assets passed
@@ -184,6 +181,10 @@ end
 
 % start encoding
 n_assets              = length(indx);
+if ~speed_up && n_assets>5000
+    disp('Consider option speed_up=1 for faster encoding.')
+end
+
 assets.centroid_index = zeros(size(assets.Value)); % init
 
 fprintf('encoding %i assets (max distance %d m) ...\n',n_assets,max_encoding_distance_m);
@@ -297,10 +298,6 @@ else
     end % asset_i
 end
 climada_progress2stdout(0) % terminate
-
-if speed_up
-    assets.comment = [assets.comment '. Encoded using bounding boxes for speed up'];
-end
 
 assets.hazard.filename = 'assets encode'; % default
 assets.hazard.comment  = 'assets encode'; % default
