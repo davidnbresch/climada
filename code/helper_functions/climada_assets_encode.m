@@ -84,6 +84,7 @@ function entityORassets = climada_assets_encode(entityORassets,hazard,max_encodi
 % David N. Bresch, david.bresch@gmail.com, 20170228, progress to stdout fewer times
 % Samuel Eberenz, eberenz@posteo.eu, 20180416, add option speed_up for use of bounding boxes
 % Samuel Eberenz, eberenz@posteo.eu, 20180417, debug, speed_up: include buffer and speed_up options 1 to 3
+% Samuel Eberenz, eberenz@posteo.eu, 20180417, improved progress2stdout for speed_up>0 + minor optimizations
 %-
 
 global climada_global
@@ -204,20 +205,21 @@ if speed_up && n_assets>500 % speed up by using this routine, encoding box by bo
         elseif speed_up>=3 % 3: fastest, no overlap, will most certainly miss a few assets.
             buffer = 0;
     end
+    
     % set optimal degree lon x lat box_size:
     if max_encoding_distance_m > 75000
-        box_size = 6; % ~6x6 optimal performance for large encoding distances, tested for n_assets = 8'000
-    elseif max_encoding_distance_m > 25000
-        box_size = 4; % 4x4 optimal performance for ~50000m, tested for n_assets = 8'000 & 150'000
+        box_size = 4; % 3 to 6 optimal performance for large encoding distances, tested for n_assets = 8'000 & 100'000
     else
-        box_size = 3; % 3x3 degrees for small encoding distances, performance not tested.
+        box_size = 3; % 3 to 4 optimal degrees for small encoding distances, tested for n_assets = 8'000, 100'000, 150'000
     end
     % set bounding boxes for assets, rounded according to box_size:
     lon_box=floor(min(assets.lon)*1/box_size)*box_size:box_size:ceil(max(assets.lon)*1/box_size)*box_size;
     lat_box=floor(min(assets.lat)*1/box_size)*box_size:box_size:ceil(max(assets.lat)*1/box_size)*box_size;
     
     cos_max_lat = cos(max(abs(assets.lat))/180*pi);
-    assets_count=0;
+    assets_count=0; % init
+    % box_count = 0; % init
+    % n_boxes = (length(lon_box)-1)*(length(lon_box)-1);
 
     for box_i=1:length(lon_box)-1 % begin double loop through all populated bounding boxes
         if box_i==length(lon_box)-1 % find indices for box in longitude
@@ -232,44 +234,62 @@ if speed_up && n_assets>500 % speed up by using this routine, encoding box by bo
                 centroids.lon<(lon_box(box_i+1)+buffer/cos_max_lat); % lon max
         end
         for box_j=1:length(lat_box)-1
-             % find indices for box in latitude
-            asset_box_indx = find(lon_dummy_assets &...
-                    assets.lat(indx)>=lat_box(box_j) & ...
-                    assets.lat(indx)<=lat_box(box_j+1));
-         
-            if isempty(asset_box_indx),continue;
-            else,assets_count=assets_count+length(asset_box_indx);end 
             
-            centroid_box_indx = find(lon_dummy_centroids & ...
-                centroids.lat>=(lat_box(box_j  )- buffer) & ... % lat min
-                centroids.lat<=(lat_box(box_j+1)+ buffer)); % lat max
+            % box_count = box_count+1;
             
+            % find indices for box in latitude
+            if box_j==length(lat_box)-1 
+                asset_box_indx = find(lon_dummy_assets &...
+                        assets.lat(indx)>=lat_box(box_j) & ... % lat min
+                        assets.lat(indx)<=lat_box(box_j+1)); % lat max
+                    
+                if isempty(asset_box_indx),continue;end
+                
+                centroid_box_indx = find(lon_dummy_centroids & ...
+                    centroids.lat>=(lat_box(box_j  )- buffer) & ... % lat min
+                    centroids.lat<=(lat_box(box_j+1)+ buffer)); % lat max
+            else
+                asset_box_indx = find(lon_dummy_assets &...
+                        assets.lat(indx)>=lat_box(box_j) & ... % lat min
+                        assets.lat(indx)< lat_box(box_j+1)); % lat max
+                    
+                if isempty(asset_box_indx),continue;end
+                
+                centroid_box_indx = find(lon_dummy_centroids & ...
+                    centroids.lat>=(lat_box(box_j  )- buffer) & ... % lat min
+                    centroids.lat< (lat_box(box_j+1)+ buffer)); % lat max
+            end
+
             if isempty(centroid_box_indx)
                 assets.centroid_index(asset_box_indx)=0;
                 continue;
             end
+            
             % loop through assets in bounding box:
             for asset_box_i = 1:length(asset_box_indx)
-                    dd=((centroids.lon(centroid_box_indx)-assets.lon(indx(asset_box_indx(asset_box_i)))).*...
-                        cos_centroids_lat(centroid_box_indx)).^2+...
-                        (centroids.lat(centroid_box_indx)-assets.lat(indx(asset_box_indx(asset_box_i)))).^2; % in km^2
-                    [min_dist,min_dist_index]    = min(dd);
-                    min_dist=sqrt(min_dist)*111.12*1000; % to km, then to m
-                    % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
-                    if min_dist>max_encoding_distance_m
-                        min_dist_index = 0;
-                    else
-                        min_dist_index = centroid_box_indx(min_dist_index);
-                    end
-                    %indx3                        = find(indx2 == asset_i); until 20160606
-                    indx3                        = indx2 == asset_box_indx(asset_box_i);
-                    assets.centroid_index(indx3) = min_dist_index;
+                dd=((centroids.lon(centroid_box_indx)-assets.lon(indx(asset_box_indx(asset_box_i)))).*...
+                    cos_centroids_lat(centroid_box_indx)).^2+...
+                    (centroids.lat(centroid_box_indx)-assets.lat(indx(asset_box_indx(asset_box_i)))).^2; % in km^2
+                [min_dist,min_dist_index]    = min(dd);
+                min_dist=sqrt(min_dist)*111.12*1000; % to km, then to m
+                % set closest hazard position to zero if hazard is too far away from asset (depends on peril ID)
+                if min_dist>max_encoding_distance_m
+                    min_dist_index = 0;
+                else
+                    min_dist_index = centroid_box_indx(min_dist_index);
+                end
 
+                indx3                        = indx2 == asset_box_indx(asset_box_i);
+                assets.centroid_index(indx3) = min_dist_index;
+
+                assets_count = assets_count+1;
+                if n_assets>8000 % in speed mode, not process output for relatiely small asset sets.
                     mod_step=10000;
-                    if assets_count<10000,mod_step=1000;end
-                    if assets_count<1000,mod_step=100;end
-                    climada_progress2stdout(min(assets_count,n_assets),n_assets,mod_step,'assets'); % update
-            end            
+                    if assets_count<10000,mod_step=2000;end
+                    %if assets_count<1000,mod_step=100;end 
+                    climada_progress2stdout(assets_count,n_assets,mod_step,'assets'); % update                        
+                end      
+            end          
         end
     clear lon_dummy_*
     end
