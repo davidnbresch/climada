@@ -99,7 +99,7 @@ if strcmp(map_shape_file,'ASK')
     end
 end
 
-if isempty(map_shape_file),map_shape_file = climada_global.map_border_file;end; % set to default
+if isempty(map_shape_file),map_shape_file = climada_global.map_border_file;end % set to default
 
 [fP,fN] = fileparts(map_shape_file);
 map_mat_shape_file=[fP filesep fN '.mat'];
