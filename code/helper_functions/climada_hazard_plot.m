@@ -8,7 +8,7 @@ function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 %
 %   see also climada_plot_tc_footprint (works for TC only)
 %   and the high-resolution version climada_hazard_plot_hr
-%   See also climada_hazard_plot (later to be merged all in one)
+%   See also climada_colormap for the peril-specific color settings
 % CALLING SEQUENCE:
 %   [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 % EXAMPLE:

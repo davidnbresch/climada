@@ -133,9 +133,10 @@ switch peril_ID
         xtickvals = [ .2 .5 1 2 3 4 5 7.5 10];
         if isempty(peril_units),peril_units='m';end
         cbar_str  = sprintf('surge height (%s)',peril_units);
+        if strcmpi(peril_ID,'FL'),cbar_str  = sprintf('flood height (%s)',peril_units);end
         intensity_threshold = 10;
-        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)-3);
-        cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
+%         cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)-3);
+%         cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
         
         cmap=[0.2081    0.1663    0.5292
             0.2116    0.1898    0.5777
