@@ -1,4 +1,4 @@
-function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling_vect)
+function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling_vect,silent_mode)
 % climada template
 % MODULE:
 %   core
@@ -51,6 +51,7 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 %       call, i.e. [YDS,sampling_vect]=climada_EDS2YDS(...) and then
 %       provided in subsequent calls(s) to obtain the exact same sampling
 %       structure of yearset, i.e YDS=climada_EDS2YDS(...,sampling_vect)
+%   silent_mode: if =1, no stdout
 % OUTPUTS:
 %   YDS: the year damage set (YDS), a struct with same fields as EDS (such
 %       as Value, ED, ...) plus yyyy and orig_year_flag. All fields same
@@ -75,6 +76,7 @@ function [YDS,sampling_vect]=climada_EDS2YDS(EDS,hazard,number_of_years,sampling
 % David N. Bresch, david.bresch@gmail.com, 20160308, allow for no hazard set
 % David N. Bresch, david.bresch@gmail.com, 20160420, orig_year_flag improved
 % David N. Bresch, david.bresch@gmail.com, 20170919, example improved
+% David N. Bresch, david.bresch@gmail.com, 20180503, silent_mode
 %-
 
 YDS=[]; % init output
@@ -90,6 +92,7 @@ if ~exist('EDS','var'),return;end
 if ~exist('hazard','var'),hazard=[];end
 if ~exist('number_of_years','var'),number_of_years=[];end
 if ~exist('sampling_vect','var'),sampling_vect=[];end
+if ~exist('silent_mode','var'),silent_mode=0;end
 
 % PARAMETERS
 %
@@ -200,7 +203,7 @@ else
         h        = waitbar(0,msgstr);
         set(h,'Name','Yearset');
     else
-        fprintf('%s (waitbar suppressed)\n',msgstr);
+        if ~silent_mode,fprintf('%s (waitbar suppressed)\n',msgstr);end
         format_str='%s';
     end
     
@@ -254,7 +257,7 @@ else
     end
     t_elapsed = etime(clock,t0);
     msgstr    = sprintf('processing yearset (%i original years, %i prob years each) took %3.2f sec',n_years,ens_size,t_elapsed);
-    fprintf('%s\n',msgstr);
+    if ~silent_mode,fprintf('%s\n',msgstr);end
     
     if orig_event_mismatch_count>0
         fprintf('Warning: there seem to be %i orig_event mismatches (YDS.orig_year_flag likely useless)\n',orig_event_mismatch_count);
@@ -270,7 +273,7 @@ YDS.frequency=YDS.damage*0+1/length(YDS.damage); % each year occurrs once...
 % final check whether we picked up all damage
 YDS_ED=sum(YDS.damage)/n_years/(ens_size+1);
 if abs(YDS_ED-EDS.ED)/EDS.ED>0.0001 % not zero, as we deal with large numbers
-    fprintf('Warning: expected damage mismatch (EDS: %g, YDS: %g)\n',EDS.ED,YDS_ED);
+    if ~silent_mode,fprintf('Warning: expected damage mismatch (EDS: %g, YDS: %g)\n',EDS.ED,YDS_ED);end
 end
 
 % follows a hands-on way to obtain target length yearsets (one could do
