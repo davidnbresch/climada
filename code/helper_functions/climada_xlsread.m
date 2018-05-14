@@ -91,7 +91,10 @@ function res=climada_xlsread(interactive_mode,excel_file,in_excel_sheet,silent_m
 % David N. Bresch, david.bresch@gmail.com, 20150227, finally, column headers with numbers are named VALxxxx
 % Lea Mueller, muellele@gmail.com, 20150505, bugfix for difficult header name
 % David N. Bresch, david.bresch@gmail.com, 20160527, misdat_out_value introduced
+% David N. Bresch, david.bresch@gmail.com, 20180514, climada_global.spreadsheet_ext
 %-
+
+global climada_global
 
 if ~exist('interactive_mode','var'),interactive_mode=[];end
 if ~exist('excel_file','var'),excel_file=[];end
@@ -106,7 +109,7 @@ if isempty(silent_mode),silent_mode=0;end
 res=[]; % init
 
 if isempty(excel_file)
-    [filename, pathname] = uigetfile('*.xls', 'Select an Excel file:');
+    [filename, pathname] = uigetfile(['*' climada_global.spreadsheet_ext], 'Select an Excel file:');
     if isequal(filename,0) || isequal(pathname,0)
         return; % Cancel pressed
     else
