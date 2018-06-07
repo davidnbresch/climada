@@ -335,6 +335,7 @@ if ~isempty(measures_impact_comparison)
         measures_impact_comparison_file = measures_impact_comparison;
         clear measures_impact_comparison
         load(measures_impact_comparison_file);
+        measures_impact_comparison.label_comparison=1; %recreate variable measures_impact_comparison for code to work
     else
         measures_impact = measures_impact_comparison;
     end
@@ -398,7 +399,7 @@ if ~isempty(measures_impact_comparison)
         if version_no>6 % for version 7 and later
             patch([cumulated_benefit(measure_i:measure_i+1) cumulated_benefit(measure_i+1:-1:measure_i)],... %
                 [0 0 sorted_cb_ratio(measure_i) sorted_cb_ratio(measure_i)],...
-                measures_impact.measures.color_RGB(:,sort_index(measure_i)),...
+                measures_impact.measures.color_RGB(:,sort_index(measure_i))',...
                 'FaceAlpha',0.2, 'EdgeColor',[.9 .9 .9]);
         else % reverse compatibility
             % area('v6',...) creates patch objects instead of areaseries
