@@ -137,7 +137,7 @@ legend_str={};
 
 for DFC_i=1:length(DFC)
     if Percentage_Of_Value_Flag
-        damage=DFC(DFC_i).damage_of_value;
+        damage=DFC(DFC_i).damage_of_value*100; % to show percentage, not decimals
     else
         damage=DFC(DFC_i).damage*climada_global.Value_display_unit_fact;
     end
