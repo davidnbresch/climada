@@ -6,6 +6,9 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 %   plot occurrence Damage exceedence Frequency Curve (DFC)
 %   mainly does plotting, uses climada_EDS2DFC to convert EDS to DFC
 %
+%   If last EDS.annotation='combined', a thick black line is used (see
+%   annotation_name_thick_black in PARAMETERS to change this)
+%
 %   See also: climada_EDS_DFC_match and climada_DFC_compare
 % CALLING SEQUENCE:
 %   climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
@@ -18,7 +21,8 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 %       a file containing such a structure
 %       SPECIAL: we also accept a structure which contains an EDS, like
 %       measures_impact.EDS
-%       if EDS has the field annotation_name, the legend will show this
+%       if EDS has the field annotation_name, the legend will show this. If
+%       last EDS.annotation='combined', a thick black line is used.
 %       > EDS promted for if not given
 % OPTIONAL INPUT PARAMETERS:
 %   EDS_comparison: like EDS see above, plotted (fine lines) for comparison
@@ -57,6 +61,7 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % david.bresch@gmail.com, 20170626, label y-axis with DFC(1).Value_unit
 % david.bresch@gmail.com, 20170727, legend_handle added
 % david.bresch@gmail.com, 20180207, EDS_comparison='EM-DAT' added
+% david.bresch@gmail.com, 20180613, thick black line for 'combined' and percentage fixed for comparison
 %-
 
 DFC=[];DFC_comparison=[];fig=[];legend_str={};legend_handle=[]; %init
@@ -81,7 +86,8 @@ color_     = [255 215   0 ;...   %today
     238  64   0 ;...   %clim
     205   0   0 ;...   %total risk
     120 120 120]/256;  %dotted line]/255;
-
+%
+annotation_name_thick_black='combined';
 
 % prompt for EDS if not given
 EDS = climada_EDS_load(EDS);
@@ -140,6 +146,10 @@ for DFC_i=1:length(DFC)
         damage=DFC(DFC_i).damage_of_value*100; % to show percentage, not decimals
     else
         damage=DFC(DFC_i).damage*climada_global.Value_display_unit_fact;
+    end
+    % special line (thick black) for combined curve (if last one is combined)
+    if DFC_i==length(DFC) && strcmpi(DFC(DFC_i).annotation_name,annotation_name_thick_black)
+        marker_(ii,:)='k- ';color_(ii,:)=[0 0 0];LineWidth=LineWidth*2;
     end
     if plot_loglog
         legend_handle(end+1)=loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
@@ -224,9 +234,13 @@ if ~isempty(EDS_comparison)
         
     for DFC_i=1:length(DFC_comparison)
         if Percentage_Of_Value_Flag
-            damage=DFC_comparison(DFC_i).damage_of_value;
+            damage=DFC_comparison(DFC_i).damage_of_value*100;
         else
             damage=DFC_comparison(DFC_i).damage*climada_global.Value_display_unit_fact;
+        end
+        % special line (thick black) for combined curve (if last one is combined)
+        if DFC_i==length(DFC) && strcmpi(DFC(DFC_i).annotation_name,annotation_name_thick_black)
+            marker_(ii,:)='k- ';color_(ii,:)=[0 0 0];LineWidth=LineWidth*2;
         end
         if plot_loglog
             legend_handle(end+1)=loglog(DFC_comparison(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
