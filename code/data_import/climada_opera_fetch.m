@@ -1,7 +1,7 @@
 function ok=climada_opera_fetch(check_plot)
 % climada template
 % MODULE:
-%   _LOCAL
+%   core
 % NAME:
 %   climada_opera_fetch
 % PURPOSE:
@@ -16,18 +16,14 @@ function ok=climada_opera_fetch(check_plot)
 %   ok=climada_opera_fetch
 % EXAMPLE:
 %   ok=climada_opera_fetch
-%
-%   %to display:
-%   load('/Users/bresch/Documents/_GIT/climada_data/opera/201806021330.mat')
-%   [X,MAP] = imread('/Users/bresch/Documents/_GIT/climada_data/opera/201806021330_Odyssey_Max_composite.gif');
-%   figure;image(X),colormap(MAP)
-%   figure;image(web_data),colormap(MAP)
+%   % to display, see check_plot in code
 % INPUTS:
 % OPTIONAL INPUT PARAMETERS:
 %   check_plot: if =1, plot last image processed, =0 no plot (default)
 % OUTPUTS:
 %   ok: if fetch successful
-%   writes .mat files to results folder, in sub-folder opera
+%   writes .mat files to results folder, in sub-folder opera (creates this
+%   folder in climada_global.data_dir, if not exists)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20180605
 % David N. Bresch, david.bresch@gmail.com, 20180606 display added
@@ -47,7 +43,7 @@ if ~exist('check_plot','var'),check_plot=0;end
 
 % locate the module's (or this code's) data folder (usually  a folder
 % 'parallel' to the code folder, i.e. in the same level as code folder)
-module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
+%module_data_dir=[fileparts(fileparts(mfilename('fullpath'))) filesep 'data'];
 
 % PARAMETERS
 %
