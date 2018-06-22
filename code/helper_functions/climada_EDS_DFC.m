@@ -1,4 +1,4 @@
-function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog)
+function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison,Percentage_Of_Value_Flag,plot_loglog,annotation_name_thick_black)
 % climada
 % NAME:
 %   climada_EDS_DFC
@@ -37,6 +37,8 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 %       different portfolios to see relative differences in risk
 %   plot_loglog: if =1, plot logarithmic scale both axes, =0 plot linear
 %       axes (default)
+%   annotation_name_thick_black: the name (EDS.annotation_name) for which a
+%       thick black line shall be used, default: 'combined'
 % OUTPUTS:
 %   DFC: a structure with fields
 %       .return_period
@@ -62,6 +64,7 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % david.bresch@gmail.com, 20170727, legend_handle added
 % david.bresch@gmail.com, 20180207, EDS_comparison='EM-DAT' added
 % david.bresch@gmail.com, 20180613, thick black line for 'combined' and percentage fixed for comparison
+% david.bresch@gmail.com, 20180622, annotation_name_thick_black added
 %-
 
 DFC=[];DFC_comparison=[];fig=[];legend_str={};legend_handle=[]; %init
@@ -74,6 +77,7 @@ if ~exist('EDS','var'),EDS=[];end
 if ~exist('EDS_comparison','var'),EDS_comparison='';end
 if ~exist('Percentage_Of_Value_Flag','var'),Percentage_Of_Value_Flag=0;end
 if ~exist('plot_loglog','var'),plot_loglog=0;end
+if ~exist('annotation_name_thick_black','var'),annotation_name_thick_black='';end
 
 % PARAMETERS
 %
@@ -87,7 +91,7 @@ color_     = [255 215   0 ;...   %today
     205   0   0 ;...   %total risk
     120 120 120]/256;  %dotted line]/255;
 %
-annotation_name_thick_black='combined';
+if isempty(annotation_name_thick_black),annotation_name_thick_black='combined';end
 
 % prompt for EDS if not given
 EDS = climada_EDS_load(EDS);

@@ -1,4 +1,4 @@
-function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~,treat_extratropical_transition)
+function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~,treat_extratropical_transition,R_min)
 % TC windfield calculation
 % MODULE:
 %   core
@@ -74,6 +74,7 @@ function gust = climada_tc_windfield(tc_track,centroids,~,silent_mode,~,treat_ex
 % David N. Bresch, david.bresch@gmail.com, 20170103, special case silent_mode=-1 for single node
 % David N. Bresch, david.bresch@gmail.com, 20170216, CALLING SEQUENCE correct
 % David N. Bresch, david.bresch@gmail.com, 20170810, CALLING SEQUENCE correct
+% David N. Bresch, david.bresch@gmail.com, 20180622, Rmin as parameter added
 %-
 
 gust = []; % init output
@@ -86,11 +87,13 @@ if ~exist('tc_track' ,'var'), tc_track       = []; end
 if ~exist('centroids','var'), centroids      = []; end
 if ~exist('silent_mode','var'), silent_mode  =  1; end
 if ~exist('treat_extratropical_transition','var'), treat_extratropical_transition  = 0; end
+if ~exist('R_min','var'), R_min  = []; end
 
 % PARAMETERS
 %
 % Radius of max wind (in km), latitudes at which range applies
-R_min=30;R_max=75; % km
+if isempty(R_min),R_min=30;end % km hard-wired until 20180622
+R_max=75; % km
 R_lat_min=24;R_lat_max=42;
 %
 % threshold above which we calculate the windfield
