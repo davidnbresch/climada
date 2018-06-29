@@ -96,6 +96,8 @@ function res=climada_event_damage_animation(animation_data_file,params)
 %    plot_damage: whether we plot damage (=1, default) or not (=0)
 %       can be useful to show only hazard animation first
 %    axis_equal: whether we scale axes equally, default=1, 0 otherwise
+%    axis_lat_lon: if = 1 (default) aspect of x and y axis matches a local
+%    projection
 %    calc_hazard_ts: if =1, show storm surge (TS) hazard and damage instead
 %       of TC. climada_event_damage_data_tc needs to have been run with
 %       params.calc_hazard_ts=1, too. Default=0, show TC hazard and damage
@@ -124,6 +126,7 @@ function res=climada_event_damage_animation(animation_data_file,params)
 % David N. Bresch, david.bresch@gmail.com, 20170806, title_str improved
 % David N. Bresch, david.bresch@gmail.com, 20170806, calc_hazard_ts added
 % Thomas Roosli, thomas.roeoesli@gmail.com, 20180116, frame_rate added
+% Thomas Roosli, thomas.roeoesli@gmail.com, 20180629, axis_lat_lon added
 %-
 
 res=[]; % init output, mainly used to return (default) parameters
@@ -160,6 +163,7 @@ if ~isfield(params,'check_mode'),params.check_mode=[];end
 if ~isfield(params,'plot_assets'),params.plot_assets=[];end
 if ~isfield(params,'plot_damage'),params.plot_damage=[];end
 if ~isfield(params,'axis_equal'),params.axis_equal=[];end
+if ~isfield(params,'axis_lat_lon'),params.axis_lat_lon=[];end
 if ~isfield(params,'calc_hazard_ts'),params.calc_hazard_ts=[];end
 
 % PARAMETERS
@@ -194,6 +198,7 @@ if isempty(params.check_mode),params.check_mode=0;end
 if isempty(params.plot_assets),params.plot_assets=1;end
 if isempty(params.plot_damage),params.plot_damage=1;end
 if isempty(params.axis_equal),params.axis_equal=1;end
+if isempty(params.axis_lat_lon),params.axis_lat_lon=1;end
 if isempty(params.calc_hazard_ts),params.calc_hazard_ts=0;end
 %
 windfieldFaceAlpha=0.7; % transparent
@@ -432,6 +437,7 @@ for frame_i=params.frame_start:params.jump_step:params.frame_end
     plot(border.X,border.Y,'-k')
     if params.axis_equal,axis equal;end
     axis(params.focus_region);
+    if params.axis_lat_lon,daspect([1 cosd(mean(mean(Y))) 1]);end % adjust axis ratio to match local projections
     if ~params.schematic_tag,colorbar;end
     
     title_str='';
