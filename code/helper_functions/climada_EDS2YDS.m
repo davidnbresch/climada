@@ -98,7 +98,7 @@ if ~exist('silent_mode','var'),silent_mode=0;end
 %
 
 if isempty(hazard) % try to infer from EDS
-    hazard_file=[climada_global.data_dir filesep 'hazards' filesep strtok(EDS.annotation_name) '.mat'];
+    hazard_file=EDS.hazard.filename;
     if exist(hazard_file,'file')
         load(hazard_file)
     else
