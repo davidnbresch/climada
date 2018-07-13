@@ -42,6 +42,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % David N. Bresch, david.bresch@gmail.com, 20160920, damagefunctions.name added
 % David N. Bresch, david.bresch@gmail.com, 20160929, damagefunctions.Intensity_unit added
 % David N. Bresch, david.bresch@gmail.com, 20170211, using the exact same data to plot as returned in res
+% David N. Bresch, david.bresch@gmail.com, 20180713, also return name and Intensity_unit
 %-
 
 res=[]; % init
@@ -125,6 +126,8 @@ for ID_i=1:length(unique_IDs)
         res.DamageFunID=damagefunctions.DamageFunID(dmf_pos);
         res.peril_ID=damagefunctions.peril_ID(dmf_pos);
         res.datenum=damagefunctions.datenum(dmf_pos);
+        res.Intensity_unit=damagefunctions.Intensity_unit(dmf_pos); % 20180713
+        res.name=damagefunctions.name(dmf_pos); % 20180713
         %
         plot(res.Intensity,res.MDR,'-r','LineWidth',2);hold on
         plot(res.Intensity,res.MDD,'-b','LineWidth',2);

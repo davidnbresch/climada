@@ -31,6 +31,7 @@ function damagefunctions=climada_damagefunction_add(damagefunctions,Intensity,MD
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20170806, initial
 % David N. Bresch, david.bresch@gmail.com, 20170807, allow for scalars or vectors
+% David N. Bresch, david.bresch@gmail.com, 20180713, size transposed (see 20180713 in code)
 %-
 
 %global climada_global
@@ -85,21 +86,21 @@ else
     damagefunctions.PAA=PAA;
 end
 
-if size(peril_ID,2)==1,peril_ID = repmat({peril_ID},1,n_entries);end
+if size(peril_ID,1)==1,peril_ID = repmat({peril_ID},1,n_entries);end
 if isfield(damagefunctions,'peril_ID')
     damagefunctions.peril_ID=[damagefunctions.peril_ID peril_ID];
 else
     damagefunctions.peril_ID=peril_ID;
 end
 
-if size(Intensity_unit,2)==1,Intensity_unit = repmat({Intensity_unit},1,n_entries);end
+if size(Intensity_unit,1)==1,Intensity_unit = repmat({Intensity_unit},1,n_entries);end % 20180713
 if isfield(damagefunctions,'Intensity_unit')
     damagefunctions.Intensity_unit=[damagefunctions.Intensity_unit Intensity_unit];
 else
     damagefunctions.Intensity_unit=Intensity_unit;
 end
 
-if size(name,2)==1,name = repmat({name},1,n_entries);end
+if size(name,1)==1,name = repmat({name},1,n_entries);end % 20180713
 if isfield(damagefunctions,'name')
     damagefunctions.name=[damagefunctions.name name];
 else
