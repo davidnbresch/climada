@@ -46,7 +46,7 @@ if isempty(EDS_save_file) % local GUI
         EDS_save_file = fullfile(pathname,filename);
     end
 else
-    [token remain]= strtok(EDS_save_file,'\');
+    [token remain]= strtok(EDS_save_file, filesep);
     if isempty(remain)
         EDS_save_file = [climada_global.data_dir filesep 'results' filesep EDS_save_file];
     end        
