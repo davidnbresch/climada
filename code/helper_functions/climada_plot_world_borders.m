@@ -71,7 +71,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 
 % import/setup global variables
 global climada_global
-if ~climada_init_vars,return;end;
+if ~climada_init_vars,return;end
 
 %if climada_global.octave_mode,return % BUG FIX for TEST
 
