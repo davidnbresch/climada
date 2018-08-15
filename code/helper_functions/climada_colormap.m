@@ -64,6 +64,7 @@ function [cmap,c_ax,xtickvals,cbar_str,intensity_threshold,peril_units] = climad
 % David N. Bresch, david.bresch@gmail.com, 20180101, outputs xtickvals,cbar_str,intensity_threshold and peril_units added
 % David N. Bresch, david.bresch@gmail.com, 20180102, 'fraction' added
 % David N. Bresch, david.bresch@gmail.com, 20180126, 'difference' added
+% David N. Bresch, david.bresch@gmail.com, 20180815, 'BF' added
 %-
 
 cmap=[];c_ax=[];xtickvals=[]; %init outputs
@@ -297,6 +298,15 @@ switch peril_ID
             cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/3)-1):endcolor(i);
         end
         cmap = [cmap1; cmap2];
+        
+    case 'BF' % create colormap for bushfire
+        c_ax      = [0 500];
+        if isempty(peril_units),peril_units='m/s';end
+        cbar_str  = sprintf('%s',peril_units);
+        xtickvals = c_ax(1):c_ax(2)/10:c_ax(2);
+        intensity_threshold = 10;
+        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
+        cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
         
     case 'difference' % create colormap for differences
         
