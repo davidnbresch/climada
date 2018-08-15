@@ -305,7 +305,7 @@ switch peril_ID
         cbar_str  = sprintf('%s',peril_units);
         xtickvals = c_ax(1):c_ax(2)/10:c_ax(2);
         intensity_threshold = 10;
-        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
+        cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],length(xtickvals)-4);
         cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
         
     case 'difference' % create colormap for differences
