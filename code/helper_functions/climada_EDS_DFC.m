@@ -65,6 +65,7 @@ function [DFC,fig,legend_str,legend_handle] = climada_EDS_DFC(EDS,EDS_comparison
 % david.bresch@gmail.com, 20180207, EDS_comparison='EM-DAT' added
 % david.bresch@gmail.com, 20180613, thick black line for 'combined' and percentage fixed for comparison
 % david.bresch@gmail.com, 20180622, annotation_name_thick_black added
+% david.bresch@gmail.com, 20180910, annotation_name_thick_black for any EDS, not necessarily last one
 %-
 
 DFC=[];DFC_comparison=[];fig=[];legend_str={};legend_handle=[]; %init
@@ -152,13 +153,16 @@ for DFC_i=1:length(DFC)
         damage=DFC(DFC_i).damage*climada_global.Value_display_unit_fact;
     end
     % special line (thick black) for combined curve (if last one is combined)
-    if DFC_i==length(DFC) && strcmpi(DFC(DFC_i).annotation_name,annotation_name_thick_black)
-        marker_(ii,:)='k- ';color_(ii,:)=[0 0 0];LineWidth=LineWidth*2;
+    %if DFC_i==length(DFC) && strcmpi(DFC(DFC_i).annotation_name,annotation_name_thick_black)
+    if strcmpi(DFC(DFC_i).annotation_name,annotation_name_thick_black)
+        marker_(ii,:)='k- ';color_(ii,:)=[0 0 0];LineWidth_=LineWidth*2;
+    else
+        LineWidth_=LineWidth;
     end
     if plot_loglog
-        legend_handle(end+1)=loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
+        legend_handle(end+1)=loglog(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth_,'markersize',MarkerSize);
     else
-        legend_handle(end+1)=plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth,'markersize',MarkerSize);
+        legend_handle(end+1)=plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth_,'markersize',MarkerSize);
     end
     hold on
     ii = ii+1; if ii>length(color_), ii=1; end
