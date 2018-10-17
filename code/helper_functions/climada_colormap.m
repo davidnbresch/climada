@@ -65,6 +65,7 @@ function [cmap,c_ax,xtickvals,cbar_str,intensity_threshold,peril_units] = climad
 % David N. Bresch, david.bresch@gmail.com, 20180102, 'fraction' added
 % David N. Bresch, david.bresch@gmail.com, 20180126, 'difference' added
 % David N. Bresch, david.bresch@gmail.com, 20180815, 'BF' added
+% Thomas R??sli, thomas.roeoesli@usys.ethz.ch, 20181017, change cmap of hazard type 'WS'
 %-
 
 cmap=[];c_ax=[];xtickvals=[]; %init outputs
@@ -212,6 +213,16 @@ switch peril_ID
         intensity_threshold = 10;
         cmap = makeColorMap([1 0.8 0.2],[0.7098 0.1333 0],[0.3333 0.1020 0.5451],c_ax(2)/5-3);
         cmap = [1 1 1;0.81 0.81 0.81; 0.63 0.63 0.63;cmap];
+        
+        % change thomas 20180716
+        startcolor   = [244 244 244]/255; %sgi gray 96
+        middlecolor1 = [193 193 193]/255; %sgi gray 76
+        middlecolor2 = [255 114  86]/255; %coral 1
+        endcolor     = [205   0   0]/255; %red 3
+        cmap1 = makeColorMap(startcolor, middlecolor1, steps10);
+        cmap2 = makeColorMap(middlecolor1, middlecolor2, steps10);
+        cmap3 = makeColorMap(middlecolor2, endcolor, steps10);
+        cmap = [cmap1; cmap2; cmap3];
         
     case 'HS'
         c_ax      = [200 2000];
