@@ -2,9 +2,10 @@ CLIMADA
 =======
 MATLAB (R2017a) version of CLIMADA
 
-please use the Python version: https://github.com/davidnbresch/climada_python (installation: https://github.com/davidnbresch/climada_python/blob/master/doc/source/install.rst)
+please use the Python version: https://github.com/davidnbresch/climada_python 
+Follow the [Installation](https://github.com/davidnbresch/climada_python/blob/master/doc/source/install.rst) instructions to install climada's development version and climada's stable version.
 
-the MATLAB version (this repository) is not futher developed any more and will be maintained until 2020
+The MATLAB version (this repository) is not futher developed any more and will be maintained until 2020
 
 First steps
 -----------
