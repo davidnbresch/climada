@@ -1,6 +1,6 @@
-####Welcome to ***climada***, the **_clim_**ate  **_ada_**ptation tool
+MATLAB (R2017a) version of CLIMADA
 
-<bf> please use the Python version: https://github.com/davidnbresch/climada_python
+please use the Python version: https://github.com/davidnbresch/climada_python
 
 the MATLAB version (this repository) is not futher developed any more and will be maintained until 2020
 
