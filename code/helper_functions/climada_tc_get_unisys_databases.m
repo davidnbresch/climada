@@ -4,7 +4,10 @@ function climada_tc_get_unisys_databases(tc_tracks_folder,read_it)
 %   climada_tc_get_unisys_databases
 % PURPOSE:
 %   get UNISYS databases from www, i.e. all the ocean basin files from 
-%   http://weather.unisys.com/hurricane/index.html
+%   http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html
+%
+%   In the past, we used http://weather.unisys.com/hurricane/index.html,
+%   but the page got revamped and does not provide the database any more.
 %
 %   next step: see climada_tc_read_unisys_database (see also read_it here)
 % CALLING SEQUENCE:
@@ -21,7 +24,13 @@ function climada_tc_get_unisys_databases(tc_tracks_folder,read_it)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20140715
 % David N. Bresch, david.bresch@gmail.com, 20161023, read_it added
+% David N. Bresch, david.bresch@gmail.com, 20181107, weather.unisys.com does not provide the dtaa any more - manual, see remark in code
+% David N. Bresch, david.bresch@gmail.com, 20181107, tc track .txt files stored in repositroy
 %-
+
+fprintf('\n--> get HURDAT database manually from http://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html\n')
+fprintf('    (in the past, we used http://weather.unisys.com/hurricane/index.html\n')
+fprintf('     but the page got revamped and does not provide the database any more)\n\n')
 
 global climada_global
 if ~climada_init_vars,return;end % init/import global variables
@@ -49,8 +58,8 @@ for file_i=1:length(unisys_files)
     [~,fN,fE]=fileparts(www_filename);
     fprintf('reading %s ... ',fE);
     [S,STATUS] = urlread(www_filename);
+    txt_filename=[tc_tracks_folder filesep fN fE '.txt'];
     if STATUS==1
-        txt_filename=[tc_tracks_folder filesep fN fE '.txt'];
         fprintf(' save as %s%s.txt ...',fN,fE);
         fid=fopen(txt_filename,'w');
         fprintf(fid,'%s',S);
@@ -59,8 +68,11 @@ for file_i=1:length(unisys_files)
 
         if read_it,climada_tc_read_unisys_database(txt_filename);end 
     else
-        fprintf(' FAILED\n')
-        
+        if exist(txt_filename,'file')
+            fprintf(' already exists (but new download failed)\n')
+        else
+            fprintf(' FAILED\n')
+        end
     end
 end % file_i
 
