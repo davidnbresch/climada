@@ -83,7 +83,7 @@ if size(intensity,1)>size(intensity,2),intensity=intensity';end
 damagefunctions.filename=mfilename;
 if params.IntensityCap
     % average intensity step
-    di = range(intensity,'all')/(length(intensity)-1);
+    di = range(intensity)/(length(intensity)-1);
     damagefunctions.Intensity=[min(intensity)-di intensity max(intensity)+di];
 else
     damagefunctions.Intensity=[intensity];
