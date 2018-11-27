@@ -20,7 +20,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 %   Search for 'TEST output' in code to show output for VERY SMALL entities
 %
 %   next (likely): climada_EDS_DFC or climada_EDS2DFC, climada_EDS_DFC_report
-%   See also climada_EDS_calc_parfor for a parallelized version (beta)
+%   See also climada_EDS_calc_fast for a faster version (beta)
 % CALLING SEQUENCE:
 %   EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,silent_mode,sanity_check)
 % EXAMPLE:
@@ -123,6 +123,7 @@ function EDS=climada_EDS_calc(entity,hazard,annotation_name,force_re_encode,sile
 % David N. Bresch, david.bresch@gmail.com, 20170721, currency_unit added
 % David N. Bresch, david.bresch@gmail.com, 20170828, try/catch in full_unique for Octave compatibility
 % David N. Bresch, david.bresch@gmail.com, 20171201, climada_progress2stdout
+% Benoit P. Guillod, benoit.guillod@env.ethz.ch, 20181127, replace climada_EDS_calc_parfor with climada_EDS_calc_fast in the function help
 %-
 
 global climada_global
