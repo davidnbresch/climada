@@ -165,7 +165,7 @@ for DFC_i=1:length(DFC)
         legend_handle(end+1)=plot(DFC(DFC_i).return_period,damage,marker_(ii,:),'color',color_(ii,:),'LineWidth',LineWidth_,'markersize',MarkerSize);
     end
     hold on
-    ii = ii+1; if ii>length(color_), ii=1; end
+    ii = ii+1; if ii>min(length(color_),length(marker_)), ii=1; end
     if isfield(DFC(DFC_i),'annotation_name'),legend_str{end+1}=strrep(DFC(DFC_i).annotation_name,'_',' '); end
 end % DFC_i
 

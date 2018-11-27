@@ -150,7 +150,11 @@ end
 
 if ~isempty(lon) && ~isempty(lat)
     if length(lon)==length(lat)
-        incountry=climada_inpolygon(lon,lat,shapes(shape_index).X,shapes(shape_index).Y);
+        if exist('climada_inshape','file')
+            incountry=climada_inshape(lat,lon,shapes(shape_index));
+        else
+            incountry=climada_inpolygon(lon,lat,shapes(shape_index).X,shapes(shape_index).Y);
+        end
         % for test:
         %plot(shapes(shape_index).X,shapes(shape_index).Y,'-k');hold on;plot(lon,lat,'or');plot(lon(incountry),lat(incountry),'xg');
     end
