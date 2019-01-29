@@ -67,6 +67,7 @@ function [res,params]=climada_hazard_plot(hazard,event_i,markersize,params)
 % David N. Bresch, david.bresch@gmail.com, 20170801, Octave compatibility
 % David N. Bresch, david.bresch@gmail.com, 20171231, renamed from climada_hazard_plot_nogrid to climada_hazard_plot and small fix in fprintf
 % David N. Bresch, david.bresch@gmail.com, 20180101, all color settings from climada_colorscale
+% David N. Bresch, david.bresch@gmail.com, 20190129, bugfix returned res.event_i
 %-
 
 res=[]; % init
@@ -168,6 +169,7 @@ elseif event_i==0
     plot_Value=full(max(hazard.intensity)); % max intensity at each point
     title_str=sprintf('%s max intensity at each centroid',hazard.peril_ID);
 else
+    event_ii=event_i;
     plot_Value=full(hazard.intensity(event_i,:)); % extract one event
     if isfield(hazard,'yyyy') && isfield(hazard,'mm') && isfield(hazard,'dd')
         yyyymmdd_str=sprintf('%4.4i%2.2i%2.2i',hazard.yyyy(event_i),hazard.mm(event_i),hazard.dd(event_i));
