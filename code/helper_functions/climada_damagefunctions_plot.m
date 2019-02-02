@@ -1,17 +1,23 @@
-function res=climada_damagefunctions_plot(entity,unique_ID_sel)
+function res=climada_damagefunctions_plot(entity,unique_ID_sel,noplot)
 % climada
 % NAME:
 %   climada_damagefunctions_plot
 % PURPOSE:
 %   Plot the damage functions within entity (if a damagefunctions struct is
-%   passed, it works, too).
+%   passed, it works, too). Also allows to obtain one (and only one!)
+%   single damage function, see EXAMPLE.
 %
 %   See also climada_damagefunctions_read and climada_damagefunctions_generate
 % CALLING SEQUENCE:
 %   climada_damagefunctions_plot(entity,unique_ID_sel)
 %   climada_damagefunctions_plot(climada_damagefunctions_read)
 % EXAMPLE:
-%   climada_damagefunctions_plot
+%   entity=climada_entity_load('entity_template');
+%   climada_damagefunctions_plot(entity,'TC')
+%
+%   res=climada_damagefunctions_plot(entity,'FL 001',1); % obtain one curve
+%   res.MDD=res.MDD*0.98765; % modify MDD
+%   entity=climada_damagefunctions_replace(entity,res); % replace with new
 % INPUTS:
 %   entity: an entity, see climada_entity_read
 %       > promted for if not given (calling climada_entity_load, not
@@ -28,8 +34,9 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 %       sub-plot headers. Examples are:
 %       unique_ID_sel='TC 001' % print only the one curve
 %       unique_ID_sel='TC'     % print all TC curves
+%   noplot: do NOT plot, just return the requested curves in res (default=0)
 % OUTPUTS:
-%   a figure
+%   a figure (if noplot=0)
 %   res: a structure with the last (and only the last) damagefunction, with
 %       fields Intensity, MDD, PAA, MDR for further use. Hence res only
 %       make sense when called with one unique ID.
@@ -43,6 +50,7 @@ function res=climada_damagefunctions_plot(entity,unique_ID_sel)
 % David N. Bresch, david.bresch@gmail.com, 20160929, damagefunctions.Intensity_unit added
 % David N. Bresch, david.bresch@gmail.com, 20170211, using the exact same data to plot as returned in res
 % David N. Bresch, david.bresch@gmail.com, 20180713, also return name and Intensity_unit
+% David N. Bresch, david.bresch@gmail.com, 20190202, noplot added
 %-
 
 res=[]; % init
@@ -55,6 +63,7 @@ if ~climada_init_vars,return;end % init/import global variables
 % poor man's version to check arguments
 if ~exist('entity','var'),entity=[];end
 if ~exist('unique_ID_sel','var'),unique_ID_sel='';end
+if ~exist('noplot','var'),noplot=0;end
 
 % PARAMETERS
 %
@@ -65,7 +74,7 @@ if isempty(entity),entity=climada_entity_load;end
 if isempty(entity),return;end
 
 if isfield(entity,'damagefunctions')
-    climada_damagefunctions_map(entity);
+    entity=climada_damagefunctions_map(entity,[],[],1); % silent, just doube check most times
     damagefunctions=entity.damagefunctions;
 else
     damagefunctions=entity; % entity is in fact already a damagefunctions struct
@@ -114,10 +123,10 @@ N_n_plots=ceil(sqrt(n_plots));n_N_plots=N_n_plots-1;
 if ~((N_n_plots*n_N_plots)>n_plots),n_N_plots=N_n_plots;end
 
 for ID_i=1:length(unique_IDs)
-    subplot(N_n_plots,n_N_plots,ID_i);
+    if ~noplot,subplot(N_n_plots,n_N_plots,ID_i);end
     dmf_pos=strmatch(unique_IDs{ID_i},unique_ID);
     if ~isempty(dmf_pos)
-        fprintf('plot %i: %s %s\n',ID_i,char(unique_IDs(ID_i)),damagefunctions.name{dmf_pos(1)}); % this way, it's easy to use them (see unique_ID_sel)
+        if ~noplot,fprintf('plot %i: %s %s\n',ID_i,char(unique_IDs(ID_i)),damagefunctions.name{dmf_pos(1)});end % this way, it's easy to use them (see unique_ID_sel)
         % prep data block and store (last one will be returned)
         res.Intensity=damagefunctions.Intensity(dmf_pos);
         res.MDD=damagefunctions.MDD(dmf_pos);
@@ -129,27 +138,31 @@ for ID_i=1:length(unique_IDs)
         res.Intensity_unit=damagefunctions.Intensity_unit(dmf_pos); % 20180713
         res.name=damagefunctions.name(dmf_pos); % 20180713
         %
-        plot(res.Intensity,res.MDR,'-r','LineWidth',2);hold on
-        plot(res.Intensity,res.MDD,'-b','LineWidth',2);
-        plot(res.Intensity,res.PAA,':g','LineWidth',2);
-        axis tight
-        set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
-        legend('MDR','MDD','PAA','Location','NorthWest');
-        xlabel('Intensity','FontSize',9);
-        if isfield(entity,'damagefunctions')
-            if isfield(entity.damagefunctions,'Intensity_unit')
-                xlabel(['Intensity [' entity.damagefunctions.Intensity_unit{dmf_pos(1)} ']'],'FontSize',9);
+        if ~noplot
+            plot(res.Intensity,res.MDR,'-r','LineWidth',2);hold on
+            plot(res.Intensity,res.MDD,'-b','LineWidth',2);
+            plot(res.Intensity,res.PAA,':g','LineWidth',2);
+            axis tight
+            set(get(gcf,'CurrentAxes'),'YLim',[0 1]);
+            legend('MDR','MDD','PAA','Location','NorthWest');
+            xlabel('Intensity','FontSize',9);
+            if isfield(entity,'damagefunctions')
+                if isfield(entity.damagefunctions,'Intensity_unit')
+                    xlabel(['Intensity [' entity.damagefunctions.Intensity_unit{dmf_pos(1)} ']'],'FontSize',9);
+                end
             end
-        end
-        ylabel('MDR')
-        title([unique_IDs{ID_i} ' ' damagefunctions.name{dmf_pos(1)}]);
-        grid on
-        grid minor
+            ylabel('MDR')
+            title([unique_IDs{ID_i} ' ' damagefunctions.name{dmf_pos(1)}]);
+            grid on
+            grid minor
+        end % noplot
     else
         fprintf('Error: %s not found\n',char(unique_IDs(ID_i))); % this way, it's easy to use them (see unique_ID_sel)
     end
 end
-set(gcf,'Color',[1 1 1]);
-set(gcf,'Name','damagefunctions');
+if ~noplot
+    set(gcf,'Color',[1 1 1]);
+    set(gcf,'Name','damagefunctions');
+end % noplot
 
-end
+end % climada_damagefunctions_plot
