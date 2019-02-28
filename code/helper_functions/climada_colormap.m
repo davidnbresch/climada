@@ -257,6 +257,7 @@ switch peril_ID
     case 'LS' % landslide
         % create colormap for landslide (distance to landslide)
         c_ax = [0 1];
+        intensity_threshold = 0;
         xtickvals    = 0:c_ax(2)/10:c_ax(2);
         if isempty(peril_units),peril_units='m/m';end
         cbar_str  = peril_units;
