@@ -9,7 +9,7 @@ function climada_plot_world_borders(linewidth,check_country,map_shape_file,keep_
 %   plots it (line plot) in existing figure (do not forget hold on before)
 %   or create new one. Allows to color (a set of) countries
 %
-%   The first time the shape file is read, all shapes are read into a
+%   The first time the shape file is read, all shapes are read into a[]
 %   second structure for fast plotting, see climada_shaperead(*,1,1).
 %   It uses the .mat file written by climada_shaperead with the borders
 %   info in subsequent calls for speedup.

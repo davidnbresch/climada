@@ -5,7 +5,7 @@ function hazard=climada_hazard2octave(hazard)
 % NAME:
 %   climada_hazard2octave
 % PURPOSE:
-%   In case the .mat file whch contains hazard has been saved with option
+%   In case the .mat file which contains hazard has been saved with option
 %   -v7.3, in Octave, hazard.intensity contains sub-fields jc, ir and data
 %   There might be a more elegant way, but the present one is an explicit
 %   conversion back into a sparse matrix in Octave.
@@ -32,6 +32,7 @@ function hazard=climada_hazard2octave(hazard)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150112, initial
 % David N. Bresch, david.bresch@gmail.com, 20150114, speedup
+% David N. Bresch, david.bresch@gmail.com, 20190327, typo in header fixed
 %-
 
 if isfield(hazard.intensity,'data')

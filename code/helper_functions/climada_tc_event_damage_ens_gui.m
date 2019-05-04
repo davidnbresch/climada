@@ -139,7 +139,7 @@ end
 
 global climada_tc_event_damage_ens_vars
 climada_tc_event_damage_ens_vars.UNISYS_years={}; % reset
-climada_tc_event_damage_ens_vars.UNISYS_years{1}=datestr(today,'yyyy');
+climada_tc_event_damage_ens_vars.UNISYS_years{1}=datestr(now,'yyyy');
 for year_i=1:10
     climada_tc_event_damage_ens_vars.UNISYS_years{end+1}=...
         sprintf('%i',str2double(climada_tc_event_damage_ens_vars.UNISYS_years{year_i})-1);
