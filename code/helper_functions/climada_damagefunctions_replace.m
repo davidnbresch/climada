@@ -41,6 +41,7 @@ function entity=climada_damagefunctions_replace(entity,damagefunctions)
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20150212, initial
 % David N. Bresch, david.bresch@gmail.com, 20150225, datenum added
+% David N. Bresch, david.bresch@gmail.com, 20190202, 1xN format debugged
 %-
 
 %global climada_global
@@ -116,16 +117,22 @@ for ID_i=1:length(unique_IDs)
                 entity.damagefunctions.DamageFunID(old_DamageFunID_pos)=next_ID;next_ID=next_ID+1;
             end
             % append
-            entity.damagefunctions.Intensity=[entity.damagefunctions.Intensity;damagefunctions.Intensity(dmf_pos)];
-            entity.damagefunctions.DamageFunID=[entity.damagefunctions.DamageFunID;damagefunctions.DamageFunID(dmf_pos)];
-            entity.damagefunctions.datenum=[entity.damagefunctions.datenum;damagefunctions.datenum(dmf_pos)];
-            entity.damagefunctions.MDD=[entity.damagefunctions.MDD;damagefunctions.MDD(dmf_pos)];
-            entity.damagefunctions.PAA=[entity.damagefunctions.PAA;damagefunctions.PAA(dmf_pos)];
-            entity.damagefunctions.peril_ID=[entity.damagefunctions.peril_ID;damagefunctions.peril_ID(dmf_pos)];
+            entity.damagefunctions.Intensity=[entity.damagefunctions.Intensity,damagefunctions.Intensity(dmf_pos)]; % 201902020 was ;
+            entity.damagefunctions.DamageFunID=[entity.damagefunctions.DamageFunID,damagefunctions.DamageFunID(dmf_pos)]; % 201902020 was ;
+            entity.damagefunctions.datenum=[entity.damagefunctions.datenum,damagefunctions.datenum(dmf_pos)]; % 201902020 was ;
+            entity.damagefunctions.MDD=[entity.damagefunctions.MDD,damagefunctions.MDD(dmf_pos)]; % 201902020 was ;
+            entity.damagefunctions.PAA=[entity.damagefunctions.PAA,damagefunctions.PAA(dmf_pos)]; % 201902020 was ;
+            entity.damagefunctions.peril_ID=[entity.damagefunctions.peril_ID,damagefunctions.peril_ID(dmf_pos)]; % 201902020 was ;
+            entity.damagefunctions.Intensity_unit=[entity.damagefunctions.Intensity_unit,damagefunctions.Intensity_unit(dmf_pos)]; % 201902020 added
+            entity.damagefunctions.name=[entity.damagefunctions.name,damagefunctions.name(dmf_pos)]; % 201902020 added
         else
             fprintf('%s not replaced (exists already)\n',char(unique_IDs{ID_i}));
         end
     end
 end % ID_i
+
+if isfield(entity.damagefunctions,'MDR') % recalculate (backward compatibility)
+    damagefunctions.MDR=damagefunctions.MDD.*damagefunctions.PAA;
+end
 
 end % climada_damagefunctions_replace

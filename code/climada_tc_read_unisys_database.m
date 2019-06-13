@@ -373,6 +373,24 @@ if ~climada_check_matfile(unisys_file,tc_track_hist_file) || check_plot==2
     %--------------------------------------------------
     
     unique_ID=basin_number*1e6+raw_data.year*100+raw_data.number*1;
+    if strcmp(convert_latitude,'convert2South') % for tracks spanning over the newyear, join the right ones together
+        unique_ID(raw_data.month<=6) = unique_ID(raw_data.month<=6)-100;
+        indexes_to_check = find(raw_data.month == 1);
+        for ind_i = 1:length(indexes_to_check)
+            % go back in the in the list of unique_id... if they do not
+            % match with change in yyyy and member, change the unique id
+            % back...
+            if indexes_to_check(ind_i) == 1
+                continue
+            end
+            if unique_ID(indexes_to_check(ind_i))<unique_ID(indexes_to_check(ind_i)-1)
+                if unique_ID(indexes_to_check(ind_i))-unique_ID(indexes_to_check(ind_i)-1)==-100
+                    unique_ID(indexes_to_check(ind_i)) = unique_ID(indexes_to_check(ind_i))+100;
+                end
+            end
+        end
+    end % for tracks spanning over the newyear, join the right ones together
+        
     unique_unique_ID=unique(unique_ID); % list of unique_ID's
     
     n_tracks=length(unique_unique_ID);  % amount of read tracks

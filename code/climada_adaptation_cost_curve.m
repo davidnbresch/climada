@@ -110,6 +110,9 @@ if ismac, fontsize_   = 12 *climada_global.font_scale;end % 20140516, was 8, too
 % prompt for measures_impact if not given
 measures_impact = climada_measures_impact_load(measures_impact);
 
+% check for correct array layout of measures (e.g. color)
+measures_impact.measures = climada_measures_check(measures_impact.measures);
+
 if ~isstruct(measures_impact_comparison)
     if strcmp(measures_impact_comparison,'ASK')
         measures_impact_comparison=[climada_global.data_dir filesep 'results' filesep '*.mat'];
@@ -130,14 +133,17 @@ tot_climate_risk  = measures_impact.NPV_total_climate_risk; % shorter name
 
 % some parameters
 n_years    = climada_global.future_reference_year - climada_global.present_reference_year + 1;
+if ~isfield(measures_impact,'Value_display_unit_name'),measures_impact.Value_display_unit_name='';end
 xlabel_str = sprintf('NPV averted damage over %d years (%s)',n_years,measures_impact.Value_display_unit_name);
 
 % convert to display units
 % only local, avoids very long lines with conversion factors
 measures_impact.cb_ratio      = measures_impact.cb_ratio; % no conversion
+if ~isfield(measures_impact,'Value_display_unit_fact'),measures_impact.Value_display_unit_fact=1;end
 measures_impact.benefit       = measures_impact.benefit      *measures_impact.Value_display_unit_fact;
 measures_impact.ED            = measures_impact.ED           *measures_impact.Value_display_unit_fact;
 tot_climate_risk              = tot_climate_risk             *measures_impact.Value_display_unit_fact;
+if ~isfield(measures_impact,'cost_display_unit_fact'),measures_impact.cost_display_unit_fact=1;end
 measures_impact.measures.cost = measures_impact.measures.cost*measures_impact.cost_display_unit_fact;
 measures_impact.risk_transfer = measures_impact.risk_transfer*measures_impact.cost_display_unit_fact;
 
@@ -200,6 +206,7 @@ end
 % -----------------------
 fprintf('\n%s :\n',title_str);
 n_measures = length(measures_impact.measures.cost);
+if ~isfield(measures_impact,'cost_display_unit_name'),measures_impact.cost_display_unit_name='';end
 fprintf(' Measure 		   Cost (%s)  Benefit (%s)  %s\n',...
     measures_impact.cost_display_unit_name,measures_impact.Value_display_unit_name,CostBenefit_str);
 for measure_i = 1:n_measures
@@ -231,6 +238,7 @@ set(gca,'FontSize',fontsize_);
 if ~called_from_climada_demo,set(gcf,'Color',[1 1 1]);end
 xlabel(xlabel_str,'fontsize',fontsize_+1)
 %ylabelstr = sprintf('%s ratio (%s/%s)',CostBenefit_str,measures_impact.Value_display_unit_name,measures_impact.cost_display_unit_name);
+if ~isfield(measures_impact,'cost_unit'),measures_impact.cost_unit='';end
 ylabelstr = sprintf('%s ratio (%s/%s)',CostBenefit_str,measures_impact.Value_unit,measures_impact.cost_unit);
 ylabel(ylabelstr,'fontsize',fontsize_+1)
 

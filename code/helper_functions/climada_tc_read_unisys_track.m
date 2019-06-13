@@ -35,10 +35,11 @@ function [tc_track,track_filename] = climada_tc_read_unisys_track(track_filename
 % David N. Bresch, david.bresch@gmail.com, 20151018, forecast file added to output and automatic removal of backward timesteps
 % David N. Bresch, david.bresch@gmail.com, 20151102, allow for name without path on input
 % David N. Bresch, david.bresch@gmail.com, 20161009, append _track.dat if necessary
+% David N. Bresch, david.bresch@gmail.com, 20190504, small fix to read incomplete data
 %-
 
 global climada_global
-if ~climada_init_vars,return;end; % init/import global variables
+if ~climada_init_vars,return;end % init/import global variables
 
 if ~exist('track_filename','var'),track_filename=[];end
 if ~exist('check_plot','var'),check_plot=0;end
@@ -84,7 +85,7 @@ if exist(track_filename,'file')
     continue_reading_header = 1; % init
     while continue_reading_header
         one_line=fgetl(fid); % read next line
-        if findstr(one_line,'Date:');
+        if findstr(one_line,'Date:')
             try
                 one_line      = upper(strrep(strrep(one_line,'Date:',''),' ',''));
                 tc_track.yyyy = str2num(one_line(end-3:end));
@@ -99,14 +100,14 @@ if exist(track_filename,'file')
             end
         end % Date
         
-        if findstr(one_line,'Hurricane');
+        if findstr(one_line,'Hurricane')
             try
                 tc_track.name=strrep(strrep(one_line,'Hurricane',''),' ','');
             catch
                 tc_track.name='NNN';
             end
         end % Hurricane
-        if findstr(one_line,'Typhoon');
+        if findstr(one_line,'Typhoon')
             try
                 tc_track.name=strrep(strrep(one_line,'Typhoon',''),' ','');
                 tc_track.name=strrep(strrep(tc_track.name,'Super',''),' ','');
@@ -114,14 +115,14 @@ if exist(track_filename,'file')
                 tc_track.name='NNN';
             end
         end % Typhoon
-        if findstr(one_line,'Cyclone');
+        if findstr(one_line,'Cyclone')
             try
                 tc_track.name=strrep(strrep(one_line,'Cyclone',''),' ','');
             catch
                 tc_track.name='NNN';
             end
         end % Cyclone
-        if findstr(one_line,'Tropical');
+        if findstr(one_line,'Tropical')
             try
                 tc_track.name=strrep(strrep(one_line,'Tropical',''),' ','');
                 tc_track.name=strrep(strrep(tc_track.name,'Depression',''),' ','');
@@ -131,7 +132,7 @@ if exist(track_filename,'file')
             end
         end % Tropical
         
-        if findstr(one_line,'*EyeDiameterFactor');
+        if findstr(one_line,'*EyeDiameterFactor')
             try
                 tc_track.EyeDiameterFactor=str2num( strrep(strrep(one_line,'*EyeDiameterFactor=',''),' ','') );
             catch
