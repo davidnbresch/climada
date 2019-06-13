@@ -82,6 +82,7 @@ function [shapes,whole_world_borders]=climada_shaperead(shape_filename,mat_save_
 % Lea Mueller, muellele@gmail.com, 20160229, add semicolon
 % David N. Bresch, david.bresch@gmail.com, 20161007, missing (sub) countries searched for and added
 % David N. Bresch, david.bresch@gmail.com, 20161008, sub country treatement moved to climada_admin0_fix
+% David N. Bresch, david.bresch@gmail.com, 20190521, load(...,'shapes')
 %-
 
 shapes=[]; % init output
@@ -163,7 +164,7 @@ shape_mat_filename=[fP filesep fN '.mat'];
 
 if climada_check_matfile(shape_filename,shape_mat_filename) && ~force_reread
     % there is a .mat file more recent than the original shape file, load it
-    load(shape_mat_filename) % contains struct named 'shapes'
+    load(shape_mat_filename,'shapes') % contains struct named 'shapes'
     
     % see comment to create_world_borders below
     %     if isempty(whole_world_borders) && create_world_borders

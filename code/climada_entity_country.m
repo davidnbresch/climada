@@ -24,7 +24,7 @@ function entity=climada_entity_country(admin0_name,high_res_flag)
 %       > If empty, a list dialog lets the user select a country
 % OPTIONAL INPUT PARAMETERS:
 %   high_res_flag: if =1, generate high-res (1km) resolution instead of
-%   default 10km. Needs country_risk module to be installed
+%       default 10km. Needs country_risk module to be installed
 % OUTPUTS:
 %   entity: a climada entity structure, as described in e.g. climada_entity_read
 % MODIFICATION HISTORY:
