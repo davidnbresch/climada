@@ -119,6 +119,8 @@ switch peril_ID
         %         xtick_    = caxis_max/5:caxis_max/5:caxis_max;
         %         cbar_str  = [hist_str 'rain sum (mm)'];
         
+        cbar_str  = sprintf('rain amount (%s)',peril_units);
+        xtickvals = 0:20:c_ax(2);
         startcolor   = [0.89	0.93	0.89];
         middlecolor1 = [0.55	0.78	0.59];
         middlecolor2 = [0.43	0.84	0.78];

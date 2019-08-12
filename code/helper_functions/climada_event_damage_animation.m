@@ -221,7 +221,7 @@ damage_cmap = makeColorMap([.7 .7 0], [1 0 0], 10); % [Red Green Blue] [1 1 1] w
 %close all;figure,colormap(assets_cmap);colorbar;figure,colormap(damage_cmap);colorbar
 
 if strcmpi(animation_data_file,'params'),res=params;return;end % special case, return the full params strcture
-if strcmpi(animation_data_file,'colors'),
+if strcmpi(animation_data_file,'colors')
     params.check_colors=1; % special case, return the full params strcture
     animation_data_file=animation_data_file_DEF;
 end 
