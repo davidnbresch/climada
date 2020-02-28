@@ -1,3 +1,7 @@
+PLEASE USE THE PYTHON VERSION: https://github.com/CLIMADA-project/climada_python
+
+The present MATLAB version of CLIMADA is not supported any more.
+
 CLIMADA
 =======
 MATLAB (R2017a) version of CLIMADA
