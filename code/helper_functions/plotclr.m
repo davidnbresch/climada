@@ -49,7 +49,7 @@ if ~exist('map'        , 'var'), map         = [];end
 if ~exist('zero_off'   , 'var'), zero_off    = [];end
 if ~exist('v_exp'      , 'var'), v_exp       = [];end
 
-if v_exp;
+if v_exp
     v = log10(v);
     v(isinf(v))         = nan;
     v(logical(imag(v))) = nan;

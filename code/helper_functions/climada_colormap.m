@@ -242,6 +242,22 @@ switch peril_ID
         xtickvals = [1 2 3 4 5 6 7 8 9 10 11 12 15];
         intensity_threshold = 1;
         
+    case {'VQ'} % create colormap for rain
+        % 3 green colors, 5 blue colors (instead of originally 10)
+        c_ax = [0 100];
+        
+        cbar_str  = sprintf('ash thickness (%s)',peril_units);
+        xtickvals = 0:20:c_ax(2);
+        startcolor   = [0.89	0.93	0.89];
+        middlecolor1 = [0.55	0.78	0.59];
+        middlecolor2 = [0.43	0.84	0.78];
+        endcolor     = [0.05	0.37	0.55];
+        for i=1:3
+            cmap1(:,i)= startcolor(i):(middlecolor1(i)-startcolor(i))/(ceil(steps10/4)-1):middlecolor1(i);
+            cmap2(:,i)= middlecolor2(i):(endcolor(i)-middlecolor2(i))/(ceil(steps10/2)-1):endcolor(i);
+        end
+        cmap = [1.0 1.0 1.0; cmap1; cmap2];
+        
     case 'MS' % create colormap for mudslides
         c_ax = [0 3];
         xtickvals    = 0:c_ax(2)/10:c_ax(2);
