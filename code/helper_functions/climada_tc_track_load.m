@@ -1,4 +1,4 @@
-function tc_track=climada_tc_track_load(tc_track_filename,check_plot)
+function [tc_track,tc_track_filename]=climada_tc_track_load(tc_track_filename,check_plot)
 % climada tc track load
 % MODULE:
 %   core
@@ -31,10 +31,12 @@ function tc_track=climada_tc_track_load(tc_track_filename,check_plot)
 % OUTPUTS:
 %   tc_track: a tc_track structure, as returned by
 %       climada_tc_read_unisys_database or climada_tc_read_unisys_tc_track
+%   tc_track_filename: the filename as chosen
 % MODIFICATION HISTORY:
 % David N. Bresch, david.bresch@gmail.com, 20160516, initial
 % David N. Bresch, david.bresch@gmail.com, 20160528, more filename completion options
 % David N. Bresch, david.bresch@gmail.com, 20170108, filename completion options clarified
+% David N. Bresch, david.bresch@gmail.com, 20210106, filename returned as second argument
 %-
 
 tc_track=[]; % init output
